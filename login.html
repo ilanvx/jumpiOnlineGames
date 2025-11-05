@@ -372,14 +372,39 @@
           // Hide Google button immediately to prevent loop
           document.querySelector('.google-btn').parentElement.style.display = 'none';
           
-          // Try to get user data (with retry if session not yet saved)
-          let userData = await checkAuth();
+          // Show loading message
+          const loginBox = document.querySelector('.login-box');
+          const loadingDiv = document.createElement('div');
+          loadingDiv.id = 'loadingMessage';
+          loadingDiv.style.cssText = 'background: rgba(82,196,26,.1); border: 2px solid #52c41a; padding: 20px; border-radius: 12px; margin: 20px 0; color: #52c41a; text-align: center;';
+          loadingDiv.innerHTML = `
+            <h3 style="margin: 0 0 12px;">⏳ מאמת התחברות...</h3>
+            <p style="margin: 0;">אנא המתן...</p>
+          `;
+          loginBox.insertBefore(loadingDiv, loginBox.firstChild);
           
-          // If no user data, wait a bit and try again (session might not be saved yet)
-          if (!userData) {
-            console.log('Waiting for session to be saved...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+          // Try to get user data (with multiple retries if session not yet saved)
+          let userData = null;
+          const maxRetries = 5;
+          const retryDelay = 1000; // 1 second
+          
+          for (let i = 0; i < maxRetries; i++) {
             userData = await checkAuth();
+            
+            if (userData) {
+              break; // Got user data, exit loop
+            }
+            
+            if (i < maxRetries - 1) {
+              console.log(`Waiting for session to be saved... (attempt ${i + 1}/${maxRetries})`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+            }
+          }
+          
+          // Remove loading message
+          const loadingEl = document.getElementById('loadingMessage');
+          if (loadingEl) {
+            loadingEl.remove();
           }
           
           if (userData) {
@@ -392,14 +417,16 @@
               window.location.href = '/';
             }
           } else {
-            // Failed to get user data even after retry - show error message
-            const loginBox = document.querySelector('.login-box');
+            // Failed to get user data even after retries - show error message
             const errorDiv = document.createElement('div');
             errorDiv.style.cssText = 'background: rgba(255,77,79,.1); border: 2px solid #ff4d4f; padding: 20px; border-radius: 12px; margin: 20px 0; color: #ff4d4f; text-align: center;';
             errorDiv.innerHTML = `
               <h3 style="margin: 0 0 12px;">⚠️ שגיאה בהתחברות</h3>
-              <p style="margin: 0 0 12px;">לא הצלחנו לקבל את פרטי המשתמש. נסה לרענן את הדף.</p>
-              <button onclick="window.location.reload()" style="padding: 10px 20px; background: #ff4d4f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">רענן דף</button>
+              <p style="margin: 0 0 12px;">לא הצלחנו לקבל את פרטי המשתמש. נסה לרענן את הדף או להתחבר שוב.</p>
+              <div style="display: flex; gap: 10px; justify-content: center; margin-top: 12px;">
+                <button onclick="window.location.reload()" style="padding: 10px 20px; background: #ff4d4f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">רענן דף</button>
+                <button onclick="window.location.href='/auth/google'" style="padding: 10px 20px; background: #1890ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">התחבר שוב</button>
+              </div>
             `;
             loginBox.insertBefore(errorDiv, loginBox.firstChild);
           }

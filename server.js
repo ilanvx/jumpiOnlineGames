@@ -377,29 +377,45 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         
         if (!req.user.registered) {
           // User is not registered - redirect to login page to complete registration
+          // Save session explicitly before redirect
+          req.session.save((err) => {
+            if (err) {
+              console.error('Error saving session:', err);
+            }
+            
+            const host = req.get('host') || '';
+            const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+            const isProductionRequest = host.includes('jumpigames.com') || 
+                                         host.includes('.railway.app') || 
+                                         isProduction;
+            
+            const loginUrl = isProductionRequest 
+              ? 'https://jumpigames.com/login.html?success=1' 
+              : 'http://localhost:3000/login.html?success=1';
+            console.log('OAuth callback redirect (not registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, loginUrl });
+            res.redirect(loginUrl);
+          });
+          return;
+        }
+        
+        // User is registered - redirect to home page
+        // Save session explicitly before redirect
+        req.session.save((err) => {
+          if (err) {
+            console.error('Error saving session:', err);
+          }
+          
           const host = req.get('host') || '';
           const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
           const isProductionRequest = host.includes('jumpigames.com') || 
                                        host.includes('.railway.app') || 
                                        isProduction;
           
-          const loginUrl = isProductionRequest 
-            ? 'https://jumpigames.com/login.html?success=1' 
-            : 'http://localhost:3000/login.html?success=1';
-          console.log('OAuth callback redirect (not registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, loginUrl });
-          return res.redirect(loginUrl);
-        }
-        
-        // User is registered - redirect to home page
-        const host = req.get('host') || '';
-        const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
-        const isProductionRequest = host.includes('jumpigames.com') || 
-                                     host.includes('.railway.app') || 
-                                     isProduction;
-        
-        const redirectUrl = isProductionRequest ? 'https://jumpigames.com/' : 'http://localhost:3000/';
-        console.log('OAuth callback redirect (registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, redirectUrl });
-        res.redirect(redirectUrl);
+          const redirectUrl = isProductionRequest ? 'https://jumpigames.com/' : 'http://localhost:3000/';
+          console.log('OAuth callback redirect (registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, redirectUrl });
+          res.redirect(redirectUrl);
+        });
+        return;
       } catch (error) {
         console.error('Error in OAuth callback:', error);
         const host = req.get('host') || '';
