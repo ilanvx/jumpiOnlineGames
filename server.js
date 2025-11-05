@@ -212,6 +212,8 @@ app.use(cors({
       'http://127.0.0.1:5500',
       'http://localhost:3000',
       'http://127.0.0.1:3000',
+      'https://jumpigame.com',
+      'https://www.jumpigame.com',
       process.env.FRONTEND_URL
     ].filter(Boolean);
     
@@ -242,7 +244,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Passport Google Strategy
-const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
+// Determine if we're in production (Railway) or development
+// Check for Railway-specific environment variables or production URL
+const isProduction = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
+const BASE_URL = isProduction ? 'https://jumpigame.com' : 'http://localhost:3000';
+const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
 
 // Check if Google OAuth credentials are provided
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -314,10 +320,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   }));
 
   app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login.html?error=oauth_failed' }),
+    passport.authenticate('google', { failureRedirect: `${BASE_URL}/login.html?error=oauth_failed` }),
     (req, res) => {
-      // Successful authentication
-      res.redirect('/login.html?success=1');
+      // Successful authentication - redirect to production or localhost based on environment
+      const redirectUrl = isProduction ? 'https://jumpigame.com/' : 'http://localhost:3000/';
+      res.redirect(redirectUrl);
     }
   );
 } else {
