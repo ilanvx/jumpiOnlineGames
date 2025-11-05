@@ -263,7 +263,9 @@ console.log('Environment detection:', {
   NODE_ENV: process.env.NODE_ENV,
   PRODUCTION: process.env.PRODUCTION,
   RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
-  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+  HAS_GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
+  HAS_GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET
 });
 
 // Check if Google OAuth credentials are provided
