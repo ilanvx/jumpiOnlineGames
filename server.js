@@ -29,11 +29,29 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jumpigames', {
+// Ensure we always use 'jumpigames' database
+let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/jumpigames';
+
+// If MONGODB_URI doesn't contain a database name, add /jumpigames
+if (mongoUri && !mongoUri.match(/\/[^\/]+\?/) && !mongoUri.endsWith('/jumpigames') && !mongoUri.endsWith('/test')) {
+  // Check if URI ends with / or has no database specified
+  if (mongoUri.endsWith('/')) {
+    mongoUri = mongoUri + 'jumpigames';
+  } else if (!mongoUri.match(/\/[^\/]+$/)) {
+    // No database name in URI, add it
+    mongoUri = mongoUri + '/jumpigames';
+  }
+}
+
+// Replace /test with /jumpigames if needed
+mongoUri = mongoUri.replace(/\/test(\?|$)/, '/jumpigames$1');
+
+mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
-  console.log('Connected to MongoDB');
+  console.log('Connected to MongoDB database: jumpigames');
+  console.log('MongoDB URI:', mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials in log
 }).catch(err => {
   console.error('MongoDB connection error:', err);
 });
