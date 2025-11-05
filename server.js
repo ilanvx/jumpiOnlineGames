@@ -245,10 +245,26 @@ app.use(passport.session());
 
 // Passport Google Strategy
 // Determine if we're in production (Railway) or development
-// Check for Railway-specific environment variables or production URL
-const isProduction = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_DOMAIN || process.env.RAILWAY_PUBLIC_DOMAIN || (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
+// Check for explicit PRODUCTION flag, or if callback URL contains jumpigame.com
+const isProduction = process.env.PRODUCTION === 'true' || 
+                     process.env.RAILWAY_ENVIRONMENT || 
+                     process.env.RAILWAY_DOMAIN || 
+                     process.env.RAILWAY_PUBLIC_DOMAIN || 
+                     (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('jumpigame.com')) ||
+                     (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
 const BASE_URL = isProduction ? 'https://jumpigame.com' : 'http://localhost:3000';
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
+
+// Log for debugging
+console.log('Environment detection:', {
+  isProduction,
+  BASE_URL,
+  CALLBACK_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  PRODUCTION: process.env.PRODUCTION,
+  RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
+});
 
 // Check if Google OAuth credentials are provided
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
@@ -322,8 +338,16 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: `${BASE_URL}/login.html?error=oauth_failed` }),
     (req, res) => {
-      // Successful authentication - redirect to production or localhost based on environment
-      const redirectUrl = isProduction ? 'https://jumpigame.com/' : 'http://localhost:3000/';
+      // Successful authentication - redirect based on request origin or environment
+      // Check if request came from production domain
+      const host = req.get('host') || '';
+      const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+      const isProductionRequest = host.includes('jumpigame.com') || 
+                                   host.includes('.railway.app') || 
+                                   isProduction;
+      
+      const redirectUrl = isProductionRequest ? 'https://jumpigame.com/' : 'http://localhost:3000/';
+      console.log('OAuth callback redirect:', { host, protocol, isProductionRequest, redirectUrl });
       res.redirect(redirectUrl);
     }
   );
