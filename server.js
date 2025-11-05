@@ -244,11 +244,13 @@ app.use(passport.session());
 // Passport Google Strategy
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback';
 
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: CALLBACK_URL
-}, async (accessToken, refreshToken, profile, done) => {
+// Check if Google OAuth credentials are provided
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: CALLBACK_URL
+  }, async (accessToken, refreshToken, profile, done) => {
   try {
     let user = await User.findOne({ googleId: profile.id });
     
@@ -285,7 +287,11 @@ passport.use(new GoogleStrategy({
   } catch (error) {
     return done(error, null);
   }
-}));
+  }));
+} else {
+  console.warn('Warning: Google OAuth credentials not configured. Google login will not be available.');
+  console.warn('Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+}
 
 passport.serializeUser((user, done) => {
   done(null, user._id);
@@ -301,17 +307,29 @@ passport.deserializeUser(async (id, done) => {
 });
 
 // Routes
-app.get('/auth/google', passport.authenticate('google', {
-  scope: ['profile', 'email']
-}));
+// Google OAuth routes - only available if credentials are configured
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  app.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+  }));
 
-app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login.html?error=oauth_failed' }),
-  (req, res) => {
-    // Successful authentication
-    res.redirect('/login.html?success=1');
-  }
-);
+  app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login.html?error=oauth_failed' }),
+    (req, res) => {
+      // Successful authentication
+      res.redirect('/login.html?success=1');
+    }
+  );
+} else {
+  // Fallback routes if Google OAuth is not configured
+  app.get('/auth/google', (req, res) => {
+    res.status(503).send('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+  });
+
+  app.get('/auth/google/callback', (req, res) => {
+    res.status(503).send('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+  });
+}
 
 // Get current user
 app.get('/api/user', (req, res) => {
