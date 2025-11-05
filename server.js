@@ -212,8 +212,8 @@ app.use(cors({
       'http://127.0.0.1:5500',
       'http://localhost:3000',
       'http://127.0.0.1:3000',
-      'https://jumpigame.com',
-      'https://www.jumpigame.com',
+      'https://jumpigames.com',
+      'https://www.jumpigames.com',
       process.env.FRONTEND_URL
     ].filter(Boolean);
     
@@ -245,14 +245,14 @@ app.use(passport.session());
 
 // Passport Google Strategy
 // Determine if we're in production (Railway) or development
-// Check for explicit PRODUCTION flag, or if callback URL contains jumpigame.com
+// Check for explicit PRODUCTION flag, or if callback URL contains jumpigames.com
 const isProduction = process.env.PRODUCTION === 'true' || 
                      process.env.RAILWAY_ENVIRONMENT || 
                      process.env.RAILWAY_DOMAIN || 
                      process.env.RAILWAY_PUBLIC_DOMAIN || 
-                     (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('jumpigame.com')) ||
+                     (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('jumpigames.com')) ||
                      (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
-const BASE_URL = isProduction ? 'https://jumpigame.com' : 'http://localhost:3000';
+const BASE_URL = isProduction ? 'https://jumpigames.com' : 'http://localhost:3000';
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
 
 // Log for debugging
@@ -342,11 +342,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       // Check if request came from production domain
       const host = req.get('host') || '';
       const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
-      const isProductionRequest = host.includes('jumpigame.com') || 
+      const isProductionRequest = host.includes('jumpigames.com') || 
                                    host.includes('.railway.app') || 
                                    isProduction;
       
-      const redirectUrl = isProductionRequest ? 'https://jumpigame.com/' : 'http://localhost:3000/';
+      const redirectUrl = isProductionRequest ? 'https://jumpigames.com/' : 'http://localhost:3000/';
       console.log('OAuth callback redirect:', { host, protocol, isProductionRequest, redirectUrl });
       res.redirect(redirectUrl);
     }

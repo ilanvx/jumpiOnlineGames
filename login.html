@@ -69,7 +69,7 @@
         </div>
 
         <div style="text-align: center; margin: 24px 0;">
-          <a href="http://localhost:3000/auth/google" class="google-btn">
+          <a href="/auth/google" class="google-btn" id="googleAuthLink">
             <i class="fa-brands fa-google"></i>
             התחבר עם Google
           </a>
@@ -112,7 +112,16 @@
     </main>
 
     <script>
-      const API_URL = 'http://localhost:3000';
+      // Determine API URL based on current host
+      const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+        ? 'https://jumpigames.com' 
+        : 'http://localhost:3000';
+      
+      // Update Google auth link
+      const googleAuthLink = document.getElementById('googleAuthLink');
+      if (googleAuthLink) {
+        googleAuthLink.href = `${API_URL}/auth/google`;
+      }
 
       // Check if user is already logged in
       async function checkAuth() {
@@ -341,7 +350,7 @@
           <p style="margin: 0 0 12px;"><strong>שגיאה 400: redirect_uri_mismatch</strong></p>
           <p style="margin: 0 0 12px;">ה-callback URL לא רשום ב-Google Cloud Console.</p>
           <p style="margin: 12px 0;"><strong>הוסף את ה-URL הבא:</strong></p>
-          <code style="display: block; background: rgba(0,0,0,.3); padding: 8px; border-radius: 6px; margin: 8px 0; font-size: 13px;">http://localhost:3000/auth/google/callback</code>
+          <code style="display: block; background: rgba(0,0,0,.3); padding: 8px; border-radius: 6px; margin: 8px 0; font-size: 13px;" id="callbackUrlDisplay">${API_URL}/auth/google/callback</code>
           <ol style="text-align: right; margin: 12px 0 0 20px; font-size: 13px;">
             <li>לך ל-<a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #a5b4ff;">Google Cloud Console</a></li>
             <li>בחר את ה-Client ID שלך</li>

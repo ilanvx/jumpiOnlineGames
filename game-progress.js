@@ -24,7 +24,10 @@
 (function() {
   'use strict';
 
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
   const MESSAGE_PREFIX = 'jumpi-progress-';
 
   // Check if we're in an iframe (game context)

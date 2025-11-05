@@ -1,5 +1,8 @@
 // Chat functionality
-const API_URL = 'http://localhost:3000';
+// Determine API URL based on current host
+const API_URL = (typeof window !== 'undefined' && (window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com'))
+  ? 'https://jumpigames.com' 
+  : 'http://localhost:3000';
 let socket = null;
 let currentUser = null;
 let currentRoomId = null;

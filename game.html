@@ -84,7 +84,10 @@
     <script src="/game-progress.js"></script>
     <script>
       (function(){
-        const API_URL = 'http://localhost:3000';
+        // Determine API URL based on current host
+        const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+          ? 'https://jumpigames.com' 
+          : 'http://localhost:3000';
         
         // Check if user is registered before allowing access
         (async function checkRegistration() {

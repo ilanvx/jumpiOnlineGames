@@ -115,7 +115,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const userDropdown = document.getElementById('userDropdown');
   const adminLink = document.getElementById('adminLink');
 
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
 
   try {
     const response = await fetch(`${API_URL}/api/user`, {
@@ -290,7 +293,10 @@ async function loadCategories() {
   const sidebar = document.getElementById('categoriesSidebar');
   if (!sidebar) return;
 
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
 
   try {
     const response = await fetch(`${API_URL}/api/categories`, {
@@ -477,7 +483,10 @@ async function loadGames(page = 1, category = 'all') {
   }
   window.history.pushState({ page, category }, '', url);
   
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
   
   // Show loading state
   gamesGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">טוען משחקים...</div>';
@@ -1144,7 +1153,10 @@ async function toggleFavorite(gameId, buttonElement, gameTitle, gameImage, gameD
   if (!buttonElement) return;
   
   const isFavorite = buttonElement.classList.contains('active');
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
   
   try {
     if (isFavorite) {
@@ -1228,7 +1240,10 @@ let showingFavorites = false;
 let allGames = [];
 
 async function showFavorites() {
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
   const gamesGrid = document.getElementById('gamesGrid');
   const titleEl = document.querySelector('.title');
   const favoritesBtn = document.getElementById('favoritesBtn');
@@ -1515,7 +1530,10 @@ function closeModalAlert() {
 
 // Handle logout
 async function handleLogout() {
-  const API_URL = 'http://localhost:3000';
+  // Determine API URL based on current host
+  const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+    ? 'https://jumpigames.com' 
+    : 'http://localhost:3000';
   try {
     await fetch(`${API_URL}/api/logout`, {
       method: 'POST',
