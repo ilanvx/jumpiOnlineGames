@@ -201,6 +201,21 @@ mongoose.connection.once('open', async () => {
   }
 });
 
+// Passport Google Strategy - Determine environment BEFORE session setup
+// Determine if we're in production (Railway) or development
+// Check for explicit PRODUCTION flag, or if callback URL contains jumpigames.com
+const isProduction = process.env.PRODUCTION === 'true' || 
+                     process.env.RAILWAY_ENVIRONMENT || 
+                     process.env.RAILWAY_DOMAIN || 
+                     process.env.RAILWAY_PUBLIC_DOMAIN || 
+                     (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('jumpigames.com')) ||
+                     (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
+const BASE_URL = isProduction ? 'https://jumpigames.com' : 'http://localhost:3000';
+const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
+
+// Determine if we should use secure cookies
+const useSecureCookies = process.env.NODE_ENV === 'production' || isProduction || process.env.RAILWAY_ENVIRONMENT === 'production';
+
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
@@ -234,26 +249,15 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: process.env.NODE_ENV === 'production',
+    secure: useSecureCookies,
     httpOnly: true,
+    sameSite: useSecureCookies ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-// Passport Google Strategy
-// Determine if we're in production (Railway) or development
-// Check for explicit PRODUCTION flag, or if callback URL contains jumpigames.com
-const isProduction = process.env.PRODUCTION === 'true' || 
-                     process.env.RAILWAY_ENVIRONMENT || 
-                     process.env.RAILWAY_DOMAIN || 
-                     process.env.RAILWAY_PUBLIC_DOMAIN || 
-                     (process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('jumpigames.com')) ||
-                     (process.env.NODE_ENV === 'production' && !process.env.LOCAL);
-const BASE_URL = isProduction ? 'https://jumpigames.com' : 'http://localhost:3000';
-const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
 
 // Log for debugging
 console.log('🔍 Environment detection:', {
@@ -344,8 +348,34 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.authenticate('google', { failureRedirect: `${BASE_URL}/login.html?error=oauth_failed` }),
     async (req, res) => {
       try {
+        // Log for debugging
+        console.log('OAuth callback - req.user:', req.user ? { id: req.user._id, email: req.user.email, registered: req.user.registered } : 'null');
+        
+        // If req.user is not available, try to get it from session
+        if (!req.user && req.session && req.session.passport && req.session.passport.user) {
+          try {
+            req.user = await User.findById(req.session.passport.user);
+            console.log('Loaded user from session:', req.user ? { id: req.user._id, email: req.user.email, registered: req.user.registered } : 'null');
+          } catch (error) {
+            console.error('Error loading user from session:', error);
+          }
+        }
+        
         // Check if user is registered
-        if (!req.user || !req.user.registered) {
+        if (!req.user) {
+          console.error('No user found in OAuth callback');
+          const host = req.get('host') || '';
+          const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+          const isProductionRequest = host.includes('jumpigames.com') || 
+                                       host.includes('.railway.app') || 
+                                       isProduction;
+          const loginUrl = isProductionRequest 
+            ? 'https://jumpigames.com/login.html?error=oauth_failed' 
+            : 'http://localhost:3000/login.html?error=oauth_failed';
+          return res.redirect(loginUrl);
+        }
+        
+        if (!req.user.registered) {
           // User is not registered - redirect to login page to complete registration
           const host = req.get('host') || '';
           const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
@@ -356,7 +386,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           const loginUrl = isProductionRequest 
             ? 'https://jumpigames.com/login.html?success=1' 
             : 'http://localhost:3000/login.html?success=1';
-          console.log('OAuth callback redirect (not registered):', { host, protocol, isProductionRequest, loginUrl });
+          console.log('OAuth callback redirect (not registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, loginUrl });
           return res.redirect(loginUrl);
         }
         
@@ -368,7 +398,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
                                      isProduction;
         
         const redirectUrl = isProductionRequest ? 'https://jumpigames.com/' : 'http://localhost:3000/';
-        console.log('OAuth callback redirect (registered):', { host, protocol, isProductionRequest, redirectUrl });
+        console.log('OAuth callback redirect (registered):', { userId: req.user._id, email: req.user.email, host, protocol, isProductionRequest, redirectUrl });
         res.redirect(redirectUrl);
       } catch (error) {
         console.error('Error in OAuth callback:', error);

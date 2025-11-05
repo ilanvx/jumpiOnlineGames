@@ -369,7 +369,19 @@
           showOAuthError();
         } else if (urlParams.get('success') === '1') {
           // User came back from Google OAuth
-          const userData = await checkAuth();
+          // Hide Google button immediately to prevent loop
+          document.querySelector('.google-btn').parentElement.style.display = 'none';
+          
+          // Try to get user data (with retry if session not yet saved)
+          let userData = await checkAuth();
+          
+          // If no user data, wait a bit and try again (session might not be saved yet)
+          if (!userData) {
+            console.log('Waiting for session to be saved...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            userData = await checkAuth();
+          }
+          
           if (userData) {
             if (!userData.registered || !userData.username) {
               // User is not registered - show registration form
@@ -379,6 +391,17 @@
               localStorage.setItem('jumpiUser', JSON.stringify(userData));
               window.location.href = '/';
             }
+          } else {
+            // Failed to get user data even after retry - show error message
+            const loginBox = document.querySelector('.login-box');
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'background: rgba(255,77,79,.1); border: 2px solid #ff4d4f; padding: 20px; border-radius: 12px; margin: 20px 0; color: #ff4d4f; text-align: center;';
+            errorDiv.innerHTML = `
+              <h3 style="margin: 0 0 12px;">⚠️ שגיאה בהתחברות</h3>
+              <p style="margin: 0 0 12px;">לא הצלחנו לקבל את פרטי המשתמש. נסה לרענן את הדף.</p>
+              <button onclick="window.location.reload()" style="padding: 10px 20px; background: #ff4d4f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">רענן דף</button>
+            `;
+            loginBox.insertBefore(errorDiv, loginBox.firstChild);
           }
         } else {
           // Check if already logged in (not coming from OAuth)
