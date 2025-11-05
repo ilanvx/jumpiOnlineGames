@@ -256,7 +256,7 @@ const BASE_URL = isProduction ? 'https://jumpigames.com' : 'http://localhost:300
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google/callback`;
 
 // Log for debugging
-console.log('Environment detection:', {
+console.log('🔍 Environment detection:', {
   isProduction,
   BASE_URL,
   CALLBACK_URL,
@@ -264,8 +264,8 @@ console.log('Environment detection:', {
   PRODUCTION: process.env.PRODUCTION,
   RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
-  HAS_GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
-  HAS_GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET
+  hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+  hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET
 });
 
 // Check if Google OAuth credentials are provided
@@ -313,8 +313,11 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   }
   }));
 } else {
-  console.warn('Warning: Google OAuth credentials not configured. Google login will not be available.');
-  console.warn('Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+  console.warn('⚠️  Warning: Google OAuth credentials not configured. Google login will not be available.');
+  console.warn('Please set the following environment variables in Railway:');
+  console.warn('  - GOOGLE_CLIENT_ID');
+  console.warn('  - GOOGLE_CLIENT_SECRET');
+  console.warn('  - GOOGLE_CALLBACK_URL (optional, defaults to https://jumpigames.com/auth/google/callback)');
 }
 
 passport.serializeUser((user, done) => {
