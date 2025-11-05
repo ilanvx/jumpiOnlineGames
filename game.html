@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - משחק</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      body { background: var(--bg); color: var(--text); font-family: 'Heebo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .game-layout { display: grid; grid-template-columns: 280px 1fr 280px; gap: 18px; padding: 16px 20px; max-width: 1600px; margin: 0 auto; }
+      .player-section { display: flex; flex-direction: column; align-items: center; }
+      .player { background:#000; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.35); position: relative; width: 100%; max-width: 900px; }
+      .player iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; display: block; }
+      .player.fullscreen { position: fixed; inset: 0; z-index: 9999; max-width: 100%; border-radius: 0; }
+      .fullscreen-btn { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 10px; border: 0; background: rgba(0,0,0,.7); color: #fff; cursor: pointer; display: grid; place-items: center; font-size: 18px; transition: background .2s; z-index: 10; }
+      .fullscreen-btn:hover { background: rgba(0,0,0,.9); }
+      .game-header { display:flex; align-items:center; justify-content:space-between; margin: 6px 0 10px; width: 100%; max-width: 900px; }
+      .game-title { font-size: 26px; font-weight: 900; }
+      .recommend { background: var(--panel-2); border-radius: 16px; padding: 12px; }
+      .recommend h3 { margin: 4px 8px 10px; font-size: 18px; }
+      .rec-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .rec-item { display: flex; flex-direction: column; text-decoration: none; color: var(--text); background: var(--panel); border-radius: 12px; overflow: hidden; transition: transform .14s ease; position: relative; }
+      .rec-item:hover { transform: translateY(-2px); }
+      .rec-item img { width: 100%; height: 120px; object-fit: cover; display: block; }
+      .rec-item span { padding: 8px 10px; font-weight: 700; font-size: 13px; line-height: 1.3; }
+      .back-link { text-decoration: none; color: #a5b4ff; font-weight: 800; }
+      .sidebar-placeholder { display: none; }
+      @media (max-width: 1400px) { 
+        .game-layout { grid-template-columns: 260px 1fr 260px; }
+      }
+      @media (max-width: 1200px) { 
+        .game-layout { grid-template-columns: 240px 1fr; }
+        .sidebar-placeholder { display: none; }
+      }
+      @media (max-width: 980px) { 
+        .game-layout { grid-template-columns: 1fr; }
+        .recommend { order: -1; }
+        .rec-list { grid-template-columns: repeat(3, 1fr); }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="/images/logo.png" alt="JumpiGames" />
+      </div>
+      <div style="grid-column: span 5"></div>
+      <a class="btn pill-blue" href="/">חזרה</a>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active" id="gameBreadcrumb">משחק</span>
+    </nav>
+
+    <main class="game-layout">
+      <aside class="recommend">
+        <h3 id="categoryTitle">מומלצים</h3>
+        <div class="rec-list" id="recList"></div>
+      </aside>
+
+      <section class="player-section">
+        <div class="game-header">
+          <h1 class="game-title" id="gameTitle">משחק</h1>
+          <a class="back-link" href="/">חזרה לעמוד הראשי</a>
+        </div>
+        <div class="player" id="playerContainer">
+          <button class="fullscreen-btn" id="fullscreenBtn" aria-label="מסך מלא" title="מסך מלא">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+          <iframe id="gamePlayer" title="JumpiGames Player" allowfullscreen></iframe>
+        </div>
+      </section>
+
+      <div class="sidebar-placeholder"></div>
+    </main>
+
+    <script src="/game-progress.js"></script>
+    <script>
+      (function(){
+        const API_URL = 'http://localhost:3000';
+        
+        // Check if user is registered before allowing access
+        (async function checkRegistration() {
+          try {
+            const response = await fetch(`${API_URL}/api/user`, {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const user = await response.json();
+              if (user && (!user.registered || !user.username)) {
+                // User is logged in but not registered - redirect to registration
+                window.location.href = '/login.html';
+                return;
+              }
+            }
+          } catch (error) {
+            console.error('Error checking registration:', error);
+          }
+        })();
+        
+        const player = document.getElementById('gamePlayer');
+        const titleEl = document.getElementById('gameTitle');
+        const playerContainer = document.getElementById('playerContainer');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const icon = fullscreenBtn.querySelector('i');
+        const categoryTitleEl = document.getElementById('categoryTitle');
+        
+        // Store current game category
+        let currentGameCategory = '';
+        
+        // Get slug from URL path (e.g., /game/Foxy-Eco-Sort -> Foxy-Eco-Sort)
+        let gameSlug = '';
+        const pathMatch = window.location.pathname.match(/^\/game\/(.+)$/);
+        if (pathMatch) {
+          gameSlug = decodeURIComponent(pathMatch[1]);
+        }
+        
+        // Also check URL params for backward compatibility
+        const params = new URLSearchParams(location.search);
+        const src = params.get('src');
+        const title = params.get('title') || 'משחק';
+        const slugFromParams = params.get('slug') || '';
+        
+        // Store current game slug for use in other functions
+        const currentGameSlug = gameSlug || slugFromParams;
+        
+        // Load game from API if we have a slug
+        async function loadGame() {
+          // Use currentGameSlug which combines both path and params
+          const slugToUse = currentGameSlug || gameSlug || slugFromParams;
+          
+          if (slugToUse) {
+            try {
+              console.log('Loading game with slug:', slugToUse);
+              // First try to get game by slug from API
+              const response = await fetch(`${API_URL}/api/games/${encodeURIComponent(slugToUse)}`);
+              if (response.ok) {
+                const game = await response.json();
+                if (game && game.url) {
+                  titleEl.textContent = game.title;
+                  // Update category title
+                  currentGameCategory = game.category || '';
+                  if (categoryTitleEl && currentGameCategory) {
+                    categoryTitleEl.textContent = currentGameCategory + ' Games';
+                  }
+                  // Update breadcrumb
+                  const gameBreadcrumb = document.getElementById('gameBreadcrumb');
+                  if (gameBreadcrumb) {
+                    gameBreadcrumb.textContent = game.title;
+                  }
+                  // Use url if available, otherwise fallback to embedUrl for backward compatibility
+                  const gameUrl = game.url || game.embedUrl;
+                  loadGameIframe(gameUrl, game.gameSlug || game.id);
+                  return;
+                }
+              } else if (response.status === 404) {
+                console.log('Game not found by slug, trying direct fetch...');
+                // Try to fetch directly from GameMonetize and search
+                try {
+                  const directResponse = await fetch('https://gamemonetize.com/feed.php?format=0&page=1');
+                  if (directResponse.ok) {
+                    const games = await directResponse.json();
+                    const game = games.find(g => {
+                      const gameSlug = (g.id || g.game_id || g.ID || '').toString();
+                      return gameSlug === slugToUse || 
+                             (g.title && createSlugFromTitle(g.title) === slugToUse) ||
+                             (g.id && g.id.toString() === slugToUse);
+                    });
+                    if (game && game.url) {
+                      titleEl.textContent = game.title || title;
+                      // Update category title
+                      currentGameCategory = game.category || game.Category || '';
+                      if (categoryTitleEl && currentGameCategory) {
+                        categoryTitleEl.textContent = currentGameCategory + ' Games';
+                      }
+                      const gameBreadcrumb = document.getElementById('gameBreadcrumb');
+                      if (gameBreadcrumb) {
+                        gameBreadcrumb.textContent = game.title || title;
+                      }
+                      loadGameIframe(game.url || game.game_url, game.id || slugToUse);
+                      return;
+                    }
+                  }
+                } catch (directError) {
+                  console.error('Direct fetch failed:', directError);
+                }
+              }
+            } catch (error) {
+              console.error('Error loading game:', error);
+            }
+          }
+          
+          // Fallback to URL params (backward compatibility)
+          if (src) {
+            titleEl.textContent = title;
+            const gameBreadcrumb = document.getElementById('gameBreadcrumb');
+            if (gameBreadcrumb) {
+              gameBreadcrumb.textContent = title;
+            }
+            const slug = slugToUse || slugFromParams;
+            loadGameIframe(src, slug);
+          } else {
+            titleEl.textContent = 'משחק לא נמצא';
+            const gameBreadcrumb = document.getElementById('gameBreadcrumb');
+            if (gameBreadcrumb) {
+              gameBreadcrumb.textContent = 'משחק לא נמצא';
+            }
+          }
+        }
+        
+        // Helper function to create slug from title (similar to server.js)
+        function createSlugFromTitle(title) {
+          if (!title) return '';
+          return title.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+        
+        function loadGameIframe(embedUrl, slug) {
+          if (embedUrl) {
+            const url = new URL(embedUrl);
+            url.searchParams.set('gd_sdk_referrer_url', location.href);
+            if (slug) {
+              url.searchParams.set('slug', slug);
+              url.searchParams.set('gameSlug', slug);
+            }
+            player.src = url.toString();
+            
+            // Initialize progress manager after iframe loads
+            if (slug) {
+              const initProgress = () => {
+                if (window.JumpiProgress && window.JumpiProgress.init) {
+                  window.JumpiProgress.init(slug, player);
+                } else {
+                  // Retry if script hasn't loaded yet
+                  setTimeout(initProgress, 100);
+                }
+              };
+              initProgress();
+            }
+          }
+        }
+        
+        // Load game when page is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', loadGame);
+        } else {
+          loadGame();
+        }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+          if (!document.fullscreenElement) {
+            playerContainer.requestFullscreen().catch(err => {
+              console.log('Fullscreen error:', err);
+            });
+          } else {
+            document.exitFullscreen();
+          }
+        }
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        // Update icon based on fullscreen state
+        document.addEventListener('fullscreenchange', () => {
+          if (document.fullscreenElement) {
+            playerContainer.classList.add('fullscreen');
+            icon.className = 'fa-solid fa-compress';
+            fullscreenBtn.setAttribute('title', 'צא ממסך מלא');
+          } else {
+            playerContainer.classList.remove('fullscreen');
+            icon.className = 'fa-solid fa-expand';
+            fullscreenBtn.setAttribute('title', 'מסך מלא');
+          }
+        });
+
+        // Exit fullscreen with Escape key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && document.fullscreenElement) {
+            document.exitFullscreen();
+          }
+        });
+
+        // Get promo image from current game if available
+        const currentImg = params.get('img');
+        
+        // Load recommended games from GameMonetize API
+        async function loadRecommendedGames() {
+          try {
+            const list = document.getElementById('recList');
+            if (!list) return;
+            
+            // Try to fetch directly from GameMonetize first
+            let games = [];
+            try {
+              const directResponse = await fetch('https://gamemonetize.com/feed.php?format=0&page=1');
+              if (directResponse.ok) {
+                const rawGames = await directResponse.json();
+                // Format games like we do in script.js
+                games = rawGames.map(game => {
+                  if (!game || typeof game !== 'object') return null;
+                  return {
+                    id: game.id || game.game_id || game.ID || '',
+                    title: game.title || game.Title || '',
+                    url: game.url || game.game_url || game.URL || game.link || '',
+                    gameSlug: (game.id || game.game_id || game.ID || '').toString(),
+                    thumb: game.thumb || game.thumbnail || game.Thumb || game.image || ''
+                  };
+                }).filter(game => game !== null);
+              }
+            } catch (directError) {
+              console.log('Direct fetch for recommended games failed, trying server:', directError.message);
+              // Fallback to server if direct fetch fails
+              const response = await fetch(`${API_URL}/api/games?page=1`, {
+                credentials: 'include'
+              });
+              if (response.ok) {
+                games = await response.json();
+              }
+            }
+            
+            if (games && games.length > 0) {
+              list.innerHTML = '';
+              
+              // Exclude current game and show up to 6 games
+              const recommendedGames = games
+                .filter(g => {
+                  const gameSlug = g.gameSlug || g.id || '';
+                  return gameSlug && gameSlug !== currentGameSlug && gameSlug !== currentGameSlug.toString();
+                })
+                .slice(0, 6);
+              
+              if (recommendedGames.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">אין משחקים מומלצים זמינים</div>';
+                return;
+              }
+              
+              recommendedGames.forEach(game => {
+                const a = document.createElement('a');
+                a.className = 'rec-item';
+                const gameSlug = game.gameSlug || game.id || '';
+                
+                // Use clean URL with slug if available
+                if (gameSlug) {
+                  a.href = `/game/${encodeURIComponent(gameSlug)}`;
+                } else {
+                  // Fallback to old URL format
+                  const u = new URL('game.html', location.href);
+                  const gameUrl = game.url || game.embedUrl;
+                  u.searchParams.set('src', gameUrl);
+                  u.searchParams.set('title', game.title);
+                  a.href = u.toString();
+                }
+                
+                // Use thumbnail from GameMonetize, or fallback to local image or placeholder
+                const thumbnail = game.thumb || game.thumbnail || '';
+                let imgSrc = thumbnail;
+                
+                if (!imgSrc && game.gameSlug) {
+                  imgSrc = `/Games/${game.gameSlug}/image1.jpg`;
+                }
+                
+                if (!imgSrc) {
+                  imgSrc = 'https://via.placeholder.com/200x150?text=' + encodeURIComponent(game.title);
+                }
+                
+                const placeholderUrl = 'https://via.placeholder.com/200x150?text=' + encodeURIComponent(game.title);
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = game.title;
+                img.onerror = function() {
+                  this.src = placeholderUrl;
+                };
+                
+                const span = document.createElement('span');
+                span.textContent = game.title;
+                
+                a.appendChild(img);
+                a.appendChild(span);
+                list.appendChild(a);
+              });
+            } else {
+              list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">אין משחקים מומלצים זמינים</div>';
+            }
+          } catch (error) {
+            console.error('Error loading recommended games:', error);
+            const list = document.getElementById('recList');
+            if (list) {
+              list.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">שגיאה בטעינת משחקים מומלצים</div>';
+            }
+          }
+        }
+        
+        // Load recommended games when page is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', loadRecommendedGames);
+        } else {
+          loadRecommendedGames();
+        }
+      })();
+    </script>
+  </body>
+</html>
+
+

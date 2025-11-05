@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - פאנל ניהול</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body { background: var(--bg); color: var(--text); font-family: 'Heebo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .admin-container { padding: 20px; max-width: 1400px; margin: 0 auto; }
+      .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+      .admin-header h1 { font-size: 32px; font-weight: 900; margin: 0; }
+      .admin-tabs { display: flex; gap: 12px; margin-bottom: 24px; border-bottom: 2px solid var(--chip); }
+      .admin-tab { padding: 12px 24px; background: transparent; border: 0; color: var(--muted); cursor: pointer; font-weight: 700; font-size: 16px; border-bottom: 3px solid transparent; transition: all .2s; }
+      .admin-tab.active { color: var(--text); border-bottom-color: var(--brand-blue-1); }
+      .admin-tab:hover { color: var(--text); }
+      .admin-content { display: none; }
+      .admin-content.active { display: block; }
+      .table-container { background: var(--panel-2); border-radius: 16px; padding: 20px; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 12px; text-align: right; border-bottom: 1px solid var(--chip); }
+      th { font-weight: 800; background: var(--panel); }
+      .btn-small { padding: 6px 12px; border-radius: 8px; border: 0; cursor: pointer; font-weight: 700; font-size: 13px; margin: 0 4px; }
+      .btn-edit { background: var(--brand-blue-1); color: #fff; }
+      .btn-delete { background: var(--danger); color: #fff; }
+      .btn-add { background: var(--success); color: #fff; padding: 10px 20px; border-radius: 12px; border: 0; cursor: pointer; font-weight: 800; margin-bottom: 20px; }
+      .form-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 1000; align-items: center; justify-content: center; }
+      .form-modal.show { display: flex; }
+      .form-box { background: var(--panel-2); border-radius: 20px; padding: 32px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; }
+      .form-box h2 { margin: 0 0 20px; }
+      .form-group { margin-bottom: 18px; }
+      .form-group label { display: block; margin-bottom: 6px; font-weight: 700; }
+      .form-group input, .form-group textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--chip); background: var(--panel); color: var(--text); font-size: 15px; font-family: inherit; }
+      .form-group textarea { min-height: 80px; resize: vertical; }
+      .form-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+      .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+      .badge-admin { background: var(--brand-blue-1); color: #fff; }
+      .badge-user { background: var(--chip); color: var(--text); }
+      .badge-active { background: var(--success); color: #fff; }
+      .badge-inactive { background: var(--chip); color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="images/logo.png" alt="JumpiGames" />
+      </div>
+      <div style="grid-column: span 5"></div>
+      <a class="btn pill-blue" href="index.html">חזרה</a>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">ניהול</span>
+    </nav>
+
+    <main class="admin-container">
+      <div class="admin-header">
+        <h1>פאנל ניהול</h1>
+        <div id="userInfo" style="display: none;">
+          <span id="userName"></span>
+        </div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('games')">ניהול משחקים</button>
+        <button class="admin-tab" onclick="switchTab('users')">ניהול משתמשים</button>
+      </div>
+
+      <!-- Games Tab -->
+      <div id="gamesTab" class="admin-content active">
+        <button class="btn-add" onclick="showAddGameForm()">
+          <i class="fa-solid fa-plus"></i> הוסף משחק חדש
+        </button>
+        <div class="table-container">
+          <table id="gamesTable">
+            <thead>
+              <tr>
+                <th>כותרת</th>
+                <th>Embed URL</th>
+                <th>פעיל</th>
+                <th>מומלץ</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="gamesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="usersTab" class="admin-content">
+        <div class="table-container">
+          <table id="usersTable">
+            <thead>
+              <tr>
+                <th>שם</th>
+                <th>אימייל</th>
+                <th>תפקיד</th>
+                <th>תאריך הרשמה</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- Add/Edit Game Modal -->
+    <div class="form-modal" id="gameModal">
+      <div class="form-box">
+        <h2 id="modalTitle">הוסף משחק חדש</h2>
+        <form id="gameForm">
+          <input type="hidden" id="gameId" />
+          <div class="form-group">
+            <label for="gameTitle">כותרת *</label>
+            <input type="text" id="gameTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="gameIdField">GameMonetize ID</label>
+            <input type="text" id="gameIdField" placeholder="לדוגמה: 72507" />
+            <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 4px;">
+              ID מהמערכת GameMonetize (אופציונלי)
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="gameUrl">URL *</label>
+            <textarea id="gameUrl" required placeholder="הדבק את ה-iframe tag המלא או רק את ה-URL...&#10;לדוגמה: &lt;iframe src=&quot;https://html5.gamemonetize.com/...&quot; ...&gt;&lt;/iframe&gt;" style="min-height: 60px;"></textarea>
+            <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 4px;">
+              ניתן להדביק את כל ה-iframe tag או רק את ה-URL
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="gameEmbedUrl">Embed URL (Legacy)</label>
+            <textarea id="gameEmbedUrl" placeholder="לשם תאימות לאחור - יועתק מ-URL אוטומטית" style="min-height: 60px;"></textarea>
+            <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 4px;">
+              שדה לשם תאימות לאחור - יועתק אוטומטית מ-URL
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="gameSlug">שם תיקייה (Game Slug)</label>
+            <input type="text" id="gameSlug" placeholder="לדוגמה: Elytra_Flight" />
+            <small style="color: var(--muted); font-size: 12px; display: block; margin-top: 4px;">
+              שם התיקייה בתיקיית Games (למשל: Games/Elytra_Flight/)
+              <br>המערכת תחפש: image1.jpg עד image5.jpg ו-video.mp4 בתיקייה זו
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="gameDescription">תיאור</label>
+            <textarea id="gameDescription" placeholder="תיאור המשחק"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="gameInstructions">הוראות</label>
+            <textarea id="gameInstructions" placeholder="הוראות המשחק"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="gameCategory">קטגוריה</label>
+            <input type="text" id="gameCategory" placeholder="קטגוריה" />
+          </div>
+          <div class="form-group">
+            <label for="gameTags">תגיות (מופרדות בפסיקים)</label>
+            <input type="text" id="gameTags" placeholder="לדוגמה: Action, Adventure, Battle" />
+          </div>
+          <div class="form-group">
+            <label for="gameThumb">תמונת תצוגה (Thumbnail URL)</label>
+            <input type="text" id="gameThumb" placeholder="https://img.gamemonetize.com/.../512x384.jpg" />
+          </div>
+          <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label for="gameWidth">רוחב</label>
+              <input type="text" id="gameWidth" placeholder="800" />
+            </div>
+            <div>
+              <label for="gameHeight">גובה</label>
+              <input type="text" id="gameHeight" placeholder="600" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="gameFeatured" /> האם המשחק הוא להיט?
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="gameOrder">סדר תצוגה</label>
+            <input type="number" id="gameOrder" value="0" />
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-small" onclick="closeGameModal()">ביטול</button>
+            <button type="submit" class="btn-small btn-edit">שמור</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = 'http://localhost:3000';
+
+      // Check admin access
+      async function checkAdmin() {
+        try {
+          const response = await fetch(`${API_URL}/api/user`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const user = await response.json();
+            if (!user || user.role !== 'admin') {
+              alert('אין לך הרשאות גישה לפאנל ניהול');
+              window.location.href = 'index.html';
+              return false;
+            }
+            if (document.getElementById('userName')) {
+              document.getElementById('userName').textContent = user.name || user.email;
+            }
+            return true;
+          } else {
+            window.location.href = 'login.html';
+            return false;
+          }
+        } catch (error) {
+          console.error('Error checking admin:', error);
+          window.location.href = 'login.html';
+          return false;
+        }
+      }
+
+      // Switch tabs
+      function switchTab(tab) {
+        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        document.getElementById(tab + 'Tab').classList.add('active');
+        
+        if (tab === 'games') {
+          loadGames();
+        } else if (tab === 'users') {
+          loadUsers();
+        }
+      }
+
+      // Load games
+      async function loadGames() {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/games`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const games = await response.json();
+            const tbody = document.getElementById('gamesBody');
+            tbody.innerHTML = '';
+            
+            games.forEach(game => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${game.title}</td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${game.url || game.embedUrl || ''}</td>
+                <td><span class="badge ${game.active ? 'badge-active' : 'badge-inactive'}">${game.active ? 'פעיל' : 'לא פעיל'}</span></td>
+                <td><span class="badge ${game.featured ? 'badge-admin' : 'badge-user'}">${game.featured ? 'כן' : 'לא'}</span></td>
+                <td>
+                  <button class="btn-small btn-edit" onclick="editGame('${game._id}')">ערוך</button>
+                  <button class="btn-small btn-delete" onclick="deleteGame('${game._id}')">מחק</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        } catch (error) {
+          console.error('Error loading games:', error);
+        }
+      }
+
+      // Load users
+      async function loadUsers() {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/users`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const users = await response.json();
+            const tbody = document.getElementById('usersBody');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+              const tr = document.createElement('tr');
+              const date = new Date(user.createdAt).toLocaleDateString('he-IL');
+              tr.innerHTML = `
+                <td>${user.name || user.username || 'ללא שם'}</td>
+                <td>${user.email}</td>
+                <td>
+                  <select class="btn-small" onchange="changeUserRole('${user._id}', this.value)">
+                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>משתמש</option>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>מנהל</option>
+                  </select>
+                </td>
+                <td>${date}</td>
+                <td>
+                  <button class="btn-small btn-delete" onclick="deleteUser('${user._id}')">מחק</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        } catch (error) {
+          console.error('Error loading users:', error);
+        }
+      }
+
+      // Show add game form
+      function showAddGameForm() {
+        document.getElementById('gameId').value = '';
+        document.getElementById('gameForm').reset();
+        document.getElementById('modalTitle').textContent = 'הוסף משחק חדש';
+        document.getElementById('gameModal').classList.add('show');
+      }
+
+      // Edit game
+      async function editGame(id) {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/games`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const games = await response.json();
+            const game = games.find(g => g._id === id);
+            
+            if (game) {
+              document.getElementById('gameId').value = game._id;
+              document.getElementById('gameIdField').value = game.id || '';
+              document.getElementById('gameTitle').value = game.title;
+              // Use url if available, otherwise fallback to embedUrl for backward compatibility
+              const gameUrl = game.url || game.embedUrl || '';
+              document.getElementById('gameUrl').value = gameUrl;
+              document.getElementById('gameEmbedUrl').value = game.embedUrl || gameUrl;
+              document.getElementById('gameSlug').value = game.gameSlug || '';
+              document.getElementById('gameDescription').value = game.description || '';
+              document.getElementById('gameInstructions').value = game.instructions || '';
+              document.getElementById('gameCategory').value = game.category || '';
+              document.getElementById('gameTags').value = game.tags || '';
+              document.getElementById('gameThumb').value = game.thumb || '';
+              document.getElementById('gameWidth').value = game.width || '800';
+              document.getElementById('gameHeight').value = game.height || '600';
+              document.getElementById('gameFeatured').checked = game.featured;
+              document.getElementById('gameOrder').value = game.order || 0;
+              
+              document.getElementById('modalTitle').textContent = 'ערוך משחק';
+              document.getElementById('gameModal').classList.add('show');
+            }
+          }
+        } catch (error) {
+          console.error('Error loading game:', error);
+        }
+      }
+
+      // Close modal
+      function closeGameModal() {
+        document.getElementById('gameModal').classList.remove('show');
+        // Reset form
+        document.getElementById('gameForm').reset();
+      }
+
+      // Extract URL from iframe tag
+      function extractEmbedUrl(input) {
+        if (!input || !input.value) return '';
+        const value = input.value.trim();
+        
+        // Check if it's an iframe tag
+        const iframeMatch = value.match(/<iframe[^>]+src=["']([^"']+)["'][^>]*>/i);
+        if (iframeMatch) {
+          return iframeMatch[1];
+        }
+        
+        // If it's just a URL, return as is
+        return value;
+      }
+
+      // Sync URL to embedUrl field for backward compatibility
+      function syncUrlToEmbedUrl() {
+        const urlInput = document.getElementById('gameUrl');
+        const embedUrlInput = document.getElementById('gameEmbedUrl');
+        if (urlInput && embedUrlInput) {
+          const url = extractEmbedUrl(urlInput);
+          if (url) {
+            embedUrlInput.value = url;
+          }
+        }
+      }
+
+      // Add event listener to extract URL from iframe on paste or input
+      const urlInput = document.getElementById('gameUrl');
+      const embedUrlInput = document.getElementById('gameEmbedUrl');
+      
+      if (urlInput) {
+        urlInput.addEventListener('paste', function(e) {
+          setTimeout(() => {
+            const url = extractEmbedUrl(this);
+            if (url !== this.value.trim()) {
+              this.value = url;
+            }
+            syncUrlToEmbedUrl();
+          }, 10);
+        });
+
+        urlInput.addEventListener('input', function() {
+          const url = extractEmbedUrl(this);
+          if (url !== this.value.trim() && this.value.includes('<iframe')) {
+            this.value = url;
+          }
+          syncUrlToEmbedUrl();
+        });
+      }
+
+      if (embedUrlInput) {
+        embedUrlInput.addEventListener('paste', function(e) {
+          setTimeout(() => {
+            const url = extractEmbedUrl(this);
+            if (url !== this.value.trim()) {
+              this.value = url;
+            }
+          }, 10);
+        });
+
+        embedUrlInput.addEventListener('input', function() {
+          const url = extractEmbedUrl(this);
+          if (url !== this.value.trim() && this.value.includes('<iframe')) {
+            this.value = url;
+          }
+        });
+      }
+
+      // Save game
+      document.getElementById('gameForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('gameId').value;
+        const gameIdField = document.getElementById('gameIdField').value;
+        const urlInput = document.getElementById('gameUrl');
+        const embedUrlInput = document.getElementById('gameEmbedUrl');
+        const url = extractEmbedUrl(urlInput);
+        const embedUrl = extractEmbedUrl(embedUrlInput) || url;
+        
+        const data = {
+          id: gameIdField,
+          title: document.getElementById('gameTitle').value,
+          url: url,
+          embedUrl: embedUrl, // Keep for backward compatibility
+          gameSlug: document.getElementById('gameSlug').value,
+          description: document.getElementById('gameDescription').value,
+          instructions: document.getElementById('gameInstructions').value,
+          category: document.getElementById('gameCategory').value,
+          tags: document.getElementById('gameTags').value,
+          thumb: document.getElementById('gameThumb').value,
+          width: document.getElementById('gameWidth').value || '800',
+          height: document.getElementById('gameHeight').value || '600',
+          featured: document.getElementById('gameFeatured').checked,
+          order: parseInt(document.getElementById('gameOrder').value) || 0
+        };
+
+        try {
+          const url = id ? `${API_URL}/api/admin/games/${id}` : `${API_URL}/api/admin/games`;
+          const method = id ? 'PUT' : 'POST';
+          
+          const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+          });
+
+          if (response.ok) {
+            closeGameModal();
+            loadGames();
+            alert('המשחק נשמר בהצלחה');
+          } else {
+            alert('שגיאה בשמירת המשחק');
+          }
+        } catch (error) {
+          console.error('Error saving game:', error);
+          alert('שגיאה בשמירת המשחק');
+        }
+      });
+
+      // Delete game
+      async function deleteGame(id) {
+        if (!confirm('האם אתה בטוח שברצונך למחוק את המשחק?')) return;
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/games/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            loadGames();
+            alert('המשחק נמחק בהצלחה');
+          } else {
+            alert('שגיאה במחיקת המשחק');
+          }
+        } catch (error) {
+          console.error('Error deleting game:', error);
+          alert('שגיאה במחיקת המשחק');
+        }
+      }
+
+      // Change user role
+      async function changeUserRole(userId, role) {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ role })
+          });
+
+          if (response.ok) {
+            alert('תפקיד המשתמש עודכן בהצלחה');
+          } else {
+            alert('שגיאה בעדכון תפקיד המשתמש');
+            loadUsers();
+          }
+        } catch (error) {
+          console.error('Error changing role:', error);
+          alert('שגיאה בעדכון תפקיד המשתמש');
+          loadUsers();
+        }
+      }
+
+      // Delete user
+      async function deleteUser(id) {
+        if (!confirm('האם אתה בטוח שברצונך למחוק את המשתמש?')) return;
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/users/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            loadUsers();
+            alert('המשתמש נמחק בהצלחה');
+          } else {
+            alert('שגיאה במחיקת המשתמש');
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          alert('שגיאה במחיקת המשתמש');
+        }
+      }
+
+      // Initialize
+      window.onload = async function () {
+        const isAdmin = await checkAdmin();
+        if (isAdmin) {
+          loadGames();
+        }
+      };
+    </script>
+  </body>
+</html>
+

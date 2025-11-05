@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - Kids Games</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="chat.css" />
+  </head>
+  <body>
+    <aside class="sidebar" id="categoriesSidebar">
+      <button class="side-btn" data-category="all" title="הכל">
+        <i class="fa-solid fa-th"></i>
+        <span class="side-btn-label">הכל</span>
+      </button>
+      <!-- Categories will be loaded dynamically -->
+    </aside>
+
+    <header class="topbar">
+      <div class="brand">
+        <img src="images/logo.png" alt="JumpiGames" />
+      </div>
+
+      <div class="bonus">
+        <div class="coin"><i class="fa-regular fa-gem"></i></div>
+        <div class="bonus-text">
+          <div class="bonus-amount">3000</div>
+          <div class="bonus-sub">Daily bonus</div>
+        </div>
+      </div>
+
+      <button class="btn icon-only pill-green" data-tip="קבל" aria-label="קבל"><i class="fa-solid fa-gift"></i></button>
+
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input placeholder="חיפוש" />
+      </div>
+      <button class="btn icon-only pill-blue" id="loginBtn" data-tip="התחברות" aria-label="התחברות" onclick="window.location.href='login.html'">
+        <i class="fa-regular fa-user"></i>
+      </button>
+      <div class="user-menu" id="userMenu" style="display: none;">
+        <button class="btn pill-blue" id="userBtn" onclick="toggleUserMenu()">
+          <i class="fa-regular fa-user"></i>
+          <span id="userName"></span>
+        </button>
+        <div class="user-dropdown" id="userDropdown" style="display: none;">
+          <a href="#" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'; return false;">פאנל ניהול</a>
+          <a href="#" onclick="handleLogout(); return false;">התנתק</a>
+        </div>
+      </div>
+
+    <!-- floating tooltip -->
+    <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+    </nav>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-action-bar">
+      <nav class="chips">
+        <button class="chip icon-only pill-orange no-ads" data-tip="ללא פרסומות" aria-label="ללא פרסומות">
+          <i class="fa-solid fa-ban"></i>
+        </button>
+      <button class="chip icon-only pill-purple" id="chatBtn" data-tip="צ'אט" aria-label="צ'אט" onclick="toggleChat()" style="display: none;">
+        <i class="fa-solid fa-comments"></i>
+      </button>
+      <button class="chip icon-only pill-red" id="favoritesBtn" data-tip="מועדפים" aria-label="מועדפים" onclick="showFavorites()">
+        <i class="fa-solid fa-heart"></i>
+      </button>
+        <a href="#" class="chip icon-only pill-orange" data-tip="מפרסמים" aria-label="מפרסמים"><i class="fa-solid fa-bullhorn"></i></a>
+        <a href="#" class="chip icon-only pill-pink" data-tip="מפתחים" aria-label="מפתחים"><i class="fa-solid fa-code"></i></a>
+        <a href="#" class="chip icon-only pill-cyan" data-tip="שותפים" aria-label="שותפים"><i class="fa-solid fa-handshake"></i></a>
+        <a href="#" class="chip icon-only pill-yellow" data-tip="בלוג" aria-label="בלוג"><i class="fa-solid fa-blog"></i></a>
+        <a href="#" class="chip icon-only pill-green" data-tip="יצירת קשר" aria-label="יצירת קשר"><i class="fa-regular fa-envelope"></i></a>
+      </nav>
+    </div>
+
+    <main class="content">
+      <h1 class="title">Kids Games</h1>
+
+      <section class="grid" id="gamesGrid">
+        <!-- Games loaded from database -->
+      </section>
+      
+      
+    </main>
+
+    <!-- Chat Sidebar -->
+    <div id="chatSidebar" class="chat-sidebar" style="display: none;">
+      <div class="chat-header">
+        <h3>צ'אט</h3>
+        <button class="chat-close-btn" onclick="toggleChat()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-content">
+        <div class="chat-rooms">
+          <div class="chat-rooms-header">
+            <h4>חדרים</h4>
+            <button class="chat-add-room-btn" onclick="showCreateRoomModal()">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="chatRoomsList" class="chat-rooms-list">
+            <!-- Rooms will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="chat-main">
+          <div id="chatMessages" class="chat-messages">
+            <div class="chat-welcome">
+              <i class="fa-solid fa-comments"></i>
+              <p>בחר חדר כדי להתחיל להתכתב</p>
+            </div>
+          </div>
+          
+          <div class="chat-typing-indicator" id="chatTypingIndicator" style="display: none;">
+            <span id="typingText"></span>
+          </div>
+          <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <input type="text" id="chatInput" class="chat-input" placeholder="הקלד הודעה..." />
+            <button id="chatSendBtn" class="chat-send-btn" onclick="sendChatMessage()">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Room Modal -->
+    <div id="createRoomModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>צור חדר חדש</h3>
+          <button class="modal-close" onclick="closeCreateRoomModal()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <form id="createRoomForm" onsubmit="createRoom(event)">
+          <div class="form-group">
+            <label>שם החדר</label>
+            <input type="text" id="roomName" required />
+          </div>
+          <div class="form-group">
+            <label>תיאור (אופציונלי)</label>
+            <input type="text" id="roomDescription" />
+          </div>
+          <button type="submit" class="btn-submit">צור חדר</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script src="chat.js"></script>
+    <script src="chat-admin-functions.js"></script>
+  </body>
+</html>
+
