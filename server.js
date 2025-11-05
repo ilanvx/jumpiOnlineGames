@@ -216,6 +216,11 @@ const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL || `${BASE_URL}/auth/google
 // Determine if we should use secure cookies
 const useSecureCookies = process.env.NODE_ENV === 'production' || isProduction || process.env.RAILWAY_ENVIRONMENT === 'production';
 
+// Trust proxy - required for Railway to detect HTTPS correctly
+if (isProduction || process.env.RAILWAY_ENVIRONMENT) {
+  app.set('trust proxy', 1);
+}
+
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
@@ -365,7 +370,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         if (!req.user) {
           console.error('No user found in OAuth callback');
           const host = req.get('host') || '';
-          const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+          // Check x-forwarded-proto first (Railway proxy), then req.protocol
+          const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
           const isProductionRequest = host.includes('jumpigames.com') || 
                                        host.includes('.railway.app') || 
                                        isProduction;
@@ -384,7 +390,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             }
             
             const host = req.get('host') || '';
-            const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+            // Check x-forwarded-proto first (Railway proxy), then req.protocol
+            const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
             const isProductionRequest = host.includes('jumpigames.com') || 
                                          host.includes('.railway.app') || 
                                          isProduction;
@@ -406,7 +413,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
           }
           
           const host = req.get('host') || '';
-          const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+          // Check x-forwarded-proto first (Railway proxy), then req.protocol
+          const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
           const isProductionRequest = host.includes('jumpigames.com') || 
                                        host.includes('.railway.app') || 
                                        isProduction;
@@ -419,7 +427,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       } catch (error) {
         console.error('Error in OAuth callback:', error);
         const host = req.get('host') || '';
-        const protocol = req.protocol || (req.get('x-forwarded-proto') || 'http');
+        // Check x-forwarded-proto first (Railway proxy), then req.protocol
+        const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
         const isProductionRequest = host.includes('jumpigames.com') || 
                                      host.includes('.railway.app') || 
                                      isProduction;
