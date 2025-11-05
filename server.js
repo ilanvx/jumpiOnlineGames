@@ -359,11 +359,77 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 } else {
   // Fallback routes if Google OAuth is not configured
   app.get('/auth/google', (req, res) => {
-    res.status(503).send('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+    const errorMessage = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Google OAuth לא מוגדר</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #1a1a2e; color: #fff; }
+          .error-box { background: rgba(255,77,79,.1); border: 2px solid #ff4d4f; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; }
+          h1 { color: #ff4d4f; margin-bottom: 20px; }
+          code { background: rgba(0,0,0,.3); padding: 8px; border-radius: 6px; display: block; margin: 10px 0; }
+          ol { text-align: right; margin: 20px 0; }
+          li { margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="error-box">
+          <h1>⚠️ Google OAuth לא מוגדר</h1>
+          <p>יש להוסיף משתני סביבה ב-Railway:</p>
+          <ol>
+            <li>פתח את הפרויקט ב-Railway</li>
+            <li>לך ל-Variables (או Settings > Variables)</li>
+            <li>הוסף את המשתנים הבאים:</li>
+          </ol>
+          <code>GOOGLE_CLIENT_ID = [הכנס את ה-Client ID שלך מ-Google Cloud Console]</code>
+          <code>GOOGLE_CLIENT_SECRET = [הכנס את ה-Client Secret שלך מ-Google Cloud Console]</code>
+          <code>GOOGLE_CALLBACK_URL = https://jumpigames.com/auth/google/callback</code>
+          <p style="margin-top: 20px;">אחרי הוספת המשתנים, השרת יתחיל מחדש אוטומטית.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    res.status(503).send(errorMessage);
   });
 
   app.get('/auth/google/callback', (req, res) => {
-    res.status(503).send('Google OAuth is not configured. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.');
+    const errorMessage = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="he">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Google OAuth לא מוגדר</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; text-align: center; background: #1a1a2e; color: #fff; }
+          .error-box { background: rgba(255,77,79,.1); border: 2px solid #ff4d4f; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; }
+          h1 { color: #ff4d4f; margin-bottom: 20px; }
+          code { background: rgba(0,0,0,.3); padding: 8px; border-radius: 6px; display: block; margin: 10px 0; }
+          ol { text-align: right; margin: 20px 0; }
+          li { margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="error-box">
+          <h1>⚠️ Google OAuth לא מוגדר</h1>
+          <p>יש להוסיף משתני סביבה ב-Railway:</p>
+          <ol>
+            <li>פתח את הפרויקט ב-Railway</li>
+            <li>לך ל-Variables (או Settings > Variables)</li>
+            <li>הוסף את המשתנים הבאים:</li>
+          </ol>
+          <code>GOOGLE_CLIENT_ID = [הכנס את ה-Client ID שלך מ-Google Cloud Console]</code>
+          <code>GOOGLE_CLIENT_SECRET = [הכנס את ה-Client Secret שלך מ-Google Cloud Console]</code>
+          <code>GOOGLE_CALLBACK_URL = https://jumpigames.com/auth/google/callback</code>
+          <p style="margin-top: 20px;">אחרי הוספת המשתנים, השרת יתחיל מחדש אוטומטית.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    res.status(503).send(errorMessage);
   });
 }
 
