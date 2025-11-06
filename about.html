@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - על החברה</title>
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="chat.css" />
+    <style>
+      body { background: var(--bg); color: var(--text); font-family: 'Heebo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .about-container { min-height: calc(100vh - 200px); padding: 40px 20px; max-width: 1000px; margin: 0 auto; }
+      .about-header { text-align: center; margin-bottom: 50px; }
+      .about-header h1 { font-size: 48px; font-weight: 900; margin: 0 0 12px; background: linear-gradient(180deg, var(--brand-blue-1), var(--brand-blue-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .about-header p { color: var(--muted); font-size: 20px; line-height: 1.8; max-width: 800px; margin: 0 auto; }
+      .about-section { margin-bottom: 50px; }
+      .about-section h2 { font-size: 32px; font-weight: 900; margin: 0 0 24px; color: var(--brand-blue-1); display: flex; align-items: center; gap: 12px; }
+      .about-section h2 i { font-size: 28px; }
+      .about-section p { color: var(--text); line-height: 1.9; font-size: 18px; margin-bottom: 20px; }
+      .about-section ul { list-style: none; padding: 0; margin: 20px 0; }
+      .about-section ul li { padding: 12px 0; padding-right: 30px; color: var(--text); line-height: 1.8; font-size: 17px; position: relative; }
+      .about-section ul li:before { content: "•"; color: var(--brand-blue-1); font-size: 24px; position: absolute; right: 0; }
+      .project-card { background: var(--panel-2); border-radius: 20px; padding: 30px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,.4); border: 2px solid transparent; transition: all 0.3s ease; }
+      .project-card:hover { border-color: var(--brand-blue-1); transform: translateY(-5px); }
+      .project-card h3 { font-size: 26px; font-weight: 800; margin: 0 0 16px; color: var(--brand-blue-1); display: flex; align-items: center; gap: 12px; }
+      .project-card h3 i { font-size: 24px; }
+      .project-card .project-link { display: inline-flex; align-items: center; gap: 8px; color: var(--brand-blue-1); text-decoration: none; font-weight: 600; margin-top: 16px; font-size: 18px; transition: all 0.3s ease; }
+      .project-card .project-link:hover { gap: 12px; color: var(--brand-blue-2); }
+      .vision-box { background: linear-gradient(135deg, rgba(45, 108, 255, 0.1), rgba(27, 73, 255, 0.1)); border: 2px solid var(--brand-blue-1); border-radius: 20px; padding: 40px; margin-top: 40px; text-align: center; }
+      .vision-box h2 { justify-content: center; }
+      .vision-box p { font-size: 19px; line-height: 2; }
+      .about-images { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 30px; margin: 40px 0; position: relative; }
+      .about-image-wrapper { position: relative; width: 100%; max-width: 400px; flex: 1; }
+      .about-image-wrapper img { width: 100%; height: auto; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,.3); transition: transform 0.3s ease; }
+      .about-image-wrapper:first-child { transform: rotate(-2deg); }
+      .about-image-wrapper:last-child { transform: rotate(2deg); }
+      .about-image-wrapper:hover { z-index: 1; }
+      .about-image-wrapper:hover img { transform: scale(1.05); }
+      @media (max-width: 768px) {
+        .about-header h1 { font-size: 36px; }
+        .about-section h2 { font-size: 26px; }
+        .project-card h3 { font-size: 22px; }
+        .about-images { flex-direction: column; }
+        .about-image-wrapper { max-width: 100%; }
+        .about-image-wrapper:first-child { transform: rotate(-1deg); }
+        .about-image-wrapper:last-child { transform: rotate(1deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="images/logo.png" alt="JumpiGames" />
+      </div>
+      <div style="grid-column: span 5"></div>
+      <a class="btn pill-blue" href="/">חזרה לעמוד הבית</a>
+
+    <!-- floating tooltip -->
+    <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">על החברה</span>
+    </nav>
+
+    <main class="about-container">
+      <div class="about-header">
+        <h1>על Jumpi Games™</h1>
+        <div class="about-images">
+          <div class="about-image-wrapper">
+            <img src="images/about1.png" alt="Jumpi Games" />
+          </div>
+          <div class="about-image-wrapper">
+            <img src="images/about2.jpg" alt="Jumpi Games" />
+          </div>
+        </div>
+        <p>ברוכים הבאים ל־Jumpi Games™ — חברה צעירה, יצירתית ומלאת תשוקה לעולמות משחקים צבעוניים, חדשניים ומלאים בדמיון.</p>
+        <p>המטרה שלנו היא ליצור חוויות משחק מהנות, מחברות ומרגשות, שמדברות אל כל ילד וילדה וגורמות להם לחייך בכל פעם שהם נכנסים לעולם שלנו.</p>
+      </div>
+
+      <div class="about-section">
+        <h2><i class="fa-solid fa-rocket"></i> הפרויקטים שלנו</h2>
+        
+        <div class="project-card">
+          <h3><i class="fa-solid fa-globe"></i> Jumpi – העולם הווירטואלי</h3>
+          <p>בעולם של Jumpi כל שחקן יכול ליצור לעצמו דמות, להלביש אותה, לשוטט ברחבי העולם ולגלות מקומות חדשים.</p>
+          <p>אפשר לחסוך מטבעות ויהלומים, לקנות פריטי לבוש ייחודיים, להחליף פריטים עם חברים ולהשתתף באירועים מיוחדים של הצוות.</p>
+          <p>בכל חג אנחנו מוסיפים עיצובים חדשים, פריטים נדירים, משימות, ותכנים עונתיים שמכניסים את כולם לאווירה חגיגית.</p>
+          <a href="https://jumpi.io" target="_blank" rel="noopener noreferrer" class="project-link">
+            <span>🌍 https://jumpi.io</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+        </div>
+
+        <div class="project-card">
+          <h3><i class="fa-solid fa-gamepad"></i> Jumpi Games – אתר המשחקים שלנו</h3>
+          <p>ב־Jumpi Games™ תמצאו מגוון עצום של משחקי אונליין לילדים – וכל יום נוספים חדשים!</p>
+          <p>השחקנים יכולים לשחק, לצבור יהלומים, ולרכוש סקינים, תגים, צבעים לצ'אט ותמונות לדמות האישית.</p>
+          <p>יש גם צ'אט חי לכל המשתמשים שבו אפשר לדבר, לשתף ולשחק יחד.</p>
+          <p>בקרוב תתווסף אפשרות להוסיף חברים, להזמין אחד את השני למשחקים ולהתחרות זה בזה בזמן אמת.</p>
+          <p>האתר מתעדכן כמעט מדי יום, ואנחנו עושים הכול כדי לשמור על חוויית משתמש מהנה, חלקה ומלאת הפתעות.</p>
+          <a href="https://jumpigames.com" target="_blank" rel="noopener noreferrer" class="project-link">
+            <span>🎮 https://jumpigames.com</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2><i class="fa-solid fa-seedling"></i> איך הכול התחיל</h2>
+        <p>הכול התחיל בשנת 2019 עם הפרויקט הראשון שלנו – Jumpi, עולם וירטואלי שנבנה בטכנולוגיית פלאש.</p>
+        <p>לאחר סיום התמיכה בפלאש, המשחק נסגר, אך החלום להמשיך לפתח עולמות דיגיטליים חיים ומרגשים נשאר בלב.</p>
+        <p>מאז השקענו מאמצים רבים, למדנו והתפתחנו, עד שהצלחנו לבנות את ג'אמפי מחדש – בצורה מודרנית, מתקדמת ומרגשת מתמיד.</p>
+      </div>
+
+      <div class="vision-box">
+        <h2><i class="fa-solid fa-heart"></i> החזון שלנו</h2>
+        <p>ב־Jumpi Games™ אנחנו מאמינים שמשחקים יכולים להיות הרבה יותר מסתם זמן פנוי.</p>
+        <p>הם יכולים לחבר אנשים, לעורר השראה, לעודד ביטוי עצמי וליצור חוויות שילוו את הילדים גם מחוץ למסך.</p>
+        <p>אנחנו שואפים להפוך כל ביקור באתר או בעולם שלנו לחוויה חיובית, צבעונית ובלתי נשכחת.</p>
+      </div>
+    </main>
+
+    <!-- Chat Sidebar -->
+    <div id="chatSidebar" class="chat-sidebar" style="display: none;">
+      <div class="chat-header">
+        <h3>צ'אט</h3>
+        <button class="chat-close-btn" onclick="toggleChat()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-content">
+        <div class="chat-rooms">
+          <div class="chat-rooms-header">
+            <h4>חדרים</h4>
+            <button class="chat-add-room-btn" onclick="showCreateRoomModal()">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="chatRoomsList" class="chat-rooms-list">
+            <!-- Rooms will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="chat-main">
+          <div id="chatMessages" class="chat-messages">
+            <div class="chat-welcome">
+              <i class="fa-solid fa-comments"></i>
+              <p>בחר חדר כדי להתחיל להתכתב</p>
+            </div>
+          </div>
+          
+          <div class="chat-typing-indicator" id="chatTypingIndicator" style="display: none;">
+            <span id="typingText"></span>
+          </div>
+          <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <input type="text" id="chatInput" class="chat-input" placeholder="הקלד הודעה..." />
+            <button id="chatSendBtn" class="chat-send-btn" onclick="sendChatMessage()">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Room Modal -->
+    <div id="createRoomModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>צור חדר חדש</h3>
+          <button class="modal-close" onclick="closeCreateRoomModal()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <form id="createRoomForm" onsubmit="createRoom(event)">
+          <div class="form-group">
+            <label>שם החדר</label>
+            <input type="text" id="roomName" required />
+          </div>
+          <div class="form-group">
+            <label>תיאור (אופציונלי)</label>
+            <input type="text" id="roomDescription" />
+          </div>
+          <button type="submit" class="btn-submit">צור חדר</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-action-bar">
+      <nav class="chips">
+        <a href="about.html" class="chip icon-only pill-blue" data-tip="על החברה" aria-label="על החברה">
+          <i class="fa-solid fa-building"></i>
+        </a>
+        <button class="chip icon-only pill-orange no-ads" data-tip="ללא פרסומות" aria-label="ללא פרסומות">
+          <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="chip icon-only pill-purple" id="chatBtn" data-tip="צ'אט" aria-label="צ'אט" onclick="toggleChat()" style="display: inline-flex;">
+          <i class="fa-solid fa-comments"></i>
+        </button>
+        <button class="chip icon-only pill-red" id="favoritesBtn" data-tip="מועדפים" aria-label="מועדפים" onclick="showFavorites()">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+        <a href="#" class="chip icon-only pill-orange" data-tip="מפרסמים" aria-label="מפרסמים"><i class="fa-solid fa-bullhorn"></i></a>
+        <a href="#" class="chip icon-only pill-pink" data-tip="מפתחים" aria-label="מפתחים"><i class="fa-solid fa-code"></i></a>
+        <a href="#" class="chip icon-only pill-cyan" data-tip="שותפים" aria-label="שותפים"><i class="fa-solid fa-handshake"></i></a>
+        <a href="#" class="chip icon-only pill-yellow" data-tip="בלוג" aria-label="בלוג"><i class="fa-solid fa-blog"></i></a>
+        <a href="contact.html" class="chip icon-only pill-green" data-tip="יצירת קשר" aria-label="יצירת קשר"><i class="fa-regular fa-envelope"></i></a>
+      </nav>
+    </div>
+
+    <!-- Tidio Chat Script -->
+    <script src="//code.tidio.co/4eoyizp3hona7pobwi6y7ovdmquay8uc.js" async></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script src="chat.js"></script>
+    <script src="chat-admin-functions.js"></script>
+  </body>
+</html>
+

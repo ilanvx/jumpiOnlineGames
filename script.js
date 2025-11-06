@@ -2431,4 +2431,15 @@ async function claimTaskReward(taskId, taskType) {
   }
 }
 
+// Fallback for toggleChat if chat.js hasn't loaded yet
+if (typeof window !== 'undefined' && typeof window.toggleChat === 'undefined') {
+  window.toggleChat = function() {
+    console.warn('Chat functionality not loaded yet. Please wait...');
+    // Try to initialize chat if chat.js is loaded but not initialized
+    if (typeof initChat === 'function') {
+      initChat();
+    }
+  };
+}
+
 

@@ -4,11 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>JumpiGames - צור קשר</title>
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="chat.css" />
     <style>
       body { background: var(--bg); color: var(--text); font-family: 'Heebo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
       .contact-container { min-height: calc(100vh - 200px); padding: 40px 20px; max-width: 900px; margin: 0 auto; }
@@ -45,6 +51,9 @@
       </div>
       <div style="grid-column: span 5"></div>
       <a class="btn pill-blue" href="/">חזרה לעמוד הבית</a>
+
+    <!-- floating tooltip -->
+    <div id="tooltip" role="tooltip" aria-hidden="true"></div>
     </header>
 
     <!-- Breadcrumb Navigation -->
@@ -109,8 +118,101 @@
       </div>
     </main>
 
+    <!-- Chat Sidebar -->
+    <div id="chatSidebar" class="chat-sidebar" style="display: none;">
+      <div class="chat-header">
+        <h3>צ'אט</h3>
+        <button class="chat-close-btn" onclick="toggleChat()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="chat-content">
+        <div class="chat-rooms">
+          <div class="chat-rooms-header">
+            <h4>חדרים</h4>
+            <button class="chat-add-room-btn" onclick="showCreateRoomModal()">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="chatRoomsList" class="chat-rooms-list">
+            <!-- Rooms will be loaded here -->
+          </div>
+        </div>
+        
+        <div class="chat-main">
+          <div id="chatMessages" class="chat-messages">
+            <div class="chat-welcome">
+              <i class="fa-solid fa-comments"></i>
+              <p>בחר חדר כדי להתחיל להתכתב</p>
+            </div>
+          </div>
+          
+          <div class="chat-typing-indicator" id="chatTypingIndicator" style="display: none;">
+            <span id="typingText"></span>
+          </div>
+          <div class="chat-input-container" id="chatInputContainer" style="display: none;">
+            <input type="text" id="chatInput" class="chat-input" placeholder="הקלד הודעה..." />
+            <button id="chatSendBtn" class="chat-send-btn" onclick="sendChatMessage()">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Room Modal -->
+    <div id="createRoomModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>צור חדר חדש</h3>
+          <button class="modal-close" onclick="closeCreateRoomModal()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <form id="createRoomForm" onsubmit="createRoom(event)">
+          <div class="form-group">
+            <label>שם החדר</label>
+            <input type="text" id="roomName" required />
+          </div>
+          <div class="form-group">
+            <label>תיאור (אופציונלי)</label>
+            <input type="text" id="roomDescription" />
+          </div>
+          <button type="submit" class="btn-submit">צור חדר</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="bottom-action-bar">
+      <nav class="chips">
+        <a href="about.html" class="chip icon-only pill-blue" data-tip="על החברה" aria-label="על החברה">
+          <i class="fa-solid fa-building"></i>
+        </a>
+        <button class="chip icon-only pill-orange no-ads" data-tip="ללא פרסומות" aria-label="ללא פרסומות">
+          <i class="fa-solid fa-ban"></i>
+        </button>
+        <button class="chip icon-only pill-purple" id="chatBtn" data-tip="צ'אט" aria-label="צ'אט" onclick="toggleChat()" style="display: inline-flex;">
+          <i class="fa-solid fa-comments"></i>
+        </button>
+        <button class="chip icon-only pill-red" id="favoritesBtn" data-tip="מועדפים" aria-label="מועדפים" onclick="showFavorites()">
+          <i class="fa-solid fa-heart"></i>
+        </button>
+        <a href="#" class="chip icon-only pill-orange" data-tip="מפרסמים" aria-label="מפרסמים"><i class="fa-solid fa-bullhorn"></i></a>
+        <a href="#" class="chip icon-only pill-pink" data-tip="מפתחים" aria-label="מפתחים"><i class="fa-solid fa-code"></i></a>
+        <a href="#" class="chip icon-only pill-cyan" data-tip="שותפים" aria-label="שותפים"><i class="fa-solid fa-handshake"></i></a>
+        <a href="#" class="chip icon-only pill-yellow" data-tip="בלוג" aria-label="בלוג"><i class="fa-solid fa-blog"></i></a>
+        <a href="contact.html" class="chip icon-only pill-green" data-tip="יצירת קשר" aria-label="יצירת קשר"><i class="fa-regular fa-envelope"></i></a>
+      </nav>
+    </div>
+
     <!-- Tidio Chat Script -->
     <script src="//code.tidio.co/4eoyizp3hona7pobwi6y7ovdmquay8uc.js" async></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script src="chat.js"></script>
+    <script src="chat-admin-functions.js"></script>
   </body>
 </html>
 

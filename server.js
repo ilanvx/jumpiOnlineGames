@@ -193,6 +193,7 @@ const chatMessageSchema = new mongoose.Schema({
   username: { type: String, required: true },
   userPicture: String,
   isAdmin: { type: Boolean, default: false }, // Admin badge
+  isOwner: { type: Boolean, default: false }, // Owner badge
   message: { type: String, required: true },
   edited: { type: Boolean, default: false },
   editedAt: Date,
@@ -380,6 +381,12 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Handle favicon request to prevent 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 app.use(express.static(path.join(__dirname)));
 
 app.use(session({
@@ -674,7 +681,9 @@ const isAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
-  if (req.user.role !== 'admin') {
+  // Allow access for admin role or owner email
+  const isOwner = req.user.email === 'ilanvx@gmail.com';
+  if (req.user.role !== 'admin' && !isOwner) {
     return res.status(403).json({ error: 'Forbidden: Admin access required' });
   }
   next();
@@ -2533,13 +2542,16 @@ io.on('connection', async (socket) => {
       const messages = await ChatMessage.find({ roomId })
         .sort({ createdAt: -1 })
         .limit(50)
-        .populate('userId', 'username picture role')
+        .populate('userId', 'username picture role email')
         .lean();
       
-      // Add isAdmin flag based on user role
+      // Add isAdmin and isOwner flags
       messages.forEach(msg => {
         if (msg.userId && msg.userId.role === 'admin') {
           msg.isAdmin = true;
+        }
+        if (msg.userId && msg.userId.email === 'ilanvx@gmail.com') {
+          msg.isOwner = true;
         }
       });
       
@@ -2568,6 +2580,7 @@ io.on('connection', async (socket) => {
       }
       
       const isAdmin = user.role === 'admin';
+      const isOwner = user.email === 'ilanvx@gmail.com'; // Owner badge for specific email
       
       // Check if user is banned or muted
       const moderation = await UserModeration.findOne({ userId });
@@ -2610,7 +2623,7 @@ io.on('connection', async (socket) => {
       
       // Check if room is admin-only
       const room = await ChatRoom.findById(roomId);
-      if (room && room.adminOnly && !isAdmin) {
+      if (room && room.adminOnly && !isAdmin && !isOwner) {
         socket.emit('error', { message: 'רק מנהלים יכולים לשלוח הודעות בחדר זה' });
         return;
       }
@@ -2621,6 +2634,7 @@ io.on('connection', async (socket) => {
         username,
         userPicture,
         isAdmin: isAdmin || false,
+        isOwner: isOwner || false,
         message
       });
       
@@ -2634,6 +2648,7 @@ io.on('connection', async (socket) => {
         username: chatMessage.username,
         userPicture: chatMessage.userPicture,
         isAdmin: chatMessage.isAdmin,
+        isOwner: chatMessage.isOwner,
         message: chatMessage.message,
         createdAt: chatMessage.createdAt
       });
@@ -2692,9 +2707,15 @@ app.get('/api/chat/rooms', async (req, res) => {
   }
 });
 
-app.post('/api/chat/rooms', isAdmin, async (req, res) => {
+app.post('/api/chat/rooms', async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
+  // Allow only admin or owner to create rooms
+  const isOwner = req.user.email === 'ilanvx@gmail.com';
+  if (req.user.role !== 'admin' && !isOwner) {
+    return res.status(403).json({ error: 'Forbidden: Admin access required' });
   }
 
   try {
@@ -2715,15 +2736,18 @@ app.post('/api/chat/rooms', isAdmin, async (req, res) => {
 app.get('/api/chat/rooms/:roomId/messages', async (req, res) => {
   try {
     const messages = await ChatMessage.find({ roomId: req.params.roomId })
-      .populate('userId', 'username picture role')
+      .populate('userId', 'username picture role email')
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
     
-    // Add isAdmin flag based on user role
+    // Add isAdmin and isOwner flags
     messages.forEach(msg => {
       if (msg.userId && msg.userId.role === 'admin') {
         msg.isAdmin = true;
+      }
+      if (msg.userId && msg.userId.email === 'ilanvx@gmail.com') {
+        msg.isOwner = true;
       }
     });
     

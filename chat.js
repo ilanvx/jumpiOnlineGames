@@ -1,8 +1,23 @@
 // Chat functionality
 // Determine API URL based on current host
-const API_URL = (typeof window !== 'undefined' && (window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com'))
-  ? 'https://jumpigames.com' 
-  : 'http://localhost:3000';
+// Function to get API URL - avoids conflicts with other scripts
+function getApiUrl() {
+  if (typeof window !== 'undefined' && window.API_URL) {
+    return window.API_URL;
+  }
+  // Check if API_URL is defined in global scope
+  if (typeof API_URL !== 'undefined') {
+    return API_URL;
+  }
+  // Calculate and cache on window object
+  if (typeof window !== 'undefined') {
+    window.API_URL = (window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com')
+      ? 'https://jumpigames.com' 
+      : 'http://localhost:3000';
+    return window.API_URL;
+  }
+  return 'http://localhost:3000';
+}
 let socket = null;
 let currentUser = null;
 let currentRoomId = null;
@@ -16,10 +31,11 @@ function initChat() {
   if (userData) {
     currentUser = JSON.parse(userData);
     
-    // Show/hide create room button based on admin status
+    // Show/hide create room button based on admin status or owner
     const createRoomBtn = document.querySelector('.chat-add-room-btn');
     if (createRoomBtn) {
-      if (currentUser.role === 'admin') {
+      const isOwner = currentUser.email === 'ilanvx@gmail.com';
+      if (currentUser.role === 'admin' || isOwner) {
         createRoomBtn.style.display = 'inline-flex';
       } else {
         createRoomBtn.style.display = 'none';
@@ -28,7 +44,7 @@ function initChat() {
   }
 
   // Connect to Socket.IO
-  socket = io(API_URL);
+  socket = io(getApiUrl());
 
   socket.on('connect', () => {
     console.log('Connected to chat server');
@@ -122,24 +138,33 @@ function initChat() {
 // Toggle chat sidebar
 function toggleChat() {
   const sidebar = document.getElementById('chatSidebar');
-  if (sidebar.style.display === 'none') {
+  if (!sidebar) {
+    console.warn('Chat sidebar not found');
+    return;
+  }
+  if (sidebar.style.display === 'none' || !sidebar.style.display) {
     sidebar.style.display = 'flex';
     if (!socket) {
       initChat();
     }
   } else {
     sidebar.style.display = 'none';
-    if (currentRoomId) {
+    if (currentRoomId && socket) {
       socket.emit('leave-room', currentRoomId);
       currentRoomId = null;
     }
   }
 }
 
+// Make toggleChat globally accessible
+if (typeof window !== 'undefined') {
+  window.toggleChat = toggleChat;
+}
+
 // Load chat rooms
 async function loadRooms() {
   try {
-    const response = await fetch(`${API_URL}/api/chat/rooms`);
+    const response = await fetch(`${getApiUrl()}/api/chat/rooms`);
     if (response.ok) {
       const rooms = await response.json();
       displayRooms(rooms);
@@ -210,21 +235,22 @@ async function joinRoom(roomId) {
 
   // Load room info and check if admin-only
   try {
-    const roomsResponse = await fetch(`${API_URL}/api/chat/rooms`);
+    const roomsResponse = await fetch(`${getApiUrl()}/api/chat/rooms`);
     if (roomsResponse.ok) {
       const rooms = await roomsResponse.json();
       const currentRoom = rooms.find(r => r._id === roomId);
       
       // Show/hide input based on room type and user role
       const chatInputContainer = document.getElementById('chatInputContainer');
-      if (currentRoom && currentRoom.adminOnly && currentUser && currentUser.role !== 'admin') {
+      const isOwner = currentUser && currentUser.email === 'ilanvx@gmail.com';
+      if (currentRoom && currentRoom.adminOnly && currentUser && currentUser.role !== 'admin' && !isOwner) {
         chatInputContainer.style.display = 'none';
       } else {
         chatInputContainer.style.display = 'flex';
       }
     }
     
-    const response = await fetch(`${API_URL}/api/chat/rooms/${roomId}/messages`);
+    const response = await fetch(`${getApiUrl()}/api/chat/rooms/${roomId}/messages`);
     if (response.ok) {
       const messages = await response.json();
       displayMessages(messages);
@@ -274,9 +300,10 @@ function addMessageToChat(message) {
     minute: '2-digit'
   });
 
-  const adminBadge = message.isAdmin ? '<span class="chat-admin-badge" title="מנהל">👑</span>' : '';
+  const ownerBadge = message.isOwner ? '<span class="chat-owner-badge" title="בעלים" style="color: #ffd700; font-size: 16px; margin-left: 4px;">⭐</span>' : '';
+  const adminBadge = message.isAdmin && !message.isOwner ? '<span class="chat-admin-badge" title="מנהל">👑</span>' : '';
   const editedBadge = message.edited ? '<span class="edited-badge" style="color: var(--muted); font-size: 12px;"> (נערך)</span>' : '';
-  const adminActions = currentUser && currentUser.role === 'admin' ? `
+  const adminActions = currentUser && (currentUser.role === 'admin' || currentUser.email === 'ilanvx@gmail.com') ? `
     <div class="chat-message-actions">
       <button class="chat-action-btn" onclick="editMessage('${message._id}', '${escapeHtml(message.message)}')" title="ערוך">
         <i class="fa-solid fa-pencil"></i>
@@ -301,6 +328,7 @@ function addMessageToChat(message) {
     <div class="chat-message-content">
       <div class="chat-message-header">
         <span class="chat-message-username">${escapeHtml(message.username)}</span>
+        ${ownerBadge}
         ${adminBadge}
         <span class="chat-message-time">${time}</span>
         ${adminActions}
@@ -348,6 +376,7 @@ function sendChatMessage() {
     username: currentUser.username || currentUser.name,
     userPicture: currentUser.picture,
     isAdmin: currentUser.role === 'admin',
+    isOwner: currentUser.email === 'ilanvx@gmail.com',
     message: message
   });
 
@@ -480,7 +509,7 @@ async function createRoom(event) {
   if (!name) return;
 
   try {
-    const response = await fetch(`${API_URL}/api/chat/rooms`, {
+    const response = await fetch(`${getApiUrl()}/api/chat/rooms`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
