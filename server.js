@@ -32,19 +32,33 @@ const PORT = process.env.PORT || 3000;
 // Ensure we always use 'jumpigames' database
 let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/jumpigames';
 
-// Replace /jumpi with /jumpigames (common mistake)
-mongoUri = mongoUri.replace(/\/jumpi(\?|$)/, '/jumpigames$1');
+// Replace /jumpi with /jumpigames (common mistake) - handle both with and without query params
+// Force replace /jumpi with /jumpigames (more aggressive - handles ? and end of string)
+mongoUri = mongoUri.replace(/\/jumpi(\?|$|&)/g, '/jumpigames$1');
 
 // Replace /test with /jumpigames if needed
-mongoUri = mongoUri.replace(/\/test(\?|$)/, '/jumpigames$1');
+mongoUri = mongoUri.replace(/\/test(\?|$|&)/g, '/jumpigames$1');
 
 // If MONGODB_URI doesn't contain a database name, add /jumpigames
-if (mongoUri && !mongoUri.match(/\/[^\/]+\?/) && !mongoUri.endsWith('/jumpigames')) {
-  // Check if URI ends with / or has no database specified
-  if (mongoUri.endsWith('/')) {
+// Check if URI has /? or ends with / or has no database name before ?
+if (mongoUri && !mongoUri.match(/\/jumpigames(\?|&|$)/) && !mongoUri.endsWith('/jumpigames')) {
+  // Case 1: URI ends with /? (no database name)
+  if (mongoUri.match(/\/\?/)) {
+    mongoUri = mongoUri.replace(/\/\?/, '/jumpigames?');
+  }
+  // Case 2: URI ends with / (no database name, no query params)
+  else if (mongoUri.endsWith('/')) {
     mongoUri = mongoUri + 'jumpigames';
-  } else if (!mongoUri.match(/\/[^\/]+$/)) {
-    // No database name in URI, add it
+  }
+  // Case 3: URI has ? but no database name before it (e.g., host/?params)
+  else if (mongoUri.includes('?') && !mongoUri.match(/\/[^\/\?]+\?/)) {
+    const queryParams = mongoUri.match(/(\?.*)$/);
+    if (queryParams) {
+      mongoUri = mongoUri.replace(/\?.*$/, '') + '/jumpigames' + queryParams[0];
+    }
+  }
+  // Case 4: URI has no database name and no query params
+  else if (!mongoUri.match(/\/[^\/]+(\?|&|$)/)) {
     mongoUri = mongoUri + '/jumpigames';
   }
 }
@@ -53,8 +67,18 @@ mongoose.connect(mongoUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => {
-  console.log('Connected to MongoDB database: jumpigames');
-  console.log('MongoDB URI:', mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials in log
+  // Extract database name from URI for logging
+  // Match pattern: /databaseName? or /databaseName at end
+  const dbMatch = mongoUri.match(/\/([^\/\?]+)(\?|$)/);
+  const dbName = dbMatch && dbMatch[1] ? dbMatch[1] : 'unknown';
+  console.log(`✅ Connected to MongoDB database: ${dbName}`);
+  console.log('MongoDB URI (sanitized):', mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')); // Hide credentials in log
+  
+  // Verify it's jumpigames
+  if (dbName !== 'jumpigames') {
+    console.warn(`⚠️  WARNING: Connected to database "${dbName}" instead of "jumpigames"!`);
+    console.warn(`⚠️  Please check your MONGODB_URI environment variable.`);
+  }
 }).catch(err => {
   console.error('MongoDB connection error:', err);
 });
