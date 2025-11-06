@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - צור קשר</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      body { background: var(--bg); color: var(--text); font-family: 'Heebo', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+      .contact-container { min-height: calc(100vh - 200px); padding: 40px 20px; max-width: 900px; margin: 0 auto; }
+      .contact-header { text-align: center; margin-bottom: 40px; }
+      .contact-header h1 { font-size: 42px; font-weight: 900; margin: 0 0 12px; background: linear-gradient(180deg, var(--brand-blue-1), var(--brand-blue-2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+      .contact-header p { color: var(--muted); font-size: 18px; }
+      .contact-content { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+      @media (max-width: 768px) {
+        .contact-content { grid-template-columns: 1fr; }
+      }
+      .contact-card { background: var(--panel-2); border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,.4); }
+      .contact-card h2 { font-size: 24px; font-weight: 800; margin: 0 0 20px; color: var(--brand-blue-1); }
+      .contact-card p { color: var(--muted); line-height: 1.8; margin-bottom: 16px; }
+      .contact-card ul { list-style: none; padding: 0; margin: 0; }
+      .contact-card ul li { padding: 12px 0; border-bottom: 1px solid var(--chip); color: var(--text); }
+      .contact-card ul li:last-child { border-bottom: none; }
+      .contact-card ul li i { color: var(--brand-blue-1); margin-left: 12px; width: 20px; }
+      .instructions-box { background: linear-gradient(135deg, rgba(45, 108, 255, 0.1), rgba(27, 73, 255, 0.1)); border: 2px solid var(--brand-blue-1); border-radius: 20px; padding: 30px; margin-bottom: 30px; }
+      .instructions-box h2 { font-size: 28px; font-weight: 900; margin: 0 0 20px; color: var(--brand-blue-1); }
+      .instructions-box ol { margin: 0; padding-right: 20px; }
+      .instructions-box ol li { margin-bottom: 16px; line-height: 1.8; color: var(--text); font-size: 16px; }
+      .instructions-box ol li strong { color: var(--brand-blue-1); }
+      .tidio-info { background: var(--panel-2); border-radius: 20px; padding: 30px; margin-top: 30px; text-align: center; }
+      .tidio-info h3 { font-size: 22px; font-weight: 800; margin: 0 0 12px; color: var(--brand-blue-1); }
+      .tidio-info p { color: var(--muted); line-height: 1.8; margin: 0; }
+      .icon-large { font-size: 48px; color: var(--brand-blue-1); margin-bottom: 20px; }
+      .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: var(--brand-blue-1); color: #fff; border-radius: 50%; font-weight: 800; margin-left: 12px; font-size: 16px; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="images/logo.png" alt="JumpiGames" />
+      </div>
+      <div style="grid-column: span 5"></div>
+      <a class="btn pill-blue" href="/">חזרה לעמוד הבית</a>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">צור קשר</span>
+    </nav>
+
+    <main class="contact-container">
+      <div class="contact-header">
+        <h1>צור קשר</h1>
+        <p>אנחנו כאן כדי לעזור! שלח לנו הודעה ונחזור אליך בהקדם</p>
+      </div>
+
+      <div class="instructions-box">
+        <h2><i class="fa-solid fa-envelope-open-text" style="margin-left: 12px;"></i>איך לשלוח הודעה?</h2>
+        <ol>
+          <li>
+            <strong>מצא את חלון הצ'אט</strong> - בתחתית המסך תראה חלון צ'אט של Tidio. לחץ עליו כדי לפתוח.
+          </li>
+          <li>
+            <strong>הקלד את ההודעה שלך</strong> - כתוב את השאלה, הבקשה או ההודעה שברצונך לשלוח.
+          </li>
+          <li>
+            <strong>שלח את ההודעה</strong> - לחץ על כפתור השליחה (או Enter) כדי לשלוח את ההודעה.
+          </li>
+          <li>
+            <strong>המתן לתשובה</strong> - נציג שלנו יקבל את ההודעה ויחזור אליך בהקדם האפשרי.
+          </li>
+        </ol>
+      </div>
+
+      <div class="contact-content">
+        <div class="contact-card">
+          <h2><i class="fa-solid fa-clock"></i> שעות פעילות</h2>
+          <ul>
+            <li><i class="fa-solid fa-calendar-day"></i> ראשון - חמישי: 09:00 - 18:00</li>
+            <li><i class="fa-solid fa-calendar-day"></i> שישי: 09:00 - 14:00</li>
+            <li><i class="fa-solid fa-calendar-day"></i> שבת: סגור</li>
+          </ul>
+        </div>
+
+        <div class="contact-card">
+          <h2><i class="fa-solid fa-info-circle"></i> נושאים נפוצים</h2>
+          <ul>
+            <li><i class="fa-solid fa-question"></i> שאלות על משחקים</li>
+            <li><i class="fa-solid fa-bug"></i> דיווח על באגים</li>
+            <li><i class="fa-solid fa-lightbulb"></i> הצעות לשיפור</li>
+            <li><i class="fa-solid fa-handshake"></i> שיתופי פעולה</li>
+            <li><i class="fa-solid fa-shield-halved"></i> תמיכה טכנית</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tidio-info">
+        <div class="icon-large">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <h3>צ'אט ישיר עם Tidio</h3>
+        <p>אנחנו משתמשים בפלטפורמת Tidio כדי לספק לך שירות צ'אט מהיר ויעיל. פשוט פתח את חלון הצ'אט בתחתית המסך והתחל לכתוב!</p>
+      </div>
+    </main>
+
+    <!-- Tidio Chat Script -->
+    <script src="//code.tidio.co/4eoyizp3hona7pobwi6y7ovdmquay8uc.js" async></script>
+  </body>
+</html>
+
