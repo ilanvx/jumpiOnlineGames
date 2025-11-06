@@ -148,6 +148,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (chatBtn) {
           chatBtn.style.display = 'inline-flex';
         }
+        
+        // Update diamonds display
+        updateDiamondsDisplay(user.diamonds || 0);
+        
+        // Load notifications
+        loadNotifications();
+        checkUnreadNotifications();
+        
+        // Check daily bonus status
+        checkDailyBonusStatus();
+        
+        // Show tasks button
+        const tasksBtn = document.getElementById('tasksBtn');
+        if (tasksBtn) {
+          tasksBtn.style.display = 'inline-flex';
+        }
+        
         localStorage.setItem('jumpiUser', JSON.stringify(user));
         return;
       }
@@ -173,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (adminLink && user.role === 'admin') {
         adminLink.style.display = 'block';
       }
-      // Show chat button and favorites button for registered users
+      // Show chat button, favorites button, and tasks button for registered users
       const chatBtn = document.getElementById('chatBtn');
       if (chatBtn) {
         chatBtn.style.display = 'inline-flex';
@@ -182,6 +199,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (favoritesBtn) {
         favoritesBtn.style.display = 'inline-flex';
       }
+      const tasksBtn = document.getElementById('tasksBtn');
+      if (tasksBtn) {
+        tasksBtn.style.display = 'inline-flex';
+      }
+      
+      // Update diamonds display
+      updateDiamondsDisplay(user.diamonds || 0);
+      
+      // Load notifications
+      loadNotifications();
+      checkUnreadNotifications();
+      
+      // Check daily bonus status
+      checkDailyBonusStatus();
+      
       return;
     }
   }
@@ -655,10 +687,16 @@ async function loadGames(page = 1, category = 'all') {
         });
         if (favoritesResponse.ok) {
           const favorites = await favoritesResponse.json();
-          const favoriteIds = new Set(favorites.map(fav => (fav.id || fav._id || '').toString()));
-          // Mark games as favorites
+          // Create a set of all favorite IDs (both MongoDB _id and GameMonetize id)
+          const favoriteIds = new Set();
+          favorites.forEach(fav => {
+            if (fav.id) favoriteIds.add(fav.id.toString());
+            if (fav._id) favoriteIds.add(fav._id.toString());
+          });
+          // Mark games as favorites - check both id and _id
           games.forEach(game => {
-            if (favoriteIds.has(game.id)) {
+            const gameId = (game.id || game._id || '').toString();
+            if (gameId && favoriteIds.has(gameId)) {
               game.isFavorite = true;
             }
           });
@@ -707,7 +745,8 @@ async function loadGames(page = 1, category = 'all') {
           img.alt = game.title;
           img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease;';
           img.onerror = () => {
-          img.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(game.title);
+            // Use data URI as fallback since via.placeholder.com might not be available
+            img.src = createPlaceholderImage(400, 300, game.title);
           };
           link.appendChild(img);
         } else if (game.gameSlug) {
@@ -722,14 +761,15 @@ async function loadGames(page = 1, category = 'all') {
             img.className = 'carousel-img';
           img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
             img.onerror = () => {
-            img.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(game.title);
+              // Use data URI as fallback since via.placeholder.com might not be available
+              img.src = createPlaceholderImage(400, 300, game.title);
             };
             imgContainer.appendChild(img);
           link.appendChild(imgContainer);
         } else {
-          // Fallback placeholder
+          // Fallback placeholder using data URI
           const img = document.createElement('img');
-          img.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(game.title);
+          img.src = createPlaceholderImage(400, 300, game.title);
           img.alt = game.title;
           img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
           link.appendChild(img);
@@ -810,7 +850,7 @@ async function loadGames(page = 1, category = 'all') {
           favoriteBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const gameImage = game.thumb || game.thumbnail || 'https://via.placeholder.com/300x200?text=' + encodeURIComponent(game.title);
+            const gameImage = game.thumb || game.thumbnail || createPlaceholderImage(300, 200, game.title);
             const wasFavorite = favoriteBtn.classList.contains('active');
             // Pass game data for GameMonetize games
             const gameDataForFavorite = game.id ? {
@@ -1031,6 +1071,22 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// Create a data URI placeholder image
+function createPlaceholderImage(width = 400, height = 300, text = '') {
+  // Create an SVG with the text
+  const svg = `
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#1a1a2e"/>
+      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="16" fill="#fff" text-anchor="middle" dominant-baseline="middle">
+        ${escapeHtml(text || 'Game')}
+      </text>
+    </svg>
+  `.trim();
+  
+  // Convert to data URI
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
 // Toggle favorite
 // Show confirmation modal for removing favorite
 function showRemoveFavoriteConfirm(gameTitle, gameImage, onConfirm) {
@@ -1039,6 +1095,9 @@ function showRemoveFavoriteConfirm(gameTitle, gameImage, onConfirm) {
     existing.remove();
   }
   
+  // Generate fallback placeholder URL
+  const fallbackImage = createPlaceholderImage(300, 200, gameTitle);
+  
   const modal = document.createElement('div');
   modal.id = 'confirmModal';
   modal.className = 'alert-modal';
@@ -1046,7 +1105,7 @@ function showRemoveFavoriteConfirm(gameTitle, gameImage, onConfirm) {
     <div class="alert-modal-content" style="max-width: 500px;">
       <div class="alert-modal-icon warning">⚠</div>
       <div style="margin: 16px 0;">
-        <img src="${gameImage}" alt="${escapeHtml(gameTitle)}" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 12px; margin: 0 auto; display: block;" onerror="this.src='https://via.placeholder.com/300x200?text=${encodeURIComponent(gameTitle)}'" />
+        <img src="${gameImage}" alt="${escapeHtml(gameTitle)}" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 12px; margin: 0 auto; display: block;" onerror="this.src='${fallbackImage}'" />
       </div>
       <div class="alert-modal-title">האם אתה בטוח?</div>
       <div class="alert-modal-message">האם אתה בטוח שברצונך להסיר את <strong>${escapeHtml(gameTitle)}</strong> מתוך רשימת המועדפים?</div>
@@ -1102,6 +1161,9 @@ function showFavoriteSuccess(gameTitle, gameImage) {
     existing.remove();
   }
   
+  // Generate fallback placeholder URL
+  const fallbackImage = createPlaceholderImage(300, 200, gameTitle);
+  
   const modal = document.createElement('div');
   modal.id = 'successModal';
   modal.className = 'alert-modal';
@@ -1109,7 +1171,7 @@ function showFavoriteSuccess(gameTitle, gameImage) {
     <div class="alert-modal-content" style="max-width: 500px;">
       <div class="alert-modal-icon success">✓</div>
       <div style="margin: 16px 0;">
-        <img src="${gameImage}" alt="${escapeHtml(gameTitle)}" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 12px; margin: 0 auto; display: block;" onerror="this.src='https://via.placeholder.com/300x200?text=${encodeURIComponent(gameTitle)}'" />
+        <img src="${gameImage}" alt="${escapeHtml(gameTitle)}" style="width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 12px; margin: 0 auto; display: block;" onerror="this.src='${fallbackImage}'" />
       </div>
       <div class="alert-modal-title">המשחק נוסף למועדפים בהצלחה!</div>
       <div class="alert-modal-message"><strong>${escapeHtml(gameTitle)}</strong> נוסף לרשימת המועדפים שלך</div>
@@ -1150,7 +1212,14 @@ function closeSuccessModal() {
 }
 
 async function toggleFavorite(gameId, buttonElement, gameTitle, gameImage, gameData = null) {
-  if (!buttonElement) return;
+  if (!buttonElement || !gameId) {
+    console.warn('toggleFavorite: Missing buttonElement or gameId', { buttonElement, gameId });
+    return;
+  }
+  
+  // Disable button during request to prevent double-clicks
+  const wasDisabled = buttonElement.disabled;
+  buttonElement.disabled = true;
   
   const isFavorite = buttonElement.classList.contains('active');
   // Determine API URL based on current host
@@ -1160,18 +1229,45 @@ async function toggleFavorite(gameId, buttonElement, gameTitle, gameImage, gameD
   
   try {
     if (isFavorite) {
+      // Re-enable button before showing modal (modal is async)
+      buttonElement.disabled = wasDisabled;
+      
       // Show confirmation modal for removal
       showRemoveFavoriteConfirm(gameTitle, gameImage, async () => {
-        const response = await fetch(`${API_URL}/api/favorites/${encodeURIComponent(gameId)}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
+        // Disable button during deletion
+        buttonElement.disabled = true;
         
-        if (response.ok) {
-          buttonElement.classList.remove('active');
-          buttonElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
+        try {
+          const response = await fetch(`${API_URL}/api/favorites/${encodeURIComponent(gameId)}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            buttonElement.classList.remove('active');
+            buttonElement.innerHTML = '<i class="fa-regular fa-heart"></i>';
+            buttonElement.setAttribute('aria-label', 'הוסף למועדפים');
+            
+            // Update the game's isFavorite status in allGames array
+            if (allGames && allGames.length > 0) {
+              const gameToUpdate = allGames.find(g => (g.id || g._id || '').toString() === gameId.toString());
+              if (gameToUpdate) {
+                gameToUpdate.isFavorite = false;
+              }
+            }
+          } else {
+            console.error('Failed to remove favorite:', response.status);
+          }
+        } catch (error) {
+          console.error('Error removing favorite:', error);
+        } finally {
+          // Re-enable button
+          buttonElement.disabled = wasDisabled;
         }
       });
+      
+      // Return early since we're showing a modal
+      return;
     } else {
       // Add to favorites
       const options = {
@@ -1190,13 +1286,43 @@ async function toggleFavorite(gameId, buttonElement, gameTitle, gameImage, gameD
       const response = await fetch(`${API_URL}/api/favorites/${encodeURIComponent(gameId)}`, options);
       
       if (response.ok) {
+        // Update button state immediately
         buttonElement.classList.add('active');
         buttonElement.innerHTML = '<i class="fa-solid fa-heart"></i>';
+        buttonElement.setAttribute('aria-label', 'הסר ממועדפים');
+        
+        // Update the game's isFavorite status in allGames array
+        if (allGames && allGames.length > 0) {
+          const gameToUpdate = allGames.find(g => {
+            const gId = (g.id || g._id || '').toString();
+            return gId === gameId.toString();
+          });
+          if (gameToUpdate) {
+            gameToUpdate.isFavorite = true;
+          }
+        }
+        
         showFavoriteSuccess(gameTitle, gameImage);
+      } else {
+        // Handle error response
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to add favorite:', response.status, errorData);
+        
+        // Don't update button state on error
+        if (response.status === 401) {
+          showModalAlert('התחברות נדרשת', 'אתה צריך להתחבר כדי להוסיף מועדפים', 'warning');
+        } else if (response.status === 400) {
+          // Might be duplicate - check if already favorited
+          console.log('Game might already be favorited');
+        }
       }
     }
   } catch (error) {
     console.error('Error toggling favorite:', error);
+    // Don't update button state on error
+  } finally {
+    // Re-enable button
+    buttonElement.disabled = wasDisabled;
   }
 }
 
@@ -1352,33 +1478,52 @@ function renderGames(games) {
       card.classList.add('featured');
     }
     
-    card.setAttribute('data-game-src', game.embedUrl);
-    card.setAttribute('data-title', game.title);
-    card.setAttribute('data-game-slug', game.gameSlug || '');
+    // Handle both MongoDB games (embedUrl) and GameMonetize games (url)
+    const gameUrl = game.url || game.embedUrl || '';
+    card.setAttribute('data-game-src', gameUrl);
+    card.setAttribute('data-title', game.title || 'Game');
+    card.setAttribute('data-game-slug', game.gameSlug || game.id || '');
 
     const link = document.createElement('a');
     link.className = 'card-link';
-    link.href = game.gameSlug ? `/game/${encodeURIComponent(game.gameSlug)}` : '#';
+    // Use gameSlug or id for GameMonetize games
+    const gameSlug = game.gameSlug || game.id || '';
+    link.href = gameSlug ? `/game/${encodeURIComponent(gameSlug)}` : '#';
 
-    // Create image carousel if gameSlug exists (same as main rendering)
-    if (game.gameSlug) {
+    // Handle images - prioritize GameMonetize thumbnails, then local gameSlug, then placeholder
+    const thumbnail = game.thumb || game.thumbnail || '';
+    
+    if (thumbnail) {
+      // Use GameMonetize thumbnail (most common for favorites)
+      const img = document.createElement('img');
+      img.src = thumbnail;
+      img.alt = game.title || 'Game';
+      img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease;';
+      img.onerror = () => {
+        // Fallback to placeholder if thumbnail fails to load
+        img.src = createPlaceholderImage(400, 300, game.title || 'Game');
+      };
+      link.appendChild(img);
+    } else if (game.gameSlug) {
+      // Use local game images if gameSlug exists
       const imgContainer = document.createElement('div');
       imgContainer.className = 'img-carousel';
       imgContainer.style.cssText = 'position: relative; width: 100%; height: 100%;';
       
       const img = document.createElement('img');
       img.src = `/Games/${game.gameSlug}/image1.jpg`;
-      img.alt = game.title;
+      img.alt = game.title || 'Game';
       img.className = 'carousel-img loaded';
       img.style.opacity = '1';
       img.onerror = () => {
-        img.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(game.title);
+        // Use data URI as fallback
+        img.src = createPlaceholderImage(400, 300, game.title || 'Game');
       };
       
       imgContainer.appendChild(img);
       link.appendChild(imgContainer);
       
-      // Add video element
+      // Add video element if available
       const video = document.createElement('video');
       video.src = `/Games/${game.gameSlug}/video.mp4`;
       video.muted = true;
@@ -1404,9 +1549,11 @@ function renderGames(games) {
         }
       });
     } else {
+      // Fallback placeholder using data URI
       const img = document.createElement('img');
-      img.src = 'https://via.placeholder.com/400x300?text=' + encodeURIComponent(game.title);
-      img.alt = game.title;
+      img.src = createPlaceholderImage(400, 300, game.title || 'Game');
+      img.alt = game.title || 'Game';
+      img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;';
       link.appendChild(img);
     }
 
@@ -1415,30 +1562,57 @@ function renderGames(games) {
     if (userData || showingFavorites) {
       const favoriteBtn = document.createElement('button');
       favoriteBtn.className = 'favorite-btn';
-      if (game.isFavorite || showingFavorites) {
+      // Only mark as active if actually favorited (not just because we're in favorites view)
+      if (game.isFavorite) {
         favoriteBtn.classList.add('active');
         favoriteBtn.innerHTML = '<i class="fa-solid fa-heart"></i>';
       } else {
+        favoriteBtn.classList.remove('active');
         favoriteBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
       }
-      favoriteBtn.setAttribute('data-game-id', game._id);
+      // Use game._id for MongoDB games or game.id for GameMonetize games
+      const gameId = game._id || game.id || '';
+      if (!gameId) {
+        console.warn('Game missing ID:', game);
+        return; // Skip favorite button if no ID
+      }
+      
+      favoriteBtn.setAttribute('data-game-id', gameId);
       favoriteBtn.setAttribute('aria-label', 'הוסף למועדפים');
       favoriteBtn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const gameImage = game.gameSlug ? `/Games/${game.gameSlug}/image1.jpg` : 'https://via.placeholder.com/300x200?text=' + encodeURIComponent(game.title);
-        const wasFavorite = favoriteBtn.classList.contains('active');
-        await toggleFavorite(game._id, favoriteBtn, game.title, gameImage);
-        if (showingFavorites && wasFavorite) {
-          // Wait a bit for the confirmation to show
-          setTimeout(() => {
-            if (!favoriteBtn.classList.contains('active')) {
-              card.remove();
-              if (gamesGrid.children.length === 0) {
-                gamesGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">אין משחקים במועדפים</div>';
+        try {
+          // Get image for favorite modal - use thumbnail, local image, or placeholder
+          const gameImage = game.thumb || game.thumbnail || 
+                           (game.gameSlug ? `/Games/${game.gameSlug}/image1.jpg` : '') || 
+                           createPlaceholderImage(300, 200, game.title || 'Game');
+          const wasFavorite = favoriteBtn.classList.contains('active');
+          // Prepare game data for GameMonetize games
+          const gameDataForFavorite = game.id && !game._id ? {
+            id: game.id,
+            title: game.title || 'Game',
+            description: game.description || '',
+            url: game.url || game.embedUrl || '',
+            thumb: game.thumb || game.thumbnail || '',
+            category: game.category || '',
+            tags: game.tags || ''
+          } : null;
+          await toggleFavorite(gameId, favoriteBtn, game.title || 'Game', gameImage, gameDataForFavorite);
+          
+          if (showingFavorites && wasFavorite) {
+            // Wait a bit for the confirmation to show
+            setTimeout(() => {
+              if (!favoriteBtn.classList.contains('active')) {
+                card.remove();
+                if (gamesGrid.children.length === 0) {
+                  gamesGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">אין משחקים במועדפים</div>';
+                }
               }
-            }
-          }, 100);
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error toggling favorite:', error);
         }
       });
       card.appendChild(favoriteBtn);
@@ -1553,6 +1727,708 @@ document.addEventListener('click', (e) => {
   if (userMenu && dropdown && !userMenu.contains(e.target)) {
     dropdown.style.display = 'none';
   }
+  
+  // Close notifications modal when clicking outside
+  const notificationsModal = document.getElementById('notificationsModal');
+  if (notificationsModal && e.target === notificationsModal) {
+    closeNotifications();
+  }
 });
+
+// Notifications functions
+function updateDiamondsDisplay(diamonds) {
+  const diamondsDisplay = document.getElementById('diamondsDisplay');
+  const diamondsCount = document.getElementById('diamondsCount');
+  
+  if (diamondsDisplay && diamondsCount) {
+    diamondsDisplay.style.display = 'flex';
+    diamondsCount.textContent = diamonds || 0;
+  }
+}
+
+async function checkUnreadNotifications() {
+  try {
+    const response = await fetch(`${API_URL}/api/notifications/unread-count`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      const badge = document.getElementById('notificationBadge');
+      if (badge) {
+        if (data.count > 0) {
+          badge.textContent = data.count > 9 ? '9+' : data.count;
+          badge.style.display = 'flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error checking unread notifications:', error);
+  }
+}
+
+async function loadNotifications() {
+  try {
+    const response = await fetch(`${API_URL}/api/notifications`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const notifications = await response.json();
+      return notifications;
+    }
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+    return [];
+  }
+}
+
+async function toggleNotifications() {
+  const modal = document.getElementById('notificationsModal');
+  const list = document.getElementById('notificationsList');
+  
+  if (!modal || !list) return;
+  
+  if (modal.style.display === 'none' || !modal.style.display) {
+    // Show modal and load notifications
+    modal.style.display = 'flex';
+    list.innerHTML = '<div class="notification-loading" style="text-align: center; padding: 20px; color: var(--muted);">טוען התראות...</div>';
+    
+    const notifications = await loadNotifications();
+    
+    if (notifications.length === 0) {
+      list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--muted);">אין התראות</div>';
+    } else {
+      list.innerHTML = notifications.map(notif => {
+        const isUnread = !notif.seen || !notif.read;
+        const date = new Date(notif.createdAt).toLocaleDateString('he-IL', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        return `
+          <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="markNotificationAsRead('${notif._id}')">
+            <div class="notification-header">
+              <h4 class="notification-title">${notif.title}</h4>
+              <span class="notification-type ${notif.type || 'info'}">${notif.type || 'info'}</span>
+            </div>
+            <p class="notification-message">${notif.message}</p>
+            <div class="notification-date">${date}</div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Mark all notifications as seen when opening modal
+    notifications.forEach(notif => {
+      if (!notif.seen) {
+        markNotificationAsSeen(notif._id);
+      }
+    });
+    
+    // Update badge
+    checkUnreadNotifications();
+  } else {
+    closeNotifications();
+  }
+}
+
+function closeNotifications() {
+  const modal = document.getElementById('notificationsModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+async function markNotificationAsSeen(notificationId) {
+  try {
+    await fetch(`${API_URL}/api/notifications/${notificationId}/seen`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch (error) {
+    console.error('Error marking notification as seen:', error);
+  }
+}
+
+async function markNotificationAsRead(notificationId) {
+  try {
+    await fetch(`${API_URL}/api/notifications/${notificationId}/read`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    
+    // Reload notifications to update UI
+    const notifications = await loadNotifications();
+    const list = document.getElementById('notificationsList');
+    const modal = document.getElementById('notificationsModal');
+    
+    if (list && modal && modal.style.display !== 'none') {
+      if (notifications.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--muted);">אין התראות</div>';
+      } else {
+        list.innerHTML = notifications.map(notif => {
+          const isUnread = !notif.seen || !notif.read;
+          const date = new Date(notif.createdAt).toLocaleDateString('he-IL', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="markNotificationAsRead('${notif._id}')">
+              <div class="notification-header">
+                <h4 class="notification-title">${notif.title}</h4>
+                <span class="notification-type ${notif.type || 'info'}">${notif.type || 'info'}</span>
+              </div>
+              <p class="notification-message">${notif.message}</p>
+              <div class="notification-date">${date}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+    
+    // Update badge
+    checkUnreadNotifications();
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+  }
+}
+
+// Check unread notifications periodically
+setInterval(checkUnreadNotifications, 60000); // Every minute
+
+// Daily Bonus Functions
+const DAILY_BONUS_REWARDS = [10, 20, 30, 50, 75, 100, 150]; // Day 1-7 rewards
+let dailyBonusModalShown = false; // Flag to prevent multiple auto-shows
+
+// Determine API URL based on current host
+const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+  ? 'https://jumpigames.com' 
+  : 'http://localhost:3000';
+
+async function checkDailyBonusStatus(autoShow = true) {
+  try {
+    const userData = localStorage.getItem('jumpiUser');
+    if (!userData) {
+      // Hide bonus elements if user not logged in
+      const bonusDisplay = document.getElementById('dailyBonusDisplay');
+      const bonusBtn = document.getElementById('dailyBonusBtn');
+      if (bonusDisplay) bonusDisplay.style.display = 'none';
+      if (bonusBtn) bonusBtn.style.display = 'none';
+      return;
+    }
+
+    const response = await fetch(`${API_URL}/api/daily-bonus/status`, {
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const status = await response.json();
+      updateDailyBonusUI(status);
+      
+      // Show bonus button if user can claim
+      const bonusBtn = document.getElementById('dailyBonusBtn');
+      const bonusDisplay = document.getElementById('dailyBonusDisplay');
+      if (bonusBtn) {
+        bonusBtn.style.display = status.canClaim ? 'inline-flex' : 'none';
+      }
+      if (bonusDisplay) {
+        bonusDisplay.style.display = status.canClaim ? 'flex' : 'none';
+      }
+      
+      // Auto-show modal if bonus can be claimed (on page load)
+      if (status.canClaim && autoShow && !dailyBonusModalShown) {
+        dailyBonusModalShown = true;
+        // Wait a bit before showing to let page load
+        setTimeout(() => {
+          showDailyBonusModal(status);
+        }, 1000);
+      }
+    } else if (response.status === 401) {
+      // User not authenticated - hide bonus elements
+      const bonusDisplay = document.getElementById('dailyBonusDisplay');
+      const bonusBtn = document.getElementById('dailyBonusBtn');
+      if (bonusDisplay) bonusDisplay.style.display = 'none';
+      if (bonusBtn) bonusBtn.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error checking daily bonus status:', error);
+  }
+}
+
+function updateDailyBonusUI(status) {
+  const bonusAmount = document.getElementById('dailyBonusAmount');
+  if (bonusAmount) {
+    bonusAmount.textContent = status.nextReward || 0;
+  }
+}
+
+async function checkAndShowDailyBonus() {
+  try {
+    const response = await fetch(`${API_URL}/api/daily-bonus/status`, {
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const status = await response.json();
+      if (status.canClaim) {
+        showDailyBonusModal(status);
+      } else {
+        // Already claimed today
+        showModalAlert('בונוס יומי', 'כבר קיבלת את הבונוס היומי היום! חזור מחר לקבל עוד.', 'info');
+      }
+    } else if (response.status === 401) {
+      showModalAlert('התחברות נדרשת', 'אתה צריך להתחבר כדי לקבל בונוס יומי', 'warning');
+    }
+  } catch (error) {
+    console.error('Error checking daily bonus:', error);
+    showModalAlert('שגיאה', 'אירעה שגיאה בבדיקת הבונוס היומי', 'error');
+  }
+}
+
+function showDailyBonusModal(status) {
+  const modal = document.getElementById('dailyBonusModal');
+  const rewardAmount = document.getElementById('dailyBonusRewardAmount');
+  const message = document.getElementById('dailyBonusMessage');
+  const streakContainer = document.getElementById('dailyBonusStreak');
+  const nextBonusInfo = document.getElementById('nextBonusInfo');
+  const claimBtn = document.getElementById('claimBonusBtn');
+
+  if (!modal) return;
+
+  // Update reward amount
+  if (rewardAmount) {
+    rewardAmount.textContent = status.nextReward || 0;
+  }
+
+  // Update message
+  if (message) {
+    const dayNumber = status.currentStreakDay + 1;
+    if (status.currentStreakDay === 0 && !status.lastClaimDate) {
+      message.textContent = 'התחל את הרצף שלך! התחבר מדי יום כדי לקבל פרסים גדולים יותר!';
+    } else {
+      message.textContent = `יום ${dayNumber} ברצף! המשך להתחבר מדי יום כדי לקבל פרסים גדולים יותר!`;
+    }
+  }
+
+  // Show streak days
+  if (streakContainer) {
+    streakContainer.innerHTML = '';
+    const nextDay = status.currentStreakDay;
+    
+    for (let i = 0; i < 7; i++) {
+      const dayDiv = document.createElement('div');
+      dayDiv.style.cssText = `
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        position: relative;
+        ${i === nextDay ? 'background: linear-gradient(180deg, var(--pill-1), var(--pill-2)); color: #2b1b5f; border: 3px solid #4CAF50;' : 'background: var(--panel-2); color: var(--muted);'}
+      `;
+      
+      if (i === nextDay) {
+        dayDiv.innerHTML = `<i class="fa-regular fa-gem" style="font-size: 20px;"></i>`;
+        dayDiv.title = `יום ${i + 1} - ${DAILY_BONUS_REWARDS[i]} יהלומים`;
+      } else {
+        dayDiv.textContent = DAILY_BONUS_REWARDS[i];
+        dayDiv.title = `יום ${i + 1} - ${DAILY_BONUS_REWARDS[i]} יהלומים`;
+      }
+      
+      streakContainer.appendChild(dayDiv);
+    }
+  }
+
+  // Update next bonus info
+  if (nextBonusInfo) {
+    const nextDay = (status.currentStreakDay + 1) % 7;
+    nextBonusInfo.textContent = `הפרס הבא: ${DAILY_BONUS_REWARDS[nextDay]} יהלומים (יום ${nextDay + 1})`;
+  }
+
+  // Enable claim button
+  if (claimBtn) {
+    claimBtn.disabled = false;
+    claimBtn.textContent = 'קבל בונוס';
+  }
+
+  // Show modal
+  modal.style.display = 'flex';
+
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeDailyBonusModal();
+    }
+  });
+
+  // Close on Escape key
+  const escapeHandler = (e) => {
+    if (e.key === 'Escape') {
+      closeDailyBonusModal();
+      document.removeEventListener('keydown', escapeHandler);
+    }
+  };
+  document.addEventListener('keydown', escapeHandler);
+}
+
+function closeDailyBonusModal() {
+  const modal = document.getElementById('dailyBonusModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+async function claimDailyBonus() {
+  const claimBtn = document.getElementById('claimBonusBtn');
+  if (claimBtn) {
+    claimBtn.disabled = true;
+    claimBtn.textContent = 'מעבד...';
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/daily-bonus/claim`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Update UI with claimed reward
+      const rewardAmount = document.getElementById('dailyBonusRewardAmount');
+      const message = document.getElementById('dailyBonusMessage');
+      const claimBtn = document.getElementById('claimBonusBtn');
+      
+      if (rewardAmount) {
+        rewardAmount.textContent = result.reward;
+      }
+      
+      if (message) {
+        message.textContent = `קיבלת ${result.reward} יהלומים! המשך להתחבר מדי יום כדי לקבל פרסים גדולים יותר!`;
+      }
+      
+      if (claimBtn) {
+        claimBtn.textContent = '✓ קיבלת!';
+        claimBtn.style.background = '#4CAF50';
+        claimBtn.disabled = true;
+      }
+      
+      // Update diamonds display
+      updateDiamondsDisplay(result.newDiamondsTotal);
+      
+      // Update user in localStorage
+      const userData = localStorage.getItem('jumpiUser');
+      if (userData) {
+        const user = JSON.parse(userData);
+        user.diamonds = result.newDiamondsTotal;
+        localStorage.setItem('jumpiUser', JSON.stringify(user));
+      }
+      
+      // Hide bonus button and display
+      const bonusBtn = document.getElementById('dailyBonusBtn');
+      const bonusDisplay = document.getElementById('dailyBonusDisplay');
+      if (bonusBtn) bonusBtn.style.display = 'none';
+      if (bonusDisplay) bonusDisplay.style.display = 'none';
+      
+      // Auto close modal after 3 seconds
+      setTimeout(() => {
+        closeDailyBonusModal();
+        // Refresh status (don't auto-show modal again)
+        checkDailyBonusStatus(false);
+      }, 3000);
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      showModalAlert('שגיאה', errorData.error || 'אירעה שגיאה בקבלת הבונוס', 'error');
+      
+      if (claimBtn) {
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'קבל בונוס';
+      }
+    }
+  } catch (error) {
+    console.error('Error claiming daily bonus:', error);
+    showModalAlert('שגיאה', 'אירעה שגיאה בקבלת הבונוס', 'error');
+    
+    if (claimBtn) {
+      claimBtn.disabled = false;
+      claimBtn.textContent = 'קבל בונוס';
+    }
+  }
+}
+
+// Tasks functions
+let currentTaskTab = 'daily';
+
+async function toggleTasksModal() {
+  const modal = document.getElementById('tasksModal');
+  if (!modal) return;
+  
+  if (modal.style.display === 'none' || !modal.style.display) {
+    modal.style.display = 'flex';
+    await loadTasks();
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeTasksModal();
+      }
+    });
+    
+    // Close on Escape key
+    const escapeHandler = (e) => {
+      if (e.key === 'Escape') {
+        closeTasksModal();
+        document.removeEventListener('keydown', escapeHandler);
+      }
+    };
+    document.addEventListener('keydown', escapeHandler);
+  } else {
+    closeTasksModal();
+  }
+}
+
+function closeTasksModal() {
+  const modal = document.getElementById('tasksModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function switchTaskTab(tab) {
+  currentTaskTab = tab;
+  const dailyContainer = document.getElementById('dailyTasksContainer');
+  const weeklyContainer = document.getElementById('weeklyTasksContainer');
+  const dailyTabBtn = document.getElementById('dailyTabBtn');
+  const weeklyTabBtn = document.getElementById('weeklyTabBtn');
+  
+  if (tab === 'daily') {
+    if (dailyContainer) dailyContainer.style.display = 'block';
+    if (weeklyContainer) weeklyContainer.style.display = 'none';
+    if (dailyTabBtn) dailyTabBtn.classList.add('active');
+    if (weeklyTabBtn) weeklyTabBtn.classList.remove('active');
+  } else {
+    if (dailyContainer) dailyContainer.style.display = 'none';
+    if (weeklyContainer) weeklyContainer.style.display = 'block';
+    if (dailyTabBtn) dailyTabBtn.classList.remove('active');
+    if (weeklyTabBtn) weeklyTabBtn.classList.add('active');
+  }
+}
+
+async function loadTasks() {
+  const dailyContainer = document.getElementById('dailyTasksContainer');
+  const weeklyContainer = document.getElementById('weeklyTasksContainer');
+  
+  try {
+    const response = await fetch(`${API_URL}/api/tasks`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      
+      // Render daily tasks
+      if (dailyContainer) {
+        dailyContainer.innerHTML = '';
+        if (data.daily && data.daily.length > 0) {
+          data.daily.forEach(task => {
+            dailyContainer.appendChild(createTaskCard(task, 'daily'));
+          });
+        } else {
+          dailyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--muted);">אין משימות יומיות</div>';
+        }
+      }
+      
+      // Render weekly tasks
+      if (weeklyContainer) {
+        weeklyContainer.innerHTML = '';
+        if (data.weekly && data.weekly.length > 0) {
+          data.weekly.forEach(task => {
+            weeklyContainer.appendChild(createTaskCard(task, 'weekly'));
+          });
+        } else {
+          weeklyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--muted);">אין משימות שבועיות</div>';
+        }
+      }
+    } else {
+      if (dailyContainer) {
+        dailyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--danger);">שגיאה בטעינת משימות</div>';
+      }
+      if (weeklyContainer) {
+        weeklyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--danger);">שגיאה בטעינת משימות</div>';
+      }
+    }
+  } catch (error) {
+    console.error('Error loading tasks:', error);
+    if (dailyContainer) {
+      dailyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--danger);">שגיאה בטעינת משימות</div>';
+    }
+    if (weeklyContainer) {
+      weeklyContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--danger);">שגיאה בטעינת משימות</div>';
+    }
+  }
+}
+
+function createTaskCard(task, type) {
+  const card = document.createElement('div');
+  card.className = 'task-card';
+  card.style.cssText = `
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 2px solid ${task.completed ? '#4CAF50' : 'var(--panel-2)'};
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+  `;
+  
+  const progress = task.progress || 0;
+  const target = task.target || 1;
+  const percentage = Math.min((progress / target) * 100, 100);
+  
+  // Icon
+  const icon = document.createElement('div');
+  icon.style.cssText = `
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: ${task.completed ? 'linear-gradient(180deg, var(--pill-1), var(--pill-2))' : 'var(--panel-2)'};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: ${task.completed ? '#2b1b5f' : 'var(--muted)'};
+    flex-shrink: 0;
+  `;
+  icon.innerHTML = `<i class="fa-solid ${task.icon || 'fa-check'}"></i>`;
+  card.appendChild(icon);
+  
+  // Content
+  const content = document.createElement('div');
+  content.style.cssText = 'flex: 1; min-width: 0;';
+  
+  const title = document.createElement('h4');
+  title.style.cssText = 'margin: 0 0 8px 0; color: var(--text); font-size: 16px; font-weight: 600;';
+  title.textContent = task.title;
+  content.appendChild(title);
+  
+  const description = document.createElement('p');
+  description.style.cssText = 'margin: 0 0 8px 0; color: var(--muted); font-size: 14px;';
+  description.textContent = task.description;
+  content.appendChild(description);
+  
+  // Progress bar
+  const progressBar = document.createElement('div');
+  progressBar.style.cssText = `
+    width: 100%;
+    height: 8px;
+    background: var(--panel-2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  `;
+  const progressFill = document.createElement('div');
+  progressFill.style.cssText = `
+    height: 100%;
+    width: ${percentage}%;
+    background: ${task.completed ? 'linear-gradient(90deg, #4CAF50, #45a049)' : 'linear-gradient(90deg, var(--brand-blue-1), var(--brand-blue-2))'};
+    transition: width 0.3s ease;
+    border-radius: 4px;
+  `;
+  progressBar.appendChild(progressFill);
+  content.appendChild(progressBar);
+  
+  const progressText = document.createElement('div');
+  progressText.style.cssText = 'margin-top: 4px; color: var(--muted); font-size: 12px;';
+  progressText.textContent = `${progress}/${target}`;
+  content.appendChild(progressText);
+  
+  card.appendChild(content);
+  
+  // Reward button
+  const rewardBtn = document.createElement('button');
+  rewardBtn.style.cssText = `
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: ${task.completed && !task.claimed ? 'pointer' : 'not-allowed'};
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  `;
+  
+  if (task.claimed) {
+    rewardBtn.style.background = '#4CAF50';
+    rewardBtn.style.color = '#fff';
+    rewardBtn.innerHTML = '<i class="fa-solid fa-check"></i> קיבלת';
+    rewardBtn.disabled = true;
+  } else if (task.completed) {
+    rewardBtn.style.background = 'linear-gradient(180deg, var(--pill-1), var(--pill-2))';
+    rewardBtn.style.color = '#2b1b5f';
+    rewardBtn.innerHTML = `<i class="fa-regular fa-gem"></i> ${task.reward}`;
+    rewardBtn.onclick = () => claimTaskReward(task.id, type);
+  } else {
+    rewardBtn.style.background = 'var(--panel-2)';
+    rewardBtn.style.color = 'var(--muted)';
+    rewardBtn.innerHTML = `<i class="fa-regular fa-gem"></i> ${task.reward}`;
+    rewardBtn.disabled = true;
+  }
+  
+  card.appendChild(rewardBtn);
+  
+  return card;
+}
+
+async function claimTaskReward(taskId, taskType) {
+  try {
+    const response = await fetch(`${API_URL}/api/tasks/${taskType}/${taskId}/claim`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const result = await response.json();
+      
+      // Update diamonds display
+      updateDiamondsDisplay(result.newDiamondsTotal);
+      
+      // Update user in localStorage
+      const userData = localStorage.getItem('jumpiUser');
+      if (userData) {
+        const user = JSON.parse(userData);
+        user.diamonds = result.newDiamondsTotal;
+        localStorage.setItem('jumpiUser', JSON.stringify(user));
+      }
+      
+      // Show success message
+      showModalAlert('הצלחה!', `קיבלת ${result.reward} יהלומים!`, 'success');
+      
+      // Reload tasks to update UI
+      await loadTasks();
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      showModalAlert('שגיאה', errorData.error || 'אירעה שגיאה בקבלת הפרס', 'error');
+    }
+  } catch (error) {
+    console.error('Error claiming task reward:', error);
+    showModalAlert('שגיאה', 'אירעה שגיאה בקבלת הפרס', 'error');
+  }
+}
 
 

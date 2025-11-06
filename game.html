@@ -237,8 +237,17 @@
             }
             player.src = url.toString();
             
-            // Initialize progress manager after iframe loads
+            // Track that game was played (for tasks) - only once per game load
             if (slug) {
+              // Track game play for tasks
+              fetch(`${API_URL}/api/game-play/${encodeURIComponent(slug)}`, {
+                method: 'POST',
+                credentials: 'include'
+              }).catch(err => {
+                console.error('Error tracking game play:', err);
+              });
+              
+              // Initialize progress manager after iframe loads
               const initProgress = () => {
                 if (window.JumpiProgress && window.JumpiProgress.init) {
                   window.JumpiProgress.init(slug, player);

@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema({
   howDidYouHear: String, // איך שמע עלינו
   registered: { type: Boolean, default: false },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  diamonds: { type: Number, default: 0 }, // יהלומים
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -166,6 +167,17 @@ const userModerationSchema = new mongoose.Schema({
 
 const UserModeration = mongoose.model('UserModeration', userModerationSchema);
 
+// Daily Bonus Schema - tracks daily bonus claims
+const dailyBonusSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  lastClaimDate: Date, // Last date bonus was claimed
+  currentStreakDay: { type: Number, default: 0 }, // Current day in streak (0 = no streak, 1-7 = day in week)
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const DailyBonus = mongoose.model('DailyBonus', dailyBonusSchema);
+
 // Favorites Schema - supports both MongoDB games (gameId) and GameMonetize games (gameIdString)
 const favoriteSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -181,6 +193,58 @@ favoriteSchema.index({ userId: 1, gameId: 1 }, { unique: true, sparse: true });
 favoriteSchema.index({ userId: 1, gameIdString: 1 }, { unique: true, sparse: true });
 
 const Favorite = mongoose.model('Favorite', favoriteSchema);
+
+// Notification Schema - התראות כלליות שנשלחות לכל המשתמשים
+const notificationSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  type: { type: String, enum: ['info', 'warning', 'success', 'error'], default: 'info' },
+  active: { type: Boolean, default: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const Notification = mongoose.model('Notification', notificationSchema);
+
+// UserNotification Schema - מעקב אחרי התראות שראה/קרא כל משתמש
+const userNotificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  notificationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Notification', required: true },
+  seen: { type: Boolean, default: false }, // נראתה
+  read: { type: Boolean, default: false }, // נקראה
+  seenAt: Date,
+  readAt: Date,
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Compound unique index - כל משתמש יכול להיות קשור להתראה פעם אחת בלבד
+userNotificationSchema.index({ userId: 1, notificationId: 1 }, { unique: true });
+
+const UserNotification = mongoose.model('UserNotification', userNotificationSchema);
+
+// Task Progress Schema - tracks user's task completion progress
+const taskProgressSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  taskType: { type: String, enum: ['daily', 'weekly'], required: true },
+  taskId: { type: String, required: true }, // e.g., 'play_random_game', 'play_5_games'
+  progress: { type: Number, default: 0 }, // Current progress (e.g., 3/5 games played)
+  target: { type: Number, required: true }, // Target value (e.g., 5 games)
+  completed: { type: Boolean, default: false },
+  completedAt: Date,
+  claimed: { type: Boolean, default: false }, // Whether reward was claimed
+  claimedAt: Date,
+  periodStart: { type: Date, required: true }, // Start date for daily/weekly period
+  periodEnd: { type: Date, required: true }, // End date for daily/weekly period
+  metadata: { type: mongoose.Schema.Types.Mixed, default: {} }, // Additional data (e.g., played games list)
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Compound unique index - one task progress per user per task per period
+taskProgressSchema.index({ userId: 1, taskType: 1, taskId: 1, periodStart: 1 }, { unique: true });
+
+const TaskProgress = mongoose.model('TaskProgress', taskProgressSchema);
 
 // Set admin user and create default chat room on startup
 mongoose.connection.once('open', async () => {
@@ -549,7 +613,8 @@ app.get('/api/user', (req, res) => {
       username: req.user.username,
       age: req.user.age,
       registered: req.user.registered,
-      role: req.user.role
+      role: req.user.role,
+      diamonds: req.user.diamonds || 0
     });
   } else {
     res.json(null);
@@ -1017,9 +1082,32 @@ app.get('/api/favorites', requireAuth, async (req, res) => {
   }
 });
 
+// Check if a specific game is favorited (GET endpoint)
+app.get('/api/favorites/:gameId', requireAuth, async (req, res) => {
+  try {
+    // Decode the gameId to handle encoded characters like colons
+    const gameId = decodeURIComponent(req.params.gameId);
+    
+    // Check if it's a MongoDB ObjectId or GameMonetize string ID
+    const isMongoId = mongoose.Types.ObjectId.isValid(gameId) && gameId.length === 24;
+    
+    let favorite;
+    if (isMongoId) {
+      favorite = await Favorite.findOne({ userId: req.user._id, gameId });
+    } else {
+      favorite = await Favorite.findOne({ userId: req.user._id, gameIdString: gameId });
+    }
+    
+    res.json({ isFavorite: !!favorite, favorite: favorite || null });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/favorites/:gameId', requireAuth, async (req, res) => {
   try {
-    const gameId = req.params.gameId;
+    // Decode the gameId to handle encoded characters like colons
+    const gameId = decodeURIComponent(req.params.gameId);
     const gameData = req.body.gameData; // Optional: game data for GameMonetize games
     
     // Check if it's a MongoDB ObjectId or GameMonetize string ID
@@ -1079,7 +1167,8 @@ app.post('/api/favorites/:gameId', requireAuth, async (req, res) => {
 
 app.delete('/api/favorites/:gameId', requireAuth, async (req, res) => {
   try {
-    const gameId = req.params.gameId;
+    // Decode the gameId to handle encoded characters like colons
+    const gameId = decodeURIComponent(req.params.gameId);
     
     // Check if it's a MongoDB ObjectId or GameMonetize string ID
     const isMongoId = mongoose.Types.ObjectId.isValid(gameId) && gameId.length === 24;
@@ -1103,6 +1192,678 @@ app.delete('/api/favorites/:gameId', requireAuth, async (req, res) => {
     
     res.json({ success: true });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Get user notifications
+app.get('/api/notifications', requireAuth, async (req, res) => {
+  try {
+    // Get all active notifications
+    const notifications = await Notification.find({ active: true })
+      .populate('createdBy', 'username name')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    // Get user's notification status for each notification
+    const userNotifications = await UserNotification.find({ userId: req.user._id }).lean();
+    const userNotificationMap = new Map();
+    userNotifications.forEach(un => {
+      userNotificationMap.set(un.notificationId.toString(), un);
+    });
+    
+    // Add user status to each notification
+    const notificationsWithStatus = notifications.map(notif => {
+      const userNotif = userNotificationMap.get(notif._id.toString());
+      return {
+        ...notif,
+        seen: userNotif ? userNotif.seen : false,
+        read: userNotif ? userNotif.read : false
+      };
+    });
+    
+    res.json(notificationsWithStatus);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Get unread count
+app.get('/api/notifications/unread-count', requireAuth, async (req, res) => {
+  try {
+    // Get all active notifications
+    const notifications = await Notification.find({ active: true }).select('_id').lean();
+    const notificationIds = notifications.map(n => n._id);
+    
+    // Count notifications that user hasn't seen or read
+    const userNotifications = await UserNotification.find({ 
+      userId: req.user._id,
+      notificationId: { $in: notificationIds }
+    }).lean();
+    
+    const userNotificationMap = new Map();
+    userNotifications.forEach(un => {
+      userNotificationMap.set(un.notificationId.toString(), un);
+    });
+    
+    let unreadCount = 0;
+    notifications.forEach(notif => {
+      const userNotif = userNotificationMap.get(notif._id.toString());
+      if (!userNotif || !userNotif.seen || !userNotif.read) {
+        unreadCount++;
+      }
+    });
+    
+    res.json({ count: unreadCount });
+  } catch (error) {
+    console.error('Error counting unread notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Mark as seen
+app.post('/api/notifications/:notificationId/seen', requireAuth, async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    
+    const userNotification = await UserNotification.findOneAndUpdate(
+      { userId: req.user._id, notificationId },
+      { seen: true, seenAt: new Date() },
+      { upsert: true, new: true }
+    );
+    
+    res.json({ success: true, userNotification });
+  } catch (error) {
+    console.error('Error marking notification as seen:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Mark as read
+app.post('/api/notifications/:notificationId/read', requireAuth, async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    
+    const userNotification = await UserNotification.findOneAndUpdate(
+      { userId: req.user._id, notificationId },
+      { 
+        seen: true, 
+        read: true, 
+        seenAt: new Date(),
+        readAt: new Date()
+      },
+      { upsert: true, new: true }
+    );
+    
+    res.json({ success: true, userNotification });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Admin: Get all notifications
+app.get('/api/admin/notifications', isAdmin, async (req, res) => {
+  try {
+    const notifications = await Notification.find()
+      .populate('createdBy', 'username name email')
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching admin notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Admin: Create notification
+app.post('/api/admin/notifications', isAdmin, async (req, res) => {
+  try {
+    const { title, message, type } = req.body;
+    
+    if (!title || !message) {
+      return res.status(400).json({ error: 'Title and message are required' });
+    }
+    
+    const notification = new Notification({
+      title,
+      message,
+      type: type || 'info',
+      active: true,
+      createdBy: req.user._id
+    });
+    
+    await notification.save();
+    
+    // When a new notification is created, it should be available to all users
+    // We don't need to create UserNotification records - they will be created on-demand when users check notifications
+    
+    res.json({ success: true, notification });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Admin: Update notification
+app.put('/api/admin/notifications/:id', isAdmin, async (req, res) => {
+  try {
+    const { title, message, type, active } = req.body;
+    
+    const updateData = {
+      updatedAt: new Date()
+    };
+    
+    if (title !== undefined) updateData.title = title;
+    if (message !== undefined) updateData.message = message;
+    if (type !== undefined) updateData.type = type;
+    if (active !== undefined) updateData.active = active;
+    
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).populate('createdBy', 'username name email');
+    
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+    
+    res.json({ success: true, notification });
+  } catch (error) {
+    console.error('Error updating notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Notifications API - Admin: Delete notification
+app.delete('/api/admin/notifications/:id', isAdmin, async (req, res) => {
+  try {
+    const notification = await Notification.findByIdAndDelete(req.params.id);
+    
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+    
+    // Also delete all user notification records for this notification
+    await UserNotification.deleteMany({ notificationId: req.params.id });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Diamonds API - Update diamonds
+app.put('/api/user/diamonds', requireAuth, async (req, res) => {
+  try {
+    const { diamonds } = req.body;
+    
+    if (typeof diamonds !== 'number' || diamonds < 0) {
+      return res.status(400).json({ error: 'Invalid diamonds value' });
+    }
+    
+    req.user.diamonds = diamonds;
+    await req.user.save();
+    
+    res.json({ success: true, diamonds: req.user.diamonds });
+  } catch (error) {
+    console.error('Error updating diamonds:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Helper function to add diamonds to user
+async function addDiamondsToUser(userId, amount) {
+  try {
+    const user = await User.findById(userId);
+    if (user) {
+      user.diamonds = (user.diamonds || 0) + amount;
+      await user.save();
+      return user.diamonds;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error adding diamonds:', error);
+    return null;
+  }
+}
+
+// Helper function to get week start (Monday) and end (Sunday)
+function getWeekStartEnd() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  const monday = new Date(now.setDate(diff));
+  monday.setUTCHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(sunday.getUTCDate() + 6);
+  sunday.setUTCHours(23, 59, 59, 999);
+  return { start: monday, end: sunday };
+}
+
+// Task Definitions
+const DAILY_TASKS = [
+  {
+    id: 'play_random_game',
+    title: 'שחק במשחק הבא: משחק רנדומלי',
+    description: 'שחק במשחק רנדומלי',
+    target: 1,
+    reward: 15, // diamonds
+    icon: 'fa-dice'
+  },
+  {
+    id: 'play_5_games',
+    title: 'שחק ב-5 משחקים שונים',
+    description: 'שחק ב-5 משחקים שונים היום',
+    target: 5,
+    reward: 50, // diamonds
+    icon: 'fa-gamepad'
+  },
+  {
+    id: 'play_3_games',
+    title: 'שחק ב-3 משחקים שונים',
+    description: 'שחק ב-3 משחקים שונים היום',
+    target: 3,
+    reward: 30, // diamonds
+    icon: 'fa-gamepad'
+  },
+  {
+    id: 'play_1_game',
+    title: 'שחק במשחק אחד',
+    description: 'שחק במשחק אחד היום',
+    target: 1,
+    reward: 10, // diamonds
+    icon: 'fa-play'
+  }
+];
+
+const WEEKLY_TASKS = [
+  {
+    id: 'play_10_games',
+    title: 'שחק ב-10 משחקים שונים',
+    description: 'שחק ב-10 משחקים שונים השבוע',
+    target: 10,
+    reward: 100, // diamonds
+    icon: 'fa-gamepad'
+  },
+  {
+    id: 'play_20_games',
+    title: 'שחק ב-20 משחקים שונים',
+    description: 'שחק ב-20 משחקים שונים השבוע',
+    target: 20,
+    reward: 200, // diamonds
+    icon: 'fa-trophy'
+  },
+  {
+    id: 'play_5_days',
+    title: 'שחק 5 ימים בשבוע',
+    description: 'שחק לפחות משחק אחד ב-5 ימים שונים השבוע',
+    target: 5,
+    reward: 150, // diamonds
+    icon: 'fa-calendar-days'
+  }
+];
+
+// Tasks API - Get user tasks
+app.get('/api/tasks', requireAuth, async (req, res) => {
+  try {
+    const today = getTodayMidnight();
+    const { start: weekStart, end: weekEnd } = getWeekStartEnd();
+    
+    // Get all task progress for user
+    const taskProgress = await TaskProgress.find({
+      userId: req.user._id,
+      $or: [
+        { taskType: 'daily', periodStart: today },
+        { taskType: 'weekly', periodStart: weekStart }
+      ]
+    }).lean();
+    
+    // Create a map of task progress
+    const progressMap = new Map();
+    taskProgress.forEach(tp => {
+      const key = `${tp.taskType}_${tp.taskId}_${tp.periodStart.toISOString()}`;
+      progressMap.set(key, tp);
+    });
+    
+    // Build daily tasks with progress
+    const dailyTasks = DAILY_TASKS.map(task => {
+      const key = `daily_${task.id}_${today.toISOString()}`;
+      const progress = progressMap.get(key);
+      return {
+        ...task,
+        progress: progress ? progress.progress : 0,
+        completed: progress ? progress.completed : false,
+        claimed: progress ? progress.claimed : false,
+        progressId: progress ? progress._id.toString() : null
+      };
+    });
+    
+    // Build weekly tasks with progress
+    const weeklyTasks = WEEKLY_TASKS.map(task => {
+      const key = `weekly_${task.id}_${weekStart.toISOString()}`;
+      const progress = progressMap.get(key);
+      return {
+        ...task,
+        progress: progress ? progress.progress : 0,
+        completed: progress ? progress.completed : false,
+        claimed: progress ? progress.claimed : false,
+        progressId: progress ? progress._id.toString() : null
+      };
+    });
+    
+    res.json({
+      daily: dailyTasks,
+      weekly: weeklyTasks,
+      periodStart: today.toISOString(),
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Tasks API - Claim task reward
+app.post('/api/tasks/:taskType/:taskId/claim', requireAuth, async (req, res) => {
+  try {
+    const { taskType, taskId } = req.params;
+    const today = getTodayMidnight();
+    const { start: weekStart, end: weekEnd } = getWeekStartEnd();
+    
+    const periodStart = taskType === 'daily' ? today : weekStart;
+    const periodEnd = taskType === 'daily' ? today : weekEnd;
+    
+    // Find task progress
+    const taskProgress = await TaskProgress.findOne({
+      userId: req.user._id,
+      taskType,
+      taskId,
+      periodStart
+    });
+    
+    if (!taskProgress) {
+      return res.status(404).json({ error: 'Task progress not found' });
+    }
+    
+    if (!taskProgress.completed) {
+      return res.status(400).json({ error: 'Task not completed yet' });
+    }
+    
+    if (taskProgress.claimed) {
+      return res.status(400).json({ error: 'Reward already claimed' });
+    }
+    
+    // Get task definition to get reward amount
+    const taskDef = taskType === 'daily' 
+      ? DAILY_TASKS.find(t => t.id === taskId)
+      : WEEKLY_TASKS.find(t => t.id === taskId);
+    
+    if (!taskDef) {
+      return res.status(404).json({ error: 'Task definition not found' });
+    }
+    
+    // Add diamonds to user
+    const newDiamondsTotal = await addDiamondsToUser(req.user._id, taskDef.reward);
+    
+    // Mark as claimed
+    taskProgress.claimed = true;
+    taskProgress.claimedAt = new Date();
+    taskProgress.updatedAt = new Date();
+    await taskProgress.save();
+    
+    res.json({
+      success: true,
+      reward: taskDef.reward,
+      newDiamondsTotal,
+      taskProgress
+    });
+  } catch (error) {
+    console.error('Error claiming task reward:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Helper function to check and update task progress when game is played
+async function checkTaskProgress(userId, gameSlug) {
+  try {
+    const today = getTodayMidnight();
+    const { start: weekStart, end: weekEnd } = getWeekStartEnd();
+    
+    // Get all active tasks
+    const allTasks = [
+      ...DAILY_TASKS.map(t => ({ ...t, type: 'daily' })),
+      ...WEEKLY_TASKS.map(t => ({ ...t, type: 'weekly' }))
+    ];
+    
+    for (const task of allTasks) {
+      const periodStart = task.type === 'daily' ? today : weekStart;
+      const periodEnd = task.type === 'daily' ? today : weekEnd;
+      
+      // Find or create task progress
+      let taskProgress = await TaskProgress.findOne({
+        userId,
+        taskType: task.type,
+        taskId: task.id,
+        periodStart
+      });
+      
+      if (!taskProgress) {
+        taskProgress = new TaskProgress({
+          userId,
+          taskType: task.type,
+          taskId: task.id,
+          target: task.target,
+          periodStart,
+          periodEnd,
+          metadata: { playedGames: [] }
+        });
+      }
+      
+      // Skip if already completed
+      if (taskProgress.completed) {
+        continue;
+      }
+      
+      // Update progress based on task type
+      let updated = false;
+      
+      if (task.id === 'play_random_game' || task.id === 'play_1_game') {
+        // Random game task or play 1 game - just mark as completed
+        if (!taskProgress.completed) {
+          taskProgress.progress = 1;
+          taskProgress.completed = true;
+          taskProgress.completedAt = new Date();
+          updated = true;
+        }
+      } else if (task.id.includes('play_') && task.id.includes('_games')) {
+        // Play N games task
+        const playedGames = taskProgress.metadata?.playedGames || [];
+        if (!playedGames.includes(gameSlug)) {
+          playedGames.push(gameSlug);
+          taskProgress.progress = playedGames.length;
+          taskProgress.metadata = { ...taskProgress.metadata, playedGames };
+          
+          if (taskProgress.progress >= task.target) {
+            taskProgress.completed = true;
+            taskProgress.completedAt = new Date();
+          }
+          updated = true;
+        }
+      } else if (task.id === 'play_5_days') {
+        // Play 5 days task - check if this is a new day
+        const playedDays = taskProgress.metadata?.playedDays || [];
+        const todayStr = today.toISOString().split('T')[0];
+        if (!playedDays.includes(todayStr)) {
+          playedDays.push(todayStr);
+          taskProgress.progress = playedDays.length;
+          taskProgress.metadata = { ...taskProgress.metadata, playedDays };
+          
+          if (taskProgress.progress >= task.target) {
+            taskProgress.completed = true;
+            taskProgress.completedAt = new Date();
+          }
+          updated = true;
+        }
+      }
+      
+      if (updated) {
+        taskProgress.updatedAt = new Date();
+        await taskProgress.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error checking task progress:', error);
+  }
+}
+
+// Helper function to get today's date at midnight (UTC)
+function getTodayMidnight() {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  return today;
+}
+
+// Helper function to check if two dates are the same day
+function isSameDay(date1, date2) {
+  return date1.getUTCFullYear() === date2.getUTCFullYear() &&
+         date1.getUTCMonth() === date2.getUTCMonth() &&
+         date1.getUTCDate() === date2.getUTCDate();
+}
+
+// Daily bonus rewards - progressive rewards for consecutive days (cycles every 7 days)
+const DAILY_BONUS_REWARDS = [
+  10,  // Day 1: 10 diamonds
+  20,  // Day 2: 20 diamonds
+  30,  // Day 3: 30 diamonds
+  50,  // Day 4: 50 diamonds
+  75,  // Day 5: 75 diamonds
+  100, // Day 6: 100 diamonds
+  150  // Day 7: 150 diamonds (bonus day)
+];
+
+// Daily Bonus API - Get status
+app.get('/api/daily-bonus/status', requireAuth, async (req, res) => {
+  try {
+    const today = getTodayMidnight();
+    
+    // Find or create daily bonus record
+    let dailyBonus = await DailyBonus.findOne({ userId: req.user._id });
+    
+    if (!dailyBonus) {
+      // First time - create new record
+      return res.json({
+        canClaim: true,
+        currentStreakDay: 0,
+        nextReward: DAILY_BONUS_REWARDS[0],
+        lastClaimDate: null
+      });
+    }
+    
+    // Check if already claimed today
+    const lastClaimDate = dailyBonus.lastClaimDate ? new Date(dailyBonus.lastClaimDate) : null;
+    const canClaim = !lastClaimDate || !isSameDay(lastClaimDate, today);
+    
+    // Calculate next reward day (if not claimed today, stay on current streak day)
+    let nextRewardDay = dailyBonus.currentStreakDay;
+    if (canClaim) {
+      // If can claim and it's the next day, increment streak
+      if (lastClaimDate) {
+        const yesterday = new Date(today);
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+        if (isSameDay(lastClaimDate, yesterday)) {
+          // Consecutive day - increment streak
+          nextRewardDay = (dailyBonus.currentStreakDay + 1) % 7;
+        } else {
+          // Missed days - reset to day 1 (but keep it on the cycle)
+          // Actually, as requested: "הרצף לא יהרס אם לא יתחברו ויפספסו ימים. אבל פשוט זה ישאר על הפרס הבא."
+          // So we keep the current streak day, just allow claiming
+          nextRewardDay = dailyBonus.currentStreakDay;
+        }
+      } else {
+        // First claim ever
+        nextRewardDay = 0;
+      }
+    }
+    
+    res.json({
+      canClaim,
+      currentStreakDay: dailyBonus.currentStreakDay,
+      nextReward: DAILY_BONUS_REWARDS[nextRewardDay],
+      lastClaimDate: lastClaimDate ? lastClaimDate.toISOString() : null
+    });
+  } catch (error) {
+    console.error('Error checking daily bonus status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Daily Bonus API - Claim bonus
+app.post('/api/daily-bonus/claim', requireAuth, async (req, res) => {
+  try {
+    const today = getTodayMidnight();
+    
+    // Find or create daily bonus record
+    let dailyBonus = await DailyBonus.findOne({ userId: req.user._id });
+    
+    if (!dailyBonus) {
+      dailyBonus = new DailyBonus({
+        userId: req.user._id,
+        currentStreakDay: 0,
+        lastClaimDate: today
+      });
+    } else {
+      // Check if already claimed today
+      const lastClaimDate = dailyBonus.lastClaimDate ? new Date(dailyBonus.lastClaimDate) : null;
+      if (lastClaimDate && isSameDay(lastClaimDate, today)) {
+        return res.status(400).json({ error: 'Bonus already claimed today' });
+      }
+      
+      // Calculate new streak day
+      if (lastClaimDate) {
+        const yesterday = new Date(today);
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+        if (isSameDay(lastClaimDate, yesterday)) {
+          // Consecutive day - increment streak
+          dailyBonus.currentStreakDay = (dailyBonus.currentStreakDay + 1) % 7;
+        }
+        // If missed days, keep current streak day (as requested)
+      } else {
+        // First claim ever
+        dailyBonus.currentStreakDay = 0;
+      }
+      
+      dailyBonus.lastClaimDate = today;
+    }
+    
+    // Get reward for current streak day
+    const reward = DAILY_BONUS_REWARDS[dailyBonus.currentStreakDay];
+    
+    // Add diamonds to user
+    req.user.diamonds = (req.user.diamonds || 0) + reward;
+    await req.user.save();
+    
+    // Save daily bonus record
+    dailyBonus.updatedAt = new Date();
+    await dailyBonus.save();
+    
+    // Calculate next reward day for response
+    const nextRewardDay = (dailyBonus.currentStreakDay + 1) % 7;
+    
+    res.json({
+      success: true,
+      reward,
+      newDiamondsTotal: req.user.diamonds,
+      currentStreakDay: dailyBonus.currentStreakDay,
+      nextReward: DAILY_BONUS_REWARDS[nextRewardDay],
+      nextRewardDay: nextRewardDay
+    });
+  } catch (error) {
+    console.error('Error claiming daily bonus:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1403,6 +2164,8 @@ app.post('/api/game-progress/:gameSlug', async (req, res) => {
       gameSlug: gameSlug 
     });
 
+    const isNewGame = !gameProgress;
+
     if (gameProgress) {
       // Update existing progress
       if (progress !== undefined) gameProgress.progress = progress;
@@ -1432,9 +2195,36 @@ app.post('/api/game-progress/:gameSlug', async (req, res) => {
     }
 
     await gameProgress.save();
+    
+    // Check task progress when game is played (asynchronously, don't wait for it)
+    checkTaskProgress(req.user._id, gameSlug).catch(err => {
+      console.error('Error checking task progress:', err);
+    });
+    
     res.json({ success: true, progress: gameProgress });
   } catch (error) {
     console.error('Error saving game progress:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Game Play API - Track when a game is played/opened (for tasks)
+app.post('/api/game-play/:gameSlug', async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  try {
+    const { gameSlug } = req.params;
+    
+    // Check task progress when game is played (asynchronously, don't wait for it)
+    checkTaskProgress(req.user._id, gameSlug).catch(err => {
+      console.error('Error checking task progress:', err);
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error tracking game play:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -25,15 +25,17 @@
         <img src="images/logo.png" alt="JumpiGames" />
       </div>
 
-      <div class="bonus">
+      <div class="bonus" id="dailyBonusDisplay" style="display: none;">
         <div class="coin"><i class="fa-regular fa-gem"></i></div>
         <div class="bonus-text">
-          <div class="bonus-amount">3000</div>
-          <div class="bonus-sub">Daily bonus</div>
+          <div class="bonus-amount" id="dailyBonusAmount">0</div>
+          <div class="bonus-sub">בונוס יומי</div>
         </div>
       </div>
 
-      <button class="btn icon-only pill-green" data-tip="קבל" aria-label="קבל"><i class="fa-solid fa-gift"></i></button>
+      <button class="btn icon-only pill-green" id="dailyBonusBtn" data-tip="קבל בונוס יומי" aria-label="קבל בונוס יומי" onclick="checkAndShowDailyBonus()" style="display: none;"><i class="fa-solid fa-gift"></i></button>
+
+      <button class="btn icon-only pill-purple" id="tasksBtn" data-tip="משימות" aria-label="משימות" onclick="toggleTasksModal()" style="display: none;"><i class="fa-solid fa-list-check"></i></button>
 
       <div class="search">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -43,6 +45,21 @@
         <i class="fa-regular fa-user"></i>
       </button>
       <div class="user-menu" id="userMenu" style="display: none;">
+        <!-- Notifications Button -->
+        <button class="btn icon-only pill-blue notifications-btn" id="notificationsBtn" onclick="toggleNotifications()" data-tip="התראות" aria-label="התראות">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+        </button>
+        
+        <!-- Diamonds Display -->
+        <div class="diamonds-display" id="diamondsDisplay" style="display: none;">
+          <i class="fa-regular fa-gem"></i>
+          <span id="diamondsCount">0</span>
+          <button class="diamonds-add-btn" onclick="window.location.href='shop.html'" data-tip="חנות" aria-label="חנות" title="חנות">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+        
         <button class="btn pill-blue" id="userBtn" onclick="toggleUserMenu()">
           <i class="fa-regular fa-user"></i>
           <span id="userName"></span>
@@ -155,6 +172,87 @@
           </div>
           <button type="submit" class="btn-submit">צור חדר</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notificationsModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>התראות</h3>
+          <button class="modal-close" onclick="closeNotifications()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div id="notificationsList" class="notifications-list">
+          <!-- Notifications will be loaded here -->
+          <div class="notification-loading" style="text-align: center; padding: 20px; color: var(--muted);">
+            טוען התראות...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Modal -->
+    <div id="tasksModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+          <h3>משימות</h3>
+          <button class="modal-close" onclick="closeTasksModal()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div style="padding: 20px;">
+          <!-- Tabs -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--panel-2);">
+            <button class="task-tab active" onclick="switchTaskTab('daily')" id="dailyTabBtn">
+              משימות יומיות
+            </button>
+            <button class="task-tab" onclick="switchTaskTab('weekly')" id="weeklyTabBtn">
+              משימות שבועיות
+            </button>
+          </div>
+          
+          <!-- Daily Tasks -->
+          <div id="dailyTasksContainer" class="tasks-container">
+            <div class="task-loading" style="text-align: center; padding: 20px; color: var(--muted);">
+              טוען משימות...
+            </div>
+          </div>
+          
+          <!-- Weekly Tasks -->
+          <div id="weeklyTasksContainer" class="tasks-container" style="display: none;">
+            <div class="task-loading" style="text-align: center; padding: 20px; color: var(--muted);">
+              טוען משימות...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Bonus Modal -->
+    <div id="dailyBonusModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>בונוס יומי! 🎁</h3>
+          <button class="modal-close" onclick="closeDailyBonusModal()">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div style="padding: 20px; text-align: center;">
+          <div style="font-size: 64px; margin: 20px 0;">
+            <i class="fa-regular fa-gem" style="color: #4CAF50;"></i>
+          </div>
+          <h2 style="margin: 20px 0; color: var(--text);">קיבלת <span id="dailyBonusRewardAmount" style="color: #4CAF50; font-weight: 800;">0</span> יהלומים!</h2>
+          <p style="color: var(--muted); margin-bottom: 30px;" id="dailyBonusMessage">המשך להתחבר מדי יום כדי לקבל פרסים גדולים יותר!</p>
+          <div style="display: flex; gap: 8px; justify-content: center; margin: 30px 0; flex-wrap: wrap;" id="dailyBonusStreak">
+            <!-- Streak days will be shown here -->
+          </div>
+          <button class="btn-submit" onclick="claimDailyBonus()" id="claimBonusBtn" style="background: linear-gradient(180deg, var(--pill-1), var(--pill-2)); color: #2b1b5f; padding: 14px 40px; font-weight: 800; font-size: 18px; border-radius: 999px; border: none; cursor: pointer; margin-top: 20px;">
+            קבל בונוס
+          </button>
+          <p style="color: var(--muted); font-size: 14px; margin-top: 20px;" id="nextBonusInfo"></p>
+        </div>
       </div>
     </div>
 

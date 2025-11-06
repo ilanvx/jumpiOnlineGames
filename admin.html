@@ -71,6 +71,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" onclick="switchTab('games')">ניהול משחקים</button>
         <button class="admin-tab" onclick="switchTab('users')">ניהול משתמשים</button>
+        <button class="admin-tab" onclick="switchTab('notifications')">ניהול התראות</button>
       </div>
 
       <!-- Games Tab -->
@@ -108,6 +109,28 @@
               </tr>
             </thead>
             <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div id="notificationsTab" class="admin-content">
+        <button class="btn-add" onclick="showAddNotificationForm()">
+          <i class="fa-solid fa-plus"></i> הוסף התראה חדשה
+        </button>
+        <div class="table-container">
+          <table id="notificationsTable">
+            <thead>
+              <tr>
+                <th>כותרת</th>
+                <th>הודעה</th>
+                <th>סוג</th>
+                <th>פעיל</th>
+                <th>תאריך יצירה</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="notificationsBody"></tbody>
           </table>
         </div>
       </div>
@@ -199,6 +222,42 @@
       </div>
     </div>
 
+    <!-- Add/Edit Notification Modal -->
+    <div class="form-modal" id="notificationModal">
+      <div class="form-box">
+        <h2 id="notificationModalTitle">הוסף התראה חדשה</h2>
+        <form id="notificationForm">
+          <input type="hidden" id="notificationId" />
+          <div class="form-group">
+            <label for="notificationTitle">כותרת *</label>
+            <input type="text" id="notificationTitle" required />
+          </div>
+          <div class="form-group">
+            <label for="notificationMessage">הודעה *</label>
+            <textarea id="notificationMessage" required style="min-height: 100px;"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="notificationType">סוג</label>
+            <select id="notificationType">
+              <option value="info">מידע</option>
+              <option value="success">הצלחה</option>
+              <option value="warning">אזהרה</option>
+              <option value="error">שגיאה</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="notificationActive" checked /> התראה פעילה
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-small" onclick="closeNotificationModal()">ביטול</button>
+            <button type="submit" class="btn-small btn-edit">שמור</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
       // Determine API URL based on current host
       const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
@@ -246,6 +305,8 @@
           loadGames();
         } else if (tab === 'users') {
           loadUsers();
+        } else if (tab === 'notifications') {
+          loadNotifications();
         }
       }
 
@@ -559,6 +620,155 @@
           alert('שגיאה במחיקת המשתמש');
         }
       }
+
+      // Notifications functions
+      async function loadNotifications() {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/notifications`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const notifications = await response.json();
+            const tbody = document.getElementById('notificationsBody');
+            tbody.innerHTML = '';
+            
+            notifications.forEach(notif => {
+              const tr = document.createElement('tr');
+              const date = new Date(notif.createdAt).toLocaleDateString('he-IL', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              });
+              tr.innerHTML = `
+                <td>${notif.title}</td>
+                <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${notif.message || ''}</td>
+                <td><span class="badge badge-${notif.type || 'info'}">${notif.type || 'info'}</span></td>
+                <td><span class="badge ${notif.active ? 'badge-active' : 'badge-inactive'}">${notif.active ? 'פעיל' : 'לא פעיל'}</span></td>
+                <td>${date}</td>
+                <td>
+                  <button class="btn-small btn-edit" onclick="editNotification('${notif._id}')">ערוך</button>
+                  <button class="btn-small btn-delete" onclick="deleteNotification('${notif._id}')">מחק</button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        } catch (error) {
+          console.error('Error loading notifications:', error);
+        }
+      }
+
+      function showAddNotificationForm() {
+        document.getElementById('notificationId').value = '';
+        document.getElementById('notificationTitle').value = '';
+        document.getElementById('notificationMessage').value = '';
+        document.getElementById('notificationType').value = 'info';
+        document.getElementById('notificationActive').checked = true;
+        document.getElementById('notificationModalTitle').textContent = 'הוסף התראה חדשה';
+        document.getElementById('notificationModal').classList.add('show');
+      }
+
+      async function editNotification(id) {
+        try {
+          const response = await fetch(`${API_URL}/api/admin/notifications`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const notifications = await response.json();
+            const notif = notifications.find(n => n._id === id);
+            
+            if (notif) {
+              document.getElementById('notificationId').value = notif._id;
+              document.getElementById('notificationTitle').value = notif.title;
+              document.getElementById('notificationMessage').value = notif.message;
+              document.getElementById('notificationType').value = notif.type || 'info';
+              document.getElementById('notificationActive').checked = notif.active !== false;
+              document.getElementById('notificationModalTitle').textContent = 'ערוך התראה';
+              document.getElementById('notificationModal').classList.add('show');
+            }
+          }
+        } catch (error) {
+          console.error('Error loading notification:', error);
+        }
+      }
+
+      function closeNotificationModal() {
+        document.getElementById('notificationModal').classList.remove('show');
+      }
+
+      document.getElementById('notificationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('notificationId').value;
+        const title = document.getElementById('notificationTitle').value;
+        const message = document.getElementById('notificationMessage').value;
+        const type = document.getElementById('notificationType').value;
+        const active = document.getElementById('notificationActive').checked;
+        
+        try {
+          let response;
+          if (id) {
+            // Update existing notification
+            response = await fetch(`${API_URL}/api/admin/notifications/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ title, message, type, active })
+            });
+          } else {
+            // Create new notification
+            response = await fetch(`${API_URL}/api/admin/notifications`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ title, message, type, active })
+            });
+          }
+          
+          if (response.ok) {
+            closeNotificationModal();
+            loadNotifications();
+            alert(id ? 'התראה עודכנה בהצלחה' : 'התראה נוצרה בהצלחה');
+          } else {
+            alert('שגיאה בשמירת ההתראה');
+          }
+        } catch (error) {
+          console.error('Error saving notification:', error);
+          alert('שגיאה בשמירת ההתראה');
+        }
+      });
+
+      async function deleteNotification(id) {
+        if (!confirm('האם אתה בטוח שברצונך למחוק את ההתראה?')) return;
+        
+        try {
+          const response = await fetch(`${API_URL}/api/admin/notifications/${id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            loadNotifications();
+            alert('התראה נמחקה בהצלחה');
+          } else {
+            alert('שגיאה במחיקת ההתראה');
+          }
+        } catch (error) {
+          console.error('Error deleting notification:', error);
+          alert('שגיאה במחיקת ההתראה');
+        }
+      }
+
+      // Close modal when clicking outside
+      document.getElementById('notificationModal').addEventListener('click', (e) => {
+        if (e.target.id === 'notificationModal') {
+          closeNotificationModal();
+        }
+      });
 
       // Initialize
       window.onload = async function () {

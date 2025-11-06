@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JumpiGames - חנות</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .shop-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      
+      .shop-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+      }
+      
+      .shop-header h1 {
+        font-size: 32px;
+        font-weight: 900;
+        margin: 0;
+      }
+      
+      .user-diamonds {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--panel-2);
+        padding: 12px 20px;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      
+      .user-diamonds i {
+        color: #2d6cff;
+        font-size: 24px;
+      }
+      
+      .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      
+      .shop-item {
+        background: var(--panel-2);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      
+      .shop-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      }
+      
+      .shop-item-icon {
+        font-size: 48px;
+        color: #2d6cff;
+        margin-bottom: 16px;
+      }
+      
+      .shop-item-title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+      
+      .shop-item-description {
+        color: var(--muted);
+        font-size: 14px;
+        margin-bottom: 16px;
+        min-height: 40px;
+      }
+      
+      .shop-item-price {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 24px;
+        font-weight: 900;
+        color: #2d6cff;
+        margin-bottom: 16px;
+      }
+      
+      .shop-item-button {
+        width: 100%;
+        padding: 12px;
+        border-radius: 12px;
+        border: 0;
+        background: linear-gradient(180deg, var(--brand-blue-1), var(--brand-blue-2));
+        color: #fff;
+        font-weight: 800;
+        font-size: 16px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+      }
+      
+      .shop-item-button:hover {
+        opacity: 0.9;
+      }
+      
+      .shop-item-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <img src="images/logo.png" alt="JumpiGames" />
+      </div>
+      <div style="grid-column: span 5"></div>
+      <a class="btn pill-blue" href="index.html">חזרה</a>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <a href="/" class="breadcrumb-item">עמוד הבית</a>
+      <span class="breadcrumb-separator">></span>
+      <span class="breadcrumb-item active">חנות</span>
+    </nav>
+
+    <main class="shop-container">
+      <div class="shop-header">
+        <h1>חנות יהלומים</h1>
+        <div class="user-diamonds" id="userDiamonds">
+          <i class="fa-regular fa-gem"></i>
+          <span id="diamondsCount">0</span>
+        </div>
+      </div>
+
+      <div class="shop-grid" id="shopGrid">
+        <!-- Shop items will be loaded here -->
+        <div style="text-align: center; padding: 40px; color: var(--muted);">
+          טוען חנות...
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Determine API URL based on current host
+      const API_URL = window.location.hostname === 'jumpigames.com' || window.location.hostname === 'www.jumpigames.com' 
+        ? 'https://jumpigames.com' 
+        : 'http://localhost:3000';
+
+      // Check user authentication
+      async function checkAuth() {
+        try {
+          const response = await fetch(`${API_URL}/api/user`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const user = await response.json();
+            if (user) {
+              if (!user.registered || !user.username) {
+                window.location.href = '/login.html';
+                return null;
+              }
+              return user;
+            }
+          }
+          window.location.href = '/login.html';
+          return null;
+        } catch (error) {
+          console.error('Error checking auth:', error);
+          window.location.href = '/login.html';
+          return null;
+        }
+      }
+
+      // Load shop items
+      function loadShopItems() {
+        const shopItems = [
+          {
+            id: 'diamonds_100',
+            title: '100 יהלומים',
+            description: 'חבילת יהלומים בסיסית',
+            icon: 'fa-regular fa-gem',
+            price: 100,
+            diamonds: 100
+          },
+          {
+            id: 'diamonds_500',
+            title: '500 יהלומים',
+            description: 'חבילת יהלומים בינונית',
+            icon: 'fa-regular fa-gem',
+            price: 500,
+            diamonds: 500,
+            popular: true
+          },
+          {
+            id: 'diamonds_1000',
+            title: '1000 יהלומים',
+            description: 'חבילת יהלומים גדולה',
+            icon: 'fa-regular fa-gem',
+            price: 1000,
+            diamonds: 1000
+          },
+          {
+            id: 'diamonds_2500',
+            title: '2500 יהלומים',
+            description: 'חבילת יהלומים גדולה מאוד',
+            icon: 'fa-regular fa-gem',
+            price: 2500,
+            diamonds: 2500
+          },
+          {
+            id: 'diamonds_5000',
+            title: '5000 יהלומים',
+            description: 'חבילת יהלומים ענקית',
+            icon: 'fa-regular fa-gem',
+            price: 5000,
+            diamonds: 5000
+          },
+          {
+            id: 'diamonds_10000',
+            title: '10000 יהלומים',
+            description: 'חבילת יהלומים ענקית ביותר',
+            icon: 'fa-regular fa-gem',
+            price: 10000,
+            diamonds: 10000
+          }
+        ];
+
+        const grid = document.getElementById('shopGrid');
+        grid.innerHTML = shopItems.map(item => `
+          <div class="shop-item">
+            <div class="shop-item-icon">
+              <i class="${item.icon}"></i>
+            </div>
+            <div class="shop-item-title">${item.title}</div>
+            <div class="shop-item-description">${item.description}</div>
+            <div class="shop-item-price">
+              <i class="fa-regular fa-gem"></i>
+              <span>${item.price}</span>
+            </div>
+            <button class="shop-item-button" onclick="purchaseItem('${item.id}', ${item.diamonds})">
+              קנה
+            </button>
+          </div>
+        `).join('');
+      }
+
+      async function purchaseItem(itemId, diamonds) {
+        try {
+          const response = await fetch(`${API_URL}/api/user`, {
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            const user = await response.json();
+            if (user) {
+              const newDiamonds = (user.diamonds || 0) + diamonds;
+              
+              const updateResponse = await fetch(`${API_URL}/api/user/diamonds`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ diamonds: newDiamonds })
+              });
+              
+              if (updateResponse.ok) {
+                alert(`הקניה בוצעה בהצלחה! קיבלת ${diamonds} יהלומים.`);
+                updateDiamondsDisplay(newDiamonds);
+              } else {
+                alert('שגיאה בעדכון היהלומים');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error purchasing item:', error);
+          alert('שגיאה בקניית הפריט');
+        }
+      }
+
+      function updateDiamondsDisplay(diamonds) {
+        const diamondsCount = document.getElementById('diamondsCount');
+        if (diamondsCount) {
+          diamondsCount.textContent = diamonds || 0;
+        }
+      }
+
+      // Initialize
+      window.addEventListener('DOMContentLoaded', async () => {
+        const user = await checkAuth();
+        if (user) {
+          updateDiamondsDisplay(user.diamonds || 0);
+          loadShopItems();
+        }
+      });
+    </script>
+  </body>
+</html>
+
