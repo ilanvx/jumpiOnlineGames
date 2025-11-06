@@ -32,8 +32,14 @@ const PORT = process.env.PORT || 3000;
 // Ensure we always use 'jumpigames' database
 let mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/jumpigames';
 
+// Replace /jumpi with /jumpigames (common mistake)
+mongoUri = mongoUri.replace(/\/jumpi(\?|$)/, '/jumpigames$1');
+
+// Replace /test with /jumpigames if needed
+mongoUri = mongoUri.replace(/\/test(\?|$)/, '/jumpigames$1');
+
 // If MONGODB_URI doesn't contain a database name, add /jumpigames
-if (mongoUri && !mongoUri.match(/\/[^\/]+\?/) && !mongoUri.endsWith('/jumpigames') && !mongoUri.endsWith('/test')) {
+if (mongoUri && !mongoUri.match(/\/[^\/]+\?/) && !mongoUri.endsWith('/jumpigames')) {
   // Check if URI ends with / or has no database specified
   if (mongoUri.endsWith('/')) {
     mongoUri = mongoUri + 'jumpigames';
@@ -42,9 +48,6 @@ if (mongoUri && !mongoUri.match(/\/[^\/]+\?/) && !mongoUri.endsWith('/jumpigames
     mongoUri = mongoUri + '/jumpigames';
   }
 }
-
-// Replace /test with /jumpigames if needed
-mongoUri = mongoUri.replace(/\/test(\?|$)/, '/jumpigames$1');
 
 mongoose.connect(mongoUri, {
   useNewUrlParser: true,
