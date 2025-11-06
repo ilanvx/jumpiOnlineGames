@@ -16,6 +16,30 @@ const categoriesCache = { data: null, timestamp: 0 };
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 const CATEGORIES_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes cache for categories
 
+// Request Queue and Rate Limiting
+const requestQueue = [];
+let isProcessingQueue = false;
+let lastRequestTime = 0;
+const MIN_REQUEST_INTERVAL = 2000; // 2 seconds between requests
+const MAX_QUEUE_SIZE = 100; // Maximum queue size
+const MAX_CACHE_SIZE = 50; // Maximum cache entries
+
+// Circuit Breaker Pattern
+const circuitBreaker = {
+  state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
+  failureCount: 0,
+  successCount: 0,
+  lastFailureTime: 0,
+  failureThreshold: 5, // Open circuit after 5 failures
+  successThreshold: 2, // Close circuit after 2 successes
+  timeout: 60000, // 60 seconds timeout before trying again
+  resetTimeout: 300000 // 5 minutes before resetting failure count
+};
+
+// Connection Pool
+const activeRequests = new Map();
+const MAX_CONCURRENT_REQUESTS = 3; // Maximum concurrent requests to API
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -656,101 +680,240 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// Helper function to fetch from GameMonetize API with retry logic
-function fetchGameMonetizeFeed(page = 1, retries = 2) {
+// Circuit Breaker Management
+function updateCircuitBreaker(success) {
+  const now = Date.now();
+  
+  if (success) {
+    circuitBreaker.successCount++;
+    circuitBreaker.failureCount = 0;
+    
+    if (circuitBreaker.state === 'HALF_OPEN' && circuitBreaker.successCount >= circuitBreaker.successThreshold) {
+      circuitBreaker.state = 'CLOSED';
+      circuitBreaker.successCount = 0;
+      console.log('✅ Circuit breaker CLOSED - API is healthy');
+    }
+  } else {
+    circuitBreaker.failureCount++;
+    circuitBreaker.lastFailureTime = now;
+    
+    if (circuitBreaker.state === 'CLOSED' && circuitBreaker.failureCount >= circuitBreaker.failureThreshold) {
+      circuitBreaker.state = 'OPEN';
+      console.warn('⚠️ Circuit breaker OPENED - API is failing');
+    } else if (circuitBreaker.state === 'HALF_OPEN') {
+      circuitBreaker.state = 'OPEN';
+      console.warn('⚠️ Circuit breaker OPENED again - API still failing');
+    }
+  }
+  
+  // Reset failure count after timeout
+  if (circuitBreaker.state === 'OPEN' && now - circuitBreaker.lastFailureTime > circuitBreaker.resetTimeout) {
+    circuitBreaker.failureCount = 0;
+  }
+  
+  // Try to move from OPEN to HALF_OPEN after timeout
+  if (circuitBreaker.state === 'OPEN' && now - circuitBreaker.lastFailureTime > circuitBreaker.timeout) {
+    circuitBreaker.state = 'HALF_OPEN';
+    circuitBreaker.successCount = 0;
+    console.log('🔄 Circuit breaker HALF_OPEN - testing API');
+  }
+}
+
+// Cache Management - Limit cache size
+function manageCacheSize() {
+  if (gamesCache.size > MAX_CACHE_SIZE) {
+    // Remove oldest entries
+    const entries = Array.from(gamesCache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    
+    const toRemove = entries.slice(0, entries.length - MAX_CACHE_SIZE);
+    toRemove.forEach(([key]) => gamesCache.delete(key));
+    console.log(`🧹 Cleaned ${toRemove.length} old cache entries`);
+  }
+}
+
+// Process Request Queue
+async function processRequestQueue() {
+  if (isProcessingQueue || requestQueue.length === 0) {
+    return;
+  }
+  
+  // Check circuit breaker
+  if (circuitBreaker.state === 'OPEN') {
+    const now = Date.now();
+    if (now - circuitBreaker.lastFailureTime < circuitBreaker.timeout) {
+      // Reject all queued requests
+      while (requestQueue.length > 0) {
+        const { reject } = requestQueue.shift();
+        reject(new Error('Circuit breaker is OPEN - API is temporarily unavailable'));
+      }
+      return;
+    }
+  }
+  
+  // Check concurrent requests limit
+  if (activeRequests.size >= MAX_CONCURRENT_REQUESTS) {
+    return;
+  }
+  
+  isProcessingQueue = true;
+  
+  while (requestQueue.length > 0 && activeRequests.size < MAX_CONCURRENT_REQUESTS) {
+    const { page, resolve, reject } = requestQueue.shift();
+    
+    // Rate limiting - ensure minimum interval between requests
+    const now = Date.now();
+    const timeSinceLastRequest = now - lastRequestTime;
+    if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+      const delay = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+      setTimeout(() => {
+        requestQueue.unshift({ page, resolve, reject });
+        isProcessingQueue = false;
+        processRequestQueue();
+      }, delay);
+      return;
+    }
+    
+    // Execute request
+    executeRequest(page, resolve, reject);
+  }
+  
+  isProcessingQueue = false;
+}
+
+// Execute actual HTTP request
+function executeRequest(page, resolve, reject) {
+  const requestId = `${page}_${Date.now()}`;
+  activeRequests.set(requestId, { page, startTime: Date.now() });
+  lastRequestTime = Date.now();
+  
+  const url = `https://gamemonetize.com/feed.php?format=0&page=${page}`;
+  const options = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      'Accept': 'application/json, text/plain, */*'
+    },
+    timeout: 10000 // 10 second timeout
+  };
+  
+  const req = https.get(url, options, (res) => {
+    // Handle rate limiting (429)
+    if (res.statusCode === 429) {
+      activeRequests.delete(requestId);
+      updateCircuitBreaker(false);
+      return reject(new Error(`HTTP 429: Too Many Requests - Rate limited by GameMonetize`));
+    }
+    
+    // Check for redirects
+    if (res.statusCode === 301 || res.statusCode === 302) {
+      activeRequests.delete(requestId);
+      updateCircuitBreaker(false);
+      return reject(new Error(`Redirected: ${res.headers.location || 'unknown'}`));
+    }
+    
+    if (res.statusCode !== 200) {
+      activeRequests.delete(requestId);
+      updateCircuitBreaker(false);
+      return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+    }
+    
+    let data = '';
+    res.on('data', (chunk) => {
+      data += chunk;
+      // Prevent memory issues with large responses
+      if (data.length > 10 * 1024 * 1024) { // 10MB limit
+        res.destroy();
+        activeRequests.delete(requestId);
+        updateCircuitBreaker(false);
+        return reject(new Error('Response too large'));
+      }
+    });
+    
+    res.on('end', () => {
+      activeRequests.delete(requestId);
+      
+      try {
+        if (!data || data.trim().length === 0) {
+          updateCircuitBreaker(false);
+          return reject(new Error('Empty response from GameMonetize API'));
+        }
+        
+        // Check if response is an error message
+        const dataTrimmed = data.trim();
+        if (dataTrimmed.toLowerCase().includes('error') || dataTrimmed.toLowerCase().includes('1015')) {
+          console.error('GameMonetize API error response:', dataTrimmed.substring(0, 200));
+          updateCircuitBreaker(false);
+          return reject(new Error(`GameMonetize API error: ${dataTrimmed.substring(0, 100)}`));
+        }
+        
+        // Try to parse JSON
+        let games;
+        try {
+          games = JSON.parse(data);
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError.message);
+          updateCircuitBreaker(false);
+          return reject(new Error(`Failed to parse JSON response`));
+        }
+        
+        // Check if games is an array
+        if (!Array.isArray(games)) {
+          console.error('Unexpected response format:', typeof games);
+          updateCircuitBreaker(false);
+          return reject(new Error('Invalid response format from GameMonetize API - expected array'));
+        }
+        
+        // Cache the result
+        const cacheKey = `page_${page}`;
+        gamesCache.set(cacheKey, { data: games, timestamp: Date.now() });
+        manageCacheSize();
+        
+        updateCircuitBreaker(true);
+        resolve(games);
+      } catch (error) {
+        updateCircuitBreaker(false);
+        reject(error);
+      }
+    });
+  });
+  
+  req.on('error', (error) => {
+    activeRequests.delete(requestId);
+    updateCircuitBreaker(false);
+    console.error('HTTPS request error:', error.message);
+    reject(error);
+  });
+  
+  req.on('timeout', () => {
+    req.destroy();
+    activeRequests.delete(requestId);
+    updateCircuitBreaker(false);
+    reject(new Error('Request timeout'));
+  });
+  
+  req.setTimeout(options.timeout);
+}
+
+// Helper function to fetch from GameMonetize API with queue and circuit breaker
+function fetchGameMonetizeFeed(page = 1) {
   return new Promise((resolve, reject) => {
     // Check cache first
     const cacheKey = `page_${page}`;
     const cached = gamesCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      console.log(`Using cached data for page ${page}`);
       return resolve(cached.data);
     }
     
-    const url = `https://gamemonetize.com/feed.php?format=0&page=${page}`;
-    const options = {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json, text/plain, */*'
-      }
-    };
+    // Check queue size
+    if (requestQueue.length >= MAX_QUEUE_SIZE) {
+      return reject(new Error('Request queue is full - too many pending requests'));
+    }
     
-    const attemptRequest = (attemptNum) => {
-      https.get(url, options, (res) => {
-        // Handle rate limiting (429)
-        if (res.statusCode === 429) {
-          if (attemptNum < retries) {
-            const delay = Math.pow(2, attemptNum) * 1000; // Exponential backoff
-            console.log(`Rate limited, retrying in ${delay}ms (attempt ${attemptNum + 1}/${retries})`);
-            return setTimeout(() => attemptRequest(attemptNum + 1), delay);
-          }
-          return reject(new Error(`HTTP 429: Too Many Requests - Rate limited by GameMonetize`));
-        }
-        
-        // Check for redirects
-        if (res.statusCode === 301 || res.statusCode === 302) {
-          return reject(new Error(`Redirected: ${res.headers.location}`));
-        }
-        
-        if (res.statusCode !== 200) {
-          return reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
-        }
-        
-        let data = '';
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          try {
-            if (!data || data.trim().length === 0) {
-              return reject(new Error('Empty response from GameMonetize API'));
-            }
-            
-            // Check if response is an error message
-            const dataTrimmed = data.trim();
-            if (dataTrimmed.toLowerCase().includes('error') || dataTrimmed.toLowerCase().includes('1015')) {
-              console.error('GameMonetize API error response:', dataTrimmed);
-              return reject(new Error(`GameMonetize API error: ${dataTrimmed}`));
-            }
-            
-            // Try to parse JSON
-            let games;
-            try {
-              games = JSON.parse(data);
-            } catch (parseError) {
-              console.error('JSON parse error:', parseError.message);
-              console.error('Response data (first 500 chars):', data.substring(0, 500));
-              return reject(new Error(`Failed to parse JSON response. Server returned: ${dataTrimmed.substring(0, 100)}`));
-            }
-            
-            // Check if games is an array
-            if (!Array.isArray(games)) {
-              console.error('Unexpected response format:', typeof games);
-              console.error('Response data (first 200 chars):', data.substring(0, 200));
-              return reject(new Error('Invalid response format from GameMonetize API - expected array'));
-            }
-            
-            // Cache the result
-            gamesCache.set(cacheKey, { data: games, timestamp: Date.now() });
-            resolve(games);
-          } catch (error) {
-            console.error('Unexpected error in response handler:', error.message);
-            reject(error);
-          }
-        });
-      }).on('error', (error) => {
-        if (attemptNum < retries) {
-          const delay = Math.pow(2, attemptNum) * 1000;
-          console.log(`Request error, retrying in ${delay}ms (attempt ${attemptNum + 1}/${retries})`);
-          return setTimeout(() => attemptRequest(attemptNum + 1), delay);
-        }
-        console.error('HTTPS request error:', error.message);
-        reject(error);
-      });
-    };
+    // Add to queue
+    requestQueue.push({ page, resolve, reject });
     
-    // Start first attempt
-    attemptRequest(0);
+    // Process queue
+    processRequestQueue();
   });
 }
 
@@ -837,56 +1000,93 @@ app.get('/api/games', async (req, res) => {
   } catch (error) {
     console.error('Error fetching GameMonetize games:', error.message);
     
-    // Check if it's a rate limiting error (429)
-    if (error.message.includes('429')) {
-      // Try to return cached data if available
-      const cacheKey = `page_${page}`;
-      const cached = gamesCache.get(cacheKey);
-      if (cached) {
-        console.log('Rate limited, returning cached data');
-        let cachedGames = cached.data;
-        
-        // Filter by category if needed
-        if (category) {
-          cachedGames = cachedGames.filter(game => 
-            game.category && game.category.toLowerCase() === category.toLowerCase()
-          );
+    // Always try to return cached data if available (graceful degradation)
+    const cacheKey = `page_${page}`;
+    const cached = gamesCache.get(cacheKey);
+    if (cached && cached.data) {
+      console.log('API error, returning cached data as fallback');
+      let cachedGames = cached.data;
+      
+      // Format cached games
+      let formattedGames = cachedGames.map(game => {
+        if (!game || typeof game !== 'object') {
+          return null;
         }
         
-        return res.json(cachedGames);
+        return {
+          id: game.id || game.game_id || game.ID || '',
+          title: game.title || game.Title || '',
+          description: game.description || game.Description || '',
+          instructions: game.instructions || game.Instructions || '',
+          url: game.url || game.game_url || game.URL || game.link || '',
+          embedUrl: game.url || game.game_url || game.URL || game.link || game.embedUrl || '',
+          gameSlug: createGameSlug(game),
+          category: game.category || game.Category || '',
+          tags: game.tags || game.Tags || '',
+          thumb: game.thumb || game.thumbnail || game.Thumb || game.image || '',
+          width: game.width || game.Width || '800',
+          height: game.height || game.Height || '600',
+          featured: false,
+          order: 0,
+          active: true
+        };
+      }).filter(game => game !== null);
+      
+      // Filter by category if needed
+      if (category) {
+        formattedGames = formattedGames.filter(game => {
+          const gameCategory = game.category || '';
+          const gameTags = (game.tags || '').toLowerCase();
+          
+          if (category.toLowerCase() === 'multiplayer') {
+            return gameTags.includes('multiplayer') || gameTags.includes('online') || gameCategory.toLowerCase().includes('multiplayer');
+          }
+          if (category.toLowerCase() === '2 player games' || category.toLowerCase() === '2 player') {
+            return gameTags.includes('2 player') || gameTags.includes('two player') || gameCategory.toLowerCase().includes('2 player');
+          }
+          
+          return gameCategory && gameCategory.toLowerCase() === category.toLowerCase();
+        });
       }
       
+      // Return cached data with warning header
+      res.set('X-Cache-Status', 'stale');
+      res.set('X-API-Status', 'unavailable');
+      return res.json(formattedGames);
+    }
+    
+    // No cached data available - return error
+    const errorMessage = error.message || 'Failed to fetch games from GameMonetize';
+    
+    // Check for specific error types
+    if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
       return res.status(503).json({ 
-        error: 'GameMonetize API is temporarily unavailable (rate limited). Please try again in a few minutes.' 
+        error: 'GameMonetize API is temporarily unavailable (rate limited). Please try again in a few minutes.',
+        cached: false
       });
     }
     
-    // Check if it's a Cloudflare blocking error (1015)
-    if (error.message.includes('1015')) {
-      // Try to return cached data if available
-      const cacheKey = `page_${page}`;
-      const cached = gamesCache.get(cacheKey);
-      if (cached) {
-        console.log('Cloudflare blocked, returning cached data');
-        let cachedGames = cached.data;
-        
-        // Filter by category if needed
-        if (category) {
-          cachedGames = cachedGames.filter(game => 
-            game.category && game.category.toLowerCase() === category.toLowerCase()
-          );
-        }
-        
-        return res.json(cachedGames);
-      }
-      
+    if (errorMessage.includes('1015') || errorMessage.includes('Cloudflare')) {
       return res.status(503).json({ 
-        error: 'GameMonetize API is temporarily unavailable (blocked by Cloudflare). Please try again later.' 
+        error: 'GameMonetize API is temporarily unavailable (blocked by Cloudflare). Please try again later.',
+        cached: false
       });
     }
     
+    if (errorMessage.includes('Circuit breaker') || errorMessage.includes('OPEN')) {
+      return res.status(503).json({ 
+        error: 'GameMonetize API is temporarily unavailable. Please try again in a few minutes.',
+        cached: false
+      });
+    }
+    
+    // Generic error
     console.error('Error stack:', error.stack);
-    res.status(500).json({ error: error.message || 'Failed to fetch games from GameMonetize' });
+    res.status(500).json({ 
+      error: 'Failed to fetch games from GameMonetize',
+      message: errorMessage,
+      cached: false
+    });
   }
 });
 
@@ -2722,6 +2922,42 @@ app.put('/api/admin/chat/messages/:messageId', isAdmin, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      rss: Math.round(process.memoryUsage().rss / 1024 / 1024)
+    },
+    api: {
+      circuitBreaker: circuitBreaker.state,
+      queueSize: requestQueue.length,
+      activeRequests: activeRequests.size,
+      cacheSize: gamesCache.size
+    },
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  };
+  
+  res.json(health);
+});
+
+// Cleanup stale requests periodically
+setInterval(() => {
+  const now = Date.now();
+  const staleTimeout = 30000; // 30 seconds
+  
+  for (const [requestId, request] of activeRequests.entries()) {
+    if (now - request.startTime > staleTimeout) {
+      console.warn(`🧹 Cleaning up stale request: ${requestId}`);
+      activeRequests.delete(requestId);
+    }
+  }
+}, 10000); // Check every 10 seconds
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Server running on http://localhost:${PORT}`);
