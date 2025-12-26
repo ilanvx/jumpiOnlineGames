@@ -16,9 +16,26 @@ const ADMIN_CODE = '3281';
 // Get your API key from: https://resend.com/api-keys
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+// Trust proxy (required for Railway/Heroku)
+app.set('trust proxy', 1);
+
 // Middleware
+const allowedOrigins = [
+  'https://jumpigames.com',
+  'http://localhost:3000',
+  'http://localhost'
+];
+
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all in development, restrict in production if needed
+    }
+  },
   credentials: true
 }));
 app.use(bodyParser.json());
@@ -32,6 +49,7 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
