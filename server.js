@@ -16,7 +16,7 @@ const ADMIN_CODE = '3281';
 // reCAPTCHA configuration
 const RECAPTCHA_SECRET_KEY = '6LcVGjcsAAAAAMNbBtAolA5b7nmVZk1ugylT5W_W';
 
-// Function to verify reCAPTCHA
+// Function to verify reCAPTCHA v3
 function verifyRecaptcha(token) {
   return new Promise((resolve, reject) => {
     const postData = `secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
@@ -42,7 +42,13 @@ function verifyRecaptcha(token) {
       res.on('end', () => {
         try {
           const result = JSON.parse(data);
-          resolve(result.success === true);
+          // For reCAPTCHA v3, check both success and score (0.0 to 1.0)
+          // Score >= 0.5 is typically considered human
+          if (result.success === true && result.score >= 0.5) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
         } catch (error) {
           reject(error);
         }

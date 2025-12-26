@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <script src="https://www.google.com/recaptcha/api.js?render=6LcVGjcsAAAAALnOVe-yoBwX7sNdS2uG4nsfEVsc"></script>
   
   <style>
 	:root {
@@ -363,10 +363,25 @@
 	}
 	
 	.grecaptcha-credit {
-		opacity: 0.5;
+		font-size: 1vw;
+		color: white;
+		text-align: center;
+		margin: 1.5vw 0;
+		padding: 0.5vw;
+		line-height: 1.6;
+		font-family: var(--font-family);
+		opacity: 0.9;
 	}
+	
 	.grecaptcha-credit a {
-		color: #fff !important;
+		color: white;
+		text-decoration: underline;
+		transition: opacity 0.2s ease;
+	}
+	
+	.grecaptcha-credit a:hover {
+		opacity: 0.8;
+		text-decoration: underline;
 	}
 	
 	.form-loader {
@@ -479,7 +494,7 @@
 		display: flex;
 		justify-content: center;
 		gap: 2vw;
-		margin-top: 3vw;
+		margin-top: 1.5vw;
 	}
 	
 	.btn-step {
@@ -681,7 +696,7 @@
 		
 		.step-buttons {
 			gap: 3vw;
-			margin-top: 5vw;
+			margin-top: 2vw;
 		}
 		
 		.btn-step {
@@ -834,16 +849,12 @@
 			
 			<div id="newsletterFormErrorAlert" class="alert alert-danger fade" role="alert"></div>
 			
-			<div class="recaptcha-container" style="margin: 1.5vw 0; display: flex; justify-content: center;">
-				<div class="g-recaptcha" data-sitekey="6LcVGjcsAAAAALnOVe-yoBwX7sNdS2uG4nsfEVsc"></div>
-			</div>
-			
-			<div class="grecaptcha-credit" style="font-size: 0.8vw; color: #666; text-align: center; margin-top: 0.5vw;">האתר מוגן על ידי reCAPTCHA ומדיניות הפרטיות של Google <a href="https://policies.google.com/privacy">מדיניות הפרטיות</a> ו<a href="https://policies.google.com/terms">תנאי השירות</a> חלים.</div>
-			
 			<div class="step-buttons">
 				<button type="button" class="btn btn-step btn-step-back" id="backToStep1">חזור</button>
 				<button type="submit" id="newsletterSubmit" class="btn btn-primary btn-submit btn-step">שלח</button>
 			</div>
+			
+			<div class="grecaptcha-credit">האתר מוגן על ידי reCAPTCHA ומדיניות הפרטיות של Google <a href="https://policies.google.com/privacy">מדיניות הפרטיות</a> ו<a href="https://policies.google.com/terms">תנאי השירות</a> חלים.</div>
 		</div>
 	</div>
 	
@@ -907,13 +918,6 @@
     });
     currentStep = step;
     updateStepIndicator(step);
-    
-    // Reset reCAPTCHA when showing step 2
-    if (step === 2 && typeof grecaptcha !== 'undefined') {
-      setTimeout(function() {
-        grecaptcha.reset();
-      }, 100);
-    }
   }
   
   document.getElementById("newsLetterParentChoice").addEventListener("click", onClickParentChoice);
@@ -973,28 +977,39 @@
 			return;
 		}
 		
-		// Validate reCAPTCHA
-		const recaptchaResponse = grecaptcha.getResponse();
-		if (!recaptchaResponse) {
-			$("#newsletterFormErrorAlert").addClass("show");
-			$("#newsletterFormErrorAlert").html("אנא אשר שאתה לא רובוט");
-			return;
-		}
-		
 		$( "#newsletterSubmit" ).prop('disabled', true);
 		$( "#newsletterSubmit" ).hide();
 		$("#newsletterFormLoading").show();
 		$("#newsletterFormErrorAlert").removeClass("show");
 		
-		// Submit to API
-		const formData = {
-			fullName: document.getElementById('newLetterName').value,
-			email: document.getElementById('newLetterEmail').value,
-			parentGroup: document.getElementById('newsLetterParentRadio').checked ? 'parent' : null,
-			playerGroup: document.getElementById('newsLetterPlayerRadio').checked ? 'player' : null,
-			agree: document.getElementById('newLetterAgreeCheckbox').checked,
-			recaptchaToken: recaptchaResponse
-		};
+		// Execute reCAPTCHA v3
+		if (typeof grecaptcha !== 'undefined') {
+			grecaptcha.ready(function() {
+				grecaptcha.execute('6LcVGjcsAAAAALnOVe-yoBwX7sNdS2uG4nsfEVsc', {action: 'submit'}).then(function(token) {
+					// Submit to API with reCAPTCHA token
+					const formData = {
+						fullName: document.getElementById('newLetterName').value,
+						email: document.getElementById('newLetterEmail').value,
+						parentGroup: document.getElementById('newsLetterParentRadio').checked ? 'parent' : null,
+						playerGroup: document.getElementById('newsLetterPlayerRadio').checked ? 'player' : null,
+						agree: document.getElementById('newLetterAgreeCheckbox').checked,
+						recaptchaToken: token
+					};
+					
+					submitFormData(formData);
+				});
+			});
+		} else {
+			// Fallback if reCAPTCHA not loaded
+			$("#newsletterFormErrorAlert").addClass("show");
+			$("#newsletterFormErrorAlert").html("שגיאה בטעינת reCAPTCHA. נסה לרענן את הדף.");
+			$( "#newsletterSubmit" ).prop('disabled', false);
+			$( "#newsletterSubmit" ).show();
+			$("#newsletterFormLoading").hide();
+		}
+	}
+	
+	function submitFormData(formData) {
 		
 		$.ajax({
 			url: '/api/newsletter/subscribe',
@@ -1004,10 +1019,6 @@
 			success: function(response) {
 				$("#newsletterFormLoading").hide();
 				if (response.success) {
-					// Reset reCAPTCHA after successful submission
-					if (typeof grecaptcha !== 'undefined') {
-						grecaptcha.reset();
-					}
 					showStep(3);
 				} else {
 					$("#newsletterFormErrorAlert").addClass("show");
