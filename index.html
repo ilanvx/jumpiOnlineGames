@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jumpi - בקרוב</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  
+  <style>
+	:root {
+		--primary-color: #66d030;
+		--title-color: #66d030;
+		--secondary-color: #a1df70;
+		--accent-color: #66d030;
+		--description-color: #A67C52;
+		--font-family: "Heebo", sans-serif;
+		--blue-light: #8cd8f2;
+		--blue-medium: #2eb7eb;
+		--blue-dark: #0f3059;
+	}
+	
+	p, a, h1, h2, h3, h4, h5, h6, span, label, input {
+	  font-family: var(--font-family);
+	}
+	
+	h1, h2, h3, h4, h5, h6 {
+	  font-weight: 900;
+	}
+	
+	h1 {
+		font-size: 2.8vw;
+	}
+	
+	h2 {
+		font-size: 2.2vw;
+	}
+	
+	h3 {
+		font-size: 1.8vw;
+	}
+	
+	p {
+		font-size: 1.8vw;
+		max-width: 45vw;
+	}
+	
+	label, input {
+		font-size: 1.8vw;
+	}
+	
+	.color-light {
+		color: var(--description-color);
+	}
+	
+	.extra-bold {
+	  font-weight: 900;
+	}
+	
+	.text-primary {
+		color: var(--primary-color);
+	}
+	
+    body {
+      background: linear-gradient(180deg, #f0f9e8 0%, #e8f5d8 100%);
+      font-family: var(--font-family), sans-serif;
+      min-height: 100vh;
+    }
+	
+	.logo {
+		height: 4.5vw;
+	}
+
+    .logo-bg {
+      background: transparent;
+      padding: 10px 20px;
+      display: inline-block;
+      margin: 0 0 20px 0;
+      width: 100%;
+      position: absolute;
+      z-index: 10;
+    }
+	
+	.top-background {
+		width: 100%;
+		height: 23vw;
+		background: url('hero.png');
+		background-size: cover;
+		background-position: center;
+		margin-bottom: 25px;
+		border-bottom: 5px solid #a1df70;
+		position: relative;
+	}
+	
+	.clouds-background {
+		width: 100%;
+		height: 500px;
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300"><path d="M0,150 Q100,100 200,150 T400,150 T600,150 T800,150 T1000,150 T1200,150 L1200,300 L0,300 Z" fill="rgba(161,223,112,0.15)"/></svg>') no-repeat;
+		background-size: 100%;
+		background-position: top;
+		position: absolute;
+		z-index: -1;
+		left: 0;
+	}
+	
+	.stars-background {
+		width: 14vw;
+		height: 500px;
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="rgba(102,208,48,0.2)"/></svg>') repeat;
+		background-size: 80px 80px;
+		background-position: top;
+		position: absolute;
+		z-index: -1;
+		right: 25vw;
+		margin-top: 3vh;
+		opacity: 0.6;
+	}
+
+    .main-section {
+      padding: 4vw 0;
+    }
+
+    .countdown-box {
+      background: linear-gradient(180deg, rgba(161, 223, 112, 0.6) 80%, rgba(161, 223, 112, 0.1));
+      border-radius: 12px;
+      border: 2px solid var(--secondary-color);
+      backdrop-filter: blur(4px) opacity(.9);
+      padding: 1.5vw 0.5vw 1.5vw 0.5vw;
+      margin: 10px;
+      font-size: 2.5vw;
+      color: var(--primary-color);
+      flex: 0 0 auto;
+      width: 11%;
+      min-width: 100px;
+      line-height: 0.7em;
+      box-shadow: 0 4px 8px rgba(102, 208, 48, 0.2);
+    }
+	
+	.countdown-box small {
+		color: var(--accent-color);
+		font-size: 1.5vw;
+	}
+
+    .newsletter-section {
+		position: relative;
+      background: linear-gradient(to bottom, #8cd8f2, #2eb7eb 40%);
+      padding: 60px 0;
+      color: white;
+    }
+
+    .choice-box {
+      background: linear-gradient(180deg, rgba(140, 216, 242, 0.4) 80%, rgba(46, 183, 235, 0.3));
+      border-radius: 1vw;
+      border: 0.25vw solid #2eb7eb;
+      border-block-width: 0.25vw;
+      padding: 1vw;
+      width: auto;
+      text-align: center;
+      transition: transform 0.2s ease;
+      cursor: pointer;
+    }
+	
+    .choice-box.active, .choice-box:hover {
+      background: linear-gradient(180deg, rgba(140, 216, 242, 0.8) 80%, rgba(46, 183, 235, 0.6));
+      box-shadow: 0 0px 30px rgba(140, 216, 242, .6);
+      backdrop-filter: blur(4px) opacity(.9);
+      z-index: 10;
+      opacity: 1;
+    }
+	
+	.choice-box.active {
+		border: 0.25vw solid #2eb7eb;
+		transform: scale(1.02);
+	}
+	
+	.choice-box.inactive {
+		opacity: 0.5;
+	}
+
+    .choice-box:hover {
+      transform: scale(1.05);
+    }
+	
+    .choice-box.inactive:hover {
+      opacity: 1;
+    }
+	
+	.choice-box.active:hover {
+		transform: scale(1.02);
+	}
+
+    .choice-box img {
+      width: auto;
+      height: 14.5vw;
+      margin-bottom: 1vw;
+      display: block;
+    }
+	
+	.btn.btn-primary {
+		background: linear-gradient(0deg, #8cd8f2 62%, #2eb7eb 111%);
+		border: 0.2vw solid #2eb7eb;
+		border-radius: 0.5vw;
+		padding: 0.7vw 1vw;
+		font-size: 1.4vw;
+		transition: background .15s ease-in-out;
+		color: white;
+		font-weight: 700;
+	}
+	
+	.btn.btn-primary:hover {
+		background: linear-gradient(0deg, #7bc8e2 62%, #28a5d9 111%);
+		color: white;
+	}
+	
+	.btn.btn-primary:focus-visible, .btn.btn-primary:active {
+		background: linear-gradient(0deg, #2eb7eb 62%, #2eb7eb 111%);
+		border: 0.15vw solid #2eb7eb;
+		color: white;
+	}
+	
+	.btn.btn-primary.btn-submit {
+		background: linear-gradient(0deg, #66d030 62%, #a1df70 111%);
+		border: 0.2vw solid #66d030;
+	}
+	
+	.btn.btn-primary.btn-submit:hover {
+		background: linear-gradient(0deg, #5ab825 62%, #8fcc5a 111%);
+		color: white;
+	}
+	
+	.btn.btn-primary.btn-submit:focus-visible, .btn.btn-primary.btn-submit:active {
+		background: linear-gradient(0deg, #5ab825 62%, #5ab825 111%);
+		border: 0.15vw solid #66d030;
+		color: white;
+	}
+	
+	.btn.btn-primary.btn-green {
+		background: linear-gradient(0deg, #66d030 62%, #a1df70 111%);
+		border: 0.2vw solid #66d030;
+	}
+	
+	.btn.btn-primary.btn-green:hover {
+		background: linear-gradient(0deg, #5ab825 62%, #8fcc5a 111%);
+		color: white;
+	}
+	
+	.btn.btn-primary.btn-green:focus-visible, .btn.btn-primary.btn-green:active {
+		background: linear-gradient(0deg, #5ab825 62%, #5ab825 111%);
+		border: 0.15vw solid #66d030;
+		color: white;
+	}
+	
+	.email-icon {
+		background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>') no-repeat;
+		background-size: contain;
+		display: inline-block;
+		width: 2vw;
+		height: 2vw;
+		position: relative;
+		top: 3.2px;
+		margin: 0px 3px 0px 3px;
+	}
+	
+	.rocket {
+		position: absolute;
+		left: 5vw;
+		width: 20vw;
+		z-index: 1;
+		top: -17vw;
+	}
+	
+	.floating-img {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%   { transform: translateY(0) rotate(0deg); }
+      50%  { transform: translateY(-10px) rotate(5deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+	
+	.diagonal-line {
+      background: #2eb7eb;
+      padding: 30px 20px;
+      clip-path: polygon(0 51%, -38% 25%, 100% 56%, 0% 79%);
+      z-index: 0;
+      position: absolute;
+      width: 100%;
+      margin-top: -33px;
+    }
+	
+	.fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease-out;
+  }
+
+  .show-up {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  
+  .form-container {
+      max-width: 600px;
+      margin: 50px auto;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: .75rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .form-title {
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+      text-align: center;
+      color: #343a40;
+    }
+    .form-label {
+      font-weight: 500;
+      color: #495057;
+    }
+    
+    .form-control {
+		font-size: 1.8vw;
+		border-radius: 0.7vw;
+		border: 0.2vw solid #8cd8f2;
+		padding: .375vw .75vw;
+	}
+	
+    .form-control:focus {
+      border-color: #ffffff4d;
+      box-shadow: 0 0 0 0.3vw rgba(102, 208, 48, 0.3);
+    }
+	
+	.form-check {
+	    margin: 1.6vw;
+	}
+	
+	#emailHelp {
+		margin-top: 0.8vw;
+		font-size: 1vw;
+	}
+	
+	input[type="checkbox"] {
+		border: 0.2vw solid #8cd8f2;
+	}
+	
+	input[type="checkbox"]:checked {
+		background-color: #66d030;
+		border: 0.2vw solid #a1df70;
+	}
+	
+	.form-check-label {
+		font-size: 1.2vw;
+	}
+	
+	.grecaptcha-credit {
+		opacity: 0.5;
+	}
+	.grecaptcha-credit a {
+		color: #fff !important;
+	}
+	
+	.form-loader {
+		margin: 1vw;
+		color: #fff;
+		fill: #fff;
+	}
+	
+	#newsletterFormFields2 {
+		max-width: 35.5vw;
+	}
+	
+	.alert {
+		margin-top: 1vw;
+		font-size: 1vw;
+		border-radius: 0.5vw;
+	}
+	
+	#newsletterFormSuccessAlert {
+		background: rgba(255, 255, 255, 0.5) !important;
+		border: none !important;
+		backdrop-filter: blur(10px);
+		padding: 2vw;
+	}
+	
+	.grecaptcha-badge { 
+		visibility: hidden;
+	}
+	
+	/* Step Indicator Styles */
+	.step-indicator {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin: 3vw 0;
+		gap: 2vw;
+	}
+	
+	.step-item {
+		display: flex;
+		align-items: center;
+		gap: 1vw;
+	}
+	
+	.step-number {
+		width: 3.5vw;
+		height: 3.5vw;
+		border-radius: 50%;
+		background: rgba(140, 216, 242, 0.3);
+		border: 0.3vw solid #8cd8f2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.8vw;
+		font-weight: 900;
+		color: #8cd8f2;
+		transition: all 0.3s ease;
+	}
+	
+	.step-item.active .step-number {
+		background: #2eb7eb;
+		border-color: #2eb7eb;
+		color: white;
+		box-shadow: 0 0 20px rgba(46, 183, 235, 0.5);
+	}
+	
+	.step-item.completed .step-number {
+		background: #66d030;
+		border-color: #66d030;
+		color: white;
+	}
+	
+	.step-label {
+		font-size: 1.4vw;
+		color: rgba(255, 255, 255, 0.7);
+		font-weight: 500;
+	}
+	
+	.step-item.active .step-label {
+		color: white;
+		font-weight: 700;
+	}
+	
+	.step-connector {
+		width: 4vw;
+		height: 0.2vw;
+		background: rgba(140, 216, 242, 0.3);
+		margin: 0 1vw;
+	}
+	
+	.step-connector.completed {
+		background: #66d030;
+	}
+	
+	.form-step {
+		display: none;
+	}
+	
+	.form-step.active {
+		display: block;
+		animation: fadeIn 0.5s ease-in;
+	}
+	
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(20px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	
+	.step-buttons {
+		display: flex;
+		justify-content: center;
+		gap: 2vw;
+		margin-top: 3vw;
+	}
+	
+	.btn-step {
+		padding: 0.8vw 2vw;
+		font-size: 1.4vw;
+		border-radius: 0.5vw;
+		font-weight: 700;
+	}
+	
+	.btn-step-back {
+		background: rgba(255, 255, 255, 0.2);
+		border: 0.2vw solid rgba(255, 255, 255, 0.5);
+		color: white;
+	}
+	
+	.btn-step-back:hover {
+		background: rgba(255, 255, 255, 0.3);
+		color: white;
+	}
+	
+	.btn-step-next {
+		background: linear-gradient(0deg, #66d030 62%, #a1df70 111%);
+		border: 0.2vw solid #66d030;
+		color: white;
+	}
+	
+	.btn-step-next:hover:not(:disabled) {
+		background: linear-gradient(0deg, #5ab825 62%, #8fcc5a 111%);
+		color: white;
+	}
+	
+	.btn-step-next:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	
+	@media (max-width: 1024px) {
+		.logo {
+			height: 14vw;
+		}
+		
+		.top-background {
+			height: 50vw;
+		}
+		
+		h1 {
+			font-size: 11vw;
+			padding: 10px;
+		}
+		
+		h2 {
+			font-size: 9.5vw;
+		}
+		
+		h3 {
+			font-size: 5.5vw;
+		}
+		
+		p {
+			font-size: 5.5vw;
+			max-width: 45vw;
+		}
+		
+		label, input {
+			font-size: 7.5vw;
+		}
+		
+		.desription {
+			max-width: 100%;
+			padding: 10px;
+		}
+		
+		.countdown-container {
+		    margin: auto;
+		}
+		
+		.countdown-box {
+			padding: 3.5vw 2.5vw 3.5vw 2.5vw;
+			margin: 2px;
+			font-size: 11.5vw;
+			width: 2%;
+			min-width: 22vw;
+		}
+		
+		.countdown-box small {
+		    font-size: 5vw;
+		}
+		
+		.rocket {
+			bottom: auto;
+			width: 36vw;
+			left: -11vw;
+			z-index: 1000;
+			top: -22vw;
+		}
+		
+		.email-icon {
+			width: 8vw;
+			height: 7vw;
+		}
+		
+		.subscribe-title {
+			font-size: 8vw;
+			margin: auto;
+			padding-bottom: 0 !important;
+		}
+		
+		.btn.btn-primary {
+		    border: 0.7vw solid var(--primary-color);
+			border-radius: 2.5vw;
+			padding: 1.7vw 3.5vw;
+			font-size: 5.5vw;
+		}
+		
+		.main-section {
+			margin-bottom: 15vw;
+		}
+		
+		.choice-box {
+		    border-radius: 3vw;
+			border-width: 0.7vw;
+			padding: 3vw;
+		}
+		
+		.choice-box.active, .choice-box:hover {
+		    border-radius: 3vw;
+			border-width: 0.7vw;
+			padding: 3vw;
+		}
+		
+		.choice-box img {
+			height: 34.5vw;
+		}
+		
+		#newsletterFormFields2 {
+			width: 100%;
+			max-width: 100%;
+			padding: 0px 8vw;
+		}
+		
+		.form-control {
+			font-size: 6.8vw;
+			border-radius: 2.5vw;
+			border: 0.7vw solid #8cd8f2;
+			padding: 0.9vw 1.8vw;
+		}
+		
+		.form-control:focus {
+			box-shadow: 0 0 0 1.5vw rgba(102, 208, 48, 0.3);
+		}
+		
+		input[type="checkbox"] {
+			border: 0.7vw solid #8cd8f2;
+		}
+		
+		input[type="checkbox"]:checked {
+			border: 0.7vw solid #a1df70;
+		}
+		
+		.form-check-input[type=checkbox] {
+		margin-left: -8.2vw;
+		}
+		
+		.form-check-label {
+		font-size: 5.2vw;
+		margin-bottom: 10px;
+		}
+		
+		.alert {
+			margin-top: 5vw;
+			font-size: 5vw;
+			border-radius: 2.5vw;
+		}
+		
+		.newsletter-success-alert {
+			width: 100%;
+		}
+		
+		.step-indicator {
+			margin: 5vw 0;
+			gap: 3vw;
+		}
+		
+		.step-number {
+			width: 10vw;
+			height: 10vw;
+			font-size: 5vw;
+			border-width: 0.7vw;
+		}
+		
+		.step-label {
+			font-size: 4vw;
+		}
+		
+		.step-connector {
+			width: 6vw;
+			height: 0.5vw;
+		}
+		
+		.step-buttons {
+			gap: 3vw;
+			margin-top: 5vw;
+		}
+		
+		.btn-step {
+			padding: 2vw 4vw;
+			font-size: 5vw;
+			border-radius: 2vw;
+		}
+		
+		.video-preview-container {
+			flex-direction: column;
+			gap: 4vw;
+		}
+		
+		.video-preview-container video {
+			width: 90% !important;
+			max-width: 100% !important;
+		}
+		
+		h1.mb-4 {
+			font-size: 6vw !important;
+			text-shadow: 0 3px 15px rgba(102, 208, 48, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+		}
+		
+		h2 {
+			font-size: 5vw !important;
+		}
+	}
+	
+  </style>
+</head>
+<body>
+
+  <div>
+	<div class="top-background"></div>
+  </div>
+	
+  <div class="main-section text-center">
+    
+	<div class="clouds-background"></div>
+	<div class="stars-background"></div>
+	
+    <div class="video-preview-container fade-up" style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 4vw 0;">
+      <h2 style="color: #2eb7eb; font-size: 2.5vw; font-weight: 700; margin-bottom: 2vw;">הספירה לאחור תתחיל בקרוב!</h2>
+      <div class="countdown-container row justify-content-center mb-4 w-100">
+        <div class="col-3 col-sm-2 countdown-box"><span id="openingCountdownDays">--</span><br><small class="d-block fw-normal">ימים</small></div>
+        <div class="col-3 col-sm-2 countdown-box"><span id="openingCountdownHours">--</span><br><small class="d-block fw-normal">שעות</small></div>
+        <div class="col-3 col-sm-2 countdown-box"><span id="openingCountdownMinutes">--</span><br><small class="d-block fw-normal">דקות</small></div>
+        <div class="col-3 col-sm-2 countdown-box"><span id="openingCountdownSeconds">--</span><br><small class="d-block fw-normal">שניות</small></div>
+      </div>
+      <video 
+        id="previewVideo" 
+        autoplay 
+        loop 
+        muted 
+        playsinline
+        style="width: 60%; max-width: 800px; height: auto; border-radius: 1vw; box-shadow: 0 8px 24px rgba(0,0,0,0.2); pointer-events: none;"
+        preload="auto">
+        <source src="video.mp4" type="video/mp4">
+        הדפדפן שלך לא תומך בתגית וידאו.
+      </video>
+    </div>
+
+    <div class="mt-4 fade-up">
+      <a class="btn btn-primary btn-lg btn-green" href="#newsletter">הרשם לקבלת עדכונים ➜</a>
+    </div>
+  </div>
+
+	<div class="diagonal-line"></div>
+  
+  <div class="newsletter-section text-center" id="newsletter">
+	<div>
+		<img src="a1.png" alt="Jumpi" class="rocket floating-img" style="width: 20vw; height: auto;">
+	</div>
+    <h1 class="subscribe-title mb-3 fade-up"><i class="email-icon"></i> הרשם לקבלת עדכונים</h1>
+    
+<form id="newsletterForm">
+	<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
+	
+	<!-- Step Indicator -->
+	<div class="step-indicator">
+		<div class="step-item active" data-step="1">
+			<div class="step-number">1</div>
+			<div class="step-label">בחירה</div>
+		</div>
+		<div class="step-connector"></div>
+		<div class="step-item" data-step="2">
+			<div class="step-number">2</div>
+			<div class="step-label">פרטים</div>
+		</div>
+		<div class="step-connector"></div>
+		<div class="step-item" data-step="3">
+			<div class="step-number">3</div>
+			<div class="step-label">סיום</div>
+		</div>
+	</div>
+	
+	<!-- Step 1: Choice -->
+	<div class="form-step active" id="step1">
+		<div class="container mt-4 mw-100">
+			<p class="mx-auto fade-up mw-100" style="font-size: 2vw; margin-bottom: 2vw;">האם אתה הורה או שחקן?</p>
+			<div class="row justify-content-center fade-up">
+				<div class="col-md-3 mx-2 choice-box" id="newsLetterParentChoice">
+					<img src="dad.png" alt="אני הורה" style="height: 14.5vw; width: auto; margin: 0 auto 1vw; display: block;">
+					<h3>אני הורה</h3>
+				</div>
+				<div class="col-md-3 mx-2 choice-box" id="newsLetterPlayerChoice">
+					<img src="kid.png" alt="אני שחקן" style="height: 14.5vw; width: auto; margin: 0 auto 1vw; display: block;">
+					<h3>אני שחקן</h3>
+				</div>
+			</div>
+			
+			<div style="display: none;">
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="parentGroup" id="newsLetterParentRadio">
+					<label class="form-check-label" for="newsLetterParentRadio">Parent radio</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="playerGroup" id="newsLetterPlayerRadio">
+					<label class="form-check-label" for="newsLetterPlayerRadio">Player radio</label>
+				</div>
+			</div>
+			
+			<div class="step-buttons">
+				<button type="button" class="btn btn-step btn-step-next" id="nextToStep2" disabled>הבא ➜</button>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Step 2: Details -->
+	<div class="form-step" id="step2">
+		<div class="container mt-4 col-5">
+			<div class="form-group">
+				<label for="newLetterName">שם מלא:</label>
+				<input type="text" class="form-control" name="fullName" id="newLetterName" placeholder="שם מלא" required="true">
+			</div>
+			<div class="form-group">
+				<label for="newLetterEmail">אימייל:</label>
+				<input type="email" class="form-control" name="email" id="newLetterEmail" placeholder="הזן אימייל" required="true">
+			</div>
+			<div class="form-check">
+				<input type="checkbox" class="form-check-input" name="agree" id="newLetterAgreeCheckbox" required="true">
+				<label class="form-check-label" for="newLetterAgreeCheckbox">אני מסכים לקבל אימיילים ועדכונים על ג'אמפי ומקבל את מדיניות הפרטיות.</label>
+			</div>
+			
+			<div class="form-loader" style="display: none;" id="newsletterFormLoading">
+				<svg version="1.1" id="loader-1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+					<path fill="#ffffff" d="M25.251,6.461c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615V6.461z">
+					<animateTransform attributeType="xml" attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.6s" repeatCount="indefinite"></animateTransform>
+					</path>
+				</svg>
+			</div>
+			
+			<div id="newsletterFormErrorAlert" class="alert alert-danger fade" role="alert"></div>
+			
+			<div class="grecaptcha-credit">האתר מוגן על ידי reCAPTCHA ומדיניות הפרטיות של Google <a href="https://policies.google.com/privacy">מדיניות הפרטיות</a> ו<a href="https://policies.google.com/terms">תנאי השירות</a> חלים.</div>
+			
+			<div class="step-buttons">
+				<button type="button" class="btn btn-step btn-step-back" id="backToStep1">חזור</button>
+				<button type="submit" id="newsletterSubmit" class="btn btn-primary btn-submit btn-step">שלח</button>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Step 3: Success -->
+	<div class="form-step" id="step3">
+		<div class="container mt-4 col-5">
+			<div id="newsletterFormSuccessAlert" class="alert alert-success" role="alert" style="display: block;">
+				<h2 style="color: white; font-size: 2.5vw; margin-bottom: 1vw;">נרשמת בהצלחה! 🎉</h2>
+				<p style="font-size: 1.5vw; color: white;">תודה שנרשמת לקבלת עדכונים על ג'אמפי. נשלח לך עדכונים בקרוב!</p>
+			</div>
+		</div>
+	</div>
+		
+</form>
+	
+	
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('show-up');
+      }
+    });
+  });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  
+  
+  // Step management
+  let currentStep = 1;
+  const totalSteps = 3;
+  
+  function updateStepIndicator(step) {
+    document.querySelectorAll('.step-item').forEach((item, index) => {
+      const stepNum = index + 1;
+      item.classList.remove('active', 'completed');
+      if (stepNum < step) {
+        item.classList.add('completed');
+      } else if (stepNum === step) {
+        item.classList.add('active');
+      }
+    });
+    
+    document.querySelectorAll('.step-connector').forEach((connector, index) => {
+      connector.classList.remove('completed');
+      if (index + 1 < step) {
+        connector.classList.add('completed');
+      }
+    });
+  }
+  
+  function showStep(step) {
+    document.querySelectorAll('.form-step').forEach((stepEl, index) => {
+      stepEl.classList.remove('active');
+      if (index + 1 === step) {
+        stepEl.classList.add('active');
+      }
+    });
+    currentStep = step;
+    updateStepIndicator(step);
+  }
+  
+  document.getElementById("newsLetterParentChoice").addEventListener("click", onClickParentChoice);
+  function onClickParentChoice() {
+    document.getElementById('newsLetterParentRadio').checked = true;
+	document.getElementById("newsLetterParentChoice").classList.add("active");
+	document.getElementById("newsLetterPlayerChoice").classList.remove("active");
+	
+	document.getElementById("newsLetterPlayerChoice").classList.add("inactive");
+	document.getElementById("newsLetterParentChoice").classList.remove("inactive");
+	
+	document.getElementById("nextToStep2").disabled = false;
+  }
+  
+  document.getElementById("newsLetterPlayerChoice").addEventListener("click", onClickPlayerChoice);
+  function onClickPlayerChoice() {
+    document.getElementById('newsLetterPlayerRadio').checked = true;
+	document.getElementById("newsLetterParentChoice").classList.remove("active");
+	document.getElementById("newsLetterPlayerChoice").classList.add("active");
+	
+	document.getElementById("newsLetterPlayerChoice").classList.remove("inactive");
+	document.getElementById("newsLetterParentChoice").classList.add("inactive");
+	
+	document.getElementById("nextToStep2").disabled = false;
+  }
+  
+  document.getElementById("nextToStep2").addEventListener("click", function() {
+    if (document.getElementById('newsLetterParentRadio').checked || document.getElementById('newsLetterPlayerRadio').checked) {
+      showStep(2);
+    }
+  });
+  
+  document.getElementById("backToStep1").addEventListener("click", function() {
+    showStep(1);
+  });
+  
+  
+  // newsletter form
+  $(document).ready(function(){
+		$( "#newsletterSubmit" ).click(onClickSubmit);
+		
+		gotoHash(location.hash);
+		$('a[href*="#"]').on('click', function() {
+		  gotoHash("#"+$(this).attr('href').split("#")[1]);
+		});
+	});
+
+	function onClickSubmit(e) {
+		e.preventDefault();
+		
+		// Validate form
+		if (!document.getElementById('newLetterName').value || 
+		    !document.getElementById('newLetterEmail').value ||
+		    !document.getElementById('newLetterAgreeCheckbox').checked) {
+			$("#newsletterFormErrorAlert").addClass("show");
+			$("#newsletterFormErrorAlert").html("אנא מלא את כל השדות הנדרשים");
+			return;
+		}
+		
+		$( "#newsletterSubmit" ).prop('disabled', true);
+		$( "#newsletterSubmit" ).hide();
+		$("#newsletterFormLoading").show();
+		$("#newsletterFormErrorAlert").removeClass("show");
+		
+		// Submit to API
+		const formData = {
+			fullName: document.getElementById('newLetterName').value,
+			email: document.getElementById('newLetterEmail').value,
+			parentGroup: document.getElementById('newsLetterParentRadio').checked ? 'parent' : null,
+			playerGroup: document.getElementById('newsLetterPlayerRadio').checked ? 'player' : null,
+			agree: document.getElementById('newLetterAgreeCheckbox').checked
+		};
+		
+		$.ajax({
+			url: '/api/newsletter/subscribe',
+			method: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify(formData),
+			success: function(response) {
+				$("#newsletterFormLoading").hide();
+				if (response.success) {
+					showStep(3);
+				} else {
+					$("#newsletterFormErrorAlert").addClass("show");
+					$("#newsletterFormErrorAlert").html(response.error || "שגיאה בהרשמה");
+					$( "#newsletterSubmit" ).prop('disabled', false);
+					$( "#newsletterSubmit" ).show();
+				}
+			},
+			error: function(xhr) {
+				$("#newsletterFormLoading").hide();
+				const errorMsg = xhr.responseJSON?.error || "שגיאה בהרשמה. נסה שוב מאוחר יותר.";
+				$("#newsletterFormErrorAlert").addClass("show");
+				$("#newsletterFormErrorAlert").html(errorMsg);
+				$( "#newsletterSubmit" ).prop('disabled', false);
+				$( "#newsletterSubmit" ).show();
+			}
+		});
+	}
+  
+  
+function gotoHash(id) {
+  setTimeout(function() {
+    console.log("gotoHash:", id);
+
+    var $target = $(id);
+    if (!$target.length) {
+      return;
+    }
+
+    var offset = $target.offset();
+    if (!offset) {
+      return;
+    }
+
+    var scrollOffset = 100;
+    var y = offset.top - scrollOffset;
+
+    window.scrollTo(0, y);
+  }, 0);
+}
+
+// Ensure video plays automatically and loops
+document.addEventListener('DOMContentLoaded', function() {
+  const video = document.getElementById('previewVideo');
+  if (video) {
+    video.muted = true;
+    video.loop = true;
+    video.play().catch(function(error) {
+      // Auto-play was prevented, try again on user interaction
+      document.addEventListener('click', function() {
+        video.play();
+      }, { once: true });
+    });
+  }
+  
+  // Countdown timer - currently disabled, showing "-- -- -- --"
+  // Uncomment the code below when ready to start countdown:
+  /*
+  const targetDate = new Date();
+  targetDate.setMonth(targetDate.getMonth() + 6);
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = targetDate - now;
+
+    if (diff <= 0) {
+      document.getElementById("openingCountdownDays").textContent = "0";
+      document.getElementById("openingCountdownHours").textContent = "0";
+      document.getElementById("openingCountdownMinutes").textContent = "0";
+      document.getElementById("openingCountdownSeconds").textContent = "0";
+      clearInterval(countdownInterval);
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+
+    if (document.getElementById("openingCountdownDays")) {
+      document.getElementById("openingCountdownDays").textContent = days;
+      document.getElementById("openingCountdownHours").textContent = hours;
+      document.getElementById("openingCountdownMinutes").textContent = minutes;
+      document.getElementById("openingCountdownSeconds").textContent = seconds;
+    }
+  }
+
+  updateCountdown();
+  const countdownInterval = setInterval(updateCountdown, 1000);
+  */
+});
+</script>
+</body>
+</html>
