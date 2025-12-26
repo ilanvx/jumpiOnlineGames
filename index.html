@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&display=swap" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   
   <style>
 	:root {
@@ -757,8 +758,6 @@
     <h1 class="subscribe-title mb-3 fade-up"><i class="email-icon"></i> הרשם לקבלת עדכונים</h1>
     
 <form id="newsletterForm">
-	<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response">
-	
 	<!-- Step Indicator -->
 	<div class="step-indicator">
 		<div class="step-item active" data-step="1">
@@ -835,7 +834,11 @@
 			
 			<div id="newsletterFormErrorAlert" class="alert alert-danger fade" role="alert"></div>
 			
-			<div class="grecaptcha-credit">האתר מוגן על ידי reCAPTCHA ומדיניות הפרטיות של Google <a href="https://policies.google.com/privacy">מדיניות הפרטיות</a> ו<a href="https://policies.google.com/terms">תנאי השירות</a> חלים.</div>
+			<div class="recaptcha-container" style="margin: 1.5vw 0; display: flex; justify-content: center;">
+				<div class="g-recaptcha" data-sitekey="6LcVGjcsAAAAALnOVe-yoBwX7sNdS2uG4nsfEVsc"></div>
+			</div>
+			
+			<div class="grecaptcha-credit" style="font-size: 0.8vw; color: #666; text-align: center; margin-top: 0.5vw;">האתר מוגן על ידי reCAPTCHA ומדיניות הפרטיות של Google <a href="https://policies.google.com/privacy">מדיניות הפרטיות</a> ו<a href="https://policies.google.com/terms">תנאי השירות</a> חלים.</div>
 			
 			<div class="step-buttons">
 				<button type="button" class="btn btn-step btn-step-back" id="backToStep1">חזור</button>
@@ -904,6 +907,13 @@
     });
     currentStep = step;
     updateStepIndicator(step);
+    
+    // Reset reCAPTCHA when showing step 2
+    if (step === 2 && typeof grecaptcha !== 'undefined') {
+      setTimeout(function() {
+        grecaptcha.reset();
+      }, 100);
+    }
   }
   
   document.getElementById("newsLetterParentChoice").addEventListener("click", onClickParentChoice);
@@ -963,6 +973,14 @@
 			return;
 		}
 		
+		// Validate reCAPTCHA
+		const recaptchaResponse = grecaptcha.getResponse();
+		if (!recaptchaResponse) {
+			$("#newsletterFormErrorAlert").addClass("show");
+			$("#newsletterFormErrorAlert").html("אנא אשר שאתה לא רובוט");
+			return;
+		}
+		
 		$( "#newsletterSubmit" ).prop('disabled', true);
 		$( "#newsletterSubmit" ).hide();
 		$("#newsletterFormLoading").show();
@@ -974,7 +992,8 @@
 			email: document.getElementById('newLetterEmail').value,
 			parentGroup: document.getElementById('newsLetterParentRadio').checked ? 'parent' : null,
 			playerGroup: document.getElementById('newsLetterPlayerRadio').checked ? 'player' : null,
-			agree: document.getElementById('newLetterAgreeCheckbox').checked
+			agree: document.getElementById('newLetterAgreeCheckbox').checked,
+			recaptchaToken: recaptchaResponse
 		};
 		
 		$.ajax({
@@ -985,6 +1004,10 @@
 			success: function(response) {
 				$("#newsletterFormLoading").hide();
 				if (response.success) {
+					// Reset reCAPTCHA after successful submission
+					if (typeof grecaptcha !== 'undefined') {
+						grecaptcha.reset();
+					}
 					showStep(3);
 				} else {
 					$("#newsletterFormErrorAlert").addClass("show");
@@ -1000,6 +1023,10 @@
 				$("#newsletterFormErrorAlert").html(errorMsg);
 				$( "#newsletterSubmit" ).prop('disabled', false);
 				$( "#newsletterSubmit" ).show();
+				// Reset reCAPTCHA on error
+				if (typeof grecaptcha !== 'undefined') {
+					grecaptcha.reset();
+				}
 			}
 		});
 	}

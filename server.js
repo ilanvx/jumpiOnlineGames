@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const { Resend } = require('resend');
+const https = require('https');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +12,51 @@ const PORT = process.env.PORT || 3000;
 
 // Admin code - stored securely on server only
 const ADMIN_CODE = '3281';
+
+// reCAPTCHA configuration
+const RECAPTCHA_SECRET_KEY = '6LcVGjcsAAAAAMNbBtAolA5b7nmVZk1ugylT5W_W';
+
+// Function to verify reCAPTCHA
+function verifyRecaptcha(token) {
+  return new Promise((resolve, reject) => {
+    const postData = `secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
+    
+    const options = {
+      hostname: 'www.google.com',
+      port: 443,
+      path: '/recaptcha/api/siteverify',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+    
+    const req = https.request(options, (res) => {
+      let data = '';
+      
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      
+      res.on('end', () => {
+        try {
+          const result = JSON.parse(data);
+          resolve(result.success === true);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+    
+    req.write(postData);
+    req.end();
+  });
+}
 
 // Email setup - Using Resend (free tier: 3,000 emails/month)
 // Get your API key from: https://resend.com/api-keys
@@ -144,7 +190,7 @@ app.post('/api/admin/logout', (req, res) => {
 // Newsletter subscription
 app.post('/api/newsletter/subscribe', async (req, res) => {
   try {
-    const { fullName, email, parentGroup, playerGroup, agree } = req.body;
+    const { fullName, email, parentGroup, playerGroup, agree, recaptchaToken } = req.body;
 
     // Validation
     if (!fullName || !email || !agree) {
@@ -153,6 +199,21 @@ app.post('/api/newsletter/subscribe', async (req, res) => {
 
     if (!parentGroup && !playerGroup) {
       return res.status(400).json({ error: 'נא לבחור אם אתה הורה או שחקן' });
+    }
+
+    // Verify reCAPTCHA
+    if (!recaptchaToken) {
+      return res.status(400).json({ error: 'אנא אשר שאתה לא רובוט' });
+    }
+
+    try {
+      const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+      if (!isRecaptchaValid) {
+        return res.status(400).json({ error: 'אימות reCAPTCHA נכשל. נסה שוב.' });
+      }
+    } catch (recaptchaError) {
+      console.error('reCAPTCHA verification error:', recaptchaError);
+      return res.status(500).json({ error: 'שגיאה באימות reCAPTCHA. נסה שוב מאוחר יותר.' });
     }
 
     const type = parentGroup ? 'parent' : 'player';
