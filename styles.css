@@ -1,0 +1,490 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    direction: rtl;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+header {
+    background: white;
+    padding: 20px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 20px;
+}
+
+.logo-img {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+nav {
+    display: flex;
+    gap: 30px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: color 0.4s ease;
+    position: relative;
+}
+
+nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: 0;
+    left: 0;
+    height: 2px;
+    background: #8B5CF6;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+nav a:hover {
+    color: #8B5CF6;
+}
+
+nav a.active {
+    color: #8B5CF6;
+}
+
+nav a.active::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+.contact-btn {
+    padding: 10px 25px;
+    border: 2px solid #8B5CF6;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.contact-btn:hover {
+    background: #8B5CF6;
+    color: white;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    padding: 80px 0 150px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(138, 43, 226, 0.25) 0%, rgba(138, 43, 226, 0.3) 50%, rgba(138, 43, 226, 0.25) 100%);
+    clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-text {
+    flex: 1;
+    position: relative;
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    font-family: 'Rubik', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    position: absolute;
+    top: -150px;
+    z-index: 3;
+}
+
+.hero-divider {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 100px;
+    background: white;
+    clip-path: polygon(0 30%, 100% 0, 100% 100%, 0 100%);
+}
+
+/* Games Section */
+.games-section {
+    padding: 40px 0 100px;
+    background: white;
+}
+
+.section-title {
+    font-size: 36px;
+    text-align: center;
+    margin-bottom: 60px;
+    color: #6D28D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.section-title .icon {
+    font-size: 36px;
+    color: #8B5CF6;
+}
+
+.games-grid {
+    display: grid;
+    gap: 40px;
+    position: relative;
+}
+
+.game-card {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.game-image {
+    flex: 1;
+}
+
+.floating-character {
+    position: absolute;
+    left: -150px;
+    top: -180px;
+    width: 320px;
+    height: auto;
+    z-index: 10;
+    animation: float 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-15px) rotate(2deg);
+    }
+    50% {
+        transform: translateY(-25px) rotate(0deg);
+    }
+    75% {
+        transform: translateY(-15px) rotate(-2deg);
+    }
+}
+
+.computer-mockup {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.computer-screen {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: #1a1a1a;
+    border-radius: 8px 8px 0 0;
+    padding: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+.computer-screen::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 80px;
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+}
+
+.computer-content {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+
+.computer-base {
+    width: 100%;
+    height: 20px;
+    background: #2a2a2a;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    position: relative;
+}
+
+.computer-base::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 60%;
+    height: 8px;
+    background: #1a1a1a;
+    border-radius: 0 0 4px 4px;
+}
+
+.game-info {
+    flex: 1.5;
+}
+
+.game-info h3 {
+    font-size: 32px;
+    color: #6D28D9;
+    margin-bottom: 20px;
+}
+
+.game-info p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.8;
+}
+
+.jumpi-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 25px;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.jumpi-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+}
+
+.jumpi-btn i {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.jumpi-btn:hover i {
+    transform: translateX(-5px);
+}
+
+.game-info strong {
+    color: #8B5CF6;
+    font-weight: 600;
+}
+
+/* About Section */
+.about-section {
+    padding: 100px 0;
+    background: #f8f9fa;
+}
+
+.about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-content p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 25px;
+    line-height: 1.8;
+}
+
+/* Contact Section */
+.contact-section {
+    padding: 100px 0;
+    background: white;
+}
+
+.contact-content {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-content > p {
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.contact-info {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.contact-info p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.contact-info i {
+    color: #8B5CF6;
+    font-size: 20px;
+}
+
+/* Footer */
+footer {
+    background: #6D28D9;
+    color: white;
+    padding: 30px 0;
+    text-align: center;
+}
+
+footer p {
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-text h1 {
+        font-size: 36px;
+    }
+
+    .game-card {
+        flex-direction: column;
+    }
+
+    .floating-character {
+        width: 300px;
+        left: -50px;
+        top: -30px;
+    }
+
+    .computer-mockup {
+        max-width: 300px;
+    }
+
+    nav {
+        gap: 15px;
+    }
+
+    nav a {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    header .container {
+        flex-direction: column;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .logo {
+        position: static;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .hero-text h1 {
+        font-size: 28px;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    .game-info h3 {
+        font-size: 24px;
+    }
+
+    .game-info p,
+    .about-content p {
+        font-size: 16px;
+    }
+}
