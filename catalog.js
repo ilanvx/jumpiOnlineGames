@@ -66,6 +66,42 @@ add("tag", 6, "Diamond", 600);
 add("tag", 7, "Skull", 700);
 add("tag", 8, "Crown", 1000);
 
+// furniture for the player's home (can be bought more than once)
+[
+  ["Cozy Sofa", 300], ["Armchair", 180], ["Round Table", 150], ["Wooden Chair", 80],
+  ["Comfy Bed", 400], ["Floor Lamp", 120], ["Potted Plant", 90], ["Bookshelf", 250],
+  ["Big TV", 500], ["Round Rug", 140], ["Beanbag", 160], ["Fish Tank", 450],
+  ["Arcade Machine", 800], ["Piano", 900], ["Gold Trophy", 1000], ["Toy Box", 110],
+].forEach(([n, p], i) => add("furniture", i, n, p));
+export const FURNITURE_COUNT = 16;
+
+// emotes (the big faces above your head). Same order as EMOTES in public/index.html.
+// Free ones belong to everybody; the rest are bought once in the shop or from the chat bar.
+export const EMOTE_LIST = ["happy", "laugh", "love", "wow", "cool", "wink", "silly", "party", "shy", "sad", "angry", "sleepy"];
+export const FREE_EMOTES = new Set(["happy", "wow", "sad"]);
+const EMOTE_PRICE = { laugh: 150, love: 200, cool: 300, wink: 150, silly: 200, party: 400, shy: 150, angry: 250, sleepy: 150 };
+const EMOTE_NAME = { happy: "Happy", laugh: "LOL", love: "Love", wow: "Wow", cool: "Cool", wink: "Wink", silly: "Silly", party: "Party", shy: "Shy", sad: "Sad", angry: "Angry", sleepy: "Sleepy" };
+EMOTE_LIST.forEach((e, i) => {
+  add("emote", i, EMOTE_NAME[e], FREE_EMOTES.has(e) ? 0 : EMOTE_PRICE[e]);
+  if (FREE_EMOTES.has(e)) items[items.length - 1].free = true;
+});
+// can this player use this emote?
+export function hasEmote(inventory, e) {
+  if (FREE_EMOTES.has(e)) return true;
+  const i = EMOTE_LIST.indexOf(e);
+  return i >= 0 && (inventory || []).includes(`emote:${i}`);
+}
+export const MAX_FURNITURE = 60;
+
+// auras: wild LEGENDARY effects all around the character. Same order as AURA_LIST in public/index.html.
+[
+  ["Flame Aura", 3000], ["Frost Storm", 3500], ["Heart Swirl", 3000], ["Thunder Storm", 4500],
+  ["Rainbow Burst", 5000], ["Galaxy Orbit", 6000], ["Shadow Void", 7000], ["Golden Glory", 10000],
+].forEach(([n, p], i) => {
+  add("aura", i, n, p);
+  items[items.length - 1].rarity = "legendary";
+}); // most furniture pieces one player can own
+
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
 
@@ -78,9 +114,10 @@ export const LOOK_SLOTS = {
   pants: { max: 7, optional: true },
   glasses: { max: 7, optional: true },
   tag: { max: 8, optional: true },
+  aura: { max: 7, optional: true },
 };
 // what sign-up may choose for free
-export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, tag: -1 };
+export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, tag: -1, aura: -1 };
 
 // the item ids a look is wearing
 export function lookItems(look = {}) {
@@ -90,4 +127,25 @@ export function lookItems(look = {}) {
     if (Number.isInteger(i) && i >= 0) out.push(`${slot}:${i}`);
   }
   return out;
+}
+
+// floor space of each furniture piece: [width, depth, depth offset] when not turned. Piece 9 (the rug) lies flat: things can stand on it.
+export const FURN_FOOTPRINT = [[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0]];
+export const FLAT_FURNITURE = new Set([9]);
+// the rectangle a placed piece covers on the floor
+export function footprint({ f, x, z, r }) {
+  const [w, d, oz] = FURN_FOOTPRINT[f], turned = r % 2 === 1, a = (r * Math.PI) / 2;
+  const cx = x + oz * Math.sin(a), cz = z + oz * Math.cos(a), hw = (turned ? d : w) / 2, hd = (turned ? w : d) / 2;
+  return [cx - hw, cz - hd, cx + hw, cz + hd];
+}
+export const HOME_BOUNDS = { halfW: 7.4, halfD: 5.6, door: [2.5, -5.6, 4.3, -4.2] };
+const hits = (a, b) => a[0] < b[2] - 0.02 && a[2] > b[0] + 0.02 && a[1] < b[3] - 0.02 && a[3] > b[1] + 0.02;
+// why this piece can't go there (given the pieces already placed), or null
+export function placeProblem(it, others) {
+  const fp = footprint(it), B = HOME_BOUNDS;
+  if (fp[0] < -B.halfW - 0.01 || fp[2] > B.halfW + 0.01 || fp[1] < -B.halfD - 0.01 || fp[3] > B.halfD + 0.01) return "Keep the furniture inside the room.";
+  if (hits(fp, B.door)) return "Keep the door free so you can get out!";
+  const flat = FLAT_FURNITURE.has(it.f);
+  for (const o of others) if (FLAT_FURNITURE.has(o.f) === flat && hits(fp, footprint(o))) return "There's already something there.";
+  return null;
 }

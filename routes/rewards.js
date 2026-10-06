@@ -1,0 +1,253 @@
+import express from "express";
+import crypto from "node:crypto";
+import { User } from "../models/User.js";
+import { requireJson } from "./auth.js";
+import { requireUser } from "./shop.js";
+import { notifyCoins } from "../realtime/plaza.js";
+
+/*
+  Ways to earn coins:
+  - a daily login bonus that grows with the streak (7-day cycle)
+  - three mini-games; the server decides how many coins a round is worth
+  Nothing the page sends is trusted on its own: times, scores and the
+  treasure map are checked or kept here.
+*/
+const router = express.Router();
+
+/* ---------- days are counted in Israel time ---------- */
+const TZ = "Asia/Jerusalem";
+const dayKey = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+const yesterdayKey = () => dayKey(new Date(Date.now() - 86_400_000));
+
+/* ---------- daily bonus ---------- */
+export const DAILY_REWARDS = [20, 30, 40, 50, 60, 80, 150];
+
+function dailyState(user) {
+  const today = dayKey();
+  if (user.dailyLast === today) {
+    const streak = Math.max(1, user.dailyStreak || 1);
+    return { today, canClaim: false, streak, day: (streak - 1) % 7 };
+  }
+  const streak = user.dailyLast === yesterdayKey() ? (user.dailyStreak || 0) + 1 : 1;
+  return { today, canClaim: true, streak, day: (streak - 1) % 7 };
+}
+
+router.get("/rewards/daily", requireUser, (req, res) => {
+  const s = dailyState(req.user);
+  res.set("Cache-Control", "no-store");
+  res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS });
+});
+
+router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, next) => {
+  try {
+    const s = dailyState(req.user);
+    if (!s.canClaim) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
+    const reward = DAILY_REWARDS[s.day];
+    // only succeeds if nobody claimed in the meantime (two tabs, double clicks)
+    const updated = await User.findOneAndUpdate(
+      { _id: req.user._id, dailyLast: sameAs(req.user.dailyLast, "") },
+      { $set: { dailyLast: s.today, dailyStreak: s.streak }, $inc: { coins: reward } },
+      { new: true }
+    );
+    if (!updated) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
+    notifyCoins(updated._id.toString(), updated.coins);
+    res.json({ reward, streak: s.streak, day: s.day, coins: updated.coins });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- mini-games ---------- */
+const DAILY_GAME_CAP = 200; // most coins mini-games can give in one day
+const ROUND_CAP = 40; // most coins one round can give
+const ROUND_SECS = 30; // fruit and shell rounds
+const GAMES = ["fruit", "shell", "dig"];
+const rnd = () => crypto.randomInt(1_000_000) / 1_000_000;
+
+/*
+  Fruit and shell rounds are scripted here: the server decides every fruit and
+  every shell (when it appears, where, and what it's worth) and sends the script
+  to the page. At the end the page lists which ones it caught; the server only
+  counts items that really exist, once each, and only if they had time to be
+  caught before the round ended. So a forged request can't invent points.
+*/
+const FRUIT_KINDS = [["apple", 1, 34], ["pear", 1, 22], ["orange", 1, 22], ["gold", 3, 8], ["rotten", -2, 16]];
+const SHELL_KINDS = [["shell", 1, 64], ["pearl", 3, 12], ["crab", -2, 24]];
+const FALL = 368; // pixels from the top of the fruit game to the basket
+function pickKind(kinds) {
+  let r = rnd() * kinds.reduce((a, k) => a + k[2], 0);
+  for (const k of kinds) if ((r -= k[2]) < 0) return k;
+  return kinds[0];
+}
+function fruitScript() {
+  const items = [];
+  for (let t = 0.6, i = 0; t < ROUND_SECS - 0.4; i++) {
+    const k = t / ROUND_SECS, [kind, pts] = pickKind(FRUIT_KINDS);
+    const v = Math.round((190 + k * 190) * (0.85 + rnd() * 0.3));
+    items.push({ i, t: +t.toFixed(3), x: Math.round(40 + rnd() * 640), k: kind, v, pts, catchAt: t + FALL / v });
+    t += (0.62 - k * 0.3) * (0.7 + rnd() * 0.6);
+  }
+  return items;
+}
+function shellScript() {
+  const items = [], busy = Array(12).fill(0);
+  for (let t = 0.4, i = 0; t < ROUND_SECS - 0.3; ) {
+    const k = t / ROUND_SECS, free = busy.map((b, h) => (b <= t ? h : -1)).filter((h) => h >= 0);
+    if (free.length) {
+      const h = free[crypto.randomInt(free.length)], [kind, pts] = pickKind(SHELL_KINDS), life = +(1.25 - k * 0.4).toFixed(3);
+      items.push({ i: i++, t: +t.toFixed(3), h, k: kind, life, pts, catchAt: t + 0.05 });
+      busy[h] = t + life;
+    }
+    t += (0.62 - k * 0.25) * (0.85 + rnd() * 0.3);
+  }
+  return items;
+}
+const forPage = (items) => items.map(({ i, t, x, h, k, v, life }) => ({ i, t, x, h, k, v, life }));
+
+// treasure map for the dig game: built here, never sent to the page
+const DIG = { cols: 7, rows: 5, shovels: 10, items: [["chest", 10, 2], ["gem", 5, 3], ["coins", 2, 6]] };
+function makeDigBoard() {
+  const cells = Array(DIG.cols * DIG.rows).fill(null);
+  const free = cells.map((_, i) => i);
+  for (const [kind, value, count] of DIG.items)
+    for (let n = 0; n < count; n++) {
+      const pick = free.splice(crypto.randomInt(free.length), 1)[0];
+      cells[pick] = { kind, value };
+    }
+  return cells;
+}
+function distanceToChest(board, dug, from) {
+  let best = Infinity;
+  board.forEach((c, i) => {
+    if (c?.kind !== "chest" || dug.has(i)) return;
+    const d = Math.abs((i % DIG.cols) - (from % DIG.cols)) + Math.abs(Math.floor(i / DIG.cols) - Math.floor(from / DIG.cols));
+    best = Math.min(best, d);
+  });
+  return best === Infinity ? 0 : best;
+}
+
+const sessions = new Map(); // id -> round
+const activeByUser = new Map(); // userId -> id
+setInterval(() => {
+  const old = Date.now() - 15 * 60_000;
+  for (const [id, s] of sessions)
+    if (s.start < old) {
+      sessions.delete(id);
+      if (activeByUser.get(s.userId) === id) activeByUser.delete(s.userId);
+    }
+}, 60_000).unref();
+
+const todayEarned = (user) => (user.gamesDay === dayKey() ? user.gamesEarned || 0 : 0);
+// older accounts may not have the new fields stored yet: "" / 0 also match a missing field
+const sameAs = (v, empty) => (v === empty || v == null ? { $in: [empty, null] } : v);
+
+const recentStarts = new Map();
+router.post("/minigame/start", requireJson, requireUser, (req, res) => {
+  const game = String(req.body.game || "");
+  if (!GAMES.includes(game)) return res.status(400).json({ error: "That game doesn't exist." });
+  const userId = req.user._id.toString();
+  const now = Date.now();
+  const list = (recentStarts.get(userId) || []).filter((t) => now - t < 60_000);
+  if (list.length >= 10) return res.status(429).json({ error: "Take a little break and try again in a minute." });
+  list.push(now);
+  recentStarts.set(userId, list);
+  const prev = activeByUser.get(userId);
+  if (prev) sessions.delete(prev); // only one round at a time
+  const id = crypto.randomUUID();
+  const round = { id, userId, game, start: now, done: false };
+  if (game === "dig") Object.assign(round, { board: makeDigBoard(), dug: new Set(), shovels: DIG.shovels, score: 0 });
+  else round.items = game === "fruit" ? fruitScript() : shellScript();
+  sessions.set(id, round);
+  activeByUser.set(userId, id);
+  res.json({
+    id,
+    game,
+    todayEarned: todayEarned(req.user),
+    dailyCap: DAILY_GAME_CAP,
+    roundCap: ROUND_CAP,
+    ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels } : { secs: ROUND_SECS, items: forPage(round.items) }),
+  });
+});
+
+function ownRound(req, res) {
+  const round = sessions.get(String(req.body.id || ""));
+  if (!round || round.userId !== req.user._id.toString() || round.done) {
+    res.status(404).json({ error: "This round has ended. Start a new one." });
+    return null;
+  }
+  return round;
+}
+
+router.post("/minigame/dig", requireJson, requireUser, (req, res) => {
+  const round = ownRound(req, res);
+  if (!round) return;
+  if (round.game !== "dig") return res.status(400).json({ error: "Wrong game." });
+  const cell = Number(req.body.cell);
+  if (!Number.isInteger(cell) || cell < 0 || cell >= DIG.cols * DIG.rows) return res.status(400).json({ error: "Pick a spot in the sand." });
+  if (round.dug.has(cell)) return res.status(409).json({ error: "You already dug there." });
+  if (round.shovels <= 0) return res.status(409).json({ error: "No shovels left." });
+  round.dug.add(cell);
+  round.shovels--;
+  const found = round.board[cell];
+  if (found) round.score += found.value;
+  const allChests = round.board.every((c, i) => c?.kind !== "chest" || round.dug.has(i));
+  res.json({
+    cell,
+    item: found ? found.kind : null,
+    value: found ? found.value : 0,
+    hint: found ? null : distanceToChest(round.board, round.dug, cell),
+    shovels: round.shovels,
+    score: round.score,
+    allChests,
+  });
+});
+
+// the score of a scripted round, worked out from the item ids the page says it caught
+function scriptedScore(round, caught) {
+  const elapsed = Math.min(ROUND_SECS, (Date.now() - round.start) / 1000) + 1; // 1 s for the network
+  const seen = new Set();
+  let score = 0;
+  for (const raw of Array.isArray(caught) ? caught.slice(0, 400) : []) {
+    const i = Number(raw);
+    if (!Number.isInteger(i) || seen.has(i)) continue;
+    const item = round.items[i];
+    if (!item || item.catchAt > elapsed) continue;
+    seen.add(i);
+    score += item.pts;
+  }
+  return Math.max(0, score);
+}
+
+// ends a round (also when the player leaves early) and pays out
+router.post("/minigame/finish", requireJson, requireUser, async (req, res, next) => {
+  try {
+    const round = ownRound(req, res);
+    if (!round) return;
+    round.done = true; // before any await: a second finish for the same round gets nothing
+    sessions.delete(round.id);
+    if (activeByUser.get(round.userId) === round.id) activeByUser.delete(round.userId);
+    const score = round.game === "dig" ? round.score : scriptedScore(round, req.body.caught);
+
+    // add the coins, keeping today's total under the daily cap (retry if two rounds finish together)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const user = await User.findById(req.user._id);
+      if (!user) return res.status(401).json({ error: "Please log in first." });
+      const today = dayKey();
+      const earnedToday = todayEarned(user);
+      const coins = Math.max(0, Math.min(ROUND_CAP, score, DAILY_GAME_CAP - earnedToday));
+      const updated = await User.findOneAndUpdate(
+        { _id: user._id, gamesDay: sameAs(user.gamesDay, ""), gamesEarned: sameAs(user.gamesEarned, 0) },
+        { $set: { gamesDay: today, gamesEarned: earnedToday + coins }, $inc: { coins } },
+        { new: true }
+      );
+      if (!updated) continue;
+      if (coins) notifyCoins(updated._id.toString(), updated.coins);
+      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: DAILY_GAME_CAP });
+    }
+    res.status(409).json({ error: "Something got in the way. Try again." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+export default router;

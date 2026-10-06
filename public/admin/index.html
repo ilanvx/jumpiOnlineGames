@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Jumpi Admin</title>
+<link rel="icon" href="/jumpi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<!-- sign in / unlock -->
+<section class="gate" id="gate" hidden>
+  <form class="gate-card" id="gateForm" autocomplete="on">
+    <img src="/jumpi-logo.png" alt="Jumpi Games" width="150" height="87">
+    <h1>Admin</h1>
+    <p id="gateText">Sign in with your admin account.</p>
+    <label class="fld" id="gateUserRow"><span>Username</span><input id="gateUser" autocomplete="username" required></label>
+    <label class="fld"><span>Password</span><input id="gatePass" type="password" autocomplete="current-password" required></label>
+    <button class="b b-orange" type="submit" id="gateGo">Unlock</button>
+    <p class="msg" id="gateMsg" role="alert"></p>
+    <a class="gate-back" href="/play">← Back to the game</a>
+  </form>
+</section>
+
+<!-- the panel -->
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <a class="brand" href="#overview"><img src="/jumpi-logo.png" alt="Jumpi Games" width="110" height="64"><b>Admin</b></a>
+    <nav class="nav" id="nav">
+      <a href="#overview" data-v="overview"><i class="ic ic-home"></i>Overview</a>
+      <a href="#online" data-v="online"><i class="ic ic-live"></i>Online now<span class="count" id="navOnline"></span></a>
+      <a href="#players" data-v="players"><i class="ic ic-users"></i>Players</a>
+      <a href="#announce" data-v="announce"><i class="ic ic-mega"></i>Announcements</a>
+      <a href="#chat" data-v="chat"><i class="ic ic-chat"></i>Chat history</a>
+      <a href="#trades" data-v="trades"><i class="ic ic-swap"></i>Trades</a>
+      <a href="#duels" data-v="duels"><i class="ic ic-duel"></i>Games</a>
+      <a href="#items" data-v="items"><i class="ic ic-box"></i>All items</a>
+      <a href="#contact" data-v="contact"><i class="ic ic-mail"></i>Contact messages<span class="count" id="navContact"></span></a>
+      <a href="#log" data-v="log"><i class="ic ic-log"></i>Admin log</a>
+    </nav>
+    <div class="who">
+      <span>Signed in as <b id="whoName"></b></span>
+      <span class="timer" id="lockTimer"></span>
+      <button class="b b-ghost b-sm" id="lockBtn" type="button">Lock panel</button>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="modal" id="modal" hidden><div class="modal-card" id="modalCard" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

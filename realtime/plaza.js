@@ -1,9 +1,15 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
 import { banMessage } from "../routes/auth.js";
+import { attachTrading } from "./trade.js";
+import { attachDuels } from "./duel.js";
+import { EMOTE_LIST, hasEmote } from "../catalog.js";
+import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
+import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
+  Rooms: "plaza" (the open world) or "home:<owner>" (a player's home, with its visitors).
   Only logged-in, non-banned players can connect (same login cookie as the website).
   Admins (role "admin" in the database) can kick, ban, mute, announce and give coins.
 */
@@ -11,8 +17,11 @@ const ROOM = "plaza";
 const COOKIE = "jumpi_token";
 // the whole world: Plaza, Beach (and shallow sea), Park and Desert
 const BOUNDS = { x0: -42, x1: 86, z0: -46, z1: 60 };
+const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
+const POSES = new Set(["sit", "sleep", "play"]);
 const MAX_CHAT = 80;
 const MAX_ANNOUNCE = 160;
+const EMOTES = new Set(EMOTE_LIST);
 const PERMANENT = new Date("9999-12-31T00:00:00Z");
 
 const players = new Map(); // socket.id -> public player info
@@ -50,7 +59,90 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving }) => ({ id, username, look, role, x, z, face, moving });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null });
+const roomOf = (sid) => players.get(sid)?.room || ROOM;
+// a sitting / sleeping pose: what, how high (seat height) and which way
+function cleanPose(p) {
+  if (!p || !POSES.has(p.k)) return null;
+  return { k: p.k, y: clamp(num(p.y), 0, 2), f: num(p.f) };
+}
+
+// every open game window of one player
+function socketsOfUser(userId) {
+  if (!ioRef) return [];
+  return [...players.values()].filter((p) => p.userId === userId).map((p) => ioRef.sockets.sockets.get(p.id)).filter(Boolean);
+}
+function dropPlayer(id, sock) {
+  if (!players.has(id)) return;
+  const room = players.get(id)?.room || ROOM;
+  players.delete(id);
+  sock?.leave(room);
+  ioRef?.to(room).emit("player:leave", id);
+}
+const minutesFrom = (v, max = 60 * 24 * 365) => clamp(Math.round(num(v)), 1, max);
+
+/* ---------- moderation: used by the in-game admin window and by the /admin website ---------- */
+export const moderation = {
+  // throw the player out of the game (every window). Returns how many windows were closed.
+  kick(userId, event = "kicked:admin", data) {
+    const socks = socketsOfUser(String(userId));
+    for (const s of socks) {
+      s.emit(event, data);
+      dropPlayer(s.id, s);
+      s.disconnect(true);
+    }
+    return socks.length;
+  },
+  async ban(user, minutes, reason) {
+    const permanent = num(minutes) <= 0;
+    user.bannedUntil = permanent ? PERMANENT : new Date(Date.now() + minutesFrom(minutes) * 60000);
+    user.banReason = cleanText(reason, 120);
+    await user.save();
+    this.kick(user._id.toString(), "banned", { message: banMessage(user) });
+    return permanent ? "permanently" : `for ${minutesFrom(minutes)} min`;
+  },
+  async unban(user) {
+    user.bannedUntil = null;
+    user.banReason = "";
+    await user.save();
+  },
+  async mute(user, minutes) {
+    const m = minutesFrom(minutes, 60 * 24 * 30);
+    user.mutedUntil = new Date(Date.now() + m * 60000);
+    await user.save();
+    const id = user._id.toString();
+    mutedUntil.set(id, user.mutedUntil.getTime());
+    for (const s of socketsOfUser(id)) {
+      s.emit("muted", { until: user.mutedUntil.getTime() });
+      s.to(roomOf(s.id)).emit("typing", { id: s.id, on: false });
+    }
+    return m;
+  },
+  async unmute(user) {
+    user.mutedUntil = null;
+    await user.save();
+    const id = user._id.toString();
+    mutedUntil.delete(id);
+    for (const s of socketsOfUser(id)) s.emit("muted", { until: 0 });
+  },
+  async addCoins(user, delta) {
+    const result = await User.findOneAndUpdate({ _id: user._id }, [{ $set: { coins: { $max: [0, { $add: [{ $ifNull: ["$coins", 0] }, delta] }] } } }], { new: true });
+    for (const s of socketsOfUser(user._id.toString())) s.emit("coins", { coins: result.coins, delta });
+    return result.coins;
+  },
+  announce(text, by) {
+    const msg = cleanText(text, MAX_ANNOUNCE);
+    if (!msg) return null;
+    ioRef?.emit("announce", { text: msg, by }); // the Plaza and every home
+    return msg;
+  },
+  // the player's look, coins or inventory were changed by an admin: refresh open windows
+  refresh(user) {
+    const id = user._id.toString();
+    notifyLook(id, user.publicLook());
+    notifyCoins(id, user.coins || 0);
+  },
+};
 
 export function attachPlaza(io) {
   ioRef = io;
@@ -59,9 +151,9 @@ export function attachPlaza(io) {
     try {
       const token = readCookie(socket.handshake.headers.cookie, COOKIE);
       if (!token) return next(new Error("not-logged-in"));
-      const { sub } = jwt.verify(token, process.env.JWT_SECRET);
+      const { sub, v } = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(sub);
-      if (!user) return next(new Error("not-logged-in"));
+      if (!user || (v || 0) !== (user.tokenVersion || 0)) return next(new Error("not-logged-in"));
       if (user.isBanned()) return next(new Error("banned"));
       socket.data.user = user.toPublic();
       if (user.mutedUntil && user.mutedUntil.getTime() > Date.now()) mutedUntil.set(user._id.toString(), user.mutedUntil.getTime());
@@ -71,13 +163,13 @@ export function attachPlaza(io) {
     }
   });
 
-  const socketsOf = (userId) => [...players.values()].filter((p) => p.userId === userId).map((p) => io.sockets.sockets.get(p.id)).filter(Boolean);
 
   function removePlayer(id, sock) {
     if (!players.has(id)) return;
+    const room = players.get(id)?.room || ROOM;
     players.delete(id);
-    sock?.leave(ROOM);
-    io.to(ROOM).emit("player:leave", id);
+    sock?.leave(room);
+    io.to(room).emit("player:leave", id);
   }
 
   io.on("connection", (socket) => {
@@ -85,8 +177,29 @@ export function attachPlaza(io) {
     const canChat = limiter(5, 5000);
     const canMove = limiter(25, 1000);
     const canAdmin = limiter(20, 10000);
+    const canEmote = limiter(4, 4000);
+    // "trade" / "duel" badge above a player, seen by everyone
+    const setStatus = (sid, status) => {
+      const p = players.get(sid);
+      if (!p || (p.status || null) === status) return;
+      p.status = status;
+      io.to(p.room).emit("player:status", { id: sid, status });
+    };
+    attachTrading(io, socket, { players, me, notifyLook, limiter, setStatus });
+    attachDuels(io, socket, { players, limiter, notifyCoins, setStatus });
 
     socket.on("join", async (pos) => {
+      // which room: the Plaza, or someone's home (that player has to exist)
+      let room = ROOM;
+      const homeOf = cleanText(pos?.home, 32).toLowerCase();
+      if (homeOf) {
+        try {
+          if (!(await User.exists({ usernameLower: homeOf }))) return socket.emit("home:gone");
+        } catch {
+          return;
+        }
+        room = "home:" + homeOf;
+      }
       // fresh look / coins / role from the database (they may have shopped since connecting)
       try {
         const fresh = await User.findById(me.id);
@@ -101,56 +214,97 @@ export function attachPlaza(io) {
           removePlayer(id, old);
         }
       }
+      const B = room === ROOM ? BOUNDS : HOME_BOUNDS;
+      // moving to another room: the old room sees you leave
+      const before = players.get(socket.id);
+      if (before && before.room !== room) removePlayer(socket.id, socket);
       const player = {
         id: socket.id,
+        room,
+        status: players.get(socket.id)?.status || null,
         userId: me.id,
         username: me.username,
         look: me.look,
         role: me.role,
-        x: clamp(num(pos?.x), BOUNDS.x0, BOUNDS.x1),
-        z: clamp(num(pos?.z, 9), BOUNDS.z0, BOUNDS.z1),
+        x: clamp(num(pos?.x), B.x0, B.x1),
+        z: clamp(num(pos?.z, 9), B.z0, B.z1),
         face: num(pos?.face),
         moving: false,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
-      socket.join(ROOM);
-      socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id).map(publicView));
+      socket.join(room);
+      socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room).map(publicView));
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0 });
-      if (!already) socket.to(ROOM).emit("player:join", publicView(player));
+      if (!already) socket.to(room).emit("player:join", publicView(player));
     });
 
     socket.on("move", (d) => {
       const p = players.get(socket.id);
       if (!p || !canMove()) return;
-      p.x = clamp(num(d?.x, p.x), BOUNDS.x0, BOUNDS.x1);
-      p.z = clamp(num(d?.z, p.z), BOUNDS.z0, BOUNDS.z1);
+      const B = p.room === ROOM ? BOUNDS : HOME_BOUNDS;
+      p.x = clamp(num(d?.x, p.x), B.x0, B.x1);
+      p.z = clamp(num(d?.z, p.z), B.z0, B.z1);
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
-      socket.to(ROOM).volatile.emit("player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving });
+      p.pose = p.room === ROOM ? null : cleanPose(d?.pose); // sitting and sleeping only happen at home
+      p.run = p.moving && d?.run === true;
+      socket.to(p.room).volatile.emit("player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose });
     });
 
-    socket.on("chat", (raw) => {
+    socket.on("chat", async (raw) => {
       const p = players.get(socket.id);
       if (!p) return;
       const until = mutedUntil.get(me.id) || 0;
       if (until > Date.now()) return socket.emit("chat:muted", { until });
       const text = cleanText(raw);
       if (!text) return;
+      // no bad words anywhere (Plaza, homes, trade and game windows all use this)
+      if (!checkText(text).ok) {
+        logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text, blocked: true });
+        const s = await strike(me.id);
+        return socket.emit("chat:blocked", { message: FRIENDLY_MESSAGE, left: s.left ?? 0, muted: !!s.muted });
+      }
       if (!canChat()) return socket.emit("chat:slow");
-      io.to(ROOM).emit("chat", { id: p.id, username: p.username, role: p.role, text });
+      io.to(p.room).emit("chat", { id: p.id, username: p.username, role: p.role, text });
+      logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text });
     });
 
     socket.on("typing", (on) => {
       const p = players.get(socket.id);
       if (!p) return;
       if (on === true && (mutedUntil.get(me.id) || 0) > Date.now()) return;
-      socket.to(ROOM).emit("typing", { id: p.id, on: on === true });
+      socket.to(p.room).emit("typing", { id: p.id, on: on === true });
     });
 
-    socket.on("hop", () => {
+    // emotes: only the known faces, a few at a time, not while muted
+    socket.on("emote", async (e, ack) => {
+      const reply = typeof ack === "function" ? ack : () => {};
       const p = players.get(socket.id);
-      if (p) socket.to(ROOM).emit("hop", p.id);
+      if (!p) return reply({ ok: false, why: "not in a room" });
+      if (typeof e !== "string" || !EMOTES.has(e)) return reply({ ok: false, why: "unknown emote" });
+      if (!canEmote()) return reply({ ok: false, why: "too fast" });
+      if ((mutedUntil.get(me.id) || 0) > Date.now()) return reply({ ok: false, why: "muted" });
+      // emotes you haven't bought can't be used (check the database if it was bought after joining)
+      if (!hasEmote(me.inventory, e)) {
+        try {
+          const fresh = await User.findById(me.id).select("inventory");
+          if (fresh) me.inventory = fresh.inventory;
+        } catch {}
+        if (!hasEmote(me.inventory, e)) return reply({ ok: false, why: "locked" });
+      }
+      if (!players.has(socket.id)) return;
+      io.to(p.room).emit("emote", { id: p.id, e });
+      const seen = (io.sockets.adapter?.rooms?.get(p.room)?.size || 1) - 1;
+      console.log(`[emote] ${p.username} ${e} in ${p.room} -> seen by ${seen} other player(s)`);
+      reply({ ok: true, seen });
+    });
+
+    // Space: a jump with a flip (dir 1 = forwards, -1 = backwards), or a small hop in the water
+    socket.on("hop", (d) => {
+      const p = players.get(socket.id);
+      if (!p) return;
+      socket.to(p.room).emit("hop", { id: p.id, dir: d?.dir === 1 ? 1 : -1, small: d?.small === true });
     });
 
     socket.on("leave", () => removePlayer(socket.id, socket));
@@ -185,63 +339,42 @@ export function attachPlaza(io) {
       if (!self && user.role === "admin" && !allowAdmin) throw fail("You can't do that to another admin.");
       return user;
     }
-    const minutesFrom = (v, max = 60 * 24 * 365) => clamp(Math.round(num(v)), 1, max);
+
+    const audit = (admin, action, user, details = "") =>
+      logQuietly(AdminLog, { adminId: admin._id, admin: admin.username, action, targetId: user?._id, target: user?.username || "", details, via: "game", ip: socket.handshake.address || "" });
 
     adminAction("admin:kick", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
-      const socks = socketsOf(user._id.toString());
-      if (!socks.length) throw fail(`${user.username} isn't in the Plaza right now.`);
-      for (const s of socks) {
-        s.emit("kicked:admin");
-        removePlayer(s.id, s);
-        s.disconnect(true);
-      }
+      if (!moderation.kick(user._id.toString())) throw fail(`${user.username} isn't in the Plaza right now.`);
+      audit(admin, "kick", user);
       return { message: `${user.username} was kicked.` };
     });
 
     adminAction("admin:ban", async ({ username, minutes, reason }, admin) => {
       const user = await findTarget(username, admin);
-      const permanent = num(minutes) <= 0;
-      user.bannedUntil = permanent ? PERMANENT : new Date(Date.now() + minutesFrom(minutes) * 60000);
-      user.banReason = cleanText(reason, 120);
-      await user.save();
-      for (const s of socketsOf(user._id.toString())) {
-        s.emit("banned", { message: banMessage(user) });
-        removePlayer(s.id, s);
-        s.disconnect(true);
-      }
-      return { message: `${user.username} is banned ${permanent ? "permanently" : `for ${minutesFrom(minutes)} min`}.` };
+      const how = await moderation.ban(user, minutes, reason);
+      audit(admin, "ban", user, `${how}${user.banReason ? " · " + user.banReason : ""}`);
+      return { message: `${user.username} is banned ${how}.` };
     });
 
     adminAction("admin:unban", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
-      user.bannedUntil = null;
-      user.banReason = "";
-      await user.save();
+      await moderation.unban(user);
+      audit(admin, "unban", user);
       return { message: `${user.username} is no longer banned.` };
     });
 
     adminAction("admin:mute", async ({ username, minutes }, admin) => {
       const user = await findTarget(username, admin);
-      const m = minutesFrom(minutes, 60 * 24 * 30);
-      user.mutedUntil = new Date(Date.now() + m * 60000);
-      await user.save();
-      const id = user._id.toString();
-      mutedUntil.set(id, user.mutedUntil.getTime());
-      for (const s of socketsOf(id)) {
-        s.emit("muted", { until: user.mutedUntil.getTime() });
-        s.to(ROOM).emit("typing", { id: s.id, on: false });
-      }
+      const m = await moderation.mute(user, minutes);
+      audit(admin, "mute", user, `${m} min`);
       return { message: `${user.username} is muted for ${m} min.` };
     });
 
     adminAction("admin:unmute", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
-      user.mutedUntil = null;
-      await user.save();
-      const id = user._id.toString();
-      mutedUntil.delete(id);
-      for (const s of socketsOf(id)) s.emit("muted", { until: 0 });
+      await moderation.unmute(user);
+      audit(admin, "unmute", user);
       return { message: `${user.username} can chat again.` };
     });
 
@@ -249,16 +382,15 @@ export function attachPlaza(io) {
       const user = await findTarget(username, admin, { allowSelf: true, allowAdmin: true });
       const delta = Math.round(num(amount));
       if (!delta || Math.abs(delta) > 1_000_000) throw fail("Enter an amount between 1 and 1,000,000.");
-      user.coins = Math.max(0, (user.coins || 0) + delta);
-      await user.save();
-      for (const s of socketsOf(user._id.toString())) s.emit("coins", { coins: user.coins, delta });
-      return { message: `${user.username} now has ${user.coins.toLocaleString("en-US")} coins.` };
+      const coins = await moderation.addCoins(user, delta);
+      audit(admin, "coins", user, `${delta > 0 ? "+" : ""}${delta} → ${coins}`);
+      return { message: `${user.username} now has ${coins.toLocaleString("en-US")} coins.` };
     });
 
     adminAction("admin:announce", async ({ text }, admin) => {
-      const msg = cleanText(text, MAX_ANNOUNCE);
+      const msg = moderation.announce(text, admin.username);
       if (!msg) throw fail("Write a message first.");
-      io.to(ROOM).emit("announce", { text: msg, by: admin.username });
+      audit(admin, "announce", null, msg);
       return { message: "Announcement sent to everyone in the Plaza." };
     });
   });
@@ -270,11 +402,57 @@ export function notifyLook(userId, look) {
   for (const p of players.values()) {
     if (p.userId !== userId) continue;
     p.look = look;
-    ioRef.to(ROOM).emit("player:look", { id: p.id, look });
+    ioRef.to(p.room).emit("player:look", { id: p.id, look });
   }
 }
 // called after a purchase so an open game window shows the new balance
 export function notifyCoins(userId, coins) {
   if (!ioRef) return;
   for (const p of players.values()) if (p.userId === userId) ioRef.to(p.id).emit("coins", { coins, delta: 0 });
+}
+// the owner changed their home: visitors who are inside see it right away
+export function notifyHome(usernameLower, home) {
+  if (ioRef) ioRef.to("home:" + usernameLower).emit("home:update", { home });
+}
+
+/* ---------- who is online (for the phone: friends, online list, JumpiChat) ---------- */
+// where a player is right now: "plaza", "home:<name>" or null when not in the game
+export function onlineWhere(userId) {
+  for (const p of players.values()) if (p.userId === userId) return p.room || ROOM;
+  return null;
+}
+export function onlinePlayers() {
+  const seen = new Map();
+  for (const p of players.values()) if (!seen.has(p.userId)) seen.set(p.userId, { userId: p.userId, username: p.username, look: p.look, role: p.role, where: p.room || ROOM });
+  return [...seen.values()];
+}
+// send something to every window this player has open in the game
+export function emitToUser(userId, event, data) {
+  if (!ioRef) return;
+  for (const p of players.values()) if (p.userId === userId) ioRef.to(p.id).emit(event, data);
+}
+
+/* ---------- bad words: 3 tries in 10 minutes = muted for 5 minutes ---------- */
+const strikes = new Map(); // userId -> times a message was blocked
+export async function strike(userId) {
+  const now = Date.now();
+  const list = (strikes.get(userId) || []).filter((t) => now - t < 10 * 60_000);
+  list.push(now);
+  strikes.set(userId, list);
+  if (list.length < 3) return { left: 3 - list.length };
+  strikes.delete(userId);
+  const until = now + 5 * 60_000;
+  mutedUntil.set(userId, until);
+  try {
+    await User.updateOne({ _id: userId }, { mutedUntil: new Date(until) });
+  } catch (err) {
+    console.error("[filter] could not save the mute", err);
+  }
+  for (const p of players.values())
+    if (p.userId === userId) {
+      ioRef?.to(p.id).emit("muted", { until });
+      ioRef?.to(p.room || ROOM).emit("typing", { id: p.id, on: false });
+    }
+  console.log(`[filter] user ${userId} muted for 5 minutes (bad words)`);
+  return { muted: true, until };
 }

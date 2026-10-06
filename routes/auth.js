@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, LOOK_LIMITS } from "../models/User.js";
 import { lookItems } from "../catalog.js";
+import { checkName } from "../public/shared/profanity.js";
 
 const router = express.Router();
 
@@ -29,6 +30,7 @@ const clean = (v) => (typeof v === "string" ? v.trim() : "");
 
 function validateAccount({ username, email, password }) {
   if (!USERNAME_RE.test(username)) return { field: "username", error: "Username must be 3–16 letters, numbers or _." };
+  if (!checkName(username).ok) return { field: "username", error: "Please pick a friendlier username." };
   if (!EMAIL_RE.test(email) || email.length > 254) return { field: "email", error: "That email doesn't look right." };
   if (typeof password !== "string" || password.length < MIN_PASSWORD)
     return { field: "password", error: `Password needs at least ${MIN_PASSWORD} characters.` };
@@ -45,8 +47,8 @@ function cleanLook(look) {
   return out;
 }
 
-function setAuthCookie(res, userId, remember) {
-  const token = jwt.sign({ sub: userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
+function setAuthCookie(res, userId, remember, version = 0) {
+  const token = jwt.sign({ sub: userId, v: version }, process.env.JWT_SECRET, { expiresIn: "30d" });
   res.cookie(COOKIE, token, {
     httpOnly: true, // page scripts can't read it
     sameSite: "lax",
@@ -88,12 +90,15 @@ export async function currentUser(req) {
   const token = req.cookies?.[COOKIE];
   if (!token) return null;
   try {
-    const { sub } = jwt.verify(token, process.env.JWT_SECRET);
-    return await User.findById(sub);
+    const { sub, v } = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(sub);
+    if (!user || (v || 0) !== (user.tokenVersion || 0)) return null;   // logged out everywhere by an admin
+    return user;
   } catch {
     return null;
   }
 }
+export { setAuthCookie, clearAuthCookie, COOKIE as AUTH_COOKIE };
 
 /* ---------- routes ---------- */
 
@@ -106,7 +111,7 @@ router.post("/check", requireJson, checkLimiter, async (req, res, next) => {
       USERNAME_RE.test(username) ? User.exists({ usernameLower: username.toLowerCase() }) : null,
       EMAIL_RE.test(email) ? User.exists({ email }) : null,
     ]);
-    res.json({ usernameTaken: !!u, emailTaken: !!e });
+    res.json({ usernameTaken: !!u, emailTaken: !!e, usernameNotAllowed: USERNAME_RE.test(username) && !checkName(username).ok });
   } catch (err) {
     next(err);
   }
@@ -165,7 +170,7 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
 
     user.lastLoginAt = new Date();
     await user.save();
-    setAuthCookie(res, user._id.toString(), req.body.remember === true);
+    setAuthCookie(res, user._id.toString(), req.body.remember === true, user.tokenVersion || 0);
     res.json({ user: user.toPublic() });
   } catch (err) {
     next(err);

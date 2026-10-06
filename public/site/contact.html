@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact · Jumpi Games</title>
+<meta name="description" content="Questions, safety reports, privacy requests or ideas? Get in touch with the Jumpi Games team.">
+<link rel="icon" href="/jumpi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/contact.css">
+</head>
+<body>
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <a class="lg-back" href="/" data-en="← Back to Jumpi" data-he="חזרה לג'אמפי →">← Back to Jumpi</a>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<section class="lg-hero">
+  <h1 data-en="Contact us" data-he="צור קשר">Contact us</h1>
+  <p data-en="Questions, ideas or something wrong? We read every message." data-he="שאלות, רעיונות או שמשהו לא עובד? אנחנו קוראים כל הודעה.">Questions, ideas or something wrong? We read every message.</p>
+</section>
+
+<main class="ct-wrap">
+  <div class="ct-stage">
+    <canvas id="ctCanvas" role="img" aria-label="A Jumpi wearing a support headset, waving hello"></canvas>
+    <div class="ct-bubble" id="ctBubble" data-en="Hi! I'm on the help desk today. How can I help?" data-he="היי! אני במוקד העזרה היום. איך אפשר לעזור?">Hi! I'm on the help desk today. How can I help?</div>
+  </div>
+
+  <form class="ct-card" id="ctForm" novalidate>
+    <h2 data-en="Send us a message" data-he="שלחו לנו הודעה">Send us a message</h2>
+
+    <fieldset class="topics">
+      <legend data-en="What's it about?" data-he="במה מדובר?">What's it about?</legend>
+      <label class="topic" style="--c:#1fb6ff;--c2:#0b72c9"><input type="radio" name="topic" value="general" checked><span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8 Q5 5 8 5 H24 Q27 5 27 8 V18 Q27 21 24 21 H14 L8 26 V21 Q5 21 5 18Z" fill="#fff"/></svg><b data-en="Question" data-he="שאלה">Question</b></span></label>
+      <label class="topic" style="--c:#ff5f5f;--c2:#c8102e"><input type="radio" name="topic" value="safety"><span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L26 8 V15 C26 21 21.5 25.5 16 28 C10.5 25.5 6 21 6 15 V8Z" fill="#fff"/><path d="M16 10 V17 M16 21 V21.5" stroke="#c8102e" stroke-width="3.2" stroke-linecap="round"/></svg><b data-en="Report a player" data-he="דיווח על שחקן">Report a player</b></span></label>
+      <label class="topic" style="--c:#8a4dff;--c2:#5a22d6"><input type="radio" name="topic" value="privacy"><span><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="7" y="14" width="18" height="13" rx="3.5" fill="#fff"/><path d="M11 14 V10.5 A5 5 0 0 1 21 10.5 V14" fill="none" stroke="#fff" stroke-width="3.2"/></svg><b data-en="Privacy / parents" data-he="פרטיות / הורים">Privacy / parents</b></span></label>
+      <label class="topic" style="--c:#ff9a1f;--c2:#d9600a"><input type="radio" name="topic" value="account"><span><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="11" r="6" fill="#fff"/><path d="M5 27 Q5 18 16 18 Q27 18 27 27Z" fill="#fff"/></svg><b data-en="My account" data-he="החשבון שלי">My account</b></span></label>
+      <label class="topic" style="--c:#12b8a0;--c2:#0a8a77"><input type="radio" name="topic" value="bug"><span><svg viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="18" rx="7" ry="9" fill="#fff"/><path d="M9 14 L4 11 M23 14 L28 11 M9 19 H3 M23 19 H29 M10 24 L5 27 M22 24 L27 27 M13 9 L11 5 M19 9 L21 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M16 11 V26" stroke="#0a8a77" stroke-width="2"/></svg><b data-en="Something's broken" data-he="משהו לא עובד">Something's broken</b></span></label>
+      <label class="topic" style="--c:#ffb21f;--c2:#c98a00"><input type="radio" name="topic" value="idea"><span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 A8 8 0 0 1 21 18.5 V22 H11 V18.5 A8 8 0 0 1 16 4Z" fill="#fff"/><rect x="11.5" y="24" width="9" height="3.5" rx="1.5" fill="#fff"/></svg><b data-en="An idea!" data-he="יש לי רעיון!">An idea!</b></span></label>
+    </fieldset>
+
+    <p class="safety-tip" id="safetyTip" hidden data-en="Thank you for telling us. Please write the player's username, where it happened and what was said. If someone is in danger right now, tell an adult and call emergency services." data-he="תודה שסיפרתם לנו. כתבו את שם המשתמש של השחקן, איפה זה קרה ומה נאמר. אם מישהו בסכנה עכשיו, ספרו למבוגר ופנו לשירותי החירום.">Thank you for telling us.</p>
+
+    <div class="row2">
+      <label class="field"><span data-en="Your name (optional)" data-he="השם שלך (לא חובה)">Your name (optional)</span>
+        <input id="ctName" name="name" type="text" maxlength="80" autocomplete="nickname" data-en-ph="First name or username" data-he-ph="שם פרטי או שם משתמש"></label>
+      <label class="field"><span data-en="Email for our reply" data-he="מייל לתשובה">Email for our reply</span>
+        <input id="ctEmail" name="email" type="email" maxlength="200" required autocomplete="email" dir="ltr" data-en-ph="you@example.com" data-he-ph="you@example.com"></label>
+    </div>
+    <label class="field"><span data-en="Your message" data-he="ההודעה שלך">Your message</span>
+      <textarea id="ctMsg" name="message" rows="6" maxlength="3000" required data-en-ph="Tell us what's on your mind…" data-he-ph="ספרו לנו מה קורה…"></textarea>
+      <small class="count"><span id="ctCount">0</span>/3000</small></label>
+    <label class="hp" aria-hidden="true">Website <input name="website" tabindex="-1" autocomplete="off"></label>
+    <p class="kid-note" data-en="Under 18? It's a good idea to ask a parent before sending. Never share your password. We will never ask for it." data-he="מתחת לגיל 18? כדאי לבקש מהורה לפני השליחה. אף פעם אל תשתפו את הסיסמה, ואנחנו לעולם לא נבקש אותה.">Under 18? It's a good idea to ask a parent before sending.</p>
+    <div class="send-row">
+      <button class="send" id="ctSend" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L20.5 4 L15 20.5 L11.5 13.5 Z" fill="currentColor"/><path d="M11.5 13.5 L20.5 4" stroke="#d9600a" stroke-width="1.6"/></svg><span data-en="Send message" data-he="שליחת הודעה">Send message</span></button>
+      <p class="form-msg" id="ctMsgOut" role="status" aria-live="polite"></p>
+    </div>
+    <p class="small-print"><span data-en="We use what you send only to answer you. See our" data-he="נשתמש במה שתשלחו רק כדי לענות לכם. ראו את">We use what you send only to answer you. See our</span> <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות הפרטיות">Privacy Policy</a>.</p>
+  </form>
+
+</main>
+  <div class="ct-direct">
+    <div class="direct"><span class="d-ic" style="--c:#1fb6ff;--c2:#0b72c9"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="8" width="24" height="17" rx="3" fill="#fff"/><path d="M5 10 L16 18 L27 10" fill="none" stroke="#0b72c9" stroke-width="2.6" stroke-linejoin="round"/></svg></span>
+      <div><b data-en="Email us directly" data-he="אפשר גם במייל">Email us directly</b><a href="mailto:support@jumpigames.com" dir="ltr">support@jumpigames.com</a></div></div>
+    <div class="direct"><span class="d-ic" style="--c:#2fd36b;--c2:#17a24a"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="11" fill="#fff"/><path d="M16 10 V16 L20 19" fill="none" stroke="#17a24a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div><b data-en="When we reply" data-he="מתי נענה">When we reply</b><span data-en="Usually within 2 business days" data-he="בדרך כלל תוך 2 ימי עסקים">Usually within 2 business days</span></div></div>
+    <div class="direct"><span class="d-ic" style="--c:#8a4dff;--c2:#5a22d6"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 5 H20 L25 10 V27 H7Z" fill="#fff"/><path d="M11 14 H21 M11 18 H21 M11 22 H17" stroke="#5a22d6" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+      <div><b data-en="The rules" data-he="הכללים">The rules</b><span><a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a></span></div></div>
+  </div>
+
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">Contact</a></footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="/site/contact.js"></script>
+<script type="module" src="/site/contact3d.js"></script>
+</body>
+</html>

@@ -50,10 +50,10 @@ npm start
 
 ```
 ✓ Connected to MongoDB (database "jumpi")
-✓ Jumpi is running at http://localhost:3000
+✓ Jumpi is running: website http://localhost:3000  ·  game http://localhost:3000/play
 ```
 
-פתח בדפדפן את **http://localhost:3000**.
+פתח בדפדפן את **http://localhost:3000** (האתר) או ישר את **http://localhost:3000/play** (המשחק).
 
 > חשוב: את הקובץ `.env` אסור לשתף או להעלות ל-GitHub. הוא כבר מופיע ב-`.gitignore`.
 
