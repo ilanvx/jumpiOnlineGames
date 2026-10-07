@@ -123,9 +123,13 @@ p{margin:0}
 .pets-in{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center}
 .pets-stage{position:relative;height:500px;border-radius:32px;background:radial-gradient(circle at 50% 70%,#fff 0%,#f6efff 40%,#d9c6ff 100%);box-shadow:inset 0 -10px 0 rgb(90 34 214 / .12),0 20px 50px rgb(90 34 214 / .18);overflow:hidden}
 .pets-stage canvas{width:100%;height:100%;cursor:pointer}
-.pet-tabs{position:absolute;left:50%;bottom:18px;translate:-50% 0;display:flex;gap:6px;padding:6px;border-radius:999px;background:rgb(255 255 255 / .8);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgb(90 34 214 / .18)}
-.pet-tabs button{border:0;border-radius:999px;padding:9px 16px;font:600 1rem var(--body);color:var(--violet-lo);background:none;cursor:pointer;transition:background .15s,color .15s}
+.pet-tabs{position:absolute;left:50%;bottom:18px;translate:-50% 0;display:flex;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100% - 24px);gap:4px;padding:6px;border-radius:24px;background:rgb(255 255 255 / .8);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgb(90 34 214 / .18)}
+.pet-tabs button{border:0;border-radius:999px;padding:8px 12px;font:600 .95rem var(--body);color:var(--violet-lo);background:none;cursor:pointer;transition:background .15s,color .15s}
 .pet-tabs button[aria-selected="true"]{background:var(--violet);color:#fff;box-shadow:0 3px 0 var(--violet-edge)}
+.pet-cols{position:absolute;top:16px;left:16px;display:flex;gap:10px;padding:8px 12px;border-radius:999px;background:rgb(255 255 255 / .8);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgb(90 34 214 / .18)}
+.pet-cols button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;background:var(--pc);cursor:pointer;box-shadow:0 0 0 2px #d9c6ff;transition:transform .12s}
+.pet-cols button:hover{transform:scale(1.1)}
+.pet-cols button[aria-checked="true"]{box-shadow:0 0 0 3px var(--violet);transform:scale(1.15)}
 .pets-copy{display:grid;gap:18px;justify-items:start}
 .pets-copy .kicker{color:var(--violet-lo);background:#e3d6ff}
 .pets-copy p{font-size:1.15rem;color:var(--ink-2)}

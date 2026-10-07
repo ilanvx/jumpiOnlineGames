@@ -4605,7 +4605,7 @@ function renderStoreTabs(){
 function renderStoreGrid(){
   const slot=storeSlot,inv=storeMode==="inventory";storeGrid.innerHTML="";
   const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;list.push(i);}
-  if(inv&&(slot==="hair"||slot==="shirt"||slot==="pants"||slot==="glasses"||slot==="tag"||slot==="aura"))list.unshift(-1);   // "none"
+  if(inv&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura"))list.unshift(-1);   // "none"
   if(!list.length){storeGrid.innerHTML='<p class="step-note">Nothing here yet. Visit the shop!</p>';}
   list.forEach(i=>{
     const id=slot+":"+i,it=catalog&&catalog.get(id),b=document.createElement("button");b.type="button";b.className="item";b.setAttribute("role","option");

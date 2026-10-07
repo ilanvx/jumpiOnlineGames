@@ -117,25 +117,30 @@
 <section class="pets" id="pets">
   <div class="pets-in">
     <div class="pets-stage">
-      <canvas id="petCanvas" role="img" aria-label="A 3D pet you can adopt. Click it to play!"></canvas>
+      <canvas id="petCanvas" role="img" aria-label="A 3D pet from the Pet Center. Click it to play!"></canvas>
       <div class="pops" id="petPops" aria-hidden="true"></div>
+      <div class="pet-cols" id="petCols" role="radiogroup" aria-label="Pet colour"></div>
       <div class="pet-tabs" role="tablist" aria-label="Choose a pet">
         <button type="button" role="tab" aria-selected="true" data-pet="puppy"><span aria-hidden="true">🐶</span> Puppy</button>
         <button type="button" role="tab" aria-selected="false" data-pet="kitten"><span aria-hidden="true">🐱</span> Kitten</button>
         <button type="button" role="tab" aria-selected="false" data-pet="bunny"><span aria-hidden="true">🐰</span> Bunny</button>
+        <button type="button" role="tab" aria-selected="false" data-pet="hamster"><span aria-hidden="true">🐹</span> Hamster</button>
+        <button type="button" role="tab" aria-selected="false" data-pet="panda"><span aria-hidden="true">🐼</span> Panda</button>
+        <button type="button" role="tab" aria-selected="false" data-pet="dragon"><span aria-hidden="true">🐲</span> Dragon</button>
       </div>
     </div>
     <div class="pets-copy">
       <h2>Adopt a pet!</h2>
-      <p>Soon you'll adopt your very own puppy, kitten or bunny. Give it a name, and it follows you everywhere in Jumpi.</p>
+      <p>Walk to the Pet Center at the end of the Park and adopt your very own puppy, kitten, bunny, hamster, panda, or even a baby dragon. Pick its colour, give it a name, and it follows you everywhere in Jumpi.</p>
       <ul class="ticks">
+        <li>6 kinds of pets, each in 3 colours</li>
         <li>Walks with you around every zone</li>
-        <li>Learns tricks: sit, spin and high-five</li>
-        <li>Has its own bed in your home</li>
-        <li>Dress it up with collars and hats</li>
+        <li>Pat it and it does a happy spin</li>
+        <li>Send it home to play in your room</li>
+        <li>Keep up to 5 pets</li>
       </ul>
       <div class="adopt-row">
-        <button class="btn btn-violet" id="adoptBtn" type="button"><span aria-hidden="true">💜</span> Adopt <span id="adoptName">Puppy</span></button>
+        <a class="btn btn-violet" id="adoptBtn" href="/play"><span aria-hidden="true">💜</span> Adopt <span id="adoptName">Puppy</span></a>
         <span class="adopt-note" id="adoptNote" role="status"></span>
       </div>
     </div>

@@ -75,13 +75,12 @@
   $("#auraGrid").innerHTML = AURAS.map((a, i) =>
     `<article class="aura reveal" style="--glow:${a[4]}">${auraSVG(a, i)}<h3>${a[1]}</h3><span class="price"><i aria-hidden="true"></i>${a[2].toLocaleString("en-US")} coins</span></article>`).join("");
 
-  /* ---------- adopt (pets are coming soon) ---------- */
-  let pet = "Puppy";
-  addEventListener("petchange", (e) => { pet = e.detail; $("#adoptName").textContent = pet; $("#adoptNote").textContent = ""; });
-  $("#adoptBtn").onclick = () => {
-    $("#adoptNote").textContent = `Pets are coming soon to Jumpi. Stay tuned!`;
-    dispatchEvent(new CustomEvent("petlove"));
-  };
+  /* ---------- adopt: the button goes to the game (the Pet Center is at the end of the Park) ---------- */
+  addEventListener("petchange", (e) => {
+    const d = e.detail;
+    $("#adoptName").textContent = d.name;
+    $("#adoptNote").textContent = `${d.color} ${d.name.toLowerCase()} · ${d.price.toLocaleString("en-US")} coins`;
+  });
 
   /* ---------- sections slide in as you scroll ---------- */
   $$(".feat,.safe-row,.safety,.final-card,.pets-copy").forEach((el) => el.classList.add("reveal"));

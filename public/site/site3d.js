@@ -1,6 +1,7 @@
 /* Jumpi website: the 3D scenes. Hero = Jumpis bouncing on a floating island. Pets = a puppy, kitten or bunny to play with. */
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { PET_KINDS, PET_BY_ID } from "/shared/pets.js";
 
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const TAU = Math.PI * 2;
@@ -329,7 +330,7 @@ const pointerOf = (e, el) => { const r = el.getBoundingClientRect(); return { x:
 }
 
 /* =====================================================================
-   PETS: puppy, kitten and bunny (made from simple round shapes)
+   PETS: the same six pets as the Pet Center in the game, in their real colours
    ===================================================================== */
 {
   const canvas = document.getElementById("petCanvas");
@@ -360,114 +361,83 @@ const pointerOf = (e, el) => { const r = el.getBoundingClientRect(); return { x:
     cam.lookAt(0, 1.25, 0);
   };
 
-  // big friendly eyes
-  function eye(parent, x, y, z, iris) {
-    const g = new THREE.Group();
-    g.position.set(x, y, z);
-    parent.add(g);
-    mesh(new THREE.SphereGeometry(0.15, 20, 16), mat("#ffffff", { roughness: 0.2 }), [0, 0, 0], g, { scale: [1, 1.1, 0.7] });
-    mesh(new THREE.SphereGeometry(0.105, 20, 16), mat(iris, { roughness: 0.25 }), [0, -0.01, 0.075], g, { scale: [1, 1.1, 0.6] });
-    mesh(new THREE.SphereGeometry(0.06, 16, 12), mat("#111827", { roughness: 0.2 }), [0, -0.01, 0.12], g, { scale: [1, 1.1, 0.5] });
-    mesh(new THREE.SphereGeometry(0.03, 10, 8), new THREE.MeshBasicMaterial({ color: "#fff" }), [0.04, 0.045, 0.15], g, { cast: false });
-    return g;
-  }
-
-  function buildPet(kind) {
-    const P = { kind, root: new THREE.Group(), ears: [], tail: null, eyes: [] };
-    const C = {
-      puppy: { fur: "#e9b27c", belly: "#fff4e6", ear: "#8a5a3c", nose: "#2a1a12", iris: "#6b3a14" },
-      kitten: { fur: "#a9b4c9", belly: "#f6f8ff", ear: "#a9b4c9", nose: "#ff8fb1", iris: "#2fae4f" },
-      bunny: { fur: "#fbfbff", belly: "#ffffff", ear: "#fbfbff", nose: "#ff8fb1", iris: "#7a3e12" },
-    }[kind];
-    const fur = mat(C.fur, { roughness: 0.75 }), belly = mat(C.belly, { roughness: 0.8 });
-    const root = P.root;
+  // the same pets as in the game (kinds, colours and shapes from the Pet Center)
+  const lighten = (c, k) => "#" + new THREE.Color(c).lerp(new THREE.Color("#ffffff"), k).getHexString();
+  const darken = (c, k) => "#" + new THREE.Color(c).lerp(new THREE.Color("#000000"), k).getHexString();
+  function buildPet(kind, colorIdx) {
+    const K = PET_BY_ID[kind] || PET_KINDS[0], main = K.colors[colorIdx] ? K.colors[colorIdx][1] : K.colors[0][1];
+    const root = new THREE.Group(), rig = new THREE.Group(); root.add(rig);
+    const M = (c, o) => mat(c, { roughness: 0.7, ...o }), add = (p, m) => { m.castShadow = true; p.add(m); return m; };
+    const sph = (p, r, c, x, y, z, sx = 1, sy = 1, sz = 1, seg = 24) => { const m = add(p, new THREE.Mesh(new THREE.SphereGeometry(r, seg, Math.round(seg * 0.75)), typeof c === "string" ? M(c) : c)); m.position.set(x, y, z); m.scale.set(sx, sy, sz); return m; };
+    let body = main, belly = lighten(main, 0.55), accent = darken(main, 0.35); const earIn = "#ffb3c8";
+    if (kind === "panda") { accent = colorIdx === 0 ? "#26262e" : colorIdx === 1 ? "#3a2418" : "#8a3a5a"; belly = colorIdx === 1 ? "#fff3e6" : lighten(main, 0.4); }
+    if (kind === "dragon") belly = lighten(main, 0.6);
+    const P = { kind, root, rig, legs: [], ears: [], eyes: [], wings: [] };
+    const isHam = kind === "hamster", isBun = kind === "bunny";
+    const bodyY = isHam ? 0.42 : 0.48;
+    P.body = sph(rig, isHam ? 0.42 : 0.36, body, 0, bodyY, -0.05, isHam ? 1.05 : 1, isHam ? 0.95 : 0.85, isHam ? 1.1 : 1.25);
+    sph(rig, isHam ? 0.32 : 0.26, belly, 0, bodyY - 0.06, isHam ? 0.16 : 0.14, 1, 0.8, 0.7);
+    const head = new THREE.Group(); head.position.set(0, isHam ? 0.72 : 0.86, isHam ? 0.22 : 0.32); rig.add(head); P.head = head;
+    sph(head, isHam ? 0.3 : 0.36, body, 0, 0, 0, 1.05, 0.95, 1);
+    const eyeW = isHam ? 0.12 : 0.14, eyeY = isHam ? 0.05 : 0.06, eyeZ = isHam ? 0.26 : 0.3;
+    if (kind === "panda") [-1, 1].forEach((s) => sph(head, 0.11, accent, s * 0.14, eyeY, eyeZ - 0.03, 1, 1.25, 0.6));
+    [-1, 1].forEach((s) => { const e = sph(head, 0.062, "#1d1626", s * eyeW, eyeY, eyeZ, 1, 1.15, 0.7, 16); const hl = sph(e, 0.022, "#ffffff", -0.012, 0.02, 0.05, 1, 1, 1, 8); hl.castShadow = false; P.eyes.push(e); });
+    if (kind === "puppy") { sph(head, 0.15, belly, 0, -0.08, 0.27, 1.2, 0.85, 0.9); sph(head, 0.06, "#2a1d1d", 0, -0.02, 0.4, 1.2, 0.9, 0.9, 12); }
+    else if (kind === "kitten" || kind === "panda") { sph(head, 0.11, belly, 0, -0.1, 0.28, 1.4, 0.8, 0.7); sph(head, 0.035, kind === "panda" ? "#26262e" : "#ff7fa0", 0, -0.05, 0.36, 1.3, 0.9, 0.8, 10); }
+    else if (isBun || isHam) { sph(head, 0.09, belly, 0, -0.08, 0.27, 1.4, 0.85, 0.7); sph(head, 0.03, "#ff7fa0", 0, -0.04, 0.33, 1.2, 0.9, 0.8, 10); if (isHam) [-1, 1].forEach((s) => sph(head, 0.13, belly, s * 0.18, -0.07, 0.15, 1, 0.85, 0.9)); }
+    else if (kind === "dragon") { sph(head, 0.17, belly, 0, -0.1, 0.27, 1.2, 0.75, 1); [-1, 1].forEach((s) => sph(head, 0.02, "#1d1626", s * 0.06, -0.05, 0.42, 1, 1, 1, 8)); }
+    [-1, 1].forEach((s) => { const c = sph(head, 0.05, "#ff8fb0", s * 0.21, -0.06, 0.25, 1, 0.6, 0.4, 10); c.material.transparent = true; c.material.opacity = 0.6; c.castShadow = false; });
+    const earPivot = (x, y, z) => { const e = new THREE.Group(); e.position.set(x, y, z); head.add(e); P.ears.push(e); return e; };
+    if (kind === "puppy") [-1, 1].forEach((s) => { const e = earPivot(s * 0.3, 0.12, 0); e.rotation.z = s * 0.35; sph(e, 0.13, accent, 0, -0.16, 0, 0.6, 1.3, 0.5); });
+    else if (kind === "kitten") [-1, 1].forEach((s) => { const e = earPivot(s * 0.2, 0.27, 0); e.rotation.z = -s * 0.25; const c = add(e, new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.24, 4), M(body))); c.position.y = 0.1; c.rotation.y = Math.PI / 4;
+      const ci = add(e, new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.16, 4), M(earIn))); ci.position.set(0, 0.08, 0.04); ci.rotation.y = Math.PI / 4; });
+    else if (isBun) [-1, 1].forEach((s) => { const e = earPivot(s * 0.13, 0.3, -0.02); e.rotation.z = -s * 0.12; sph(e, 0.09, body, 0, 0.28, 0, 1, 3.2, 0.6); sph(e, 0.055, earIn, 0, 0.28, 0.04, 1, 2.7, 0.4); });
+    else if (isHam) [-1, 1].forEach((s) => { const e = earPivot(s * 0.19, 0.23, -0.02); sph(e, 0.08, accent, 0, 0, 0, 1, 1, 0.5); sph(e, 0.05, earIn, 0, 0, 0.03, 1, 1, 0.4); });
+    else if (kind === "panda") [-1, 1].forEach((s) => { const e = earPivot(s * 0.25, 0.27, 0); sph(e, 0.11, accent, 0, 0, 0, 1, 1, 0.6); });
+    else if (kind === "dragon") [-1, 1].forEach((s) => { const e = earPivot(s * 0.17, 0.28, -0.05); e.rotation.z = -s * 0.3; e.rotation.x = -0.4; const h = add(e, new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.26, 10), M("#fff3c4"))); h.position.y = 0.12; });
+    P.ears.forEach((e) => (e.userData.z = e.rotation.z));
+    const legC = kind === "panda" ? accent : body;
+    [[-0.17, 0.2], [0.17, 0.2], [-0.17, -0.24], [0.17, -0.24]].forEach(([x, z]) => { const l = new THREE.Group(); l.position.set(x, isHam ? 0.12 : 0.2, z); rig.add(l);
+      sph(l, isHam ? 0.08 : 0.09, legC, 0, isHam ? -0.02 : -0.1, 0, 1, isHam ? 0.8 : 1.4, 1.1); P.legs.push(l); });
+    const tail = new THREE.Group(); rig.add(tail); P.tail = tail;
+    if (kind === "puppy") { tail.position.set(0, 0.58, -0.45); tail.rotation.x = -0.7; sph(tail, 0.07, body, 0, 0.12, 0, 1, 2.2, 1); }
+    else if (kind === "kitten") { tail.position.set(0, 0.5, -0.45); for (let k = 0; k < 6; k++) sph(tail, 0.065, k === 5 ? lighten(main, 0.3) : body, 0, 0.08 + k * 0.1, -Math.sin(k * 0.45) * 0.12); tail.rotation.x = -0.25; }
+    else if (isBun) { tail.position.set(0, 0.45, -0.48); sph(tail, 0.12, "#ffffff", 0, 0, 0); }
+    else if (isHam) { tail.position.set(0, 0.3, -0.46); sph(tail, 0.05, belly, 0, 0, 0); }
+    else if (kind === "panda") { tail.position.set(0, 0.45, -0.48); if (colorIdx === 1) for (let k = 0; k < 4; k++) sph(tail, 0.11 - k * 0.01, k % 2 ? accent : body, 0, 0.02 + k * 0.06, -k * 0.14); else sph(tail, 0.08, accent, 0, 0, 0); }
+    else if (kind === "dragon") { tail.position.set(0, 0.4, -0.45); for (let k = 0; k < 5; k++) sph(tail, 0.13 - k * 0.022, body, 0, -k * 0.04, -k * 0.15);
+      const tip = add(tail, new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.18, 4), M(belly))); tip.position.set(0, -0.2, -0.78); tip.rotation.x = -Math.PI / 2;
+      [-1, 1].forEach((s) => { const w = new THREE.Group(); w.position.set(s * 0.25, 0.7, -0.08); rig.add(w); const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(s * 0.55, 0.3); sh.lineTo(s * 0.48, -0.05); sh.lineTo(s * 0.3, 0.05); sh.lineTo(s * 0.22, -0.12); sh.closePath();
+        const wm = add(w, new THREE.Mesh(new THREE.ShapeGeometry(sh), M(lighten(main, 0.25), { side: THREE.DoubleSide }))); wm.rotation.y = s * 0.3; P.wings.push(w); });
+      for (let k = 0; k < 3; k++) { const sp = add(rig, new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 4), M(belly))); sp.position.set(0, 0.86 - k * 0.07, -0.06 - k * 0.17); } }
+    P.size = (kind === "dragon" ? 1.15 : kind === "hamster" ? 1.2 : 1.3) * 1.45;
     root.position.y = 0.36;
-    // body (sitting) and haunches
-    const body = mesh(new THREE.SphereGeometry(0.62, 32, 24), fur, [0, 0.62, -0.05], root, { scale: [1, 1.05, 1] });
-    mesh(new THREE.SphereGeometry(0.42, 24, 18), belly, [0, 0.58, 0.32], root, { scale: [1, 1.15, 0.6] });
-    [-1, 1].forEach((s) => {
-      mesh(new THREE.SphereGeometry(0.32, 20, 16), fur, [s * 0.42, 0.3, -0.05], root, { scale: [0.9, 0.75, 1.25] });
-      mesh(new THREE.SphereGeometry(0.15, 16, 12), belly, [s * 0.44, 0.08, 0.38], root, { scale: [1, 0.6, 1.4] });   // back paws
-      const leg = mesh(new THREE.CapsuleGeometry(0.11, 0.38, 6, 12), fur, [s * 0.2, 0.28, 0.42], root);
-      mesh(new THREE.SphereGeometry(0.13, 16, 12), belly, [s * 0.2, 0.06, 0.48], root, { scale: [1, 0.65, 1.2] });   // front paws
-      leg.rotation.x = 0.08;
-    });
-    P.body = body;
-    // head
-    const head = new THREE.Group();
-    head.position.set(0, 1.42, 0.08);
-    root.add(head);
-    P.head = head;
-    mesh(new THREE.SphereGeometry(0.6, 32, 24), fur, [0, 0, 0], head, { scale: [1.08, 0.96, 0.98] });
-    mesh(new THREE.SphereGeometry(0.28, 24, 18), belly, [0, -0.17, 0.42], head, { scale: [1.15, 0.8, 0.8] });   // muzzle
-    P.eyes = [eye(head, -0.23, 0.07, 0.48, C.iris), eye(head, 0.23, 0.07, 0.48, C.iris)];
-    // cheeks
-    [-1, 1].forEach((s) => mesh(new THREE.SphereGeometry(0.08, 12, 10), new THREE.MeshStandardMaterial({ color: "#ff9cc0", transparent: true, opacity: 0.55, roughness: 1 }), [s * 0.38, -0.12, 0.43], head, { scale: [1, 0.6, 0.4], cast: false }));
-    if (kind === "puppy") {
-      mesh(new THREE.SphereGeometry(0.085, 16, 12), mat(C.nose, { roughness: 0.2 }), [0, -0.08, 0.68], head, { scale: [1.3, 0.9, 0.9] });
-      mesh(new THREE.SphereGeometry(0.07, 14, 10), mat("#ff6f8a"), [0, -0.3, 0.6], head, { scale: [1, 1.3, 0.5] });   // tongue
-      [-1, 1].forEach((s) => {
-        const pivot = new THREE.Group(); pivot.position.set(s * 0.46, 0.3, 0); head.add(pivot);
-        mesh(new THREE.SphereGeometry(0.22, 20, 16), mat(C.ear, { roughness: 0.8 }), [s * 0.08, -0.28, 0.02], pivot, { scale: [0.75, 1.45, 0.45], rot: [0, 0, s * 0.25] });
-        P.ears.push({ g: pivot, s, base: s * 0.2 });
-      });
-      // collar with a gold tag
-      mesh(new THREE.TorusGeometry(0.4, 0.06, 12, 36), mat("#ff4f6a"), [0, 1.03, 0.04], root, { rot: [Math.PI / 2 - 0.15, 0, 0] });
-      mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 20), mat("#ffd23a", { metalness: 0.6, roughness: 0.3 }), [0, 0.92, 0.44], root, { rot: [Math.PI / 2 - 0.2, 0, 0] });
-      const tail = new THREE.Group(); tail.position.set(0, 0.45, -0.62); root.add(tail);
-      mesh(new THREE.CapsuleGeometry(0.07, 0.38, 6, 10), fur, [0, 0.2, -0.05], tail, { rot: [-0.5, 0, 0] });
-      mesh(new THREE.SphereGeometry(0.09, 12, 10), belly, [0, 0.42, -0.17], tail);
-      P.tail = tail; P.wag = 9;
-    } else if (kind === "kitten") {
-      mesh(new THREE.ConeGeometry(0.06, 0.07, 3), mat(C.nose), [0, -0.09, 0.62], head, { rot: [Math.PI + 0.3, 0, 0] });
-      [-1, 1].forEach((s) => {
-        const pivot = new THREE.Group(); pivot.position.set(s * 0.32, 0.42, 0.02); head.add(pivot);
-        mesh(new THREE.ConeGeometry(0.2, 0.38, 4), fur, [0, 0.14, 0], pivot, { rot: [0, Math.PI / 4, s * -0.25] });
-        mesh(new THREE.ConeGeometry(0.11, 0.24, 4), mat("#ffb3c9"), [s * -0.01, 0.12, 0.07], pivot, { rot: [0, Math.PI / 4, s * -0.25] });
-        P.ears.push({ g: pivot, s, base: 0 });
-        for (let k = -1; k <= 1; k++) mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.42, 4), mat("#ffffff"), [s * 0.36, -0.12 + k * 0.05, 0.5], head, { rot: [0, 0, Math.PI / 2 + k * 0.15 * s], cast: false });
-      });
-      // stripes on the head
-      [-0.12, 0, 0.12].forEach((x) => mesh(new THREE.SphereGeometry(0.05, 10, 8), mat("#8592ab"), [x, 0.48, 0.3], head, { scale: [0.6, 1.6, 0.5], rot: [-0.6, 0, 0], cast: false }));
-      const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.1, 0.25, -0.25), new THREE.Vector3(0.35, 0.65, -0.3), new THREE.Vector3(0.3, 1, -0.1)]);
-      const tail = new THREE.Group(); tail.position.set(0, 0.3, -0.58); root.add(tail);
-      mesh(new THREE.TubeGeometry(curve, 24, 0.075, 10), fur, [0, 0, 0], tail);
-      mesh(new THREE.SphereGeometry(0.075, 12, 10), fur, [0.3, 1, -0.1], tail);
-      P.tail = tail; P.wag = 2.2;
-    } else {
-      mesh(new THREE.SphereGeometry(0.06, 14, 10), mat(C.nose), [0, -0.09, 0.66], head, { scale: [1.3, 0.9, 0.8] });
-      [-1, 1].forEach((s) => mesh(new THREE.BoxGeometry(0.07, 0.1, 0.03), mat("#ffffff", { roughness: 0.3 }), [s * 0.04, -0.3, 0.62], head));   // teeth
-      [-1, 1].forEach((s) => {
-        const pivot = new THREE.Group(); pivot.position.set(s * 0.2, 0.45, -0.02); head.add(pivot);
-        mesh(new THREE.CapsuleGeometry(0.13, 0.62, 8, 14), fur, [0, 0.42, 0], pivot, { scale: [1, 1, 0.55] });
-        mesh(new THREE.CapsuleGeometry(0.075, 0.5, 6, 12), mat("#ffc2d6"), [0, 0.42, 0.055], pivot, { scale: [1, 1, 0.4] });
-        pivot.rotation.z = s * -0.18;
-        P.ears.push({ g: pivot, s, base: s * -0.18 });
-      });
-      const tail = new THREE.Group(); tail.position.set(0, 0.35, -0.62); root.add(tail);
-      mesh(new THREE.SphereGeometry(0.2, 18, 14), belly, [0, 0, 0], tail);
-      P.tail = tail; P.wag = 5;
-    }
     return P;
   }
 
-  const NAMES = { puppy: "Puppy", kitten: "Kitten", bunny: "Bunny" };
-  let pet = null, old = null, swapT = -9, jumpT = -9, blinkT = 1;
+  let pet = null, old = null, swapT = -9, jumpT = -9, blinkT = 1, kind = "puppy", colorIdx = 0;
   const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-  function setPet(kind) {
-    if (pet && pet.kind === kind) return;
+  const cols = document.getElementById("petCols");
+  function paintCols() {
+    const K = PET_BY_ID[kind];
+    cols.innerHTML = K.colors.map(([n, c], i) => `<button type="button" role="radio" aria-checked="${i === colorIdx}" aria-label="${n}" title="${n}" style="--pc:${c}" data-c="${i}"></button>`).join("");
+    cols.querySelectorAll("button").forEach((b) => (b.onclick = () => { colorIdx = +b.dataset.c; paintCols(); setPet(true); }));
+  }
+  function setPet(force) {
+    if (!force && pet && pet.kind === kind) return;
     if (old) scene.remove(old.root);
     old = pet;
-    pet = buildPet(kind);
+    pet = buildPet(kind, colorIdx);
     pet.root.scale.setScalar(0.001);
     scene.add(pet.root);
     swapT = clock.getElapsedTime();
-    dispatchEvent(new CustomEvent("petchange", { detail: NAMES[kind] }));
+    const K = PET_BY_ID[kind];
+    dispatchEvent(new CustomEvent("petchange", { detail: { name: K.name, color: K.colors[colorIdx][0], price: K.price } }));
   }
-  setPet("puppy");
+  paintCols(); setPet();
 
   const tabs = [...document.querySelectorAll(".pet-tabs [data-pet]")];
-  tabs.forEach((b) => (b.onclick = () => { tabs.forEach((x) => x.setAttribute("aria-selected", x === b)); setPet(b.dataset.pet); }));
+  tabs.forEach((b) => (b.onclick = () => { tabs.forEach((x) => x.setAttribute("aria-selected", x === b)); kind = b.dataset.pet; colorIdx = 0; paintCols(); setPet(); }));
 
   const pops = document.getElementById("petPops");
   const hearts = (x, y) => burst(pops, x ?? canvas.clientWidth / 2, y ?? canvas.clientHeight * 0.35, ["💖", "💜", "💕", "⭐", "🦴"].slice(0, pet.kind === "puppy" ? 5 : 4), 8);
@@ -481,28 +451,28 @@ const pointerOf = (e, el) => { const r = el.getBoundingClientRect(); return { x:
     stand.rotation.y = t * 0.15;
     // swap: the old pet shrinks away, the new one pops in
     const k = (t - swapT) / 0.55;
-    if (old) { const s = Math.max(0.001, 1 - k * 2.2); old.root.scale.setScalar(s); if (s <= 0.001) { scene.remove(old.root); old = null; } }
+    if (old) { const s = Math.max(0.001, (1 - k * 2.2) * old.size); old.root.scale.setScalar(s); if (s <= 0.001) { scene.remove(old.root); old = null; } }
     const pk = Math.min(1, Math.max(0, (k - 0.25) / 0.75));
     const pop = pk >= 1 ? 1 : 1 + Math.sin(pk * Math.PI * 2.5) * (1 - pk) * 0.35 - (1 - pk) * (1 - pk);
     if (!pet) return;
     const P = pet, br = Math.sin(t * 2.4);
-    P.root.scale.setScalar(Math.max(0.001, pop));
-    P.body.scale.set(1 + br * 0.015, 1.05 + br * 0.025, 1 + br * 0.015);
-    // look toward the mouse (and turn a little to show off)
-    P.root.rotation.y = (reduce ? 0 : Math.sin(t * 0.5) * 0.25) + mouse.x * 0.35;
+    P.root.scale.setScalar(Math.max(0.001, pop * P.size));
+    P.body.scale.y = (P.kind === "hamster" ? 0.95 : 0.85) * (1 + br * 0.025);
+    P.root.rotation.y = (reduce ? 0 : Math.sin(t * 0.5) * 0.35) + mouse.x * 0.4;
     P.head.rotation.y = mouse.x * 0.35;
     P.head.rotation.x = -mouse.y * 0.2;
     P.head.rotation.z = Math.sin(t * 1.3) * 0.08;
-    // happy jump with a spin
+    // the dragon flies a little; everyone does a happy spin-jump when clicked
     const j = (t - jumpT) / 0.9;
-    P.root.position.y = 0.36 + (j >= 0 && j < 1 ? Math.sin(Math.PI * j) * 0.7 : 0);
+    P.root.position.y = 0.36 + (P.kind === "dragon" ? 0.35 + Math.sin(t * 2.4) * 0.08 : 0) + (j >= 0 && j < 1 ? Math.sin(Math.PI * j) * 0.7 : 0);
     if (j >= 0 && j < 1) P.root.rotation.y += ease(j) * TAU;
-    // tail and ears
-    const excited = j >= 0 && j < 2 ? 2 : 1;
-    if (P.tail) P.tail.rotation.z = Math.sin(t * P.wag * excited) * (P.kind === "kitten" ? 0.35 : 0.45);
-    P.ears.forEach((e, i) => (e.g.rotation.z = e.base + Math.sin(t * 3 + i) * 0.06 + (j >= 0 && j < 1 ? Math.sin(j * Math.PI) * 0.4 * e.s : 0)));
+    const excited = j >= 0 && j < 2 ? 2.5 : 1;
+    P.tail.rotation.y = Math.sin(t * 5 * excited) * (P.kind === "bunny" || P.kind === "hamster" ? 0.15 : 0.5);
+    P.ears.forEach((e, i) => { e.rotation.x = Math.sin(t * 3 + i) * 0.08; });
+    P.wings.forEach((w, i) => { w.rotation.y = (i ? -1 : 1) * (0.3 + Math.sin(t * 7) * 0.45); });
+    P.legs.forEach((l, i) => { l.rotation.x = j >= 0 && j < 1 ? Math.sin(j * Math.PI * 4 + i) * 0.5 : 0; });
     // blink
-    if (t > blinkT) { const b = (t - blinkT) / 0.16; const s = b < 1 ? Math.abs(1 - 2 * b) : 1; P.eyes.forEach((e) => (e.scale.y = Math.max(0.1, s))); if (b >= 1) blinkT = t + 2 + Math.random() * 3; }
+    if (t > blinkT) { const b = (t - blinkT) / 0.16; const s = b < 1 ? Math.abs(1 - 2 * b) : 1; P.eyes.forEach((e) => (e.scale.y = 1.15 * Math.max(0.1, s))); if (b >= 1) blinkT = t + 2 + Math.random() * 3; }
   };
 }
 
