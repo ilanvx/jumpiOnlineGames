@@ -485,6 +485,15 @@ body.game-store .spx-btn,body.tutorial .spx-btn{display:none!important}
 .menu-dish{--c:#ff8a1c;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 12px;border:0;border-radius:22px;cursor:pointer;background:#fff;color:#22324a;
   box-shadow:inset 0 0 0 3px var(--c),0 5px 0 color-mix(in srgb,var(--c) 65%,#000);font:600 1.02rem "Fredoka",system-ui,sans-serif;transition:transform .12s,box-shadow .12s}
 .menu-dish img{width:92px;height:92px;pointer-events:none}
+.menu-overlay.bar .idle-card.menu-card{width:min(640px,100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column}
+.menu-overlay.bar .menu-grid{grid-template-columns:repeat(4,1fr);gap:10px;overflow-y:auto;padding:4px 4px 8px;min-height:0}
+.menu-overlay.bar .menu-dish img{width:72px;height:72px}
+.menu-overlay.bar .menu-dish span{font-size:.92rem;line-height:1.15;text-align:center}
+.menu-sec{grid-column:1/-1;margin:6px 0 0;font:400 1.25rem/1 var(--font);color:#9b5cff;letter-spacing:.03em;text-align:left}
+.md-price{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:3px 10px 3px 5px;border-radius:12px;background:#fff4cc;color:#7a4a00;font:600 .95rem "Fredoka",system-ui,sans-serif}
+.md-price svg{width:18px;height:18px}
+.menu-dish:disabled{opacity:.6;cursor:wait}
+@media (max-width:560px){.menu-overlay.bar .menu-grid{grid-template-columns:repeat(2,1fr)}}
 .menu-dish:hover{transform:translateY(-3px)}
 .menu-dish:active{transform:translateY(3px);box-shadow:inset 0 0 0 3px var(--c),0 2px 0 color-mix(in srgb,var(--c) 65%,#000)}
 .menu-dish:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
@@ -1605,6 +1614,7 @@ body.game-store .phone-btn,body.game-store .home-btn,body.game-store .gift-btn{o
 @media (prefers-reduced-motion:reduce){.idle-face,.idle-card,.idle-overlay{animation:none}}
 /* the "N online" counter at the top of the game is hidden (the phone's Online app shows who is playing) */
 .online{display:none!important}
+.acct-overlay{z-index:60}.acct-tip{font-size:.9rem;opacity:.75}
 /* scrollbars inside game windows: slim rounded thumb that lights up blue; the page itself never shows one */
 ::-webkit-scrollbar{width:12px;height:12px}
 ::-webkit-scrollbar-track{background:rgb(120 140 180 / .14);border-radius:10px;margin:8px}
@@ -2386,16 +2396,21 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
     <div class="idle-acts"><button class="idle-exit" id="menuClose" type="button">Maybe later</button></div>
   </div>
 </div>
+<div class="idle-overlay acct-overlay" id="acctOv" role="alertdialog" aria-modal="true" aria-labelledby="acctTitle" aria-describedby="acctText" hidden>
+  <div class="idle-card">
+    <h2 id="acctTitle">ANOTHER ACCOUNT IS ON</h2>
+    <p id="acctText"></p>
+    <div class="idle-acts"><button class="idle-back" id="acctGo" type="button" onclick="location.reload()">RELOAD</button></div>
+  </div>
+</div>
 <div class="idle-overlay" id="idleOverlay" role="alertdialog" aria-modal="true" aria-labelledby="idleTitle" aria-describedby="idleText" hidden>
   <div class="idle-card">
     <img class="idle-face" id="idleFace" alt="">
     <div class="idle-zzz" aria-hidden="true"><i>Z</i><i>Z</i><i>Z</i></div>
-    <span class="idle-chip">Disconnected: no activity for 20 minutes</span>
     <h2 id="idleTitle">WE MISS YOU!</h2>
-    <p id="idleText">You were away for a while, so we disconnected you from the server. Your friends are waiting in Jumpi!</p>
+    <p id="idleText">There was no activity for 20 minutes, so you were disconnected from the server. Press OK to go back to the start screen.</p>
     <div class="idle-acts">
-      <button class="idle-back" id="idleBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 L19.5 12 L7 19.5 Z" fill="#fff"/></svg>Back to the game</button>
-      <button class="idle-exit" id="idleExit" type="button">Exit</button>
+      <button class="idle-back" id="idleOk" type="button">OK</button>
     </div>
   </div>
 </div>
@@ -2643,6 +2658,7 @@ import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
 import {OUTFITS} from "/shared/outfits.js";
 import {checkText,checkName,FRIENDLY_MESSAGE} from "/shared/profanity.js";
 import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/pets.js";
+import {BAR_MENU} from "/shared/bar.js";
 import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN} from "/shared/store.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
 import {WHEEL} from "/shared/season.js";
@@ -2770,15 +2786,32 @@ const Sound=(()=>{
     if(s===6||s===14)dChord[bar].forEach(n=>tone({f:midi(n),t:rel,dur:.18,type:"square",vol:.03,bus:musicBus}));
     tone({f:midi(dChord[bar][s%3]+12),t:rel,dur:.07,type:"triangle",vol:.045,bus:musicBus});
     if(bar%2===1){const m=dMel[s];if(m)tone({f:midi(m),t:rel,dur:.16,type:"triangle",vol:.16,bus:musicBus,vib:4});}}
+
+  /* ---- the club DJ: a playlist of original dance tracks made for Jumpi (public/music/club, our own, no copyright
+     problems). Shuffled, never the same one twice in a row; plays through the music volume. ---- */
+  const CLUB_TRACKS=[{name:"Neon Bounce",file:"neon-bounce",bpm:126},{name:"Sunny Jump",file:"sunny-jump",bpm:108},{name:"Starlight Party",file:"starlight-party",bpm:150},
+    {name:"Disco Jumpi",file:"disco-jumpi",bpm:118},{name:"Bubble Pop",file:"bubble-pop",bpm:124}];
+  const CLUB={cur:-1,el:null,gain:null,onSong:null,want:false};
+  function clubPick(){let n=Math.floor(Math.random()*CLUB_TRACKS.length);if(n===CLUB.cur)n=(n+1)%CLUB_TRACKS.length;return n;}
+  function clubLoad(n){CLUB.cur=n;CLUB.el.src="/music/club/"+CLUB_TRACKS[n].file+".mp3";CLUB.shown=false;}
+  function clubPlay(){if(!ctx)return;CLUB.want=true;
+    if(!CLUB.el){const a=new Audio();a.preload="auto";CLUB.el=a;CLUB.gain=ctx.createGain();CLUB.gain.gain.value=2.2;ctx.createMediaElementSource(a).connect(CLUB.gain).connect(musicBus);
+      a.addEventListener("ended",()=>{if(!CLUB.want)return;clubLoad(clubPick());a.play().catch(()=>{});});
+      a.addEventListener("playing",()=>{if(!CLUB.shown&&CLUB.onSong){CLUB.shown=true;CLUB.onSong(CLUB_TRACKS[CLUB.cur].name);}});}
+    if(CLUB.cur<0||CLUB.fresh){CLUB.fresh=false;clubLoad(clubPick());}
+    CLUB.el.play().catch(()=>{});}
+  function clubPause(){CLUB.want=false;if(CLUB.el)CLUB.el.pause();}
   // a shop can play its own music while you're inside (it doesn't change your chosen track)
-  const VENUE_TRACKS={club:{step:60/124/4,fn:discoStep},diner:{step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus)}};
+  const VENUE_TRACKS={club:{dj:true},diner:{step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus)}};
   let venueT=null;
-  function venue(k){const T=k&&VENUE_TRACKS[k]||null;if(T===venueT)return;venueT=T;if(timer){stopMusic();startMusic();}}
+  function venue(k){const T=k&&VENUE_TRACKS[k]||null;if(T===venueT)return;venueT=T;if(T&&T.dj)CLUB.fresh=true;if(timer){stopMusic();startMusic();}}
   let musicOn=true,track=0,analyser=null,levelsBuf=null;
   try{musicOn=localStorage.getItem("jumpi-music")!=="0";track=Math.min(TRACKS.length-1,Math.max(0,+(localStorage.getItem("jumpi-track")||0)));}catch(e){}
   function scheduler(){const T=venueT||TRACKS[track];while(nextT<ctx.currentTime+0.15){T.fn(step,nextT);nextT+=T.step;step++;}}
-  function startMusic(){if(timer||!ctx||!musicOn)return;step=0;nextT=ctx.currentTime+0.08;timer=setInterval(scheduler,25);}
-  function stopMusic(){if(timer){clearInterval(timer);timer=null;}}
+  function startMusic(){if(timer||!ctx||!musicOn)return;
+    if(venueT&&venueT.dj){clubPlay();timer=setInterval(()=>{},60000);return;}   // the club plays real tracks, not the synth
+    step=0;nextT=ctx.currentTime+0.08;timer=setInterval(scheduler,25);}
+  function stopMusic(){if(timer){clearInterval(timer);timer=null;}clubPause();}
   function unlock(){init();if(!ctx)return;if(ctx.state==="suspended")ctx.resume();if(!started){started=true;startMusic();}}
   // the phone's music app
   function music(opts={}){
@@ -2840,7 +2873,8 @@ const Sound=(()=>{
     const m=muffle?.45:1;
     if(near&&!muffle){noise({dur:.35,vol:.5,type:"highpass",f:1200,bus:ambBus});noise({t:.02,dur:.5,vol:.4,type:"bandpass",f:900,f2:200,q:.6,bus:ambBus});}
     rumble(near?.05:.0,near?3.2:4.2,(near?.9:.55)*m,near?(muffle?300:900):(muffle?220:420));rumble(near?.5:.8,2.4,(near?.5:.35)*m,muffle?180:300);}
-  return {sfx,unlock,setMuted,setVolume,piano,ambient,thunder,music,venue,levels,get muted(){return !vol.music&&!vol.sfx;},get musicVol(){return vol.music;},get sfxVol(){return vol.sfx;}};
+  return {sfx,unlock,setMuted,setVolume,piano,ambient,thunder,music,venue,levels,set onClubSong(f){CLUB.onSong=f;},get clubSong(){return CLUB.cur>=0?CLUB_TRACKS[CLUB.cur].name:"";},
+    clubBeat(){const a=CLUB.el;return a&&!a.paused&&CLUB.cur>=0?a.currentTime*CLUB_TRACKS[CLUB.cur].bpm/60:null;},get muted(){return !vol.music&&!vol.sfx;},get musicVol(){return vol.music;},get sfxVol(){return vol.sfx;}};
 })();
 // browsers only allow sound after the first tap or key press
 ["pointerdown","keydown"].forEach(ev=>addEventListener(ev,()=>Sound.unlock(),{capture:true}));
@@ -4456,7 +4490,7 @@ function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+
 function netJoin(){
   if(typeof io==="undefined"){updateOnline();return;}   // page opened without our server: play alone
   if(!socket){
-    socket=io({withCredentials:true});
+    socket=io({withCredentials:true,auth:cb=>cb({tab:TAB.get()})});
     socket.on("connect",()=>{updateOnline();if(inGame)socket.emit("join",netState());});
     socket.on("disconnect",()=>{clearRemotes();updateOnline();});
     socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}});
@@ -5102,14 +5136,28 @@ form.addEventListener("submit",e=>{
 addEventListener("keydown",e=>{if(e.key==="Escape"&&playWrap.classList.contains("open")){setMenu(false);playBtn.focus();}});
 
 /* ---------- talking to the server ---------- */
+/* one browser = one login cookie, but every tab plays its own account: the server gives this tab a token
+   (kept in sessionStorage, so only this tab has it) and the game sends it with every call and on the socket.
+   x-jumpi-as is a last safety check: the server refuses a call that would act for another account. */
+const TAB={get(){try{return sessionStorage.getItem("jumpiTab")||"";}catch(e){return "";}},set(t){try{t?sessionStorage.setItem("jumpiTab",t):sessionStorage.removeItem("jumpiTab");}catch(e){}}};
 async function api(path,body){
-  let res;
-  try{res=await fetch(path.startsWith("/")?path:"/api/auth/"+path,body===undefined?{credentials:"same-origin"}:
-    {method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});}
+  let res;const auth=!path.startsWith("/")||path.startsWith("/api/auth/"),headers={},tab=TAB.get();
+  if(tab)headers["x-jumpi-tab"]=tab;
+  if(me&&me.id&&!auth)headers["x-jumpi-as"]=me.id;
+  try{res=await fetch(path.startsWith("/")?path:"/api/auth/"+path,body===undefined?{credentials:"same-origin",headers}:
+    {method:"POST",credentials:"same-origin",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify(body)});}
   catch(e){return {ok:false,status:0,data:{error:"Can't reach the server. Is it running?"}};}
   let data={};try{data=await res.json();}catch(e){}
+  if(res.status===409&&data.code==="account-changed")accountChanged(data.now);
+  if(auth){if(data.tab)TAB.set(data.tab);else if(res.ok&&/(^|\/)logout$/.test(path))TAB.set("");else if(res.status===401&&tab&&/(^|\/)me$/.test(path))TAB.set("");}
   return {ok:res.ok,status:res.status,data};
 }
+function accountChanged(name){const ov=document.getElementById("acctOv");if(!ov||!ov.hidden)return;
+  document.getElementById("acctText").textContent=name?`This window lost track of its account (${name} is logged in now), so it stopped to keep every account's coins and items in the right place.`:
+    "You logged out in another tab of this browser, so this window stopped.";
+  document.getElementById("acctGo").textContent=name?"PLAY AS "+name.toUpperCase():"RELOAD";
+  ov.hidden=false;try{socket&&socket.disconnect();}catch(e){}}
+
 const toastEl=document.getElementById("toast");
 let me=null,toastT;
 function toast(text){toastEl.textContent=text;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("show"),2600);}
@@ -5398,7 +5446,7 @@ const SLOT_LABEL={aura:"Auras",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:
 const SLOT_ONE={aura:"Aura",hair:"Hair",shirt:"Shirt",pants:"Pants",glasses:"Glasses",hat:"Hat",neck:"Necklace",eyes:"Eyes",color:"Body colour",tag:"Name tag",furniture:"Furniture",emote:"Emote"};
 const STORE_MODES={shop:{title:"SHOP",slots:["hair","shirt","pants","glasses","hat","neck","eyes","color","emote","furniture","aura"]},tags:{title:"TAGS",slots:["tag"]},
   inventory:{title:"INVENTORY",slots:["hair","shirt","pants","glasses","hat","neck","eyes","color","tag","emote","furniture","aura"]}};
-let catalog=null,storeMode="shop",storeSlot="hair",storeSel=null,storeBusy=false;
+let catalog=null,storeMode="shop",storeSlot="hair",storeSel=null,storeBusy=false,storePets=false;   // storePets: the Pet Center shop (only pet things)
 async function loadCatalog(){if(catalog)return catalog;const r=await api("/api/shop/catalog");if(r.ok)catalog=new Map(r.data.items.map(it=>[it.id,it]));return catalog;}
 const FREE_EMOTES=new Set(["happy","wow","sad"]);   // same as catalog.js: everyone has these
 const freeEmoteId=id=>id.startsWith("emote:")&&FREE_EMOTES.has((EMOTES[+id.slice(6)]||{}).id);
@@ -5418,12 +5466,14 @@ function itemPic(slot,i){
   return THUMBS[slot]&&THUMBS[slot][i]?`<img alt="" src="${THUMBS[slot][i]}">`:"";
 }
 function renderStoreTabs(){
-  const slots=STORE_MODES[storeMode].slots;storeTabs.innerHTML="";if(slots.length<2)return;
+  const slots=STORE_MODES[storeMode].slots;storeTabs.innerHTML="";if(slots.length<2||storePets)return;
   slots.forEach(sl=>{storeTabs.appendChild(catTab(sl,sl===storeSlot,()=>{storeSlot=sl;storeSel=null;sfx.hover();renderStoreTabs();renderStoreGrid();refreshMenuTag();}));});
 }
 function renderStoreGrid(){
   const slot=storeSlot,inv=storeMode==="inventory";storeGrid.innerHTML="";
-  const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;if(!inv&&OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i].gift)continue;list.push(i);}   // work uniform pieces: never in the shop
+  const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;if(!inv&&OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i].gift)continue;
+    if(slot==="furniture"&&!inv&&storePets!==isPetFurn(i))continue;   // pet things only at the Pet Center, home furniture only at the furniture shop
+    list.push(i);}   // work uniform pieces: never in the shop
   if(inv&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura"))list.unshift(-1);   // "none"
   if(!list.length){storeGrid.innerHTML='<p class="step-note">Nothing here yet. Visit the shop!</p>';}
   list.forEach(i=>{
@@ -5518,7 +5568,7 @@ function refreshMenuTag(){
 }
 async function openStore(mode){
   if(!me){openGate(mode);return;}
-  storeMode=mode;storeSlot=STORE_MODES[mode].slots[0];storeSel=null;
+  storeMode=mode;storeSlot=STORE_MODES[mode].slots[0];storeSel=null;storePets=false;
   document.getElementById("storeTitle").textContent=STORE_MODES[mode].title;storeMsg.textContent="";
   // start the try-on draft from what the player is wearing now
   const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1});
@@ -5529,11 +5579,11 @@ async function openStore(mode){
 }
 // the shop and the wardrobe can also open inside the game (from the phone) without leaving it
 const GS={open:false};
-async function openGameStore(mode,slot){
-  if(!inGame||!me||GS.open)return;
+async function openGameStore(mode,slot,pets=false){
+  if(!inGame||!me||GS.open)return;storePets=!!pets&&mode==="shop";if(storePets)slot="furniture";
   closePhone(true);closeChat();closePlayerCard();if(G.home)closeDecorate();G.keys={};G.target=null;
   GS.open=true;storeMode=mode;storeSlot=slot&&STORE_MODES[mode].slots.includes(slot)?slot:STORE_MODES[mode].slots[0];storeSel=null;
-  document.getElementById("storeTitle").textContent=mode==="shop"?"SHOP":"MY LOOK";storeMsg.textContent="";
+  document.getElementById("storeTitle").textContent=storePets?"PET SHOP":mode==="shop"?"SHOP":"MY LOOK";storeMsg.textContent="";
   const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1});
   setPreview(true);if(!THUMBS.hair||!THUMBS.hair.length)queueThumbs();
   renderStoreTabs();renderStoreGrid();
@@ -5566,11 +5616,16 @@ document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoos
 /* =====================================================================
    FURNITURE + MY HOME (decorate with what you bought in the shop)
    ===================================================================== */
-const FURN_NAMES=["Cozy Sofa","Armchair","Round Table","Wooden Chair","Comfy Bed","Floor Lamp","Potted Plant","Bookshelf","Big TV","Round Rug","Beanbag","Fish Tank","Arcade Machine","Piano","Gold Trophy","Toy Box"];
+const FURN_NAMES=["Cozy Sofa","Armchair","Round Table","Wooden Chair","Comfy Bed","Floor Lamp","Potted Plant","Bookshelf","Big TV","Round Rug","Beanbag","Fish Tank","Arcade Machine","Piano","Gold Trophy","Toy Box",
+  "Pet Bed","Food Bowl","Water Bowl","Bouncy Ball","Chew Bone","Yarn Ball","Squeaky Duck","Cat Tree","Dog House"];
+// 16+: pet things (sold at the Pet Center only). Toys have no collision: pets push and carry them around.
+const PET_FURN=16,isPetFurn=f=>f>=PET_FURN,PF={beds:new Set([16,24]),food:17,water:18,kick:new Set([19,21]),carry:new Set([20,22]),tree:23},NOCOL=new Set([19,20,21,22]);
+const TOYS=new Map();   // toys the pets are pushing around right now (mesh -> speed); only on this screen, not saved
 // collision radius of each piece (0 = you can walk over it)
 // floor space of each piece [width, depth, depth offset]; the rug (9) lies flat so things can stand on it. Same numbers as the server (catalog.js).
 let HOME_W=7.4,HOME_D=5.6,HSHAPE=houseShape({});   // the room size changes with house upgrades (setHouse)
-const FURN_FP=[[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0]],FLAT=new Set([9]);
+const FURN_FP=[[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0],
+  [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0]],FLAT=new Set([9]);
 function footprint({f,x,z,r}){const [w,d,oz]=FURN_FP[f],t=r%2===1,a=r*Math.PI/2,cx=x+oz*Math.sin(a),cz=z+oz*Math.cos(a),hw=(t?d:w)/2,hd=(t?w:d)/2;return [cx-hw,cz-hd,cx+hw,cz+hd];}
 const fpHits=(a,b)=>a[0]<b[2]-.02&&a[2]>b[0]+.02&&a[1]<b[3]-.02&&a[3]>b[1]+.02;
 function placeProblem(it,others){const fp=footprint(it);
@@ -5625,6 +5680,39 @@ function buildFurniture(f){
       [-1,1].forEach(s=>{const h=add(new THREE.Mesh(new THREE.TorusGeometry(.13,.035,8,16),gold));h.position.set(s*.38,1.33,0);h.rotation.y=Math.PI/2;});break;}
     case 15:{add(box(1.1,.75,.8,fm("#ff4545"),0,.38,0));add(box(1.14,.14,.84,fm("#ffd23a"),0,.82,0));add(box(.3,.3,.04,fm("#ffd23a"),0,.45,.41));
       const ball=add(new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),fm("#1f9bff")));ball.position.set(.45,1.02,.1);break;}
+    /* ---- pet things ---- */
+    case 16:{const ring=add(new THREE.Mesh(new THREE.TorusGeometry(.48,.17,14,32),fm("#ff6fa8",{roughness:.95})));ring.rotation.x=Math.PI/2;ring.position.y=.17;
+      add(cyl(.5,.52,.1,fm("#ffd6e7",{roughness:1}),0,.08,0,32));
+      const pt=texCanvas(128,128,(c,w,h)=>{c.fillStyle="#fff1f7";c.fillRect(0,0,w,h);c.fillStyle="#ffb3d1";[[30,40],[86,30],[60,84],[100,96],[20,100]].forEach(([x,y])=>{c.beginPath();c.ellipse(x,y+4,9,8,0,0,7);c.fill();[[-9,-8],[-3,-13],[4,-13],[10,-8]].forEach(([a,b])=>{c.beginPath();c.ellipse(x+a,y+b,3,4,0,0,7);c.fill();});});});
+      const cu=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,.06,32),new THREE.MeshStandardMaterial({map:pt,roughness:1}));cu.position.y=.15;cu.receiveShadow=true;g.add(cu);break;}
+    case 17:case 18:{const water=f===18,c=water?"#1f9bff":"#ff4545";
+      add(new THREE.Mesh(new THREE.CylinderGeometry(.27,.21,.15,28,1,true),fm(c,{side:THREE.DoubleSide}))).position.y=.075;
+      add(cyl(.21,.21,.02,fm(water?"#0b5fb8":"#b02a2a"),0,.01,0,28));const lip=add(new THREE.Mesh(new THREE.TorusGeometry(.27,.025,8,28),fm(water?"#8fd6ff":"#ff9a9a")));lip.rotation.x=Math.PI/2;lip.position.y=.15;
+      const fill=new THREE.Group();fill.name="fill";g.add(fill);
+      if(water){const w=new THREE.Mesh(new THREE.CircleGeometry(.235,28),new THREE.MeshStandardMaterial({color:"#8fe0ff",roughness:.05,metalness:.1,transparent:true,opacity:.85}));w.rotation.x=-Math.PI/2;w.position.y=.12;fill.add(w);}
+      else{const km=fm("#b0702e",{roughness:.9}),km2=fm("#d39248",{roughness:.9});for(let k=0;k<26;k++){const a=k*2.4,r=.04+((k*37)%17)/17*.16,b=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),k%3?km:km2);b.position.set(Math.cos(a)*r,.12+((k*13)%5)*.008,Math.sin(a)*r);fill.add(b);}}
+      break;}
+    case 19:{const b=add(new THREE.Mesh(new THREE.SphereGeometry(.18,20,14),fm("#ff4545",{roughness:.35})));b.position.y=.18;
+      const st=new THREE.Mesh(new THREE.TorusGeometry(.18,.03,8,28),fm("#ffffff",{roughness:.35}));b.add(st);const st2=st.clone();st2.rotation.y=Math.PI/2;b.add(st2);break;}
+    case 20:{const bm=fm("#fff6e0",{roughness:.7}),b=new THREE.Group();b.position.y=.07;g.add(b);const s2=cyl(.05,.05,.38,bm,0,0,0,10);s2.rotation.z=Math.PI/2;s2.castShadow=true;b.add(s2);
+      [[-.2,.05],[-.2,-.05],[.2,.05],[.2,-.05]].forEach(([a,c])=>{const k=new THREE.Mesh(new THREE.SphereGeometry(.07,12,10),bm);k.position.set(a,0,c);k.castShadow=true;b.add(k);});break;}
+    case 21:{const ym=fm("#9b5cff",{roughness:1}),b=add(new THREE.Mesh(new THREE.SphereGeometry(.17,18,14),ym));b.position.y=.17;
+      for(let k=0;k<5;k++){const w=new THREE.Mesh(new THREE.TorusGeometry(.172,.012,6,30),fm("#c9a6ff",{roughness:1}));w.rotation.set(k*.7,k*1.3,k*.4);b.add(w);}
+      const tail=new THREE.Mesh(new THREE.TorusGeometry(.18,.012,6,20,Math.PI*.9),ym);tail.rotation.x=Math.PI/2;tail.position.set(.2,.01,.12);g.add(tail);break;}
+    case 22:{const y=fm("#ffd23a",{roughness:.4}),d=new THREE.Group();g.add(d);const bd=new THREE.Mesh(new THREE.SphereGeometry(.16,18,14),y);bd.scale.set(1,.8,1.25);bd.position.y=.13;bd.castShadow=true;d.add(bd);
+      const hd=new THREE.Mesh(new THREE.SphereGeometry(.1,16,12),y);hd.position.set(0,.29,.1);hd.castShadow=true;d.add(hd);
+      const bk=new THREE.Mesh(new THREE.ConeGeometry(.045,.1,10),fm("#ff8a1c"));bk.rotation.x=Math.PI/2;bk.position.set(0,.28,.22);d.add(bk);
+      [-1,1].forEach(sd=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.018,8,6),fm("#1d2b4f"));e.position.set(sd*.05,.32,.18);d.add(e);});
+      const tl=new THREE.Mesh(new THREE.ConeGeometry(.06,.12,8),y);tl.rotation.x=-Math.PI/2.6;tl.position.set(0,.2,-.2);d.add(tl);break;}
+    case 23:{const sisal=fm("#d8b98a",{roughness:1}),cp=fm("#9b5cff",{roughness:1});add(box(1,.1,1,cp,0,.05,0));add(cyl(.1,.1,2.1,sisal,0,1.05,0,12));add(cyl(.08,.08,1.1,sisal,.32,.55,-.3,10));
+      add(box(.8,.1,.8,cp,0,1.05,0));add(box(.62,.1,.62,cp,.18,.55,-.18));add(box(.72,.1,.72,cp,0,2.12,0));
+      const cave=add(new THREE.Mesh(new THREE.SphereGeometry(.36,16,12,0,Math.PI*2,0,Math.PI*.72),cp));cave.position.set(0,1.5,0);
+      const dangle=add(cyl(.01,.01,.35,fm("#ffffff"),.34,1.85,.3,4));const pom=add(new THREE.Mesh(new THREE.SphereGeometry(.06,10,8),fm("#ff5fa8")));pom.position.set(.34,1.66,.3);g.userData.pom=pom;void dangle;break;}
+    case 24:{const wall=fm("#e8423b"),roof=fm("#2f6fd6"),trim=fm("#ffffff");add(box(1.2,.9,1.3,wall,0,.45,-.05));
+      [-1,1].forEach(sd=>{const r=add(box(.82,.08,1.5,roof,sd*.3,1.16,-.05));r.rotation.z=-sd*.62;});add(box(.08,.08,1.52,trim,0,1.4,-.05));
+      const door=new THREE.Mesh(new THREE.CircleGeometry(.32,24,0,Math.PI),fm("#2a1a10"));door.position.set(0,.18,.61);g.add(door);add(box(.7,.36,.02,fm("#2a1a10"),0,.18,.605)).position.y=.18;
+      const sign=new THREE.Mesh(new THREE.PlaneGeometry(.46,.16),new THREE.MeshStandardMaterial({map:texCanvas(128,44,(c,w,h)=>{c.fillStyle="#ffd23a";c.fillRect(0,0,w,h);c.fillStyle="#1d2b4f";c.font='bold 26px "Lilita One", sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText("PET",w/2,h/2+1);})}));
+      sign.position.set(0,.74,.612);g.add(sign);break;}
   }
   g.userData.f=f;return g;
 }
@@ -5679,7 +5767,8 @@ function showArrows(on){HOME.pieces.children.forEach(p=>p.children.forEach(o=>{i
 function placePieces(){
   HOME.pieces.clear();
   HOME.layout.items.forEach((it,k)=>{const p=buildFurniture(it.f);const ar=seatArrow(it.f);if(ar){ar.visible=!deco.hidden;p.add(ar);}p.position.set(it.x,0,it.z);p.rotation.y=it.r*Math.PI/2;p.userData.k=k;HOME.pieces.add(p);});
-  G.colliders=HOME.layout.items.filter(it=>!FLAT.has(it.f)).map(it=>({box:footprint(it)}));
+  G.colliders=HOME.layout.items.filter(it=>!FLAT.has(it.f)&&!NOCOL.has(it.f)).map(it=>({box:footprint(it)}));
+  TOYS.clear();PETS.home.forEach(P=>{P.carry=null;P.act=null;});
 }
 // the door is on the back wall at x=3.4: stepping onto the doormat takes you outside
 function homeTick(t){updateSeatPrompt();placeTick(t);Sound.piano(pianoLevel());if(!HOME.place)(HOME.extTicks||[]).forEach(f=>f(t));
@@ -5713,12 +5802,13 @@ function updateSeatPrompt(){
       if(SEAT_KINDS.has(sp.k)&&[...remotes.values()].some(c=>c.pose&&Math.hypot(c.tx-sp.x,c.tz-sp.z)<.3))continue;bd=d;best=sp;}}
   const key=best?best.piece+":"+best.n:"",was=nearSeat?nearSeat.piece+":"+nearSeat.n:"";nearSeat=best;
   if(key===was)return;seatPrompt.hidden=!best;
-  if(best){document.getElementById("seatText").textContent=best.label||{sleep:"SLEEP",play:"PLAY PIANO",sit:G.order&&best.tab?(G.order.kind==="club"?"SIT & DRINK":"SIT & EAT"):"SIT",dance:"DANCE"}[best.k];document.getElementById("seatIcon").innerHTML=SEAT_ICON[best.k];sfx.tick(true);}}
+  if(best){document.getElementById("seatText").textContent=best.label||{sleep:"SLEEP",play:"PLAY PIANO",sit:G.order&&best.tab?(G.order.kind==="club"?(BAR_MENU[G.order.i]?.type==="snack"?"SIT & EAT":"SIT & DRINK"):"SIT & EAT"):best.bar?"SIT & ORDER":"SIT",dance:"DANCE"}[best.k];document.getElementById("seatIcon").innerHTML=SEAT_ICON[best.k];sfx.tick(true);}}
 function sitDown(){if(!nearSeat||G.seat)return;const sp=nearSeat;
   if(sp.act){sp.act();return;}   // shop counters, mirrors, ordering food
   G.seat={...sp,back:{x:G.pos.x,z:G.pos.z}};if(sp.k==="dance")G.seat.y=Math.floor(Math.random()*DANCES.length);G.pos.set(sp.x,0,sp.z);G.face=sp.f;G.target=null;G.keys={};G.marker.visible=false;
   seatPrompt.hidden=true;nearSeat=null;sp.k==="sleep"?sfx.close():sfx.tick(true);
-  if(sp.tab&&G.order){serveFood(sp);toast(G.order.kind==="club"?"Enjoy your drink!":"Enjoy your meal!");return;}
+  if(sp.tab&&G.order){serveFood(sp);toast(G.order.kind==="club"?"Enjoy!":"Enjoy your meal!");return;}
+  if(sp.bar){setTimeout(()=>{if(G.seat&&G.seat.bar&&!G.order)openMenu("club");},250);return;}   // a bar stool: the menu opens right away
   toast({sleep:"Sweet dreams! Move to wake up.",play:"🎹 Playing the piano! Move to stop.",sit:"Ahh, comfy! Move to get up.",dance:"Let's dance! Press E for a new move, move to stop."}[sp.k]);}
 // get up and step back to where you were standing
 function standUp(quiet){if(!G.seat)return;const b=G.seat.back;G.seat=null;stopEating();P.armL.rotation.z=P.armR.rotation.z=0;P.root.rotation.z=0;
@@ -6872,11 +6962,12 @@ function venueClub(){
   const bot=["#ff8a1c","#2fd36b","#ffd23a","#ff4f8b","#1fb6ff","#9b5cff"];for(let k=0;k<12;k++){const y=k<6?1.73:2.53;const b=cyl(.07,.08,.32,mat(bot[k%6],{roughness:.2,emissive:bot[k%6],emissiveIntensity:.25}),7.22,y+.16,-1.4+(k%6)*.6,10);g.add(b);}
   [-1.4,0,1.4].forEach(z=>{const st=new THREE.Group();st.position.set(4.85,0,z);g.add(st);st.add(cyl(.05,.05,.56,mat("#c9d3e3",{metalness:.7,roughness:.3}),0,.28,0,10));st.add(cyl(.28,.3,.04,mat("#c9d3e3",{metalness:.7,roughness:.3}),0,.02,0,18));
     st.add(cyl(.3,.3,.12,mat("#ff2fa0",{roughness:.6}),0,.56,0,20));C.col.push({c:[4.85,z],r:.25});
-    vSpot(C,{k:"sit",x:4.85,z,y:.62,f:Math.PI/2,reach:1.6,tab:[.98,CTR_H+.08]});});
+    vSpot(C,{k:"sit",x:4.85,z,y:.62,f:Math.PI/2,reach:1.1,tab:[.98,CTR_H+.08],bar:true});});
   C.col.push({box:[5.45,-2.15,7.4,2.55]});
-  vSpot(C,{k:"order",label:"GET A DRINK",x:5.9,z:3.3,reach:1.25,act:()=>openMenu("club")});
+  // order at the end of the bar, away from the stools (sitting on a stool also opens the menu)
+  vSpot(C,{k:"order",label:"ORDER AT THE BAR",x:5.9,z:3.45,reach:1.5,act:()=>openMenu("club")});
   // the beat drives the floor, the lights and the speakers
-  C.ticks.push(t=>{const b=t*124/60,step=Math.floor(b),f=b-step,pulse=1-f;
+  C.ticks.push(t=>{const b=Sound.clubBeat()??t*124/60,step=Math.floor(b),f=b-step,pulse=1-f;
     tiles.forEach(({m,i,j})=>{const on=((i+j+step)%3===0)||((i*7+j*3+step*5)%11===0),c=PAL[(i+j*2+Math.floor(step/4))%6];
       m.emissive.set(on?c:"#000000");m.emissiveIntensity=on?.55+pulse*.9:0;m.color.set(on?c:"#1a1630");});
     ball.rotation.y=t*.8;decks.forEach(d=>d.rotation.y=t*6);
@@ -6954,7 +7045,15 @@ function venuePets(){
   ct.add(cyl(.12,.12,2.6,sisal,0,1.3,0,12));ct.add(box(1.1,.12,1.1,carpet,0,.06,0));ct.add(box(.9,.12,.9,carpet,0,1.3,0));ct.add(box(.8,.12,.8,carpet,0,2.6,0));
   const cave=new THREE.Mesh(new THREE.SphereGeometry(.45,16,12,0,Math.PI*2,0,Math.PI*.75),carpet);cave.position.set(0,1.85,0);cave.castShadow=true;ct.add(cave);
   C.col.push({c:[6.5,1.6],r:.65});
-  [["#ff4545",2.4,2.8],["#1f9bff",-.6,3.6],["#ffd23a",5.4,3.9]].forEach(([c,x,z])=>{const b=new THREE.Mesh(new THREE.SphereGeometry(.2,14,10),mat(c,{roughness:.4}));b.position.set(x,.2,z);b.castShadow=true;g.add(b);});
+  // the pet shop shelf: beds, bowls and toys you can buy for your home
+  {const sh=new THREE.Group();sh.position.set(6.8,0,3.4);sh.rotation.y=-Math.PI/2;sh.scale.setScalar(.88);g.add(sh);const wd=mat("#ffffff",{roughness:.5}),pk=mat("#ff8fc0",{roughness:.6});
+    sh.add(box(2.3,2.3,.55,pk,0,1.15,-.05));[.12,.9,1.65].forEach(y=>sh.add(box(2.16,.07,.5,wd,0,y,.02)));sh.add(box(2.3,.08,.6,wd,0,2.32,0));
+    [[16,-.55,.16,.55],[24,.55,.16,.42],[17,-.75,.94,.8],[18,-.2,.94,.8],[19,.3,.94,1],[21,.72,.94,1],[20,-.6,1.69,1],[22,-.05,1.69,1],[23,.62,1.69,.32]].forEach(([f,x,y,sc])=>{
+      const it=buildFurniture(f);it.scale.setScalar(sc);it.position.set(x,y+.035,.03);sh.add(it);});
+    hangSign(C,"PET SHOP",6.6,3.3,3.4,2,"#ff5fa8");
+    C.col.push({box:[6.5,2.4,7.4,4.4]});
+    vSpot(C,{k:"shop",label:"PET SHOP",x:5.6,z:3.4,reach:1.3,act:()=>openGameStore("shop","furniture",true)});}
+  [["#ff4545",2.4,2.8],["#1f9bff",-.6,3.6],["#ffd23a",4.2,2.4]].forEach(([c,x,z])=>{const b=new THREE.Mesh(new THREE.SphereGeometry(.2,14,10),mat(c,{roughness:.4}));b.position.set(x,.2,z);b.castShadow=true;g.add(b);});
   const bm=mat("#fffaf0");[[-3.6,.4],[2.2,-2.6]].forEach(([x,z])=>{const b=new THREE.Group();b.position.set(x,.08,z);b.rotation.y=x;const s=cyl(.05,.05,.4,bm,0,0,0,8);s.rotation.z=Math.PI/2;b.add(s);
     [[-.2,.05],[-.2,-.05],[.2,.05],[.2,-.05]].forEach(([a,c])=>{const k=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),bm);k.position.set(a,0,c);b.add(k);});g.add(b);});
   // the pets on display breathe, look around and now and then do a happy spin
@@ -6965,7 +7064,7 @@ const venueContent=id=>PLACE.cache[id]||(PLACE.cache[id]=VENUE_BUILD[id]());
 
 /* ---------- food and drinks ---------- */
 const FOODS={diner:[{name:"Pizza",c:"#e8423b"},{name:"Burger",c:"#ff8a1c"},{name:"Sushi",c:"#2f6fd6"},{name:"Ice cream",c:"#ff5fa8"}],
-  club:[{name:"Orange juice",c:"#ff8a1c"},{name:"Berry smoothie",c:"#c13cff"},{name:"Lemon fizz",c:"#2fd36b"},{name:"Choc shake",c:"#7a4a2a"}]};
+  club:BAR_MENU};   // the club bar: juices, shakes, slushies and snacks (public/shared/bar.js; paid, no alcohol)
 function makeFood(kind,i){
   const g=new THREE.Group(),add=(m)=>{m.castShadow=true;g.add(m);return m;},sph=(r,c,x,y,z,sy=1)=>{const m=add(new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c,{roughness:.6})));m.position.set(x,y,z);m.scale.y=sy;return m;};
   if(kind==="diner"){add(cyl(.34,.3,.035,mat("#ffffff",{roughness:.3}),0,.018,0,28));
@@ -6976,10 +7075,28 @@ function makeFood(kind,i){
     else if(i===2){[[-.14,0],[.02,.1],[.13,-.06]].forEach(([x,z])=>{add(cyl(.075,.075,.1,mat("#1d2b2f"),x,.085,z,16));add(cyl(.062,.062,.102,mat("#ffffff"),x,.086,z,16));add(cyl(.028,.028,.104,mat("#ff7a59"),x,.087,z,12));});
       add(box(.04,.02,.04,mat("#7fd36b"),.15,.04,.15));}
     else{add(cyl(.12,.07,.16,mat("#bfe9ff",{transparent:true,opacity:.6,roughness:.05}),0,.11,0,18));sph(.11,"#ff9ec4",0,.24,0,.85);sph(.1,"#fff6dc",-.07,.31,.02,.85);sph(.09,"#7a4a2a",.06,.33,-.02,.85);sph(.035,"#e8172f",0,.43,0);}}
-  else{const L=["#ffa21c","#c13cff","#e8ff6a","#8a5532"][i];
-    add(cyl(.11,.09,.36,new THREE.MeshStandardMaterial({color:"#dff4ff",transparent:true,opacity:.35,roughness:.05}),0,.18,0,20));add(cyl(.095,.08,.3,mat(L,{roughness:.3,emissive:L,emissiveIntensity:.15}),0,.16,0,18));
-    const straw=add(cyl(.012,.012,.3,mat(i===1?"#ffd23a":"#ff2fa0"),.04,.4,0,8));straw.rotation.z=-.25;
-    if(i===3)sph(.1,"#fff6dc",0,.34,0,.6);else{const sl=add(cyl(.07,.07,.015,mat(i===2?"#f4ff6a":i===1?"#ff4f8b":"#ff9a1c"),-.1,.34,0,16));sl.rotation.x=Math.PI/2;}}
+  else{const B=BAR_MENU[i]||BAR_MENU[0],N=B.name;
+    if(B.type==="drink"){const L=B.c,shake=/Shake|Smoothie/.test(N),slush=/Slush/.test(N);
+      add(cyl(.11,.09,.36,new THREE.MeshStandardMaterial({color:"#dff4ff",transparent:true,opacity:.35,roughness:.05}),0,.18,0,20));add(cyl(.095,.08,.3,mat(L,{roughness:.3,emissive:L,emissiveIntensity:.15}),0,.16,0,18));
+      const straw=add(cyl(.012,.012,.3,mat(i%2?"#ffd23a":"#ff2fa0"),.04,.42,0,8));straw.rotation.z=-.25;
+      if(shake){sph(.1,"#fff6dc",0,.34,0,.6);sph(.03,"#e8172f",0,.41,0);}
+      else if(slush){sph(.1,L,0,.33,0,.7);sph(.06,"#ffffff",-.03,.38,.02,.5);}
+      else{const sl=add(cyl(.07,.07,.015,mat(N.startsWith("Water")?"#4fc04a":N.startsWith("Lemon")?"#f4ff6a":"#ff9a1c"),-.1,.34,0,16));sl.rotation.x=Math.PI/2;}}
+    else{const bowl=(c,r=.17)=>{add(new THREE.Mesh(new THREE.CylinderGeometry(r,r*.7,.09,24,1,true),mat(c,{side:THREE.DoubleSide}))).position.y=.045;add(cyl(r*.7,r*.7,.01,mat(c),0,.005,0,20));};
+      if(N==="French Fries"){add(box(.2,.18,.12,mat("#e8423b"),0,.09,0));add(box(.205,.03,.125,mat("#ffd23a"),0,.13,0));
+        for(let k=0;k<11;k++){const f=add(box(.025,.2,.025,mat("#ffc94a"),-.08+(k%6)*.032,.2+(k%3)*.02,-.03+(k%2)*.05));f.rotation.z=(k%5-2)*.12;}}
+      else if(N==="Edamame"){bowl("#2f6fd6");for(let k=0;k<7;k++){const a=k*.9,pd=add(new THREE.Mesh(new THREE.CapsuleGeometry(.025,.1,4,8),mat("#7fd34f",{roughness:.6})));pd.position.set(Math.cos(a)*.07,.08+(k%2)*.02,Math.sin(a)*.07);pd.rotation.set(Math.PI/2,0,a);}}
+      else if(N==="Potato Chips"){bowl("#ff5fa8");for(let k=0;k<10;k++){const c=add(cyl(.045,.045,.008,mat("#ffd36b",{roughness:.5}),Math.cos(k*1.7)*.07,.08+(k%3)*.018,Math.sin(k*1.7)*.07,12));c.rotation.set(k*.6,0,k*.4);}}
+      else if(N==="Popcorn"){const tub=add(new THREE.Mesh(new THREE.CylinderGeometry(.13,.1,.22,16),new THREE.MeshStandardMaterial({map:texCanvas(64,32,(c,w,h)=>{for(let x=0;x<8;x++){c.fillStyle=x%2?"#ffffff":"#e8423b";c.fillRect(x*8,0,8,h);}})})));tub.position.y=.11;
+        for(let k=0;k<14;k++)sph(.035,"#fff6dc",Math.cos(k*2.1)*.07,.23+(k%3)*.025,Math.sin(k*2.1)*.07);}
+      else if(N==="Nachos & Cheese"){add(cyl(.22,.2,.025,mat("#ffffff",{roughness:.3}),0,.012,0,24));
+        for(let k=0;k<7;k++){const t=add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.01,3),mat("#ffb84a")));t.position.set(Math.cos(k*.9)*.11,.035+k*.006,Math.sin(k*.9)*.11);t.rotation.set(.3,k,.2);}
+        add(cyl(.05,.045,.05,mat("#ffffff"),.0,.05,0,14));add(cyl(.044,.044,.01,mat("#ffd23a",{emissive:"#ffb000",emissiveIntensity:.2}),0,.075,0,14));}
+      else if(N==="Chicken Nuggets"){add(box(.22,.08,.14,mat("#ffd23a"),0,.04,0));for(let k=0;k<5;k++){const nn=sph(.045,"#d9963f",-.07+k*.035,.1+(k%2)*.02,(k%2)*.03-.015);nn.scale.set(1.3,.8,1);}
+        add(cyl(.035,.03,.04,mat("#ffffff"),.15,.02,.06,12));add(cyl(.03,.03,.01,mat("#e8172f"),.15,.04,.06,12));}
+      else if(N==="Mini Pretzels"){bowl("#9b5cff");for(let k=0;k<6;k++){const pz=add(new THREE.Mesh(new THREE.TorusKnotGeometry(.03,.009,32,6,2,3),mat("#a0602a",{roughness:.5})));pz.position.set(Math.cos(k*1.1)*.07,.085+(k%2)*.02,Math.sin(k*1.1)*.07);pz.rotation.set(k,k*.5,0);}}
+      else{const stick=add(cyl(.008,.008,.42,mat("#e0c08a"),0,.16,0,6));stick.rotation.z=Math.PI/2.4;
+        ["#e8172f","#ffd23a","#7fd34f","#9b5cff","#ff8a1c"].forEach((c,k)=>{const q=add(box(.055,.055,.055,mat(c,{roughness:.4}),-.13+k*.065,.085+k*.026,0));q.rotation.set(k,k*.7,0);});}}}
   g.scale.setScalar(kind==="club"?1.45:1.25);return g;}
 const FOOD_THUMB={};let foodR=null;
 function foodThumb(kind,i){const key=kind+i;if(FOOD_THUMB[key])return FOOD_THUMB[key];
@@ -6990,23 +7107,35 @@ function foodThumb(kind,i){const key=kind+i;if(FOOD_THUMB[key])return FOOD_THUMB
 const menuOverlay=document.getElementById("menuOverlay"),menuGrid=document.getElementById("menuGrid");
 function openMenu(kind){if(!menuOverlay.hidden)return;G.keys={};G.target=null;
   const bar=kind==="club";menuOverlay.classList.toggle("bar",bar);
-  document.getElementById("menuTitle").textContent=bar?"JUICE BAR":"TODAY'S MENU";
-  document.getElementById("menuText").textContent=bar?"Pick a drink, then grab a stool at the bar!":"Everything is free! Pick a dish, then sit at a table.";
-  menuGrid.innerHTML=FOODS[kind].map((f,i)=>`<button type="button" class="menu-dish" data-i="${i}" style="--c:${f.c}"><img alt="" src="${foodThumb(kind,i)}"><span>${f.name}</span></button>`).join("");
-  menuGrid.onclick=e=>{const b=e.target.closest(".menu-dish");if(!b)return;press(b);pickFood(kind,+b.dataset.i);};
+  document.getElementById("menuTitle").textContent=bar?"JUMPI BAR":"TODAY'S MENU";
+  document.getElementById("menuText").textContent=bar?"Juices, shakes and snacks! Order something, then grab a stool at the bar.":"Everything is free! Pick a dish, then sit at a table.";
+  const dish=(f,i)=>`<button type="button" class="menu-dish" data-i="${i}" style="--c:${f.c}"><img alt="" src="${foodThumb(kind,i)}"><span>${f.name}</span>${bar?`<b class="md-price">${COIN_SVG}${f.price}</b>`:""}</button>`;
+  menuGrid.innerHTML=bar?["drink","snack"].map(ty=>`<h3 class="menu-sec">${ty==="drink"?"Drinks":"Snacks"}</h3>`+FOODS.club.map((f,i)=>f.type===ty?dish(f,i):"").join("")).join(""):FOODS[kind].map(dish).join("");
+  menuGrid.onclick=e=>{const b=e.target.closest(".menu-dish");if(!b||b.disabled)return;press(b);if(bar)buyAtBar(+b.dataset.i,b);else pickFood(kind,+b.dataset.i);};
   menuOverlay.hidden=false;sfx.whoosh();setTimeout(()=>{const b=menuGrid.querySelector("button");if(b)b.focus({preventScroll:true});},60);}
+// the club bar: the server takes the coins, then you get your order
+Sound.onClubSong=name=>{if(Sound.musicVol>0)toast("Now playing: "+name);};
+if(new URLSearchParams(location.search).has("bartest"))window.__bar={go:()=>enterPlace("club"),menu:()=>openMenu("club"),song:()=>Sound.clubSong};
+function buyAtBar(i,btn){const it=BAR_MENU[i];
+  if(!socket||!socket.connected){toast("You're not connected right now.");sfx.error();return;}
+  if(me&&(me.coins||0)<it.price){toast(`You need ${it.price} coins for that.`);sfx.error();return;}
+  btn.disabled=true;let done=false;
+  const fin=r=>{if(done)return;done=true;btn.disabled=false;if(!r||!r.ok){toast((r&&r.error)||"The bar is busy. Try again.");sfx.error();return;}
+    if(me){me.coins=r.coins;paintCoins(true);}sfx.coin();pickFood("club",i);};
+  socket.emit("bar:buy",{i},fin);setTimeout(()=>fin(null),6000);}
 function closeMenu(quiet){if(menuOverlay.hidden)return;menuOverlay.hidden=true;if(!quiet)sfx.close();}
 document.getElementById("menuClose").onclick=()=>closeMenu();
 menuOverlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeMenu();}});
 menuOverlay.addEventListener("click",e=>{if(e.target===menuOverlay)closeMenu();});
 const carryEl=document.createElement("img");carryEl.className="carry";carryEl.alt="";carryEl.hidden=true;document.body.appendChild(carryEl);
 function pickFood(kind,i){closeMenu(true);if(G.eating)finishFood(true);G.order={kind,i};carryEl.src=foodThumb(kind,i);sfx.tick(true);
-  toast(kind==="club"?`Here's your ${FOODS[kind][i].name.toLowerCase()}! Sit on a bar stool to drink it.`:`Here's your ${FOODS[kind][i].name.toLowerCase()}! Sit at a table to eat it.`);}
+  if(G.seat&&G.seat.tab&&PLACE.cur){carryEl.hidden=true;serveFood(G.seat);toast("Here you go! Enjoy your "+FOODS[kind][i].name+"!");return;}
+  toast(kind==="club"?`Here's your ${FOODS[kind][i].name}! Sit on a bar stool to ${FOODS[kind][i].type==="snack"?"eat":"drink"} it.`:`Here's your ${FOODS[kind][i].name.toLowerCase()}! Sit at a table to eat it.`);}
 function serveFood(sp){if(!G.order||!PLACE.cur)return;const m=makeFood(G.order.kind,G.order.i),[d,h]=sp.tab;
   m.position.set(sp.x+Math.sin(sp.f)*d,h,sp.z+Math.cos(sp.f)*d);m.rotation.y=sp.f;PLACE.cur.g.add(m);G.eating={m,t0:performance.now()/1000,dur:12};carryEl.hidden=true;}
 function stopEating(){if(!G.eating)return;G.eating.m.removeFromParent();G.eating=null;}
 function finishFood(quiet){const o=G.order;stopEating();G.order=null;carryEl.hidden=true;
-  if(!quiet&&o){sfx.tick(true);if(socket&&socket.connected)socket.emit("needs:ate");toast(o.kind==="club"?"Slurp! That was so refreshing!":"Yum! That was delicious!");}}
+  if(!quiet&&o){sfx.tick(true);if(socket&&socket.connected)socket.emit("needs:ate");toast(o.kind==="club"?(BAR_MENU[o.i]?.type==="snack"?"Crunch! That was so good!":"Slurp! That was so refreshing!"):"Yum! That was delicious!");}}
 
 /* ---------- dancing ---------- */
 const DANCES=["Bounce","Spin","Disco"];
@@ -7236,14 +7365,112 @@ function followPet(P,ox,oz,oface,t,dt,run){
   else{const want=Math.atan2(ox-P.x,oz-P.z);let a=want-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*3);}
   P.g.position.set(P.x,petY(P.x,P.z,t),P.z);P.g.rotation.y=P.face;animPet(P,t,dt,moving,speed);
   if(P.tag)P.tag.position.set(P.x,P.g.position.y+(P.kind==="dragon"?2.15:1.85),P.z);}
-// pets at home wander between free spots of the room
-function wanderPet(P,t,dt){
-  if(!P.goal||t>P.goalT){let tries=0,gx,gz;do{gx=(Math.random()*2-1)*(HOME_W-1.2);gz=(Math.random()*2-1)*(HOME_D-1.2);tries++;}
-    while(tries<20&&(G.colliders.some(c=>c.box?gx>c.box[0]-.5&&gx<c.box[2]+.5&&gz>c.box[1]-.5&&gz<c.box[3]+.5:Math.hypot(gx-c.c[0],gz-c.c[1])<c.r+.5)||(Math.abs(gx-3.4)<1.2&&gz<-HOME_D+1.6)||(HSHAPE.stairs&&gx<-HOME_W+3&&gz<-HOME_D+4)));
-    P.goal=[gx,gz];P.goalT=t+5+Math.random()*7;}
-  const dx=P.goal[0]-P.x,dz=P.goal[1]-P.z,d=Math.hypot(dx,dz);let moving=false;
-  if(d>.2&&P.goalT-t<5.5){const st=Math.min(d,1.6*dt);P.x+=dx/d*st;P.z+=dz/d*st;moving=true;const want=Math.atan2(dx,dz);let a=want-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*8);}
-  P.g.position.set(P.x,0,P.z);P.g.rotation.y=P.face;animPet(P,t,dt,moving,1.6);if(P.tag)P.tag.position.set(P.x,P.kind==="dragon"?2.15:1.85,P.z);}
+/* ---------- pets at home have a life: they wander (room, garden, upstairs), sleep in their bed or dog house,
+   eat and drink from their bowls, kick balls and yarn around, carry bones and ducks to another spot, climb the
+   cat tree and take the stairs. It all runs on this screen only (nothing is saved, every visitor sees their own). */
+const PL={zTex:null};
+const pRegion=(x,z)=>{const S=HSHAPE;for(let i=0;i<S.regions.length;i++){const r=S.regions[i];if(x>=r[0]-.01&&x<=r[2]+.01&&z>=r[1]-.01&&z<=r[3]+.01)return i;}
+  let bi=0,bd=Infinity;S.regions.forEach((r,i)=>{const dx=Math.max(r[0]-x,0,x-r[2]),dz=Math.max(r[1]-z,0,z-r[3]),d=dx*dx+dz*dz;if(d<bd){bd=d;bi=i;}});return bi;};
+const inBox=(x,z,b,p=0)=>x>b[0]-p&&x<b[2]+p&&z>b[1]-p&&z<b[3]+p;
+function petBlocked(x,z,pad=.45){const S=HSHAPE;
+  if(G.colliders.some(c=>c.box?inBox(x,z,c.box,pad):Math.hypot(x-c.c[0],z-c.c[1])<c.r+pad))return true;
+  if(inBox(x,z,S.door,.6)||(S.pool&&inBox(x,z,S.pool,.5))||(S.stairs&&(inBox(x,z,S.stairs,.4)||inBox(x,z,S.stairsUp,.4))))return true;
+  return false;}
+function petSpot(ri,m=1){const r=HSHAPE.regions[ri]||HSHAPE.regions[0];for(let k=0;k<30;k++){const x=r[0]+m+Math.random()*(r[2]-r[0]-2*m),z=r[1]+m+Math.random()*(r[3]-r[1]-2*m);if(!petBlocked(x,z))return [x,z];}
+  return [(r[0]+r[2])/2,(r[1]+r[3])/2];}
+// a point in a piece's own space -> the floor
+function pieceWorld(m,lx,lz){const a=m.rotation.y,c=Math.cos(a),sn=Math.sin(a);return [m.position.x+lx*c+lz*sn,m.position.z-lx*sn+lz*c];}
+function petPieces(){const out=[];HOME.pieces.children.forEach(m=>{const k=m.userData.k,it=HOME.layout.items[k];if(it&&isPetFurn(it.f))out.push({m,f:it.f});});return out;}
+function petMove(P,gx,gz,speed,dt){const dx=gx-P.x,dz=gz-P.z,d=Math.hypot(dx,dz);if(d<.12)return true;
+  const st=Math.min(d,speed*dt);P.x+=dx/d*st;P.z+=dz/d*st;P.moving=true;P.speed=speed;
+  let a=Math.atan2(dx,dz)-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*8);return d-st<.12;}
+function petFaceTo(P,x,z,dt){let a=Math.atan2(x-P.x,z-P.z)-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*6);}
+// choose what to do next
+function petChoose(P,t){
+  const ri=pRegion(P.x,P.z),here=petPieces().filter(o=>pRegion(o.m.position.x,o.m.position.z)===ri&&!(PETS.home.some(Q=>Q!==P&&Q.use===o.m)));
+  const opts=[["wander",3]];const pick=f=>here.filter(o=>typeof f==="number"?o.f===f:f.has(o.f));
+  if(pick(PF.beds).length)opts.push(["sleep",1.1]);if(pick(PF.food).length)opts.push(["eat",.9]);if(pick(PF.water).length)opts.push(["drink",.8]);
+  if(pick(PF.kick).length)opts.push(["kick",1.6]);if(pick(PF.carry).length)opts.push(["carry",1.2]);
+  if(pick(PF.tree).length&&(P.kind==="kitten"||P.kind==="dragon"||P.kind==="hamster"))opts.push(["tree",1]);
+  if(HSHAPE.stairs)opts.push(["stairs",.45]);
+  let r=Math.random()*opts.reduce((a,o)=>a+o[1],0),act="wander";for(const [k,w] of opts){r-=w;if(r<0){act=k;break;}}
+  const one=list=>list[Math.floor(Math.random()*list.length)];
+  P.act=act;P.stage="go";P.use=null;P.until=0;
+  if(act==="wander"){P.goal=petSpot(ri);P.until=t+4+Math.random()*6;}
+  else if(act==="sleep"){const o=one(pick(PF.beds));P.use=o.m;P.goal=o.f===24?pieceWorld(o.m,0,1.05):[o.m.position.x,o.m.position.z];}
+  else if(act==="eat"||act==="drink"){const o=one(pick(act==="eat"?PF.food:PF.water));P.use=o.m;const dx=P.x-o.m.position.x,dz=P.z-o.m.position.z,d=Math.hypot(dx,dz)||1;P.goal=[o.m.position.x+dx/d*.55,o.m.position.z+dz/d*.55];}
+  else if(act==="kick"){const o=one(pick(PF.kick));P.use=o.m;P.kicks=2+Math.floor(Math.random()*3);}
+  else if(act==="carry"){const o=one(pick(PF.carry));P.use=o.m;}
+  else if(act==="tree"){const o=one(pick(PF.tree));P.use=o.m;P.goal=pieceWorld(o.m,0,.95);}
+  else if(act==="stairs"){const st=ri>0?HSHAPE.stairsUp:HSHAPE.stairs;P.goal=[(st[0]+st[2])/2,st[3]-.6];}
+}
+function petEndAct(P,t){P.act=null;P.use=null;P.y=0;P.pose=null;P.next=t+1+Math.random()*3;}
+function zzzFor(P,on,t){
+  if(on&&!P.zzz){if(!PL.zTex)PL.zTex=canvasTex(64,64,(c,w,h)=>{c.font='48px "Lilita One", sans-serif';c.textAlign="center";c.textBaseline="middle";c.lineWidth=8;c.strokeStyle="#1d2b4f";c.strokeText("Z",w/2,h/2+2);c.fillStyle="#fff";c.fillText("Z",w/2,h/2+2);});
+    P.zzz=[0,1,2].map(()=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:PL.zTex,transparent:true,depthWrite:false}));HOME.group.add(sp);return sp;});}
+  if(!on&&P.zzz){P.zzz.forEach(sp=>sp.removeFromParent());P.zzz=null;}
+  if(P.zzz)P.zzz.forEach((sp,i)=>{const k=(t*.45+i/3)%1;sp.position.set(P.x+.15+k*.35,P.y+.75+k*.9,P.z);sp.material.opacity=Math.sin(k*Math.PI);sp.scale.setScalar(.22+k*.22);});}
+// toys pushed by a pet roll on and bounce off the walls, the pool and the furniture
+function toysTick(dt){
+  for(const [m,v] of TOYS){if(!m.parent){TOYS.delete(m);continue;}
+    const sp=Math.hypot(v.vx,v.vz);if(sp<.05){TOYS.delete(m);continue;}
+    const ri=pRegion(m.position.x,m.position.z),R=HSHAPE.regions[ri],nx=m.position.x+v.vx*dt,nz=m.position.z+v.vz*dt,pad=.22;
+    let bx=false,bz=false;
+    if(nx<R[0]+pad||nx>R[2]-pad)bx=true;if(nz<R[1]+pad||nz>R[3]-pad)bz=true;
+    if(!bx&&!bz&&petBlocked(nx,nz,.15)){if(petBlocked(nx,m.position.z,.15))bx=true;else bz=true;if(!bx&&!bz)bx=bz=true;}
+    if(bx)v.vx*=-.6;else m.position.x=nx;if(bz)v.vz*=-.6;else m.position.z=nz;
+    const f=Math.exp(-1.4*dt);v.vx*=f;v.vz*=f;
+    // roll: turn round the axis across the movement
+    const ax=new THREE.Vector3(v.vz,0,-v.vx).normalize();if(ax.lengthSq()>0)m.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(ax,sp*dt/.18));}}
+function petLife(P,t,dt){
+  P.moving=false;P.speed=1.6;if(P.y==null)P.y=0;if(P.next<0)P.next=t+Math.random()*3;
+  const decorating=!deco.hidden;
+  if(decorating){if(P.carry){P.carry.position.y=0;P.carry=null;}if(P.act&&P.act!=="wander")petEndAct(P,t);}
+  if(P.happy>0&&P.act==="sleep")petEndAct(P,t);   // a pat wakes it up
+  if(P.use&&!P.use.parent)petEndAct(P,t);           // the piece was moved or sold
+  if(!P.act){if(t>(P.next||0))petChoose(P,t);else{P.goal=null;}}
+  if(decorating&&P.act&&P.act!=="wander")petEndAct(P,t);
+  const A=P.act,U=P.use;
+  if(A==="wander"){if(petMove(P,P.goal[0],P.goal[1],1.4,dt)&&t>P.until)petEndAct(P,t);}
+  else if(A==="sleep"){
+    if(P.stage==="go"){if(petMove(P,P.goal[0],P.goal[1],1.5,dt)){P.stage="do";P.until=t+14+Math.random()*14;P.face=U.rotation.y+(PF.beds.has(HOME.layout.items[U.userData.k]?.f)&&HOME.layout.items[U.userData.k].f===24?0:Math.random()*6);}}
+    else{const isBed=HOME.layout.items[U.userData.k]?.f===16;P.y=isBed?.13:0;P.pose="sleep";if(t>P.until)petEndAct(P,t);}}
+  else if(A==="eat"||A==="drink"){
+    if(P.stage==="go"){if(petMove(P,P.goal[0],P.goal[1],1.5,dt)){P.stage="do";P.until=t+3.5+Math.random()*2.5;}}
+    else{petFaceTo(P,U.position.x,U.position.z,dt);P.pose=A;const fl=U.getObjectByName("fill");if(fl){U.userData.lv=Math.max(.3,(U.userData.lv??1)-dt*.06);
+      if(A==="eat")fl.scale.y=U.userData.lv;else fl.position.y=-(1-U.userData.lv)*.08;}if(t>P.until)petEndAct(P,t);}}
+  else if(A==="kick"){
+    const tx=U.position.x,tz=U.position.z,dx=tx-P.x,dz=tz-P.z,d=Math.hypot(dx,dz)||1,v=TOYS.get(U),fast=v&&Math.hypot(v.vx,v.vz)>.6;
+    if(d<.5&&!fast){const a=P.face+(Math.random()-.5)*.8,k=2.2+Math.random()*1.8;TOYS.set(U,{vx:Math.sin(a)*k,vz:Math.cos(a)*k});P.kicks--;P.hop=.25;
+      if(P.kicks<=0){P.act="rest";P.until=t+1.5;}}
+    else petMove(P,tx-dx/d*.3,tz-dz/d*.3,fast?2.6:2,dt);}
+  else if(A==="rest"){if(t>P.until)petEndAct(P,t);}
+  else if(A==="carry"){
+    if(P.stage==="go"){const dx=U.position.x-P.x,dz=U.position.z-P.z,d=Math.hypot(dx,dz)||1;
+      if(petMove(P,U.position.x-dx/d*.35,U.position.z-dz/d*.35,1.8,dt)||d<.45){P.stage="bring";P.carry=U;TOYS.delete(U);P.goal=petSpot(pRegion(P.x,P.z));}}
+    else{if(petMove(P,P.goal[0],P.goal[1],1.7,dt)){P.carry=null;U.position.y=0;P.happy=1.4;petEndAct(P,t);}}}
+  else if(A==="tree"){
+    const top=U.position,base=P.goal;
+    if(P.stage==="go"){if(petMove(P,base[0],base[1],1.6,dt)){P.stage="up";P.jt=0;}}
+    else if(P.stage==="up"||P.stage==="down"){P.jt+=dt/.55;const k=Math.min(1,P.jt),up=P.stage==="up",from=up?base:[top.x,top.z],to=up?[top.x,top.z]:base;
+      P.x=from[0]+(to[0]-from[0])*k;P.z=from[1]+(to[1]-from[1])*k;P.y=(up?k:1-k)*2.18+Math.sin(k*Math.PI)*.5;petFaceTo(P,to[0],to[1],dt*3);
+      if(k>=1){if(up){P.stage="sit";P.until=t+7+Math.random()*9;}else petEndAct(P,t);}}
+    else{P.y=2.18;P.face+=Math.sin(t*.4)*dt*.3;if(Math.random()<.002)P.happy=1.4;if(t>P.until){P.stage="down";P.jt=0;}}}
+  else if(A==="stairs"){
+    if(petMove(P,P.goal[0],P.goal[1],1.6,dt)){const ri=pRegion(P.x,P.z),other=ri>0?HSHAPE.stairs:HSHAPE.stairsUp;
+      P.x=(other[0]+other[2])/2;P.z=other[3]+.9;P.face=0;petEndAct(P,t);P.next=t+.5;}}
+  // carried toy rides in the mouth
+  if(P.carry){const m=P.carry;m.position.set(P.x+Math.sin(P.face)*.42,P.y+.22,P.z+Math.cos(P.face)*.42);m.rotation.set(0,P.face+Math.PI/2,0);}
+  P.g.position.set(P.x,P.y,P.z);P.g.rotation.y=P.face;animPet(P,t,dt,P.moving,P.speed);
+  // poses on top of the normal animation
+  const r=P.rig;
+  if(P.pose==="sleep"){const b=Math.sin(t*1.6);r.position.y=-.1;r.scale.set(1+b*.02,.86+b*.025,1);P.legs.forEach(l=>l.scale.y=.35);P.head.rotation.x=.3;P.eyes.forEach(e=>e.scale.y=.12);P.tail.rotation.y*=.2;}
+  else{if(r.scale.y!==1)r.scale.set(1,1,1);P.legs.forEach(l=>{if(l.scale.y!==1)l.scale.y=1;});
+    if(P.pose==="eat"||P.pose==="drink"){P.head.rotation.x=.45+Math.sin(t*(P.pose==="eat"?10:14))*.15;r.rotation.x=.1;}else P.head.rotation.x*=.85;}
+  if(P.hop>0){P.hop-=dt;r.position.y+=Math.sin(Math.max(0,P.hop)/.25*Math.PI)*.15;}
+  zzzFor(P,P.pose==="sleep",t);
+  if(P.act!=="sleep"&&P.act!=="eat"&&P.act!=="drink")P.pose=null;
+  if(P.tag)P.tag.position.set(P.x,P.y+(P.pose==="sleep"?1.45:P.kind==="dragon"?2.15:1.85),P.z);}
 
 /* ---------- my pet, other players' pets, pets at home ---------- */
 function makePetObj(info,withTag=true){const P=buildPet(info.kind,info.color);P.info=info;if(withTag){P.tag=petTag(info.name);scene.add(P.tag);}scene.add(P.g);return P;}
@@ -7257,13 +7484,16 @@ function setRemotePet(c,pet){const key=pet?pet.kind+pet.color+pet.name:"";if((c.
 // the owner's other pets, waiting in their home
 function placeHomePets(list,out){clearHomePets();if(!list)return;
   list.filter(p=>p.id!==out).forEach((p,i)=>{const P=buildPet(p.kind,p.color);P.info=p;P.home=true;P.tag=petTag(p.name);HOME.group.add(P.g,P.tag);
-    P.x=-4+i*2;P.z=1.5;P.face=Math.random()*6;PETS.home.push(P);});}
-function clearHomePets(){PETS.home.forEach(P=>{P.g.removeFromParent();if(P.tag)P.tag.removeFromParent();if(P.hearts)P.hearts.remove();});PETS.home=[];}
+    // some start upstairs or in the garden when the house has them
+    const ri=HSHAPE.regions.length>1&&i%3===2?1:0,[x,z]=petSpot(ri);P.x=x;P.z=z;P.y=0;P.kind=p.kind;P.face=Math.random()*6;P.next=-1;PETS.home.push(P);});}
+function clearHomePets(){PETS.home.forEach(P=>{P.g.removeFromParent();if(P.tag)P.tag.removeFromParent();if(P.hearts)P.hearts.remove();zzzFor(P,false,0);});PETS.home=[];TOYS.clear();}
 function petsTick(t,dt){
   syncMyPet();
   if(PETS.me){PETS.me.g.visible=PETS.me.tag.visible=inGame;if(inGame)followPet(PETS.me,G.pos.x,G.pos.z,G.face,t,dt,G.running);heartsTick(PETS.me,t);}
   for(const c of remotes.values())if(c.petObj){followPet(c.petObj,c.root.position.x,c.root.position.z,c.cur??c.face??0,t,dt,c.run);heartsTick(c.petObj,t);}
-  if(G.home)PETS.home.forEach(P=>{wanderPet(P,t,dt);heartsTick(P,t);});}
+  if(G.home){const dec=!deco.hidden;
+    if(dec&&!PL.dec){TOYS.clear();HOME.pieces.children.forEach(m=>{const it=HOME.layout.items[m.userData.k];if(it&&isPetFurn(it.f)){m.position.set(it.x,0,it.z);m.rotation.set(0,it.r*Math.PI/2,0);}});}
+    PL.dec=dec;PETS.home.forEach(P=>{petLife(P,t,dt);heartsTick(P,t);});if(!dec)toysTick(dt);}}
 // hearts floating over a pet after a pat
 function patPet(P,quiet){if(!P)return;P.happy=1.4;P.heartsEnd=now()+1.8;
   if(!P.hearts){P.hearts=document.createElement("div");P.hearts.className="pet-hearts";P.hearts.setAttribute("aria-hidden","true");P.hearts.innerHTML="<i>♥</i><i>♥</i><i>♥</i>";document.body.appendChild(P.hearts);}
@@ -8288,20 +8518,17 @@ setInterval(()=>{
 },5000);
 function goIdle(){
   idleOut=true;closePhone(true);closeGameStore(true);closeChat();closePlayerCard();G.keys={};G.target=null;
-  netLeave();if(socket&&socket.connected)socket.disconnect();
-  document.getElementById("idleFace").src=emoteImage("sleepy",skinOf(me?me.look:{}));
-  idleOverlay.hidden=false;sfx.close();setTimeout(()=>document.getElementById("idleBack").focus(),100);
+  // first really leave the server (the message only shows once the connection is closed)
+  patrolExit();netLeave();
+  const show=()=>{document.getElementById("idleFace").src=emoteImage("sleepy",skinOf(me?me.look:{}));
+    idleOverlay.hidden=false;sfx.close();setTimeout(()=>document.getElementById("idleOk").focus(),100);};
+  if(socket&&socket.connected){const s=socket;let done=false;const go=()=>{if(!done){done=true;show();}};s.once("disconnect",go);s.disconnect();setTimeout(go,1500);}else show();
 }
-function backFromIdle(){if(!idleOut)return;idleOut=false;lastActive=Date.now();idleOverlay.hidden=true;sfx.success();netJoin();refreshPhoneBadges();toast("Welcome back! 🎉");}
-document.getElementById("idleBack").onclick=backFromIdle;
-document.getElementById("idleExit").onclick=()=>{
-  // a browser only lets a page close its own window; if it can't, go back to the main menu
-  try{window.close();}catch(e){}
-  setTimeout(()=>{if(!idleOut)return;idleOut=false;idleOverlay.hidden=true;lastActive=Date.now();exitGame();toast("See you soon! 👋");},250);
-};
-// while the message is up, the game doesn't react to the keyboard (Tab/Enter still work on the two buttons)
+// OK: back to the start screen; playing again connects from scratch
+document.getElementById("idleOk").onclick=()=>{if(!idleOut)return;idleOut=false;idleOverlay.hidden=true;lastActive=Date.now();exitGame();};
+// while the message is up, the game doesn't react to the keyboard (Tab/Enter still work on the OK button)
 addEventListener("keydown",e=>{if(!idleOut)return;if(e.target.closest&&e.target.closest("#idleOverlay"))return;e.stopImmediatePropagation();
-  if(e.key==="Tab"){e.preventDefault();document.getElementById("idleBack").focus();}},true);
+  if(e.key==="Tab"){e.preventDefault();document.getElementById("idleOk").focus();}},true);
 
 /* ---------- bad words never leave the page (and the server checks again) ---------- */
 let blockedCount=0;

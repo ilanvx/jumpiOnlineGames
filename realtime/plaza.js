@@ -9,6 +9,7 @@ import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
+import { BAR_MENU } from "../public/shared/bar.js";
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
@@ -197,9 +198,12 @@ export function attachPlaza(io) {
   // who is connecting? read the login cookie
   io.use(async (socket, next) => {
     try {
-      const token = readCookie(socket.handshake.headers.cookie, COOKIE);
+      // the game tab's own token first (each tab can play its own account), else the login cookie
+      const tab = typeof socket.handshake.auth?.tab === "string" ? socket.handshake.auth.tab : "";
+      const token = tab || readCookie(socket.handshake.headers.cookie, COOKIE);
       if (!token) return next(new Error("not-logged-in"));
-      const { sub, v } = jwt.verify(token, process.env.JWT_SECRET);
+      const { sub, v, tab: isTab } = jwt.verify(token, process.env.JWT_SECRET);
+      if (tab && !isTab) return next(new Error("not-logged-in"));
       const user = await User.findById(sub);
       if (!user || (v || 0) !== (user.tokenVersion || 0)) return next(new Error("not-logged-in"));
       if (user.isBanned()) return next(new Error("banned"));
@@ -343,7 +347,38 @@ export function attachPlaza(io) {
     const canEat = limiter(3, 60_000);
     socket.on("needs:ate", () => {
       const p = players.get(socket.id);
-      if (p && canEat()) ateMeal(p.userId, p.room);
+      if (!p) return;
+      // at the club bar you pay first ("bar:buy"); finishing it fills the needs of what you bought
+      if (p.room === "place:club") {
+        const o = p.barOrder;
+        p.barOrder = null;
+        if (o && Date.now() - o.at > 5000) ateMeal(p.userId, p.room, BAR_MENU[o.i].needs);
+        return;
+      }
+      if (canEat()) ateMeal(p.userId, p.room);
+    });
+
+    // buy something at the club bar (juices and snacks only, no alcohol). The coins are taken here.
+    const canBuy = limiter(8, 60_000);
+    socket.on("bar:buy", async (d, ack) => {
+      const reply = typeof ack === "function" ? ack : () => {};
+      const p = players.get(socket.id);
+      if (!p || p.room !== "place:club") return reply({ error: "Order at the bar in the Dance Club." });
+      const i = Number(d?.i), it = BAR_MENU[i];
+      if (!Number.isInteger(i) || !it) return reply({ error: "That isn't on the menu." });
+      if (p.barBusy || !canBuy()) return reply({ error: "One at a time! Try again in a moment." });
+      p.barBusy = true;
+      try {
+        const user = await User.findOneAndUpdate({ _id: p.userId, coins: { $gte: it.price } }, { $inc: { coins: -it.price } }, { new: true, projection: { coins: 1 } });
+        if (!user) return reply({ error: `You need ${it.price} coins for that.` });
+        p.barOrder = { i, at: Date.now() };
+        notifyCoins(p.userId, user.coins);
+        reply({ ok: true, coins: user.coins });
+      } catch {
+        reply({ error: "Something went wrong. Try again." });
+      } finally {
+        p.barBusy = false;
+      }
     });
 
     socket.on("move", (d) => {

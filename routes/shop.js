@@ -12,6 +12,10 @@ export async function requireUser(req, res, next) {
     const user = await currentUser(req);
     if (!user) return res.status(401).json({ error: "Please log in first." });
     if (user.isBanned()) return res.status(403).json({ error: "This account is banned." });
+    // the game says which account its window is playing. One browser keeps one login cookie, so after
+    // logging in / switching in another tab this window would act for the other account: refuse instead.
+    const as = req.get("x-jumpi-as");
+    if (as && as !== user._id.toString()) return res.status(409).json({ error: "You switched account in another tab.", code: "account-changed", now: user.username });
     req.user = user;
     next();
   } catch (err) {

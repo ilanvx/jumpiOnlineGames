@@ -60,6 +60,8 @@ router.use(async (req, res, next) => {
   try {
     const user = await currentUser(req);
     if (!user || user.role !== "admin" || user.isBanned()) return fail(res, 404, "Not found.");
+    const as = req.get("x-jumpi-as");   // the game window plays another account (see requireUser in shop.js)
+    if (as && as !== user._id.toString()) return res.status(409).json({ error: "You switched account in another tab.", code: "account-changed", now: user.username });
     req.admin = user;
     if (!canCall(user._id.toString())) return fail(res, 429, "Too many requests. Slow down a little.");
     next();

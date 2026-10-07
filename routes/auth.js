@@ -86,11 +86,17 @@ const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 const signupLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 const checkLimiter = rateLimit({ windowMs: 60 * 1000, max: 30 });
 
+/* Tab tokens: one browser has one login cookie, but every game tab keeps its own account. The game gets a
+   token for its tab on login / switch / me and sends it back (x-jumpi-tab, kept in the tab's sessionStorage);
+   when it is there it decides who you are, so two tabs can play two accounts side by side. */
+export const tabToken = (user) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, tab: 1 }, process.env.JWT_SECRET, { expiresIn: "30d" });
 export async function currentUser(req) {
-  const token = req.cookies?.[COOKIE];
+  const tab = req.get?.("x-jumpi-tab");
+  const token = tab || req.cookies?.[COOKIE];
   if (!token) return null;
   try {
-    const { sub, v } = jwt.verify(token, process.env.JWT_SECRET);
+    const { sub, v, tab: isTab } = jwt.verify(token, process.env.JWT_SECRET);
+    if (tab && !isTab) return null;
     const user = await User.findById(sub);
     if (!user || (v || 0) !== (user.tokenVersion || 0)) return null;   // logged out everywhere by an admin
     return user;
@@ -188,7 +194,7 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
     const prev = req.body.addAccount === true ? await currentUser(req) : null;
     setAuthCookie(res, user._id.toString(), true);
     saveAccounts(req, res, prev && !prev._id.equals(user._id) ? [prev, user] : [user]);
-    res.status(201).json({ user: user.toPublic() });
+    res.status(201).json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     if (err?.code === 11000) {
       const field = err.keyPattern?.email ? "email" : "username";
@@ -218,7 +224,7 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
     setAuthCookie(res, user._id.toString(), req.body.remember === true || !!prev, user.tokenVersion || 0);
     // "Remember me" (or adding an account with "+") keeps it on the start screen
     if (req.body.remember === true || prev) saveAccounts(req, res, prev && !prev._id.equals(user._id) ? [prev, user] : [user]);
-    res.json({ user: user.toPublic() });
+    res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     next(err);
   }
@@ -232,7 +238,7 @@ router.get("/me", async (req, res, next) => {
       clearAuthCookie(res);
       return res.status(403).json({ user: null, error: banMessage(user) });
     }
-    res.json({ user: user.toPublic() });
+    res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     next(err);
   }
@@ -248,7 +254,7 @@ router.post("/logout", async (req, res, next) => {
     if (rest.length) {
       const next = rest[0].u;
       setAuthCookie(res, next._id.toString(), true, next.tokenVersion || 0);
-      return res.json({ ok: true, user: next.toPublic() });
+      return res.json({ ok: true, user: next.toPublic(), tab: tabToken(next) });
     }
     clearAuthCookie(res);
     res.json({ ok: true });
@@ -297,7 +303,7 @@ router.post("/switch", requireJson, async (req, res, next) => {
     user.lastLoginAt = new Date();
     await user.save();
     setAuthCookie(res, user._id.toString(), true, user.tokenVersion || 0);
-    res.json({ user: user.toPublic() });
+    res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     next(err);
   }

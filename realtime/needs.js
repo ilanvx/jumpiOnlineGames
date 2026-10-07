@@ -97,11 +97,12 @@ export function bumpNeeds(userId, add) {
 }
 
 // ate or drank something; the room decides what it was (the page only says "I finished")
-export function ateMeal(userId, room) {
+// paid: what was bought at the club bar (its own needs, paid for, so no waiting time)
+export function ateMeal(userId, room, paid) {
   const e = live.get(userId);
-  const meal = room === "place:diner" ? MEALS.diner : room === "place:club" ? MEALS.club : null;
+  const meal = paid || (room === "place:diner" ? MEALS.diner : room === "place:club" ? MEALS.club : null);
   if (!e || !meal) return false;
-  if (Date.now() - e.lastMeal < 25_000) return false; // a meal takes a while: no spamming
+  if (!paid && Date.now() - e.lastMeal < 25_000) return false; // a meal takes a while: no spamming
   e.lastMeal = Date.now();
   bumpNeeds(userId, meal);
   return true;
