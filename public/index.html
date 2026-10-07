@@ -9,6 +9,29 @@
 <link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Secular+One&display=swap">
 <script src="/shared/i18n.js"></script>
+<script>
+/* The game page doesn't let you highlight text or open Inspect from the page itself. */
+document.addEventListener("contextmenu", (e) => e.preventDefault());
+document.addEventListener("selectstart", (e) => {
+  if (e.target.closest && e.target.closest("input, textarea")) return;
+  e.preventDefault();
+});
+document.addEventListener("dragstart", (e) => e.preventDefault());
+document.addEventListener("copy", (e) => {
+  if (e.target.closest && e.target.closest("input, textarea")) return;
+  e.preventDefault();
+});
+document.addEventListener("keydown", (e) => {
+  const key = e.key.length === 1 ? e.key.toUpperCase() : e.key;
+  const mod = e.ctrlKey || e.metaKey;
+  const typing = e.target.closest && e.target.closest("input, textarea");
+  const inspect = key === "F12" || (mod && e.shiftKey && (key === "I" || key === "J" || key === "C" || key === "K")) || (mod && (key === "U" || key === "S"));
+  const grabText = !typing && mod && !e.shiftKey && (key === "A" || key === "C");
+  if (!inspect && !grabText) return;
+  e.preventDefault();
+  e.stopPropagation();
+}, true);
+</script>
 <style>
 [hidden]{display:none!important}
 *,*::before,*::after{box-sizing:border-box}
@@ -21,7 +44,8 @@
   --font:"Lilita One","Secular One","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%}
+html,body{height:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
   background:var(--stage-blue);}
 #stage{position:fixed;inset:0;cursor:pointer}
@@ -4376,10 +4400,11 @@ zoomRange.addEventListener("input",()=>setZoom(+zoomRange.value,true));
 document.getElementById("zoomIn").onclick=()=>setZoom(zoomLevel+10,true);
 document.getElementById("zoomOut").onclick=()=>setZoom(zoomLevel-10,true);
 // the mouse wheel zooms too while walking around
-// right mouse button: drag to turn the camera around your character (up/down tilts it)
+// right mouse button or the wheel button: drag to turn the camera around your character (up/down tilts it)
 let orbitPt=null;
 stage.addEventListener("contextmenu",e=>{if(inGame)e.preventDefault();});
-stage.addEventListener("pointerdown",e=>{if(!inGame||e.button!==2)return;e.preventDefault();orbitPt={x:e.clientX,y:e.clientY};G.orbiting=true;body.classList.add("orbiting");
+stage.addEventListener("auxclick",e=>{if(inGame&&e.button===1)e.preventDefault();});
+stage.addEventListener("pointerdown",e=>{if(!inGame||(e.button!==2&&e.button!==1))return;e.preventDefault();orbitPt={x:e.clientX,y:e.clientY};G.orbiting=true;body.classList.add("orbiting");
   try{stage.setPointerCapture(e.pointerId);}catch(err){}});
 stage.addEventListener("pointermove",e=>{if(!orbitPt)return;const dx=e.clientX-orbitPt.x,dy=e.clientY-orbitPt.y;orbitPt={x:e.clientX,y:e.clientY};
   G.camYaw=((G.camYaw||0)-dx*.007)%(Math.PI*2);G.camDragT=now();G.camAuto=false;G.camPitch=Math.max(.3,Math.min(1.9,(G.camPitch||1)+dy*.005));});
