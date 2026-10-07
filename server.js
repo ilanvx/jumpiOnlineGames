@@ -14,6 +14,7 @@ import socialRoutes from "./routes/social.js";
 import contactRoutes from "./routes/contact.js";
 import adminRoutes from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
+import petRoutes from "./routes/pets.js";
 import { saveAllNeeds } from "./realtime/needs.js";
 import { currentUser } from "./routes/auth.js";
 import "./models/Logs.js";
@@ -50,6 +51,7 @@ app.use("/api", homeRoutes);
 app.use("/api", socialRoutes);
 app.use("/api", contactRoutes);
 app.use("/api", needsRoutes);
+app.use("/api", petRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play

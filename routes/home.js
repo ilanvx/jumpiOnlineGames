@@ -4,6 +4,7 @@ import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { FURNITURE_COUNT, placeProblem } from "../catalog.js";
 import { notifyHome } from "../realtime/plaza.js";
+import { petsOf } from "./pets.js";
 
 /*
   The player's home. Only furniture the player owns can be placed (doubles count),
@@ -30,14 +31,14 @@ export function pruneHome(user) {
   user.markModified("home");
 }
 
-router.get("/home", requireUser, (req, res) => res.json({ home: homeView(req.user), owner: req.user.username, mine: true }));
+router.get("/home", requireUser, (req, res) => res.json({ home: homeView(req.user), owner: req.user.username, mine: true, ...petsOf(req.user) }));
 
 router.get("/home/of/:username", requireUser, async (req, res, next) => {
   try {
     const name = String(req.params.username || "").toLowerCase().slice(0, 32);
     const user = await User.findOne({ usernameLower: name });
     if (!user) return res.status(404).json({ error: "That player doesn't exist." });
-    res.json({ home: homeView(user), owner: user.username, mine: user._id.equals(req.user._id) });
+    res.json({ home: homeView(user), owner: user.username, mine: user._id.equals(req.user._id), ...petsOf(user) });
   } catch (err) {
     next(err);
   }

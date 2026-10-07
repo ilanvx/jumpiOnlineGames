@@ -141,6 +141,18 @@
     "No room to turn it here.": "אין מקום לסובב כאן.", "There's already something there.": "כבר יש שם משהו.", "Keep the furniture inside the room.": "הרהיטים צריכים להיות בתוך החדר.",
     "Keep the door free so you can get out!": "השאירו את הדלת פנויה כדי שתוכלו לצאת!", "Some furniture was moved so nothing is stuck in a wall or another piece.": "הזזנו כמה רהיטים כדי ששום דבר לא יהיה תקוע בקיר או ברהיט אחר.",
     "Couldn't open that home.": "לא הצלחנו לפתוח את הבית.", "That home isn't there any more.": "הבית הזה כבר לא קיים.", "You're already here!": "אתם כבר כאן!",
+    // pets
+    "PET CENTER": "מרכז חיות המחמד", "ENTER PET CENTER": "כניסה למרכז חיות המחמד", "ADOPT A PET": "אמצו חיית מחמד", "Adopt": "אימוץ", "Name your pet": "תנו שם לחיה",
+    "Puppy": "כלבלב", "Kitten": "חתלתול", "Bunny": "ארנבון", "Hamster": "אוגר", "Panda": "פנדה", "Baby Dragon": "דרקון קטן",
+    "ADOPT PUPPY": "לאמץ כלבלב", "ADOPT KITTEN": "לאמץ חתלתול", "ADOPT BUNNY": "לאמץ ארנבון", "ADOPT HAMSTER": "לאמץ אוגר", "ADOPT PANDA": "לאמץ פנדה", "ADOPT BABY DRAGON": "לאמץ דרקון קטן",
+    "Pat": "ליטוף", "Send home": "לשלוח הביתה", "Walk with me": "בוא איתי", "Walk": "טיול", "Home": "בית", "Walking with you": "מטייל איתך", "No pets yet": "עוד אין חיות מחמד",
+    "Your home is full of pets!": "הבית מלא בחיות מחמד!", "Pet Center": "מרכז חיות המחמד", "At the Pet Center": "במרכז חיות המחמד",
+    "Welcome to the Pet Center! Walk up to a pet and press E to adopt it.": "ברוכים הבאים למרכז חיות המחמד! גשו לחיה ולחצו E כדי לאמץ אותה.",
+    "Give your pet a name (at least 2 letters).": "תנו לחיה שם (לפחות 2 אותיות).", "That name is too long (12 letters at most).": "השם ארוך מדי (עד 12 אותיות).",
+    "Use only letters and numbers.": "רק אותיות ומספרים.", "Too many numbers in that name.": "יותר מדי מספרים בשם.", "Let's keep Jumpi friendly! Try another name.": "שומרים על ג'אמפי נחמד! נסו שם אחר.",
+    "Adopt more pets at the Pet Center at the end of the Park.": "אפשר לאמץ עוד חיות במרכז חיות המחמד בסוף הפארק.",
+    "Type a name": "כתבו שם", "Pick a random name": "שם אקראי", "Adopting…": "מאמצים…", "Couldn't adopt right now. Try again!": "לא הצלחנו לאמץ עכשיו. נסו שוב!",
+    "The Pet Center isn't open yet. Ask an adult to restart the game server.": "מרכז חיות המחמד עוד לא פתוח. בקשו ממבוגר להפעיל מחדש את השרת.",
     // needs
     "Hunger": "רעב", "Energy": "אנרגיה", "Stamina": "כוח", "Fun": "כיף", "Fill it up": "למלא", "It's full!": "מלא!", "How your Jumpi feels": "איך הג'אמפי שלך מרגיש",
     "Eat at the Restaurant, or grab a drink at the Dance Club.": "אכלו במסעדה, או קחו משקה במועדון הריקודים.",
@@ -208,6 +220,10 @@
   // sentences with names / numbers inside (also messages from the server). $1, $2… are the parts in ( )
   const T1 = (t) => (DICT.he[t] || t);
   const PATTERNS = [
+    [/^You need (\d+) coins to adopt a (.+)\. You have ([\d,]+)\. Play mini-games to earn more!$/, "צריך $1 מטבעות כדי לאמץ. יש לכם $3. שחקו במיני־משחקים כדי להרוויח עוד!"],
+    [/^Say hi to (.+)! Click your pet to pat it or send it home\.$/, "תגידו שלום ל$1! לחצו על החיה כדי ללטף או לשלוח הביתה."],
+    [/^(.+) loves that!$/, "$1 אוהב את זה!"], [/^(.+) is coming with you!$/, "$1 בא איתך!"], [/^(.+) went home\.( See you there!)?$/, "$1 הלך הביתה."],
+    [/^My pets · (\d+)\/(\d+)$/, "החיות שלי · $1/$2"],
     [/^You need (\d+) coins for that\. Play mini-games to earn more!$/, "צריך $1 מטבעות בשביל זה. שחקו במיני־משחקים כדי להרוויח עוד!"],
     [/^You need (\d+) coins for that\.$/, "צריך $1 מטבעות בשביל זה."],
     [/^(Hunger|Energy|Stamina|Fun) (\d+)%$/, (m, n, v) => ({ Hunger: "רעב", Energy: "אנרגיה", Stamina: "כוח", Fun: "כיף" })[n] + " " + v + "%"],

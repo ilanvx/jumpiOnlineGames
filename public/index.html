@@ -337,6 +337,64 @@ body.login-mode .site-btn{display:none}
 .tears i:nth-child(1){left:22px}.tears i:nth-child(2){left:76px;animation-delay:.6s}.tears i:nth-child(3){left:30px;animation-delay:1.2s}
 @keyframes tear{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translateY(46px) scale(1)}}
 .bye-overlay .idle-exit{color:#c8263c}
+/* pets: the card when you click one, hearts after a pat, the adoption window */
+.petcard{align-items:center;min-width:200px}
+.petcard .pet-pic{width:96px;height:96px;margin:-4px 0 -6px}
+.petcard .pet-kind{margin-top:-6px;font:500 .85rem "Fredoka",system-ui,sans-serif;color:#cfe0ff;text-align:center}
+.petcard .pc-btn{align-self:stretch}
+.pc-btn.pat{background:linear-gradient(180deg,#ff8fc8,#ff5fb4);box-shadow:0 4px 0 #a3205f}.pc-btn.walk{background:linear-gradient(180deg,#5ee08f,#25c36a);box-shadow:0 4px 0 #13813f}
+.petcard .pc-btn[hidden]{display:none}
+.pet-hearts{position:fixed;z-index:3;pointer-events:none;translate:-50% -100%;font:700 1.7rem "Fredoka",system-ui,sans-serif;color:#ff4f8b;text-shadow:0 2px 0 #fff,0 0 10px rgb(255 120 170 / .8)}
+.pet-hearts[hidden]{display:none}
+.pet-hearts i{position:absolute;left:0;bottom:0;font-style:normal;opacity:0}
+.pet-hearts.go i{animation:petHeart 1.6s ease-out forwards}
+.pet-hearts.go i:nth-child(2){animation-delay:.25s;left:-22px;font-size:.75em}.pet-hearts.go i:nth-child(3){animation-delay:.5s;left:18px;font-size:.85em}
+@keyframes petHeart{0%{opacity:0;transform:translateY(0) scale(.4)}20%{opacity:1;transform:translateY(-14px) scale(1.15)}100%{opacity:0;transform:translateY(-62px) scale(.9)}}
+.adopt-overlay{display:flex;overflow-y:auto;overscroll-behavior:contain}
+.idle-card.adopt-card{width:min(560px,100%);margin:auto;padding:22px 20px 20px;text-align:left}
+.adopt-card h2{margin:0 0 12px;text-align:center;color:#ff5fa8;text-shadow:0 4px 0 #ffd3ea}
+.adopt-card .np-x{position:absolute}
+.pa-kinds{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:12px}
+.pa-kind{display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 6px;border:0;border-radius:16px;background:#fff;cursor:pointer;color:#22324a;
+  box-shadow:inset 0 0 0 2px #e1e8f2,0 3px 0 #d5dfec;font:600 .74rem/1.15 "Fredoka",system-ui,sans-serif;transition:transform .12s}
+.pa-kind img{width:54px;height:54px}
+.pa-kind b{display:inline-flex;align-items:center;gap:2px;font-weight:600;color:#a35a00}.pa-kind b svg{width:13px;height:13px}
+.pa-kind[aria-pressed="true"]{background:#fff0f8;box-shadow:inset 0 0 0 3px #ff5fa8,0 3px 0 #d63b8f}
+.pa-kind:hover{transform:translateY(-2px)}
+.pa-main{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:center}
+.pa-stage{height:min(250px,34vh);min-height:150px;border-radius:22px;background:radial-gradient(circle at 50% 40%,#fff 0 30%,#ffe7f3 70%);box-shadow:inset 0 0 0 3px #ffd3ea;overflow:hidden}
+.pa-stage canvas{display:block;width:100%;height:100%}
+.pa-side{display:flex;flex-direction:column;gap:12px}
+.adopt-card .pa-go{margin-top:12px}
+.pa-kname{font:400 1.4rem/1.1 var(--font);color:#22324a}
+.pa-cols{display:flex;gap:10px}
+.pa-col{width:42px;height:42px;border:0;border-radius:50%;background:var(--sw);cursor:pointer;box-shadow:inset 0 -4px 0 rgb(0 0 0 / .18),0 0 0 3px #fff,0 0 0 5px #d5dfec}
+.pa-col[aria-pressed="true"]{box-shadow:inset 0 -4px 0 rgb(0 0 0 / .18),0 0 0 3px #fff,0 0 0 6px #ff5fa8}
+.pa-name{display:flex;flex-direction:column;gap:5px;font:600 .9rem "Fredoka",system-ui,sans-serif;color:#4a5b75}
+.pa-namebox{display:flex;gap:8px;margin-top:-6px}
+.pa-namebox input{flex:1;min-width:0;height:48px;padding:0 14px;border:0;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 2px #d5dfec;font:600 1.15rem "Fredoka",system-ui,sans-serif;color:#22324a}
+.pa-namebox input:focus{outline:none;box-shadow:inset 0 0 0 3px #ff5fa8}
+.pa-namebox input.bad{box-shadow:inset 0 0 0 3px #ff4545;background:#fff2f2;animation:paShake .45s}
+.pa-dice{width:48px;height:48px;flex:none;border:0;border-radius:14px;cursor:pointer;background:linear-gradient(180deg,#ff8fc8,#ff5fa8);box-shadow:0 4px 0 #b02a6c;display:grid;place-items:center;transition:transform .12s}
+.pa-dice svg{width:28px;height:28px}.pa-dice:active{transform:translateY(3px) rotate(20deg);box-shadow:0 1px 0 #b02a6c}
+.pa-dice:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
+.idle-card .pa-msg{max-width:none;margin:14px 0 0;padding:10px 14px;border-radius:14px;background:#ffe3e3;color:#c8263c;font:600 1rem "Fredoka",system-ui,sans-serif;text-align:center;animation:paShake .45s}
+.idle-card .pa-msg:empty{display:none}
+.idle-card .pa-msg.ok{background:#ddf8e7;color:#13813f;animation:none}
+@keyframes paShake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.np-buy.pa-go{background:linear-gradient(180deg,#ff8fc8,#ff5fa8);box-shadow:0 5px 0 #b02a6c}
+.np-buy.pa-go:active{box-shadow:0 2px 0 #b02a6c}
+.np-buy.pa-go:disabled{background:#e8eef7;color:#8a97ab;box-shadow:0 5px 0 #c3cfdf}
+.pa-go.poor{filter:saturate(.6)}
+.pa-kind:focus-visible,.pa-col:focus-visible,.pa-go:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
+@media (max-height:620px){.adopt-card h2{font-size:1.8rem;margin-bottom:8px}.pa-kind img{width:40px;height:40px}.pa-kinds{margin-bottom:8px}.pa-side{gap:8px}.pa-col{width:36px;height:36px}}
+@media (max-width:520px){.idle-card.adopt-card{padding:18px 14px 16px}.adopt-card h2{font-size:1.7rem;margin:0 36px 8px}.pa-kinds{grid-template-columns:repeat(3,1fr);gap:5px}.pa-kind img{width:42px;height:42px}
+  .pa-main{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:10px;align-items:start}.pa-stage{height:170px;min-height:0}.pa-kname{font-size:1.1rem}.pa-col{width:34px;height:34px}.pa-cols{gap:8px}
+  .pa-side{gap:8px}.pa-namebox input{height:42px;padding:0 10px;font-size:1rem}.pa-dice{width:42px;height:42px}}
+.ph-pet{width:46px;height:46px;flex:none;border-radius:50%;background:#fff0f8}
+.ph-pet-hero{display:block;width:110px;height:110px;margin:0 auto 6px}
+.ph-empty b.in{display:inline;font-size:inherit;margin:0;color:#ff5fa8}
+.ph-note2{margin:14px 16px;text-align:center;color:#7d8da3;font-size:.85rem}
 /* the restaurant menu and the juice bar */
 .idle-card.menu-card{width:min(460px,100%);padding:26px 22px 22px}
 .idle-card.menu-card h2{margin-top:0;color:#ff8a1c;text-shadow:0 4px 0 #ffe0bf}
@@ -1583,6 +1641,32 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
     </div>
   </div>
 </div>
+<div class="pcard petcard" id="petCard" role="dialog" aria-labelledby="petCardName" hidden>
+  <button class="pc-x" id="petCardClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+  <img class="pet-pic" id="petCardPic" alt="">
+  <b id="petCardName">Pet</b><small class="pet-kind" id="petCardKind"></small>
+  <button class="pc-btn pat" id="petPat" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5 C4 15 2.5 10.5 4.5 7.5 C6.5 4.5 10.5 5 12 8 C13.5 5 17.5 4.5 19.5 7.5 C21.5 10.5 20 15 12 20.5Z" fill="#fff"/></svg><span>Pat</span></button>
+  <button class="pc-btn home" id="petHome" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 L12 3.5 L21 11 V20 H14.5 V14.5 H9.5 V20 H3 Z" fill="#fff"/></svg><span>Send home</span></button>
+  <button class="pc-btn walk" id="petWalk" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="15" rx="5" ry="4.2" fill="#fff"/><ellipse cx="5" cy="10" rx="2.1" ry="2.7" fill="#fff"/><ellipse cx="9" cy="5.6" rx="2.1" ry="2.8" fill="#fff"/><ellipse cx="15" cy="5.6" rx="2.1" ry="2.8" fill="#fff"/><ellipse cx="19" cy="10" rx="2.1" ry="2.7" fill="#fff"/></svg><span>Walk with me</span></button>
+</div>
+<div class="idle-overlay adopt-overlay" id="adoptOverlay" role="dialog" aria-modal="true" aria-labelledby="adoptTitle" hidden>
+  <form class="idle-card adopt-card" id="adoptForm" autocomplete="off" novalidate>
+    <button class="np-x" id="adoptClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <h2 id="adoptTitle">ADOPT A PET</h2>
+    <div class="pa-kinds" id="adoptKinds"></div>
+    <div class="pa-main">
+      <div class="pa-stage"><canvas id="adoptStage" aria-hidden="true"></canvas></div>
+      <div class="pa-side">
+        <span class="pa-kname" id="adoptKindName">Puppy</span>
+        <div class="pa-cols" id="adoptColors" role="group" aria-label="Colour"></div>
+        <label class="pa-name" for="adoptName"><span>Name your pet</span></label>
+        <div class="pa-namebox"><input id="adoptName" maxlength="12" placeholder="Type a name" spellcheck="false" aria-describedby="adoptMsg"><button type="button" class="pa-dice" id="adoptDice" aria-label="Pick a random name" title="Pick a random name"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4.5" fill="#fff"/><circle cx="8" cy="8" r="1.7" fill="#ff5fa8"/><circle cx="16" cy="8" r="1.7" fill="#ff5fa8"/><circle cx="12" cy="12" r="1.7" fill="#ff5fa8"/><circle cx="8" cy="16" r="1.7" fill="#ff5fa8"/><circle cx="16" cy="16" r="1.7" fill="#ff5fa8"/></svg></button></div>
+      </div>
+    </div>
+    <button class="np-buy pa-go" id="adoptGo" type="submit">Adopt</button>
+    <p class="pa-msg" id="adoptMsg" role="alert"></p>
+  </form>
+</div>
 <div class="pcard" id="pcard" role="dialog" aria-labelledby="pcName" hidden>
   <div class="pc-portrait"><canvas id="pcPortrait" width="240" height="240" aria-hidden="true"></canvas><b id="pcName">Player</b></div>
   <button class="pc-x" id="pcClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
@@ -1979,6 +2063,7 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
 import * as THREE from "three";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {checkText,checkName,FRIENDLY_MESSAGE} from "/shared/profanity.js";
+import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/pets.js";
 let inGame=false;   // true while walking around the Plaza
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -2948,6 +3033,7 @@ const VENUES={
   furniture:{x:-19.2,z:-7,ry:Math.PI/2,title:"FURNITURE SHOP",enter:"ENTER SHOP",hello:"Welcome to the Furniture Shop! Try out the sofas and the bed.",o:{name:"FURNITURE",wall:"#e3f1ff",roof:"#1f6bff",stripe:"#2e8bff",signBg:"#1f6bff"}},
   clothes:{x:-19.2,z:6,ry:Math.PI/2,title:"CLOTHES SHOP",enter:"ENTER SHOP",hello:"Welcome to the Clothes Shop! Check out the new outfits.",o:{name:"CLOTHES",wall:"#ffe8f3",roof:"#ff5fa8",stripe:"#ff7fbf",signBg:"#ff3d96"}},
   club:{x:19.2,z:-7,ry:-Math.PI/2,title:"DANCE CLUB",enter:"ENTER CLUB",hello:"Welcome to the Dance Club! Step on the dance floor and press E.",o:{name:"DANCE CLUB",wall:"#3a2a6e",roof:"#1a1240",stripe:"#9b5cff",signBg:"#9b5cff",glow:true}},
+  pets:{x:0,z:64.5,ry:Math.PI,custom:true,door:5.5,out:7.3,title:"PET CENTER",enter:"ENTER PET CENTER",hello:"Welcome to the Pet Center! Walk up to a pet and press E to adopt it.",o:{name:"PET CENTER"}},
   diner:{x:19.2,z:6,ry:-Math.PI/2,title:"RESTAURANT",enter:"ENTER RESTAURANT",hello:"Welcome to the Restaurant! Order at the counter, then find a table.",o:{name:"RESTAURANT",wall:"#fff1d6",roof:"#d94a3a",stripe:"#e8423b",signBg:"#d94a3a"}},
 };
 // a point in a shop's own space (front = +z) in the world
@@ -2998,6 +3084,52 @@ function makeRestaurant(x,z,ry,{name,wall,roof,stripe,signBg,glow},id){
   venueOutside(id,g,D,stripe);
   return g;
 }
+
+/* ---------- the Pet Center at the end of the Park: a giant dog house with a paw on the roof ---------- */
+function pawSignTex(bg="#ff5fa8"){return texCanvas(256,256,(c,w,h)=>{c.fillStyle="#ffffff";c.beginPath();c.arc(w/2,h/2,124,0,7);c.fill();c.fillStyle=bg;c.beginPath();c.arc(w/2,h/2,110,0,7);c.fill();
+  c.fillStyle="#ffffff";c.beginPath();c.ellipse(128,150,46,38,0,0,7);c.fill();
+  [[72,104,19,25,-.35],[106,78,19,26,-.12],[150,78,19,26,.12],[184,104,19,25,.35]].forEach(([x,y,rx,ry,a])=>{c.beginPath();c.ellipse(x,y,rx,ry,a,0,7);c.fill();});});}
+function makePetCenter(V){
+  const g=new THREE.Group();g.position.set(V.x,0,V.z);g.rotation.y=V.ry;   // front faces +z in local space
+  const W=14,D=9,H=5.2,wall=mat("#fff4e0",{emissive:"#fff1d6",emissiveIntensity:.22}),trim=mat("#ffffff"),roofM=mat("#ff5f6d",{roughness:.6}),roofEdge=mat("#d9384a");
+  g.add(box(W,H,D,wall,0,H/2,0));
+  // gable roof like a dog house: a wall-coloured triangle in front, two red slopes on top
+  const front=new THREE.Shape();front.moveTo(-W/2,0);front.lineTo(0,3.6);front.lineTo(W/2,0);front.closePath();
+  const gable=new THREE.Mesh(new THREE.ExtrudeGeometry(front,{depth:D,bevelEnabled:false}).translate(0,0,-D/2),wall);gable.position.y=H;gable.castShadow=true;g.add(gable);
+  const half=W/2+.8,rise=4.1,ang=Math.atan2(rise,half),len=Math.hypot(half,rise)+.3;
+  [-1,1].forEach(s=>{const sl=box(len,.38,D+1.3,roofM,s*half/2,H+rise/2,0);sl.rotation.z=-s*ang;g.add(sl);});
+  g.add(cyl(.32,.32,D+1.4,roofEdge,0,H+rise+.1,0,16).rotateX(Math.PI/2));
+  // paw emblem on the front gable
+  const paw=new THREE.Mesh(new THREE.CircleGeometry(1.45,40),new THREE.MeshStandardMaterial({map:pawSignTex(),roughness:.5}));paw.position.set(0,H+1.55,D/2+.02);g.add(paw);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(1.48,.12,10,40),mat("#ffd23a",{metalness:.3,roughness:.4}));ring.position.set(0,H+1.55,D/2+.04);g.add(ring);
+  // arched door
+  g.add(box(2.6,3.2,.1,mat("#ff9ec4"),0,1.6,D/2+.05));
+  const arch=new THREE.Mesh(new THREE.CircleGeometry(1.3,32,0,Math.PI),mat("#ff9ec4"));arch.position.set(0,3.2,D/2+.1);g.add(arch);
+  g.add(box(2.1,2.9,.12,mat("#8a4a2a"),0,1.45,D/2+.08));
+  const archIn=new THREE.Mesh(new THREE.CircleGeometry(1.05,32,0,Math.PI),mat("#8a4a2a"));archIn.position.set(0,2.9,D/2+.15);g.add(archIn);
+  const knob=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),mat("#ffd23a",{metalness:.6,roughness:.3}));knob.position.set(.65,1.5,D/2+.18);g.add(knob);
+  // round windows with paw-pink frames
+  const glass=new THREE.MeshStandardMaterial({color:"#9fe3ff",roughness:.15,metalness:.1,emissive:"#2d6c88",emissiveIntensity:.25});
+  [-4.4,4.4].forEach(x=>{const w=new THREE.Mesh(new THREE.CircleGeometry(1.1,32),glass);w.position.set(x,2.6,D/2+.03);g.add(w);
+    const fr=new THREE.Mesh(new THREE.TorusGeometry(1.12,.14,10,32),mat("#ff5fa8"));fr.position.set(x,2.6,D/2+.06);g.add(fr);
+    const bar=box(2.2,.08,.05,trim,x,2.6,D/2+.07);g.add(bar);g.add(box(.08,2.2,.05,trim,x,2.6,D/2+.07));});
+  // name sign with a big bone
+  const signMap=textTex("PET CENTER",{bg:"#ff5fa8",fg:"#fff",stroke:"rgba(0,0,0,.25)",size:96,w:768,h:160});
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(5.6,1.17),new THREE.MeshStandardMaterial({map:signMap,transparent:true}));sign.position.set(0,4.35,D/2+.08);g.add(sign);
+  const bone=new THREE.Group();bone.position.set(0,H+.15,D/2+.3);const bm=mat("#fffaf0",{roughness:.6});
+  const shaft=cyl(.22,.22,3.4,bm,0,0,0,16);shaft.rotation.z=Math.PI/2;bone.add(shaft);[[-1.75,.2],[-1.75,-.2],[1.75,.2],[1.75,-.2]].forEach(([x,y])=>{const k=new THREE.Mesh(new THREE.SphereGeometry(.34,16,12),bm);k.position.set(x,y,0);k.castShadow=true;bone.add(k);});
+  g.add(bone);
+  // corner trims and a little fence
+  [-W/2,W/2].forEach(x=>g.add(box(.35,H,.35,trim,x,H/2,D/2)));
+  const picket=mat("#ffffff");[-1,1].forEach(s=>{for(let k=0;k<7;k++){const x=s*(3+k*.55);g.add(box(.16,.9,.08,picket,x,.45,D/2+1.6));}g.add(box(3.5,.1,.06,picket,s*4.65,.7,D/2+1.6));g.add(box(3.5,.1,.06,picket,s*4.65,.35,D/2+1.6));});
+  // dog house, hydrant and a ball in front
+  const dh=new THREE.Group();dh.position.set(-5.2,0,D/2+3.2);dh.rotation.y=.4;g.add(dh);dh.add(box(1.6,1.1,1.4,mat("#4fa8ff"),0,.55,0));
+  const dr=new THREE.Shape();dr.moveTo(-.95,0);dr.lineTo(0,.8);dr.lineTo(.95,0);dr.closePath();const drm=new THREE.Mesh(new THREE.ExtrudeGeometry(dr,{depth:1.6,bevelEnabled:false}).translate(0,0,-.8),mat("#ff5f6d"));drm.position.y=1.1;drm.castShadow=true;dh.add(drm);
+  dh.add(box(.6,.7,.05,mat("#1d2b4a"),0,.38,.71));
+  const hy=new THREE.Group();hy.position.set(5,0,D/2+2.6);g.add(hy);const red=mat("#ff4545",{roughness:.5});hy.add(cyl(.22,.26,.8,red,0,.4,0,16));const cap=new THREE.Mesh(new THREE.SphereGeometry(.24,16,10,0,Math.PI*2,0,Math.PI/2),red);cap.position.y=.8;hy.add(cap);
+  [-1,1].forEach(s=>{const n=cyl(.08,.08,.22,red,s*.28,.5,0,10);n.rotation.z=Math.PI/2;hy.add(n);});
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(.28,16,12),new THREE.MeshStandardMaterial({map:texCanvas(64,32,(c,w,h)=>{c.fillStyle="#ffd23a";c.fillRect(0,0,w,h);c.fillStyle="#ff5f6d";c.fillRect(0,h*.4,w,h*.2);})}));ball.position.set(3.4,.28,D/2+3.4);ball.castShadow=true;g.add(ball);
+  return g;}
 function makeFountain(){
   const g=new THREE.Group();const stone=mat("#e9e2d6",{roughness:.7}),stone2=mat("#d4cabb",{roughness:.7});
   const water=new THREE.MeshStandardMaterial({color:"#43b8ff",roughness:.1,metalness:.1,transparent:true,opacity:.85,emissive:"#0f5b8a",emissiveIntensity:.25});
@@ -3135,6 +3267,9 @@ function buildPark(R){
     const beak=new THREE.Mesh(new THREE.ConeGeometry(.07,.18,8),mat("#ff8a1c"));beak.rotation.z=-Math.PI/2;beak.position.set(.5,.26,0);d.add(beak);
     world.add(d);G.ducks.push({g:d,r:2.5+i*1.1,ph:i*2.1,sp:.35+i*.08});}
   G.colliders.push({c:pondC,r:6.6});
+  // the Pet Center at the far end of the main path
+  {const V=VENUES.pets;world.add(makePetCenter(V));G.colliders.push({box:[-7.3,59.6,7.3,70]},{box:[-6.5,58.25,-2.85,58.55]},{box:[2.85,58.25,6.5,58.55]});
+    [[-5.2,7.7,1.05],[5,7.1,.35],[3.4,7.9,.3]].forEach(([lx,lz,r])=>{const [wx,wz]=venueLocal(V,lx,lz);G.colliders.push({c:[wx,wz],r});});}
   // playground: slide and swings
   const pg=new THREE.Group();pg.position.set(13,0,48);
   const red=mat("#ff4f6d"),blue=mat("#2fb6ff"),yel=mat("#ffcf33"),metal=mat("#c9d3df",{metalness:.4,roughness:.4});
@@ -3157,7 +3292,7 @@ function buildPark(R){
   const petals=["#ff5fb4","#ffd23a","#ff8a1c","#ffffff","#9b5cff","#ff4545"];
   for(let z=27;z<58;z+=3.2)[-1,1].forEach(s=>{if(Math.abs(z-42)<3)return;for(let k=0;k<5;k++){const f=new THREE.Mesh(new THREE.SphereGeometry(.15,8,6),mat(petals[(k+Math.round(z))%6]));f.position.set(s*(5+R()*1.2),.18,z+(R()-.5)*1.6);world.add(f);}});
   // trees around the park
-  const taken=(x,z)=>Math.abs(x)<4.5||Math.abs(z-42)<3.2||Math.hypot(x-pondC[0],z-pondC[1])<8.5||(x>7&&x<20&&z>44&&z<55)||G.colliders.some(c=>c.c&&Math.hypot(c.c[0]-x,c.c[1]-z)<c.r+2);
+  const taken=(x,z)=>Math.abs(x)<4.5||(z>54&&Math.abs(x)<9.5)||Math.abs(z-42)<3.2||Math.hypot(x-pondC[0],z-pondC[1])<8.5||(x>7&&x<20&&z>44&&z<55)||G.colliders.some(c=>c.c&&Math.hypot(c.c[0]-x,c.c[1]-z)<c.r+2);
   let n=0,tries=0;while(n<34&&tries<900){tries++;const x=(R()*2-1)*24,z=26+R()*33;if(taken(x,z))continue;world.add(makeTree(x,z,.95+R()*.5,R));G.colliders.push({c:[x,z],r:.65});n++;}
 }
 
@@ -3265,7 +3400,7 @@ function buildPlaza(){
   world.add(makeFountain());G.colliders.push({c:[0,0],r:3.7});
   // restaurants around the edges, facing the plaza
   // the shops you can walk into, around the edges, facing the plaza
-  Object.entries(VENUES).forEach(([id,V])=>{const {x,z}=V;world.add(makeRestaurant(x,z,V.ry,V.o,id));
+  Object.entries(VENUES).forEach(([id,V])=>{if(V.custom)return;const {x,z}=V;world.add(makeRestaurant(x,z,V.ry,V.o,id));
     G.colliders.push({box:[x-2.5-.3,z-3.2-.3,x+2.5+.3,z+3.2+.3]});
     if(id==="club")[-1.25,1.25].forEach(lx=>[3.4,4.9,6.4].forEach(lz=>{const [wx,wz]=venueLocal(V,lx,lz);G.colliders.push({c:[wx,wz],r:.2});}));
     else [-1.9,1.9].forEach(lx=>{const [wx,wz]=venueLocal(V,lx,5.8);G.colliders.push({c:[wx,wz],r:1.25});});});
@@ -3282,7 +3417,7 @@ function buildPlaza(){
     if(G.colliders.some(c=>c.c&&Math.hypot(c.c[0]-x,c.c[1]-z)<c.r+2.2))continue;
     world.add(makeTree(x,z,.9+R()*.4,R));G.colliders.push({c:[x,z],r:.65});placed++;}
   // scenery trees outside the walkable areas: west of the Plaza and behind the Park (east is the desert)
-  for(let i=0;i<40;i++){const west=i%2===0,x=west?-27-R()*22:(R()*2-1)*34,z=west?-14+R()*74:62+R()*16;world.add(makeTree(x,z,1+R()*.6,R));}
+  for(let i=0;i<40;i++){const west=i%2===0,x=west?-27-R()*22:(R()*2-1)*34,z=west?-14+R()*74:62+R()*16;if(!west&&Math.abs(x)<10&&z<73)continue;world.add(makeTree(x,z,1+R()*.6,R));}
   // flower beds
   const petals=["#ff5fb4","#ffd23a","#ff8a1c","#ffffff","#9b5cff"];
   for(let i=0;i<14;i++){const a=i/14*Math.PI*2,r=16.3;const fx=Math.sin(a)*r,fz=Math.cos(a)*r;if(fz<-13)continue;
@@ -3397,9 +3532,9 @@ function addRemote(p){
   const c=makeCharacter(p.look||{},p.username||"Player",p.role==="admin"?"#ff4545":"#fff");
   c.root.position.set(p.x,0,p.z);Object.assign(c,{look:p.look||{},role:p.role,username:p.username,tx:p.x,tz:p.z,face:p.face||0,cur:p.face||0,moving:!!p.moving,phase:0,hopT:-9,typing:false,bubble:makeBubbleEl()});
   if(p.role==="admin")c.bubble.classList.add("admin");
-  c.pose=p.pose||null;c.mood=p.mood||"";(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);setBadge(c,p.status);updateOnline();refreshAdminOnline();
+  c.pose=p.pose||null;c.mood=p.mood||"";setRemotePet(c,p.pet);(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);setBadge(c,p.status);updateOnline();refreshAdminOnline();
 }
-function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
+function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();dropPetObj(c.petObj);c.petObj=null;c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
 function clearRemotes(){[...remotes.keys()].forEach(removeRemote);}
 function updateRemotes(t,dt){
   for(const c of remotes.values()){
@@ -3432,6 +3567,9 @@ function netJoin(){
     socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
     socket.on("player:join",p=>{addRemote(p);});
     socket.on("needs",setNeeds);
+    socket.on("player:pet",d=>{const c=remotes.get(d.id);if(c)setRemotePet(c,d.pet);else if(d.id===socket.id)loadPets();});
+    socket.on("pet:pat",d=>{if(d.by===socket.id)return;if(d.owner){const c=remotes.get(d.owner);if(c&&c.petObj)patPet(c.petObj,true);else if(d.owner===socket.id&&PETS.me)patPet(PETS.me,true);}
+      else if(d.pid){const P=PETS.home.find(x=>x.info.id===d.pid);if(P)patPet(P,true);}});
     socket.on("player:mood",d=>{const c=remotes.get(d.id);if(c)c.mood=d.mood||"";});
     socket.on("player:move",d=>{const c=remotes.get(d.id);if(c){c.tx=d.x;c.tz=d.z;c.face=d.face;c.moving=d.moving;c.run=!!d.run;c.pose=d.pose||null;}});
     socket.on("home:update",d=>homeUpdated(d.home));
@@ -3597,7 +3735,7 @@ function showZone(id){const z=ZONES.find(q=>q.id===id);if(!z)return;const b=docu
   b.textContent=z.name;b.classList.remove("show");void b.offsetWidth;b.classList.add("show");clearTimeout(zoneT);zoneT=setTimeout(()=>b.classList.remove("show"),2600);sfx.open();}
 
 /* ---------- map: an illustrated picture of the world (painted once), with live markers on top ---------- */
-const MAP_BOUNDS={x0:-50,x1:92,z0:-50,z1:64};
+const MAP_BOUNDS={x0:-50,x1:92,z0:-50,z1:72};
 const MAP_S=10;                                   // pixels per world step in the painted map
 const ZONE_COL={plaza:"#ff9a1f",beach:"#1fa3e8",park:"#2fb04e",desert:"#e07a1f"};
 let mapArt=null,mapBig=false,mapFrame=0,mapView=null,mapHover=null;
@@ -3672,8 +3810,14 @@ function paintMapArt(){
     else{g.strokeStyle="#d94a3a";g.lineWidth=3.2;g.lineCap="round";g.beginPath();g.moveTo(-6,-13);g.lineTo(-6,13);g.moveTo(-10,-13);g.lineTo(-10,-5);g.quadraticCurveTo(-6,-1,-2,-5);g.lineTo(-2,-13);
       g.moveTo(7,13);g.lineTo(7,-13);g.quadraticCurveTo(13,-8,12,1);g.lineTo(7,1);g.stroke();g.lineCap="butt";}
     g.restore();});
+  // the Pet Center: a red dog-house roof with a paw sign
+  g.save();g.fillStyle="rgba(0,0,0,.18)";g.beginPath();g.roundRect(mpX(-7.4)+10,mpZ(59.6)+12,U(14.8),U(9.6),U(1));g.fill();g.restore();
+  rrect(0,64.5,14.8,9.6,1,"#ff5f6d","rgba(0,0,0,.25)",4);
+  g.save();g.fillStyle="#d9384a";g.fillRect(mpX(-.3),mpZ(59.8),U(.6),U(9.2));g.restore();
+  g.save();g.translate(mpX(0),mpZ(64.5));g.fillStyle="#fff";g.beginPath();g.arc(0,0,26,0,Math.PI*2);g.fill();g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke();
+  g.fillStyle="#ff5fa8";g.beginPath();g.ellipse(0,5,8.5,7,0,0,Math.PI*2);g.fill();[[-11,-3,3.4,4.4],[-4.5,-9.5,3.4,4.6],[4.5,-9.5,3.4,4.6],[11,-3,3.4,4.4]].forEach(([x,y,rx,ry])=>{g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();});g.restore();
   // ---- trees ----
-  const avoid=(x,z)=>Math.hypot(x,z)<17||Math.abs(x)<5.5&&z>10||Math.abs(z-42)<4&&Math.abs(x)<26||Math.hypot(x+13,z-48)<9||Math.abs(z-1)<4.5&&x>10&&x<32||Math.abs(x)>14&&Math.abs(x)<26&&Math.abs(z)<12||Math.hypot(x-9,z-37.5)<4;
+  const avoid=(x,z)=>Math.hypot(x,z)<17||(z>55&&Math.abs(x)<9.5)||Math.abs(x)<5.5&&z>10||Math.abs(z-42)<4&&Math.abs(x)<26||Math.hypot(x+13,z-48)<9||Math.abs(z-1)<4.5&&x>10&&x<32||Math.abs(x)>14&&Math.abs(x)<26&&Math.abs(z)<12||Math.hypot(x-9,z-37.5)<4;
   const tree=(x,z,r,col)=>{g.fillStyle="rgba(30,80,30,.22)";g.beginPath();g.ellipse(mpX(x)+r*3,mpZ(z)+r*4,U(r),U(r)*.85,0,0,Math.PI*2);g.fill();
     circle(x,z,r,col||"#3fae4f");g.fillStyle="rgba(255,255,255,.22)";g.beginPath();g.arc(mpX(x-r*.3),mpZ(z-r*.3),U(r*.5),0,Math.PI*2);g.fill();};
   for(let i=0;i<120;i++){const x=-27+R()*54,z=22+R()*41;if(avoid(x,z))continue;tree(x,z,1.2+R()*1.1,R()<.3?"#2f9a45":"#3fb653");}
@@ -3848,7 +3992,7 @@ function gameTick(dt,t,hy){
   poseCharacter(P,G.pos.x,G.pos.z,G.face,moving,G.phase,hy,t,G);
   if(G.seat)applyPose(P,G.seat,t);else if(P.zzz){P.zzz.remove();P.zzz=null;}
   if(G.running&&moving&&!inWater(G.pos.x,G.pos.z)){P.root.rotation.x=.16;P.armL.rotation.x*=1.6;P.armR.rotation.x*=1.6;}
-  phonePose(dt,t);needsFx(t,moving);
+  phonePose(dt,t);needsFx(t,moving);petsTick(t,dt);
   if(act.jump&&!G.seat){const k=(now()-act.jump.t)/JUMP_T;
     if(k<1)applyFlip(P,k,G.jumpDir||-1,G.face);
     else if(!G.jumpLanded){G.jumpLanded=true;sfx.step();if(P.armL)P.armL.rotation.z=P.armR.rotation.z=0;}}
@@ -3860,6 +4004,9 @@ function gameTick(dt,t,hy){
   const zone=G.home?G.zone:zoneAt(G.pos.x,G.pos.z);if(zone!==G.zone){if(G.zone)showZone(zone);G.zone=zone;}
   // marker pulse
   if(G.marker.visible){const k=((now()-G.marker.userData.t)*1.6)%1;G.marker.scale.setScalar(.8+k*.5);G.marker.material.opacity=.9*(1-k*.6);}
+  // near the Pet Center (end of the Park) the camera turns around so you see its front; walking away turns it back
+  if(!G.home&&!G.orbiting&&now()-(G.camDragT||0)>4){const near=G.pos.z>47&&Math.abs(G.pos.x)<14,goal=near?Math.PI:G.camAuto&&G.pos.z<44?0:null;
+    if(goal!==null){if(near)G.camAuto=true;let d=goal-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*1.6);if(!near&&Math.abs(d)<.01){G.camYaw=0;G.camAuto=false;}}}
   // camera follows from behind and above
   const zf=zoomFactor(),gy=Math.max(-0.6,groundY(G.pos.x,G.pos.z)),yaw=G.camYaw||0,pitch=G.camPitch||1,sy=Math.sin(yaw),cy=Math.cos(yaw);
   // shop / wardrobe open: come closer and keep the character on the left, next to the card
@@ -3886,7 +4033,7 @@ function refreshMyTag(){
 function enterGame(){
   if(!P)return;
   if(!gameBuilt)buildPlaza();
-  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);
+  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,70,260);
   G.menuLights.forEach(l=>l.visible=false);
@@ -3970,7 +4117,7 @@ stage.addEventListener("contextmenu",e=>{if(inGame)e.preventDefault();});
 stage.addEventListener("pointerdown",e=>{if(!inGame||e.button!==2)return;e.preventDefault();orbitPt={x:e.clientX,y:e.clientY};G.orbiting=true;body.classList.add("orbiting");
   try{stage.setPointerCapture(e.pointerId);}catch(err){}});
 stage.addEventListener("pointermove",e=>{if(!orbitPt)return;const dx=e.clientX-orbitPt.x,dy=e.clientY-orbitPt.y;orbitPt={x:e.clientX,y:e.clientY};
-  G.camYaw=((G.camYaw||0)-dx*.007)%(Math.PI*2);G.camPitch=Math.max(.3,Math.min(1.9,(G.camPitch||1)+dy*.005));});
+  G.camYaw=((G.camYaw||0)-dx*.007)%(Math.PI*2);G.camDragT=now();G.camAuto=false;G.camPitch=Math.max(.3,Math.min(1.9,(G.camPitch||1)+dy*.005));});
 const endOrbit=()=>{orbitPt=null;G.orbiting=false;body.classList.remove("orbiting");};
 stage.addEventListener("pointerup",e=>{if(e.button===2||orbitPt)endOrbit();});stage.addEventListener("pointercancel",endOrbit);
 // double-click somewhere to run there
@@ -4314,7 +4461,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!gateOverlay.hidden){e.stopI
 document.getElementById("shop").onclick=e=>{press(e.currentTarget);openStore("shop");};
 document.getElementById("tags").onclick=e=>{press(e.currentTarget);openStore("tags");};
 document.getElementById("inventory").onclick=e=>{press(e.currentTarget);openStore("inventory");};
-stage.addEventListener("click",e=>{if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
+stage.addEventListener("click",e=>{if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
 document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoosh();exitGame();};
 
 /* =====================================================================
@@ -4457,7 +4604,8 @@ function homeTick(t){updateSeatPrompt();placeTick(t);Sound.piano(pianoLevel());i
 const SEATS={0:{k:"sit",y:.8,at:[[-.7,.08],[.7,.08]]},1:{k:"sit",y:.8,at:[[0,.08]]},3:{k:"sit",y:.6,at:[[0,0]]},10:{k:"sit",y:.58,at:[[0,.08]]},
   13:{k:"play",y:.52,at:[[0,1.32]],flip:true},4:{k:"sleep",y:1.38,at:[[0,.95]],reach:2.1}};
 const seatPrompt=document.getElementById("seatPrompt");
-const SEAT_ICON={dance:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L12 7.5 L18 8 L13.4 11.6 L15 17.5 L10 14.2 L5 17.5 L6.6 11.6 L2 8 L8 7.5 Z" fill="#ff5fb4"/></svg>',
+const SEAT_ICON={adopt:'<svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx="10" cy="13" rx="4.2" ry="3.6" fill="#ff5fb4"/><ellipse cx="4.2" cy="9" rx="1.8" ry="2.3" fill="#ff5fb4"/><ellipse cx="7.6" cy="5.2" rx="1.8" ry="2.4" fill="#ff5fb4"/><ellipse cx="12.4" cy="5.2" rx="1.8" ry="2.4" fill="#ff5fb4"/><ellipse cx="15.8" cy="9" rx="1.8" ry="2.3" fill="#ff5fb4"/></svg>',
+  dance:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L12 7.5 L18 8 L13.4 11.6 L15 17.5 L10 14.2 L5 17.5 L6.6 11.6 L2 8 L8 7.5 Z" fill="#ff5fb4"/></svg>',
   shop:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7 H16 L15 18 H5 Z" fill="#ff5fb4"/><path d="M7 9 V5.5 Q7 2.5 10 2.5 Q13 2.5 13 5.5 V9" fill="none" stroke="#ff5fb4" stroke-width="2" stroke-linecap="round"/></svg>',
   dress:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 6 Q10 3 12 3.5 M10 6 L2.5 13.5 Q2 15 3.5 15 H16.5 Q18 15 17.5 13.5 Z" fill="none" stroke="#ff5fb4" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   order:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5 V8 Q5 10 7 10 V17.5 M7 2.5 V8 M9 2.5 V8 Q9 10 7 10 M14 17.5 V2.5 Q11 4 11 9 Q11 11 14 11" fill="none" stroke="#ff5fb4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -4531,31 +4679,32 @@ async function enterHome(username){
   closePlayerCard();closeChat();closeMinigame();clearEmotes();nearStation=null;mgPrompt.hidden=true;clearTimeout(bubbleHide);bubbleEl().classList.remove("show");
   if(!HOME.group)buildRoom();
   placeDetach();
-  HOME.layout=r.data.home;HOME.owner=r.data.owner;HOME.mine=r.data.mine;
+  HOME.layout=r.data.home;HOME.owner=r.data.owner;HOME.mine=r.data.mine;HOME.pets=r.data.pets||[];HOME.petOut=r.data.out||"";
   if(HOME.mine){const ok=[];let changed=0;for(const it of HOME.layout.items){const fixed=clampInside({...it});if(fixed.x!==it.x||fixed.z!==it.z)changed++;
       if(placeProblem(fixed,ok)){changed++;continue;}ok.push(fixed);}
     if(changed){HOME.layout.items=ok;setTimeout(()=>{queueSave();toast("Some furniture was moved so nothing is stuck in a wall or another piece.");},900);}}
-  worldSaved={pos:G.pos.clone(),face:G.face,colliders:G.colliders,bg:scene.background,fog:scene.fog};
+  worldSaved={pos:G.pos.clone(),face:G.face,colliders:G.colliders,bg:scene.background,fog:scene.fog,yaw:G.camYaw||0};
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
   world.visible=false;HOME.group.visible=true;G.home=true;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  placeHomePets(HOME.mine?PETS.mine:HOME.pets,HOME.mine?PETS.out:HOME.petOut);if(PETS.me)PETS.me.x=undefined;
   scene.background=new THREE.Color("#1d2b4a");scene.fog=null;
-  G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;
+  G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
   if(socket&&socket.connected)socket.emit("join",netState());   // the home's own room: visitors see and chat with each other
   body.classList.add("in-home");homeTitle.textContent=(HOME.mine?"MY HOME":HOME.owner.toUpperCase()+"'S HOME");
   document.getElementById("homeDecorate").hidden=!HOME.mine;
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
 }
 // put everything back the way the Plaza needs it
-function homeReset(){standUp(true);Sound.piano(0);seatPrompt.hidden=true;nearSeat=null;nearDoor=null;body.classList.remove("at-door");closeDecorate();placeDetach();G.home=false;HOME.group.visible=false;body.classList.remove("in-home");
+function homeReset(){standUp(true);Sound.piano(0);seatPrompt.hidden=true;nearSeat=null;nearDoor=null;body.classList.remove("at-door");closeDecorate();placeDetach();clearHomePets();closeAdopt(true);closePetCard();if(PETS.me)PETS.me.x=undefined;G.home=false;HOME.group.visible=false;body.classList.remove("in-home");
   if(G.tag)world.add(G.tag);world.add(G.marker);G.marker.visible=false;if(worldSaved)G.colliders=worldSaved.colliders;}
 async function leaveHome(){
   if(!G.home||HOME.leaving)return;HOME.leaving=true;closeDecorate();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,450));
   clearRemotes();homeReset();HOME.leaving=false;world.visible=true;
-  G.pos.copy(worldSaved.pos);G.face=worldSaved.face;scene.background=worldSaved.bg;scene.fog=worldSaved.fog;G.target=null;G.keys={};
+  G.pos.copy(worldSaved.pos);G.face=worldSaved.face;G.camYaw=worldSaved.yaw||0;scene.background=worldSaved.bg;scene.fog=worldSaved.fog;G.target=null;G.keys={};
   if(socket&&socket.connected)socket.emit("join",netState());else netJoin();
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
 }
@@ -4734,7 +4883,57 @@ function venueDiner(){
   vSpot(C,{k:"order",label:"ORDER FOOD",x:-3.9,z:-3,reach:1.5,act:()=>openMenu("diner")});
   C.ticks.push(t=>steam.forEach((s,k)=>{const q=(t*.4+k/5)%1;s.position.set(-3.9+Math.sin(q*6+k)*.12,CTR_H+.5+q*1.2,-4.45);s.scale.setScalar(.6+q*1.3);s.material.opacity=.45*(1-q);}));
   return C;}
-const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner};
+
+/* ---------- inside the Pet Center: a pen for each pet, walk up and press E to adopt ---------- */
+function venuePets(){
+  const C=newVenue({wall:3,floor:0,items:[[6,-6.9,4.9,0],[6,6.9,4.9,0],[9,1.2,1.4,0]].map(([f,x,z,r])=>({f,x,z,r}))});
+  const g=C.g;
+  wallSign(C,"JUMPI PETS",-2.4,3.6,3.6,{bg:"#ff5fa8"});
+  const pawW=new THREE.Mesh(new THREE.CircleGeometry(.75,32),new THREE.MeshStandardMaterial({map:pawSignTex("#ff8a1c")}));pawW.position.set(-5.2,3.6,-HOME_D-.18);g.add(pawW);
+  const pawW2=pawW.clone();pawW2.position.x=.4;g.add(pawW2);
+  // paw prints on the floor leading in from the door
+  const printTex=texCanvas(64,64,(c,w,h)=>{c.fillStyle="rgba(255,95,168,.55)";c.beginPath();c.ellipse(32,40,13,11,0,0,7);c.fill();[[16,24],[26,15],[38,15],[48,24]].forEach(([x,y])=>{c.beginPath();c.ellipse(x,y,5.5,7,0,0,7);c.fill();});});
+  for(let k=0;k<6;k++){const p=new THREE.Mesh(new THREE.PlaneGeometry(.45,.45),new THREE.MeshBasicMaterial({map:printTex,transparent:true,depthWrite:false}));p.rotation.x=-Math.PI/2;p.rotation.z=Math.PI+.15*(k%2?1:-1);p.position.set(3.4+(k%2?.25:-.25),.015,-3.6+k*.75);g.add(p);}
+  // the pens: back wall (3) and left wall (3)
+  const pens=[];
+  const spots=[[-5.2,-4.3,0],[-2.4,-4.3,0],[.4,-4.3,0],[-6.1,-1.2,Math.PI/2],[-6.1,1.3,Math.PI/2],[-6.1,3.8,Math.PI/2]];
+  PET_KINDS.forEach((K,i)=>{const [x,z,ry]=spots[i];const pen=new THREE.Group();pen.position.set(x,0,z);pen.rotation.y=ry;g.add(pen);
+    const col=K.colors[0][1];
+    pen.add(cyl(1,1.05,.12,mat("#ffffff",{roughness:.6}),0,.06,0,32));
+    const bed=new THREE.Mesh(new THREE.TorusGeometry(.62,.2,12,28),mat(lighten(col,.45),{roughness:.9}));bed.rotation.x=Math.PI/2;bed.position.y=.24;bed.castShadow=true;pen.add(bed);
+    pen.add(cyl(.6,.6,.1,mat(lighten(col,.7),{roughness:1}),0,.17,0,28));
+    // low fence around the back and sides
+    const fm2=mat("#ffffff");for(let k=0;k<9;k++){const a=Math.PI*.15+k/8*Math.PI*.7+Math.PI;pen.add(box(.1,.6,.1,fm2,Math.cos(a)*1.05,.4,Math.sin(a)*1.05));}
+    const rail=new THREE.Mesh(new THREE.TorusGeometry(1.05,.04,6,28,Math.PI*.72),fm2);rail.rotation.x=Math.PI/2;rail.rotation.z=Math.PI*1.14;rail.position.y=.62;pen.add(rail);
+    // the pet on its bed
+    const P=buildPet(K.id,0);P.g.position.y=.18;P.g.rotation.y=0;pen.add(P.g);pens.push(P);
+    // name and price sign
+    const tex=canvasTex(320,140,(c,w,h)=>{c.fillStyle=col;c.beginPath();c.roundRect(6,6,w-12,h-12,30);c.fill();c.fillStyle="rgba(0,0,0,.12)";c.fillRect(6,h-30,w-12,8);
+      c.font='54px "Lilita One", sans-serif';c.textAlign="center";c.textBaseline="middle";c.lineWidth=8;c.strokeStyle="rgba(0,0,0,.28)";c.strokeText(K.name.toUpperCase(),w/2,52);c.fillStyle="#fff";c.fillText(K.name.toUpperCase(),w/2,52);
+      c.font='600 40px "Fredoka", sans-serif';c.fillStyle="#fff";c.fillText("● "+K.price.toLocaleString("en-US"),w/2,104);});
+    const sg=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.66),new THREE.MeshStandardMaterial({map:tex,transparent:true}));sg.position.set(0,1.85,-.75);pen.add(sg);
+    pen.add(cyl(.03,.03,1.5,mat("#c9d3e3",{metalness:.5}),-.55,.9,-.85,6));pen.add(cyl(.03,.03,1.5,mat("#c9d3e3",{metalness:.5}),.55,.9,-.85,6));
+    C.col.push({c:[x,z],r:1.05});
+    const sx=x+Math.sin(ry)*1.75,sz=z+Math.cos(ry)*1.75;
+    vSpot(C,{k:"adopt",label:"ADOPT "+K.name.toUpperCase(),x:sx,z:sz,reach:1.15,act:()=>openAdopt(K.id)});});
+  // the desk with the pet keeper
+  counter(C,5.6,-1.2,2.8,.85,"#ffd23a","#ff5fa8");register(C,6.3,-1.25);
+  makeNPC(C,{color:5,eyes:2,hair:2,shirt:2,pants:0},5.6,-2.15,0,"idle");
+  hangSign(C,"ADOPT A PET",5.6,3.3,-1.95,2.4,"#ff8a1c");
+  C.col.push({box:[4.15,-2.7,7.05,-.75]});
+  vSpot(C,{k:"adopt",label:"ADOPT A PET",x:5.6,z:.15,reach:1.3,act:()=>openAdopt("puppy")});
+  // a cat tree and some toys
+  const ct=new THREE.Group();ct.position.set(6.5,0,1.6);g.add(ct);const sisal=mat("#d8b98a",{roughness:1}),carpet=mat("#9b5cff",{roughness:1});
+  ct.add(cyl(.12,.12,2.6,sisal,0,1.3,0,12));ct.add(box(1.1,.12,1.1,carpet,0,.06,0));ct.add(box(.9,.12,.9,carpet,0,1.3,0));ct.add(box(.8,.12,.8,carpet,0,2.6,0));
+  const cave=new THREE.Mesh(new THREE.SphereGeometry(.45,16,12,0,Math.PI*2,0,Math.PI*.75),carpet);cave.position.set(0,1.85,0);cave.castShadow=true;ct.add(cave);
+  C.col.push({c:[6.5,1.6],r:.65});
+  [["#ff4545",2.4,2.8],["#1f9bff",-.6,3.6],["#ffd23a",5.4,3.9]].forEach(([c,x,z])=>{const b=new THREE.Mesh(new THREE.SphereGeometry(.2,14,10),mat(c,{roughness:.4}));b.position.set(x,.2,z);b.castShadow=true;g.add(b);});
+  const bm=mat("#fffaf0");[[-3.6,.4],[2.2,-2.6]].forEach(([x,z])=>{const b=new THREE.Group();b.position.set(x,.08,z);b.rotation.y=x;const s=cyl(.05,.05,.4,bm,0,0,0,8);s.rotation.z=Math.PI/2;b.add(s);
+    [[-.2,.05],[-.2,-.05],[.2,.05],[.2,-.05]].forEach(([a,c])=>{const k=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),bm);k.position.set(a,0,c);b.add(k);});g.add(b);});
+  // the pets on display breathe, look around and now and then do a happy spin
+  let last=0;C.ticks.push(t=>{const dt=Math.min(.1,t-last||.03);last=t;pens.forEach((P,i)=>{if(Math.random()<.0015)P.happy=1.4;animPet(P,t,dt,false,0);});});
+  return C;}
+const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner,pets:venuePets};
 const venueContent=id=>PLACE.cache[id]||(PLACE.cache[id]=VENUE_BUILD[id]());
 
 /* ---------- food and drinks ---------- */
@@ -4791,7 +4990,7 @@ let nearDoor=null;
 const DOOR_ICON='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 18 V3.5 Q5 2.5 6 2.5 H14 Q15 2.5 15 3.5 V18 M2.5 18 H17.5" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10.5" r="1.3" fill="#ff5fb4"/></svg>';
 function doorTick(){
   let best=null;
-  if(inGame&&!G.home&&!TL.on&&!GS.open&&menuOverlay.hidden)for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
+  if(inGame&&!G.home&&!TL.on&&!GS.open&&!PLACE.busy&&!HOME.leaving&&menuOverlay.hidden)for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,VENUES[id].door||3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
   if(best===nearDoor)return;nearDoor=best;seatPrompt.hidden=!best;body.classList.toggle("at-door",!!best);
   if(best){document.getElementById("seatText").textContent=VENUES[best].enter;document.getElementById("seatIcon").innerHTML=DOOR_ICON;sfx.tick(true);}}
 function roomLights(C){if(!HOME.hemi)return;const dim=!!(C&&C.dim);HOME.hemi.intensity=dim?.55:1.25;HOME.sun.intensity=dim?.35:1.6;HOME.lamp.intensity=dim?0:14;HOME.win.visible=!C;}
@@ -4803,15 +5002,15 @@ async function enterPlace(id){
   if(!HOME.group)buildRoom();
   const C=venueContent(id);
   HOME.layout=C.layout;HOME.owner="";HOME.mine=false;
-  const [ox,oz]=venueLocal(V,0,5.4);
-  worldSaved={pos:new THREE.Vector3(ox,0,oz),face:V.ry,colliders:G.colliders,bg:scene.background,fog:scene.fog};
+  const [ox,oz]=venueLocal(V,0,V.out||5.4);
+  worldSaved={pos:new THREE.Vector3(ox,0,oz),face:V.ry,colliders:G.colliders,bg:scene.background,fog:scene.fog,yaw:G.camYaw||0};
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
-  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
-  HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);
+  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;PLACE.cur=C;nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);clearHomePets();if(PETS.me)PETS.me.x=undefined;
   scene.background=new THREE.Color(C.bg||"#1d2b4a");scene.fog=null;
-  G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;
+  G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
   if(socket&&socket.connected)socket.emit("join",netState());   // everyone in this shop sees each other
   body.classList.add("in-home");homeTitle.textContent=V.title;document.getElementById("homeDecorate").hidden=true;
   Sound.venue(C.music||null);
@@ -4823,7 +5022,7 @@ function placeTick(t){const C=PLACE.cur;if(!C)return;C.ticks.forEach(f=>f(t));C.
   carryEl.hidden=!(G.order&&!G.eating);
   if(!carryEl.hidden){P.head.getWorldPosition(_rp);_rp.y+=1.15;_rp.project(cam);carryEl.style.left=((_rp.x+1)/2*innerWidth)+"px";carryEl.style.top=((1-_rp.y)/2*innerHeight)+"px";}}
 addEventListener("keydown",e=>{if(e.code!=="KeyE"||!inGame||e.repeat)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
-  if(GS.open||!menuOverlay.hidden||!mgOverlay.hidden||!dailyOverlay.hidden)return;
+  if(GS.open||!menuOverlay.hidden||adopt.open||!mgOverlay.hidden||!dailyOverlay.hidden)return;
   if(!G.home){if(nearDoor){e.preventDefault();enterPlace(nearDoor);}return;}
   if(!deco.hidden)return;
   if(G.seat&&G.seat.k==="dance"){e.preventDefault();nextDance();return;}
@@ -4913,6 +5112,226 @@ function needsFx(t,moving){if(!NEEDS.v||!P)return;const mood=myMood();
   thinkTick(P,mood,t,!!G.seat||moving||PH.open||GS.open);}
 let puffWarnT=0;
 function noRunWarn(){if(now()-puffWarnT<6)return;puffWarnT=now();toast(NEED_INFO.stamina.low+" Sit down for a bit to get your stamina back.");}
+
+/* =====================================================================
+   PETS: adopt one at the Pet Center (end of the Park). The pet you choose walks with you,
+   everyone sees it, and the others wait for you at home. Click a pet to pat it ♥,
+   send it home or take it for a walk. Kinds, prices and name rules: /shared/pets.js
+   ===================================================================== */
+const PETS={mine:[],out:"",loaded:false,me:null,home:[]};
+const lighten=(hex,k)=>"#"+new THREE.Color(hex).lerp(new THREE.Color("#ffffff"),k).getHexString();
+const darken=(hex,k)=>"#"+new THREE.Color(hex).lerp(new THREE.Color("#000000"),k).getHexString();
+// a cute chunky pet made of simple shapes; parts are kept for the animations
+function buildPet(kind,colorIdx){
+  const K=PET_BY_ID[kind]||PET_KINDS[0],main=K.colors[colorIdx]?K.colors[colorIdx][1]:K.colors[0][1];
+  const g=new THREE.Group(),rig=new THREE.Group();g.add(rig);
+  const M=(c,o)=>mat(c,{roughness:.7,...o}),add=(p,m)=>{m.castShadow=true;p.add(m);return m;};
+  const sph=(p,r,c,x,y,z,sx=1,sy=1,sz=1,seg=20)=>{const m=add(p,new THREE.Mesh(new THREE.SphereGeometry(r,seg,Math.round(seg*.75)),typeof c==="string"?M(c):c));m.position.set(x,y,z);m.scale.set(sx,sy,sz);return m;};
+  let body=main,belly=lighten(main,.55),accent=darken(main,.35),earIn="#ffb3c8";
+  if(kind==="panda"){accent=colorIdx===0?"#26262e":colorIdx===1?"#3a2418":"#8a3a5a";belly=colorIdx===1?"#fff3e6":lighten(main,.4);}
+  if(kind==="dragon")belly=lighten(main,.6);
+  const P={g,rig,kind,legs:[],ears:[],eyes:[],wings:[]};
+  const isHam=kind==="hamster",isBun=kind==="bunny";
+  // body and belly
+  const bodyY=isHam?.42:.48;
+  P.body=sph(rig,isHam?.42:.36,body,0,bodyY,-.05,isHam?1.05:1,isHam?.95:.85,isHam?1.1:1.25);
+  sph(rig,isHam?.32:.26,belly,0,bodyY-.06,isHam?.16:.14,1,.8,.7);
+  // head
+  const head=new THREE.Group();head.position.set(0,isHam?.72:.86,isHam?.22:.32);rig.add(head);P.head=head;
+  sph(head,isHam?.3:.36,kind==="panda"&&colorIdx!==1?body:body,0,0,0,1.05,.95,1);
+  // face
+  const eyeW=isHam?.12:.14,eyeY=isHam?.05:.06,eyeZ=isHam?.26:.3;
+  if(kind==="panda")[-1,1].forEach(s=>sph(head,.11,accent,s*.14,eyeY,eyeZ-.03,1,1.25,.6));
+  [-1,1].forEach(s=>{const e=sph(head,.062,"#1d1626",s*eyeW,eyeY,eyeZ,1,1.15,.7,14);const hl=sph(e,.022,"#ffffff",-.012,.02,.05,1,1,1,8);hl.castShadow=false;P.eyes.push(e);});
+  // muzzle / nose
+  if(kind==="puppy"){sph(head,.15,belly,0,-.08,.27,1.2,.85,.9);sph(head,.06,"#2a1d1d",0,-.02,.4,1.2,.9,.9,12);}
+  else if(kind==="kitten"||kind==="panda"){sph(head,.11,belly,0,-.1,.28,1.4,.8,.7);sph(head,.035,kind==="panda"?"#26262e":"#ff7fa0",0,-.05,.36,1.3,.9,.8,10);}
+  else if(isBun||isHam){sph(head,.09,belly,0,-.08,.27,1.4,.85,.7);sph(head,.03,"#ff7fa0",0,-.04,.33,1.2,.9,.8,10);if(isHam)[-1,1].forEach(s=>sph(head,.13,belly,s*.18,-.07,.15,1,.85,.9));}
+  else if(kind==="dragon"){sph(head,.17,belly,0,-.1,.27,1.2,.75,1);[-1,1].forEach(s=>sph(head,.02,"#1d1626",s*.06,-.05,.42,1,1,1,8));}
+  // cheeks
+  [-1,1].forEach(s=>{const c=sph(head,.05,"#ff8fb0",s*.21,-.06,.25,1,.6,.4,10);c.material.transparent=true;c.material.opacity=.6;c.castShadow=false;});
+  // ears
+  const earPivot=(x,y,z)=>{const p=new THREE.Group();p.position.set(x,y,z);head.add(p);P.ears.push(p);return p;};
+  if(kind==="puppy")[-1,1].forEach(s=>{const p=earPivot(s*.3,.12,0);p.rotation.z=s*.35;sph(p,.13,accent,0,-.16,0,.6,1.3,.5);});
+  else if(kind==="kitten")[-1,1].forEach(s=>{const p=earPivot(s*.2,.27,0);p.rotation.z=-s*.25;const c=add(p,new THREE.Mesh(new THREE.ConeGeometry(.12,.24,4),M(body)));c.position.y=.1;c.rotation.y=Math.PI/4;
+    const ci=add(p,new THREE.Mesh(new THREE.ConeGeometry(.07,.16,4),M(earIn)));ci.position.set(0,.08,.04);ci.rotation.y=Math.PI/4;});
+  else if(isBun)[-1,1].forEach(s=>{const p=earPivot(s*.13,.3,-.02);p.rotation.z=-s*.12;sph(p,.09,body,0,.28,0,1,3.2,.6);sph(p,.055,earIn,0,.28,.04,1,2.7,.4);});
+  else if(isHam)[-1,1].forEach(s=>{const p=earPivot(s*.19,.23,-.02);sph(p,.08,accent,0,0,0,1,1,.5);sph(p,.05,earIn,0,0,.03,1,1,.4);});
+  else if(kind==="panda")[-1,1].forEach(s=>{const p=earPivot(s*.25,.27,0);sph(p,.11,accent,0,0,0,1,1,.6);});
+  else if(kind==="dragon")[-1,1].forEach(s=>{const p=earPivot(s*.17,.28,-.05);p.rotation.z=-s*.3;p.rotation.x=-.4;const h=add(p,new THREE.Mesh(new THREE.ConeGeometry(.06,.26,10),M("#fff3c4")));h.position.y=.12;});
+  // legs (little round paws)
+  const legC=kind==="panda"?accent:body;
+  [[-.17,.2],[.17,.2],[-.17,-.24],[.17,-.24]].forEach(([x,z],i)=>{const l=new THREE.Group();l.position.set(x,isHam?.12:.2,z);rig.add(l);
+    sph(l,isHam?.08:.09,legC,0,isHam?-.02:-.1,0,1,isHam?.8:1.4,1.1);P.legs.push(l);});
+  // tail
+  const tail=new THREE.Group();rig.add(tail);P.tail=tail;
+  if(kind==="puppy"){tail.position.set(0,.58,-.45);tail.rotation.x=-.7;sph(tail,.07,body,0,.12,0,1,2.2,1);}
+  else if(kind==="kitten"){tail.position.set(0,.5,-.45);for(let k=0;k<6;k++)sph(tail,.065,k===5?lighten(main,.3):body,0,.08+k*.1,-Math.sin(k*.45)*.12);tail.rotation.x=-.25;}
+  else if(isBun){tail.position.set(0,.45,-.48);sph(tail,.12,"#ffffff",0,0,0);}
+  else if(isHam){tail.position.set(0,.3,-.46);sph(tail,.05,belly,0,0,0);}
+  else if(kind==="panda"){tail.position.set(0,.45,-.48);if(colorIdx===1)for(let k=0;k<4;k++)sph(tail,.11-k*.01,k%2?accent:body,0,.02+k*.06,-k*.14);else sph(tail,.08,accent,0,0,0);}
+  else if(kind==="dragon"){tail.position.set(0,.4,-.45);for(let k=0;k<5;k++)sph(tail,.13-k*.022,body,0,-k*.04,-k*.15);const tip=add(tail,new THREE.Mesh(new THREE.ConeGeometry(.08,.18,4),M(belly)));tip.position.set(0,-.2,-.78);tip.rotation.x=-Math.PI/2;
+    // wings and back spikes
+    [-1,1].forEach(s=>{const w=new THREE.Group();w.position.set(s*.25,.7,-.08);rig.add(w);const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(s*.55,.3);sh.lineTo(s*.48,-.05);sh.lineTo(s*.3,.05);sh.lineTo(s*.22,-.12);sh.closePath();
+      const wm=add(w,new THREE.Mesh(new THREE.ShapeGeometry(sh),M(lighten(main,.25),{side:THREE.DoubleSide})));wm.rotation.y=s*.3;P.wings.push(w);});
+    for(let k=0;k<3;k++){const sp=add(rig,new THREE.Mesh(new THREE.ConeGeometry(.05,.14,4),M(belly)));sp.position.set(0,.86-k*.07,-.06-k*.17);}}
+  g.scale.setScalar(kind==="dragon"?1.45:kind==="hamster"?1.2:1.3);
+  P.phase=Math.random()*9;P.blinkT=0;
+  return P;}
+// a small name tag over the pet
+function petTag(name){const t=nameTag(name,"#ffe8f4");t.scale.set(2.2,.44,1);return t;}
+
+/* ---------- moving a pet around ---------- */
+function petY(x,z,t){if(G.home)return 0;if(z<SHORE_Z)return Math.max(groundY(x,z),-1.05+waveAt(x,z,t)*.6);return groundY(x,z);}
+// animate a pet: hopping while moving, wagging and looking around while still, a happy spin after a pat
+function animPet(P,t,dt,moving,speed){
+  P.phase+=dt*(moving?9+speed*1.2:2);const r=P.rig;
+  const hop=moving?Math.abs(Math.sin(P.phase)):0;
+  r.position.y=P.kind==="dragon"?.35+Math.sin(t*2.4+P.phase*.1)*.08+hop*.05:hop*(P.kind==="bunny"?.32:.14);
+  r.rotation.x=moving?-.08+Math.sin(P.phase*2)*.05:0;
+  P.legs.forEach((l,i)=>{l.rotation.x=moving?Math.sin(P.phase+(i%2?Math.PI:0)+(i>1?Math.PI/2:0))*.7:0;});
+  const wag=moving?14:P.happy>0?18:5;P.tail.rotation.y=Math.sin(t*wag)*(P.kind==="bunny"||P.kind==="hamster"?.15:.5);
+  P.ears.forEach((e,i)=>{e.rotation.x=Math.sin(t*3+i)*.08-(moving?.15:0);});
+  P.wings.forEach((w,i)=>{w.rotation.y=(i?-1:1)*(.3+Math.sin(t*(moving?16:6))*.45);});
+  if(!moving&&!(P.happy>0)){const k=(t*.3+P.phase*.01)%1;P.head.rotation.y=Math.sin(t*.7+P.phase)*.4*(k<.6?1:0);P.head.rotation.z=Math.sin(t*.9)*.06;}else{P.head.rotation.y*=.9;}
+  if(t>P.blinkT){P.blinkT=t+2+Math.random()*3;P.blinkS=t;}const bk=(t-P.blinkS)/.2;P.eyes.forEach(e=>e.scale.y=1.15*(bk>=0&&bk<1?1-.85*Math.sin(Math.PI*bk):1));
+  if(P.happy>0){P.happy-=dt;const k=1-P.happy/1.4;r.rotation.y=k*Math.PI*2;r.position.y+=Math.sin(Math.PI*Math.min(1,k*1.4))*.5;if(P.happy<=0)r.rotation.y=0;}
+}
+// follow an owner: walk to a spot behind them, sit when they stop
+function followPet(P,ox,oz,oface,t,dt,run){
+  const bx=ox-Math.sin(oface)*1.3+Math.cos(oface)*.75,bz=oz-Math.cos(oface)*1.3-Math.sin(oface)*.75;
+  const dx=bx-P.x,dz=bz-P.z,d=Math.hypot(dx,dz);
+  if(d>14||P.x===undefined){P.x=bx;P.z=bz;P.face=oface;}
+  let moving=false,speed=0;
+  if(d>.35){speed=Math.min(SPEED*(run?RUN:1)*1.15,Math.max(1.2,d*2.2));const st=Math.min(d,speed*dt);P.x+=dx/d*st;P.z+=dz/d*st;moving=d>.5;
+    const want=Math.atan2(dx,dz);let a=want-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*10);}
+  else{const want=Math.atan2(ox-P.x,oz-P.z);let a=want-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*3);}
+  P.g.position.set(P.x,petY(P.x,P.z,t),P.z);P.g.rotation.y=P.face;animPet(P,t,dt,moving,speed);
+  if(P.tag)P.tag.position.set(P.x,P.g.position.y+(P.kind==="dragon"?2.15:1.85),P.z);}
+// pets at home wander between free spots of the room
+function wanderPet(P,t,dt){
+  if(!P.goal||t>P.goalT){let tries=0,gx,gz;do{gx=(Math.random()*2-1)*(HOME_W-1.2);gz=(Math.random()*2-1)*(HOME_D-1.2);tries++;}
+    while(tries<20&&(G.colliders.some(c=>c.box?gx>c.box[0]-.5&&gx<c.box[2]+.5&&gz>c.box[1]-.5&&gz<c.box[3]+.5:Math.hypot(gx-c.c[0],gz-c.c[1])<c.r+.5)||(Math.abs(gx-3.4)<1.2&&gz<-4)));
+    P.goal=[gx,gz];P.goalT=t+5+Math.random()*7;}
+  const dx=P.goal[0]-P.x,dz=P.goal[1]-P.z,d=Math.hypot(dx,dz);let moving=false;
+  if(d>.2&&P.goalT-t<5.5){const st=Math.min(d,1.6*dt);P.x+=dx/d*st;P.z+=dz/d*st;moving=true;const want=Math.atan2(dx,dz);let a=want-P.face;a=Math.atan2(Math.sin(a),Math.cos(a));P.face+=a*Math.min(1,dt*8);}
+  P.g.position.set(P.x,0,P.z);P.g.rotation.y=P.face;animPet(P,t,dt,moving,1.6);if(P.tag)P.tag.position.set(P.x,P.kind==="dragon"?2.15:1.85,P.z);}
+
+/* ---------- my pet, other players' pets, pets at home ---------- */
+function makePetObj(info,withTag=true){const P=buildPet(info.kind,info.color);P.info=info;if(withTag){P.tag=petTag(info.name);scene.add(P.tag);}scene.add(P.g);return P;}
+function dropPetObj(P){if(!P)return;P.g.removeFromParent();if(P.tag){P.tag.removeFromParent();P.tag.material.map&&P.tag.material.map.dispose();}if(P.hearts)P.hearts.remove();}
+function myOutPet(){return PETS.mine.find(p=>p.id===PETS.out)||null;}
+function syncMyPet(){const want=inGame?myOutPet():null,key=want?want.id+want.kind+want.color+want.name:"";
+  if((PETS.me&&PETS.me.key)===key)return;dropPetObj(PETS.me);PETS.me=null;if(!want)return;
+  PETS.me=makePetObj(want);PETS.me.key=key;PETS.me.x=undefined;}
+function setRemotePet(c,pet){const key=pet?pet.kind+pet.color+pet.name:"";if((c.petObj&&c.petObj.key)===key)return;dropPetObj(c.petObj);c.petObj=null;
+  if(pet&&PET_BY_ID[pet.kind]){c.petObj=makePetObj(pet);c.petObj.key=key;}}
+// the owner's other pets, waiting in their home
+function placeHomePets(list,out){clearHomePets();if(!list)return;
+  list.filter(p=>p.id!==out).forEach((p,i)=>{const P=buildPet(p.kind,p.color);P.info=p;P.home=true;P.tag=petTag(p.name);HOME.group.add(P.g,P.tag);
+    P.x=-4+i*2;P.z=1.5;P.face=Math.random()*6;PETS.home.push(P);});}
+function clearHomePets(){PETS.home.forEach(P=>{P.g.removeFromParent();if(P.tag)P.tag.removeFromParent();if(P.hearts)P.hearts.remove();});PETS.home=[];}
+function petsTick(t,dt){
+  syncMyPet();
+  if(PETS.me){PETS.me.g.visible=PETS.me.tag.visible=inGame;if(inGame)followPet(PETS.me,G.pos.x,G.pos.z,G.face,t,dt,G.running);heartsTick(PETS.me,t);}
+  for(const c of remotes.values())if(c.petObj){followPet(c.petObj,c.root.position.x,c.root.position.z,c.cur??c.face??0,t,dt,c.run);heartsTick(c.petObj,t);}
+  if(G.home)PETS.home.forEach(P=>{wanderPet(P,t,dt);heartsTick(P,t);});}
+// hearts floating over a pet after a pat
+function patPet(P,quiet){if(!P)return;P.happy=1.4;P.heartsEnd=now()+1.8;
+  if(!P.hearts){P.hearts=document.createElement("div");P.hearts.className="pet-hearts";P.hearts.setAttribute("aria-hidden","true");P.hearts.innerHTML="<i>♥</i><i>♥</i><i>♥</i>";document.body.appendChild(P.hearts);}
+  P.hearts.hidden=false;P.hearts.classList.remove("go");void P.hearts.offsetWidth;P.hearts.classList.add("go");if(!quiet)sfx.success();}
+function heartsTick(P,t){if(!P.hearts||P.hearts.hidden)return;if(now()>P.heartsEnd){P.hearts.hidden=true;return;}
+  P.head.getWorldPosition(_rp);_rp.y+=.4;_rp.project(cam);P.hearts.style.left=((_rp.x+1)/2*innerWidth)+"px";P.hearts.style.top=((1-_rp.y)/2*innerHeight)+"px";}
+
+/* ---------- loading and changing my pets ---------- */
+async function loadPets(){const r=await api("/api/pets");if(r.ok){PETS.mine=r.data.pets||[];PETS.out=r.data.out||"";PETS.loaded=true;}return r.ok;}
+async function setOutPet(id){const r=await api("/api/pets/out",{id});if(!r.ok){toast(r.data.error||"Couldn't do that right now.");sfx.error();return false;}
+  PETS.mine=r.data.pets;PETS.out=r.data.out;
+  if(G.home&&HOME.mine&&!HOME.place)placeHomePets(PETS.mine,PETS.out);
+  return true;}
+
+/* ---------- clicking a pet ---------- */
+const petCard=document.getElementById("petCard");let petSel=null;
+function petAt(e){_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);
+  const all=[];if(PETS.me)all.push({P:PETS.me,mine:true,out:true});for(const [id,c] of remotes)if(c.petObj)all.push({P:c.petObj,owner:id,c});
+  if(G.home)PETS.home.forEach(P=>all.push({P,mine:HOME.mine,home:true}));
+  let best=null,bd=Infinity;for(const o of all){if(!o.P.g.visible)continue;const h=_ray.intersectObject(o.P.g,true)[0];if(h&&h.distance<bd){bd=h.distance;best=o;}}return best;}
+function petClick(e){const hit=petAt(e);if(!hit)return false;openPetCard(hit,e);return true;}
+function openPetCard(hit,e){petSel=hit;const I=hit.P.info,K=PET_BY_ID[I.kind];
+  document.getElementById("petCardName").textContent=I.name;
+  document.getElementById("petCardKind").textContent=hit.c?`${K.name} · ${hit.c.username}'s pet`:hit.mine?`${K.name} · your pet`:`${K.name} · ${HOME.owner}'s pet`;
+  document.getElementById("petCardPic").src=petThumb(I.kind,I.color);
+  const home=document.getElementById("petHome"),walk=document.getElementById("petWalk");
+  home.hidden=!(hit.mine&&hit.out);walk.hidden=!(hit.mine&&hit.home);
+  petCard.hidden=false;const w=petCard.offsetWidth,h=petCard.offsetHeight,x=e.clientX+(e.clientX>innerWidth/2?-w-24:24);
+  petCard.style.left=Math.max(12,Math.min(innerWidth-w-12,x))+"px";petCard.style.top=Math.max(12,Math.min(innerHeight-h-12,e.clientY-h/2))+"px";sfx.open();}
+function closePetCard(){if(petCard.hidden)return;petCard.hidden=true;petSel=null;}
+document.getElementById("petPat").onclick=e=>{press(e.currentTarget);const s=petSel;if(!s)return;closePetCard();patPet(s.P);
+  if(socket&&socket.connected)socket.emit("pet:pat",s.owner?{owner:s.owner}:s.out?{owner:socket.id}:{pid:s.P.info.id});
+  toast(`${s.P.info.name} loves that!`);};
+document.getElementById("petHome").onclick=async e=>{press(e.currentTarget);const s=petSel;closePetCard();if(!s)return;if(await setOutPet("")){toast(`${s.P.info.name} went home. See you there!`);sfx.whoosh();}};
+document.getElementById("petWalk").onclick=async e=>{press(e.currentTarget);const s=petSel;closePetCard();if(!s)return;if(await setOutPet(s.P.info.id)){toast(`${s.P.info.name} is coming with you!`);sfx.success();}};
+document.getElementById("petCardClose").onclick=()=>{closePetCard();sfx.close();};
+addEventListener("pointerdown",e=>{if(!petCard.hidden&&!e.target.closest("#petCard"))closePetCard();},true);
+petCard.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")closePetCard();});
+
+/* ---------- pictures of pets (for the phone and the adoption window) ---------- */
+const PET_THUMB={};let petR=null;
+function petThumb(kind,color){const key=kind+color;if(PET_THUMB[key])return PET_THUMB[key];
+  if(!petR){petR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});petR.setPixelRatio(1);petR.setSize(160,160);petR.outputColorSpace=THREE.SRGBColorSpace;}
+  const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(3,5,4);sc.add(dl);
+  const P=buildPet(kind,color);P.g.rotation.y=.5;sc.add(P.g);const bb=new THREE.Box3().setFromObject(P.g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*1.9;
+  const cm=new THREE.PerspectiveCamera(30,1,.01,30);cm.position.set(c.x,c.y+d*.25,c.z+d*1.05);cm.lookAt(c);petR.render(sc,cm);return PET_THUMB[key]=petR.domElement.toDataURL("image/png");}
+
+/* ---------- the adoption window ---------- */
+const adopt={open:false,kind:"puppy",color:0,busy:false,R:null,scene:null,cam:null,P:null};
+const adoptOverlay=document.getElementById("adoptOverlay"),adoptName=document.getElementById("adoptName"),adoptMsg=document.getElementById("adoptMsg");
+function adoptStage(){if(adopt.R)return;const cv=document.getElementById("adoptStage");
+  adopt.R=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});adopt.R.setPixelRatio(Math.min(devicePixelRatio,2));adopt.R.outputColorSpace=THREE.SRGBColorSpace;
+  adopt.scene=new THREE.Scene();adopt.scene.add(new THREE.HemisphereLight(0xffffff,0xb9a0d9,1.6));const dl=new THREE.DirectionalLight(0xffffff,1.8);dl.position.set(2,5,4);adopt.scene.add(dl);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(1.1,40),new THREE.MeshStandardMaterial({color:"#ffe0ef",roughness:1}));floor.rotation.x=-Math.PI/2;adopt.scene.add(floor);
+  adopt.cam=new THREE.PerspectiveCamera(32,1,.05,30);adopt.cam.position.set(0,1.15,3.1);adopt.cam.lookAt(0,.5,0);}
+function adoptShowPet(){if(adopt.P)adopt.P.g.removeFromParent();adopt.P=buildPet(adopt.kind,adopt.color);adopt.scene.add(adopt.P.g);
+  // frame the pet: bigger pets get the camera further away
+  const bb=new THREE.Box3().setFromObject(adopt.P.g),s=bb.getSize(new THREE.Vector3()),h=Math.max(s.y,s.x*.9,s.z*.8),d=h*3.3+.6;
+  adopt.cam.position.set(0,h*.95+.35,d);adopt.cam.lookAt(0,h*.5,0);adopt.P.happy=1.4;}
+function adoptLoop(){if(!adopt.open)return;requestAnimationFrame(adoptLoop);const cv=adopt.R.domElement,w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*adopt.R.getPixelRatio())||cv.height!==Math.round(h*adopt.R.getPixelRatio())){adopt.R.setSize(w,h,false);adopt.cam.aspect=w/h;adopt.cam.updateProjectionMatrix();}
+  const t=performance.now()/1000;adopt.P.g.rotation.y=Math.sin(t*.6)*.7;animPet(adopt.P,t,1/60,false,0);adopt.R.render(adopt.scene,adopt.cam);}
+function paintAdopt(){const K=PET_BY_ID[adopt.kind];
+  document.getElementById("adoptKinds").innerHTML=PET_KINDS.map(k=>`<button type="button" class="pa-kind" data-k="${k.id}" aria-pressed="${k.id===adopt.kind}"><img alt="" src="${petThumb(k.id,0)}"><span>${k.name}</span><b>${COIN_SVG}${k.price.toLocaleString("en-US")}</b></button>`).join("");
+  document.getElementById("adoptColors").innerHTML=K.colors.map(([n,c],i)=>`<button type="button" class="pa-col" data-c="${i}" aria-pressed="${i===adopt.color}" style="--sw:${c}" title="${n}" aria-label="${n}"></button>`).join("");
+  document.getElementById("adoptKindName").textContent=K.name+" · "+K.colors[adopt.color][0];
+  const full=PETS.mine.length>=MAX_PETS,poor=!me||me.coins<K.price,b=document.getElementById("adoptGo");
+  b.disabled=adopt.busy||full;b.innerHTML=full?"Your home is full of pets!":adopt.busy?"Adopting…":`Adopt<span class="np-cost">${COIN_SVG}${K.price.toLocaleString("en-US")}</span>`;b.classList.toggle("poor",poor&&!full);}
+async function openAdopt(kind){if(adopt.open)return;closeMenu(true);G.keys={};G.target=null;
+  if(!PETS.loaded)await loadPets();
+  adopt.open=true;adopt.kind=PET_BY_ID[kind]?kind:"puppy";adopt.color=0;adoptName.value="";adoptName.classList.remove("bad");adoptMsg.textContent="";adoptStage();adoptShowPet();paintAdopt();
+  adoptOverlay.hidden=false;sfx.whoosh();adoptLoop();setTimeout(()=>adoptName.focus({preventScroll:true}),80);}
+function closeAdopt(quiet){if(!adopt.open)return;adopt.open=false;adoptOverlay.hidden=true;if(!quiet)sfx.close();}
+document.getElementById("adoptKinds").onclick=e=>{const b=e.target.closest(".pa-kind");if(!b)return;sfx.hover();adopt.kind=b.dataset.k;adopt.color=0;adoptMsg.textContent="";adoptShowPet();paintAdopt();};
+document.getElementById("adoptColors").onclick=e=>{const b=e.target.closest(".pa-col");if(!b)return;sfx.hover();adopt.color=+b.dataset.c;adoptShowPet();paintAdopt();};
+document.getElementById("adoptClose").onclick=()=>closeAdopt();
+const PET_NAMES=["Biscuit","Coco","Luna","Bubbles","Mochi","Peanut","Ziggy","Pepper","Sunny","Nugget","Pickles","Waffles","Sprinkle","Teddy","Noodle","Cupcake","Pippin","Toffee","Snowy","Ruby"];
+document.getElementById("adoptDice").onclick=e=>{press(e.currentTarget);let n;do n=PET_NAMES[Math.floor(Math.random()*PET_NAMES.length)];while(n===adoptName.value&&PET_NAMES.length>1);
+  adoptName.value=n;adoptName.classList.remove("bad");adoptMsg.textContent="";sfx.hover();};
+adoptName.addEventListener("input",()=>{adoptName.classList.remove("bad");if(adoptMsg.className==="pa-msg")adoptMsg.textContent="";});
+adoptOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeAdopt();}});
+adoptOverlay.addEventListener("click",e=>{if(e.target===adoptOverlay)closeAdopt();});
+document.getElementById("adoptForm").addEventListener("submit",async e=>{e.preventDefault();if(adopt.busy)return;
+  const K=PET_BY_ID[adopt.kind],name=cleanPetName(adoptName.value),bad=petNameProblem(name);
+  const say=(t,field)=>{adoptMsg.className="pa-msg";adoptMsg.textContent="";void adoptMsg.offsetWidth;adoptMsg.textContent=t;sfx.error();
+    adoptName.classList.remove("bad");if(field){void adoptName.offsetWidth;adoptName.classList.add("bad");adoptName.focus({preventScroll:true});}};
+  if(bad)return say(bad,true);if(!checkName(name).ok)return say("Let's keep Jumpi friendly! Try another name.",true);
+  if(!me||me.coins<K.price)return say(`You need ${K.price} coins to adopt a ${K.name.toLowerCase()}. You have ${(me&&me.coins||0).toLocaleString("en-US")}. Play mini-games to earn more!`);
+  adopt.busy=true;paintAdopt();adoptMsg.className="pa-msg ok";adoptMsg.textContent="Adopting…";
+  let r;try{r=await api("/api/pets/adopt",{kind:adopt.kind,color:adopt.color,name});}catch(err){r={ok:false,data:{}};}
+  adopt.busy=false;paintAdopt();
+  if(!r.ok)return say(r.status===404?"The Pet Center isn't open yet. Ask an adult to restart the game server.":r.data.error||"Couldn't adopt right now. Try again!");
+  adoptMsg.textContent="";
+  PETS.mine=r.data.pets;PETS.out=r.data.out;PETS.loaded=true;if(me)me.coins=r.data.coins;paintCoins(true);
+  closeAdopt(true);sfx.success();doAction("hop",null,true);setTimeout(()=>{if(PETS.me)patPet(PETS.me,true);},120);
+  toast(`Say hi to ${r.data.pet.name}! Click your pet to pat it or send it home.`);});
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");
@@ -5384,9 +5803,13 @@ async function appHome(tok){
     :`<p class="ph-empty">Add friends to visit their homes!</p>`);
 }
 /* Pets: coming soon */
-function appPets(){
-  phBody.innerHTML=`<div class="ph-empty"><svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="52" r="34" fill="#ffd3ea"/><path d="M22 30 L30 6 L44 24 Z M74 30 L66 6 L52 24 Z" fill="#ff8fc8"/><circle cx="48" cy="52" r="28" fill="#fff"/><circle cx="38" cy="48" r="4.5" fill="#3a1d2e"/><circle cx="58" cy="48" r="4.5" fill="#3a1d2e"/><circle cx="39.5" cy="46.5" r="1.4" fill="#fff"/><circle cx="59.5" cy="46.5" r="1.4" fill="#fff"/><path d="M44 58 Q48 61 52 58" fill="none" stroke="#3a1d2e" stroke-width="2.6" stroke-linecap="round"/><ellipse cx="48" cy="55" rx="3.4" ry="2.4" fill="#ff5fb4"/><circle cx="31" cy="57" r="4" fill="#ffc2e0"/><circle cx="65" cy="57" r="4" fill="#ffc2e0"/></svg>
-    <b>Pets are coming soon!</b>Soon you'll adopt a puppy, kitten or bunny that follows you everywhere. Get ready!</div>`;
+async function appPets(tok){
+  if(!PETS.loaded){phBody.innerHTML=`<div class="ph-empty">Loading…</div>`;await loadPets();if(tok!==PH.tok)return;}
+  if(!PETS.mine.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-pet-hero" alt="" src="${petThumb("puppy",0)}"><b>No pets yet</b>Visit the <b class="in">Pet Center</b> at the end of the Park to adopt a puppy, kitten, bunny and more. Your pet walks with you everywhere!</div>`;return;}
+  phBody.innerHTML=`<h4 class="ph-sec">My pets · ${PETS.mine.length}/${MAX_PETS}</h4>`+PETS.mine.map(p=>{const K=PET_BY_ID[p.kind],out=p.id===PETS.out;
+    return `<div class="ph-row" data-pet="${p.id}"><img class="ph-pet" alt="" src="${petThumb(p.kind,p.color)}"><span class="ph-who"><b>${esc(p.name)}</b><small class="${out?"on":""}">${out?"Walking with you":K.name+" · at home"}</small></span>
+      <span class="ph-acts">${out?actBtn("pethome","gr","Send "+p.name+" home",I.homeS," Home"):actBtn("petwalk","g","Walk with "+p.name,"","Walk")}</span></div>`;}).join("")
+    +`<p class="ph-note2">Adopt more pets at the Pet Center at the end of the Park.</p>`;
 }
 /* Music */
 function appMusic(tok){
@@ -5470,6 +5893,8 @@ phBody.addEventListener("click",async e=>{
   if(a==="open"||a==="chat"){sfx.tick(true);openApp("convo",u);}
   else if(a==="visit"){sfx.tick(true);visitHome(u);}
   else if(a==="myhome"){sfx.tick(true);visitHome();}
+  else if(a==="petwalk"||a==="pethome"){const id=b.closest("[data-pet]").dataset.pet,p=PETS.mine.find(x=>x.id===id);sfx.tick(true);
+    if(await setOutPet(a==="petwalk"?id:"")){toast(a==="petwalk"?`${p.name} is coming with you!`:`${p.name} went home.`);renderApp();}}
   else if(a==="plaza"){closePhone();leaveHome();}
   else if(a==="older")loadOlder();
   else if(a==="add"||a==="accept"){b.disabled=true;

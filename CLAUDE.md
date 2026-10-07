@@ -10,3 +10,7 @@
 - Website lives in `public/site/` and is the home page (`/`, plus `/terms`, `/privacy`, `/contact`); the game is `public/index.html` at `/play`. Old `/site/...` links redirect.
 - Hebrew is switched off in the game for now (`LOCKED` in `public/shared/i18n.js`); the default language is English.
 - Contact: support@jumpigames.com · Business: Jumpi Games, exempt dealer (עוסק פטור) 328170832 · no address on the site.
+- Plaza shops you can walk into (E at the door): furniture, clothes, dance club, restaurant; plus the Pet Center at the end of the Park. They are "places" built in `VENUE_BUILD` (index.html) and rooms `place:<id>` on the server.
+- Needs (hunger/energy/stamina/fun) are counted on the server (`realtime/needs.js`); a full refill costs 25 coins.
+- Pets: kinds and prices in `public/shared/pets.js` (shared by page and server); routes in `routes/pets.js`.
+- Never start CSS class names or ids with "ad-", "ads", "banner", "sponsor" etc.: ad blockers hide those elements (this hid half of the pet adoption window).

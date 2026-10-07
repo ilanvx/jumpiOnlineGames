@@ -70,6 +70,17 @@ const userSchema = new mongoose.Schema(
     // mini-game coins earned today (capped per day)
     gamesDay: { type: String, default: "" },
     gamesEarned: { type: Number, default: 0, min: 0 },
+    // adopted pets; petOut = the id of the pet walking with the player ("" = all at home)
+    pets: {
+      type: [
+        new mongoose.Schema(
+          { id: String, kind: String, color: { type: Number, default: 0 }, name: String, at: { type: Date, default: Date.now } },
+          { _id: false }
+        ),
+      ],
+      default: [],
+    },
+    petOut: { type: String, default: "" },
     // hunger / energy / stamina / fun, 0–100 (they only go down while playing; see realtime/needs.js)
     needs: {
       type: new mongoose.Schema(

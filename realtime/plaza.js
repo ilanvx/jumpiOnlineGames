@@ -6,7 +6,8 @@ import { attachDuels } from "./duel.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
-import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds } from "./needs.js";
+import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
+import { outPet } from "../routes/pets.js";
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
@@ -21,7 +22,7 @@ const BOUNDS = { x0: -42, x1: 86, z0: -46, z1: 60 };
 const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
 const POSES = new Set(["sit", "sleep", "play", "dance"]);
 // the shops on the Plaza you can walk into (each one is its own room, the same size as a home)
-const PLACES = new Set(["furniture", "clothes", "club", "diner"]);
+const PLACES = new Set(["furniture", "clothes", "club", "diner", "pets"]);
 const MAX_CHAT = 80;
 const MAX_ANNOUNCE = 160;
 const EMOTES = new Set(EMOTE_LIST);
@@ -62,7 +63,7 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null });
 const roomOf = (sid) => players.get(sid)?.room || ROOM;
 // a sitting / sleeping pose: what, how high (seat height) and which way
 function cleanPose(p) {
@@ -229,6 +230,7 @@ export function attachPlaza(io) {
         if (!fresh || fresh.isBanned()) return socket.disconnect(true);
         Object.assign(me, fresh.toPublic());
         needsOnline(me.id, fresh.needs);
+        me.pet = outPet(fresh);
       } catch {}
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
@@ -255,6 +257,7 @@ export function attachPlaza(io) {
         face: num(pos?.face),
         moving: false,
         mood: moodNow(me.id),
+        pet: me.pet || null,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -263,6 +266,22 @@ export function attachPlaza(io) {
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0 });
       if (!already) socket.to(room).emit("player:join", publicView(player));
       sendNeeds(me.id);
+    });
+
+    // patting a pet (yours or someone else's): everyone around sees the hearts, and it's fun
+    const canPat = limiter(6, 10_000);
+    let lastPatFun = 0;
+    socket.on("pet:pat", (d) => {
+      const p = players.get(socket.id);
+      if (!p || !canPat()) return;
+      const owner = typeof d?.owner === "string" ? players.get(d.owner) : null;   // a pet walking with someone
+      const pid = typeof d?.pid === "string" && /^[a-f0-9]{10}$/.test(d.pid) ? d.pid : null; // a pet at home
+      if (owner ? owner.room !== p.room || !owner.pet : !pid) return;
+      io.to(p.room).emit("pet:pat", owner ? { owner: owner.id, by: p.id } : { pid, by: p.id });
+      if (Date.now() - lastPatFun > 20_000) {
+        lastPatFun = Date.now();
+        bumpNeeds(p.userId, { fun: 4 });
+      }
     });
 
     // finished a meal or a drink (only counts inside the Restaurant or the Dance Club)
@@ -436,6 +455,15 @@ export function notifyLook(userId, look) {
     if (p.userId !== userId) continue;
     p.look = look;
     ioRef.to(p.room).emit("player:look", { id: p.id, look });
+  }
+}
+// the pet walking with a player changed (adopted, sent home, called out)
+export function notifyPet(userId, pet) {
+  if (!ioRef) return;
+  for (const p of players.values()) {
+    if (p.userId !== userId) continue;
+    p.pet = pet;
+    ioRef.to(p.room).emit("player:pet", { id: p.id, pet });
   }
 }
 // called after a purchase so an open game window shows the new balance
