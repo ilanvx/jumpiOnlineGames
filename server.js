@@ -15,6 +15,8 @@ import contactRoutes from "./routes/contact.js";
 import adminRoutes from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
 import petRoutes from "./routes/pets.js";
+import storeRoutes from "./routes/store.js";
+import { STORE_OPEN } from "./public/shared/store.js";
 import { saveAllNeeds } from "./realtime/needs.js";
 import { currentUser } from "./routes/auth.js";
 import "./models/Logs.js";
@@ -52,6 +54,7 @@ app.use("/api", socialRoutes);
 app.use("/api", contactRoutes);
 app.use("/api", needsRoutes);
 app.use("/api", petRoutes);
+app.use("/api", storeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -62,11 +65,14 @@ app.get(["/play", "/play/"], page("index.html"));
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/contact", page("site/contact.html"));
+// while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
+app.get("/store", (req, res, next) => page(STORE_OPEN ? "site/store.html" : "site/store-soon.html")(req, res, next));
+app.get("/site/store.html", (req, res, next) => (STORE_OPEN ? next() : res.redirect(302, "/store")));
 // the admin panel: signed-in players who aren't admins get "Not found"; the page itself checks the rest with the server
 app.get(["/admin", "/admin/"], async (req, res, next) => {
   try {
     const user = await currentUser(req);
-    if (user && user.role !== "admin") return res.status(404).type("text").send("Not found");
+    if (user && user.role !== "admin") return notFound(req, res);
     res.set({
       "Cache-Control": "no-store", "X-Frame-Options": "DENY", "X-Robots-Tag": "noindex",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
@@ -81,6 +87,14 @@ const moved = { "/admin/index.html": "/admin", "/site": "/", "/site/": "/", "/si
 app.get(Object.keys(moved), (req, res) => res.redirect(301, moved[req.path] + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "")));
 app.use(express.static(PUBLIC_DIR, { index: false }));
 
+// anything else: the "Jumpi got lost" page for people, a short text for files and scripts
+const notFound = (req, res) => {
+  const wantsPage = (req.method === "GET" || req.method === "HEAD") && String(req.headers.accept || "").includes("text/html");
+  if (wantsPage) return res.status(404).sendFile(path.join(PUBLIC_DIR, "site", "404.html"));
+  res.status(404).type("text").send("Not found");
+};
+app.use(notFound);
+
 // last-resort error handler: log the details, show the player something friendly
 app.use((err, req, res, next) => {
   console.error(err);
@@ -93,7 +107,7 @@ mongoose.set("strictQuery", true);
 try {
   await mongoose.connect(MONGODB_URI, { dbName: MONGODB_DB, serverSelectionTimeoutMS: 10000 });
   await mongoose.model("User").syncIndexes();
-  for (const m of ["ChatLog", "TradeLog", "DuelLog", "AdminLog", "ContactMessage"]) await mongoose.model(m).syncIndexes();
+  for (const m of ["ChatLog", "TradeLog", "DuelLog", "AdminLog", "ContactMessage", "Order"]) await mongoose.model(m).syncIndexes();
   await mongoose.model("Message").syncIndexes(); // makes sure username/email are unique in the database
   console.log(`✓ Connected to MongoDB (database "${MONGODB_DB}")`);
 } catch (err) {

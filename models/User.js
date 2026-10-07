@@ -20,6 +20,8 @@ const lookSchema = new mongoose.Schema(
     shirt: slot("shirt"),
     pants: slot("pants"),
     glasses: slot("glasses"),
+    hat: slot("hat"),
+    neck: slot("neck"),
     tag: slot("tag"),
     aura: slot("aura"),
   },
@@ -41,6 +43,8 @@ const userSchema = new mongoose.Schema(
     lastLoginAt: { type: Date },
     // set to true for paying members (for now, flip it by hand in Atlas)
     subscriber: { type: Boolean, default: false },
+    // membership bought in the store: one payment, never renews by itself; buying again adds days
+    memberUntil: { type: Date, default: null },
     // "admin" gets the admin panel (npm run make-admin -- <username>)
     role: { type: String, enum: ["player", "admin"], default: "player" },
     coins: { type: Number, default: 0, min: 0 },
@@ -132,11 +136,17 @@ userSchema.methods.toPublic = function () {
     email: this.email,
     look: this.publicLook(),
     inventory: [...this.itemCounts()].flatMap(([id, n]) => Array(n).fill(id)),
-    subscriber: this.subscriber === true,
+    subscriber: this.isMember(),
+    memberUntil: this.memberUntil && this.memberUntil.getTime() > Date.now() ? this.memberUntil : null,
     role: this.role === "admin" ? "admin" : "player",
     coins: this.coins ?? 0,
     createdAt: this.createdAt,
   };
+};
+
+// a member: set by hand (subscriber) or a store membership that hasn't run out
+userSchema.methods.isMember = function () {
+  return this.subscriber === true || (!!this.memberUntil && this.memberUntil.getTime() > Date.now());
 };
 
 userSchema.methods.isBanned = function () {

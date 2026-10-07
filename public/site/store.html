@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumpi Store · Jumpi Games</title>
+<meta name="description" content="Coins, memberships that never renew by themselves, and special bundles with store-only auras for Jumpi.">
+<link rel="icon" href="/jumpi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/store.css">
+</head>
+<body>
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <a class="lg-back" href="/" data-en="← Back to Jumpi" data-he="חזרה לג'אמפי →">← Back to Jumpi</a>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<section class="st-hero">
+  <div class="st-hero-text">
+    <h1 data-en="Jumpi Store" data-he="החנות של ג'אמפי">Jumpi Store</h1>
+    <p data-en="Coins, memberships and special bundles with auras you can't get anywhere else." data-he="מטבעות, מנויים וחבילות מיוחדות עם הילות שאין בשום מקום אחר.">Coins, memberships and special bundles with auras you can't get anywhere else.</p>
+    <div class="st-who" id="stWho" aria-live="polite"></div>
+  </div>
+  <div class="st-hero-stage"><canvas id="stHero" role="img" aria-label="A Jumpi next to a treasure chest full of coins"></canvas></div>
+</section>
+
+<main class="st-main">
+  <section class="st-sec" id="bundles">
+    <div class="st-head"><h2 data-en="Special bundles" data-he="חבילות מיוחדות">Special bundles</h2>
+      <p data-en="Each bundle can be bought once. The auras inside are only in the store." data-he="אפשר לקנות כל חבילה פעם אחת. ההילות שבתוכן יש רק בחנות.">Each bundle can be bought once.</p></div>
+    <div class="st-bundles" id="stBundles"></div>
+  </section>
+
+  <section class="st-sec st-member" id="membership">
+    <div class="st-head"><h2 data-en="Membership" data-he="מנוי">Membership</h2>
+      <p data-en="Pay once. It never renews by itself. When it ends, you can simply buy it again." data-he="משלמים פעם אחת. המנוי לא מתחדש לבד. כשהוא נגמר, אפשר פשוט לקנות שוב.">Pay once. It never renews by itself.</p></div>
+    <div class="st-member-wrap">
+      <div class="st-perks" id="stPerks"><img data-art="member:30" alt=""><h3 data-en="Members get" data-he="מה מקבלים">Members get</h3><ul></ul></div>
+      <div class="st-passes" id="stPasses"></div>
+    </div>
+  </section>
+
+  <section class="st-sec" id="coins">
+    <div class="st-head"><h2 data-en="Coins" data-he="מטבעות">Coins</h2>
+      <p data-en="Use coins in the game for clothes, auras, furniture, pets and more." data-he="משתמשים במטבעות במשחק לבגדים, הילות, רהיטים, חיות מחמד ועוד.">Use coins in the game for clothes, auras, furniture, pets and more.</p></div>
+    <div class="st-coins" id="stCoins"></div>
+  </section>
+
+  <section class="st-sec st-grown" id="parents">
+    <div class="st-grown-card">
+      <h2 data-en="For grown-ups" data-he="להורים">For grown-ups</h2>
+      <div class="st-grown-grid">
+        <div><h3 data-en="Only you pay" data-he="רק אתם משלמים">Only you pay</h3><p data-en="Buying needs a grown-up: we ask a quick question first, and the card is entered on the payment company's secure page. Jumpi never sees or keeps card numbers." data-he="קנייה דורשת מבוגר: קודם נשאלת שאלה קצרה, ואת הכרטיס מקלידים בעמוד המאובטח של חברת הסליקה. ג'אמפי אף פעם לא רואה ולא שומר מספרי כרטיס.">Buying needs a grown-up.</p></div>
+        <div><h3 data-en="No surprise charges" data-he="בלי חיובים מפתיעים">No surprise charges</h3><p data-en="Nothing renews automatically. Every purchase is one payment for exactly what's on the card." data-he="שום דבר לא מתחדש אוטומטית. כל קנייה היא תשלום אחד בדיוק על מה שכתוב בכרטיס.">Nothing renews automatically.</p></div>
+        <div><h3 data-en="Questions or refunds" data-he="שאלות או החזרים">Questions or refunds</h3><p><span data-en="Write to" data-he="כתבו ל־">Write to</span> <a href="mailto:support@jumpigames.com" dir="ltr">support@jumpigames.com</a>. <span data-en="See the purchase rules in our" data-he="כללי הרכישה מופיעים ב">See the purchase rules in our</span> <a href="/terms#t-purchases" data-en="Terms of Use" data-he="תנאי השימוש">Terms of Use</a>.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- buying: a grown-up check, then payment -->
+<div class="st-modal" id="stModal" hidden>
+  <div class="st-dialog" role="dialog" aria-modal="true" aria-labelledby="stDlgTitle">
+    <button class="st-x" id="stClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <div id="stDlg"></div>
+  </div>
+</div>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">Contact</a></footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="/site/store-page.js"></script>
+<script type="module" src="/site/store3d.js"></script>
+</body>
+</html>

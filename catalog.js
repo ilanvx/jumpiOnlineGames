@@ -4,6 +4,8 @@
   (COLORS, EYE_COLORS, OUTFIT_PARTS, TAGS), so keep both in the same order.
   "starter" items are the ones offered for free at sign-up; they're cheaper in the shop.
 */
+import { OUTFITS, OUTFIT_SLOTS } from "./public/shared/outfits.js";
+
 const items = [];
 const add = (category, index, name, price, starter = false) => items.push({ id: `${category}:${index}`, category, index, name, price, starter });
 
@@ -27,33 +29,10 @@ add("eyes", 11, "Fire & Ice", 550);
 add("eyes", 12, "Royal & Gold", 600);
 add("eyes", 13, "Galaxy", 700);
 
-// hair
-["Spiky", "Quiff", "Pigtails", "Long with bow"].forEach((n, i) => add("hair", i, n, 150, true));
-add("hair", 4, "Electric Spiky", 450);
-add("hair", 5, "Platinum Quiff", 450);
-add("hair", 6, "Pink Pigtails", 450);
-add("hair", 7, "Violet Waves", 500);
-
-// shirts
-["Red tee", "Sailor stripes", "Green hoodie", "Star tee"].forEach((n, i) => add("shirt", i, n, 120, true));
-add("shirt", 4, "Jumpi tee", 350);
-add("shirt", 5, "Tie-dye", 500);
-add("shirt", 6, "Galaxy", 650);
-add("shirt", 7, "Tuxedo", 800);
-
-// pants
-["Jeans", "Black joggers", "Khaki shorts", "Red plaid"].forEach((n, i) => add("pants", i, n, 120, true));
-add("pants", 4, "Pink jeans", 350);
-add("pants", 5, "Camo", 450);
-add("pants", 6, "Rainbow", 600);
-add("pants", 7, "Gold shorts", 750);
-
-// glasses
-["Round", "Square", "Star party", "Sunglasses"].forEach((n, i) => add("glasses", i, n, 100, true));
-add("glasses", 4, "Heart", 350);
-add("glasses", 5, "Neon shades", 450);
-add("glasses", 6, "Gold round", 600);
-add("glasses", 7, "Monocle", 700);
+// hair, shirts, pants, glasses, hats, necklaces: the list lives in public/shared/outfits.js
+// (shared with the game, so the item numbers always match)
+for (const slot of OUTFIT_SLOTS)
+  OUTFITS[slot].forEach((o, i) => add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter));
 
 // name tags (an icon next to the name)
 add("tag", 0, "Star", 150);
@@ -100,7 +79,12 @@ export const MAX_FURNITURE = 60;
 ].forEach(([n, p], i) => {
   add("aura", i, n, p);
   items[items.length - 1].rarity = "legendary";
-}); // most furniture pieces one player can own
+});
+// store-only auras: they come in the special bundles of the Jumpi Store and can't be bought with coins
+[["Sakura Breeze"], ["Crown of Stars"]].forEach(([n], k) => {
+  add("aura", 8 + k, n, 0);
+  Object.assign(items[items.length - 1], { rarity: "legendary", exclusive: true });
+});
 
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
@@ -109,15 +93,17 @@ export const ITEMS = new Map(items.map((it) => [it.id, it]));
 export const LOOK_SLOTS = {
   color: { max: 15, optional: false },
   eyes: { max: 13, optional: false },
-  hair: { max: 7, optional: true },
-  shirt: { max: 7, optional: true },
-  pants: { max: 7, optional: true },
-  glasses: { max: 7, optional: true },
+  hair: { max: OUTFITS.hair.length - 1, optional: true },
+  shirt: { max: OUTFITS.shirt.length - 1, optional: true },
+  pants: { max: OUTFITS.pants.length - 1, optional: true },
+  glasses: { max: OUTFITS.glasses.length - 1, optional: true },
+  hat: { max: OUTFITS.hat.length - 1, optional: true },
+  neck: { max: OUTFITS.neck.length - 1, optional: true },
   tag: { max: 8, optional: true },
-  aura: { max: 7, optional: true },
+  aura: { max: 9, optional: true },
 };
 // what sign-up may choose for free
-export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, tag: -1, aura: -1 };
+export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, hat: -1, neck: -1, tag: -1, aura: -1 };
 
 // the item ids a look is wearing
 export function lookItems(look = {}) {

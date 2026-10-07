@@ -65,6 +65,7 @@ input,select,textarea,button{font:inherit}
 .ic-swap{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 3 2 8l5 5V9h11V7H7zM17 11v4H6v2h11v4l5-5z'/%3E%3C/svg%3E")}
 .ic-duel{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h8v8H3zM13 13h8v8h-8zM13 3h8v8h-8zm-10 10h8v8H3z' opacity='.9'/%3E%3C/svg%3E")}
 .ic-box{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 3 6.5v11L12 22l9-4.5v-11zm0 2.2 6.5 3.3L12 10.8 5.5 7.5z'/%3E%3C/svg%3E")}
+.ic-coin{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM11 8v8h2V8z'/%3E%3C/svg%3E")}
 .ic-mail{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 5h20v14H2zm2 2v.5l8 5 8-5V7z'/%3E%3C/svg%3E")}
 .ic-log{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 2h10l5 5v15H5zm3 8v2h9v-2zm0 4v2h9v-2zm0 4v2h6v-2z'/%3E%3C/svg%3E")}
 

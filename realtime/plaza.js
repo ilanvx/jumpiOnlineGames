@@ -63,7 +63,7 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member });
 const roomOf = (sid) => players.get(sid)?.room || ROOM;
 // a sitting / sleeping pose: what, how high (seat height) and which way
 function cleanPose(p) {
@@ -231,6 +231,7 @@ export function attachPlaza(io) {
         Object.assign(me, fresh.toPublic());
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
+        me.member = fresh.isMember();
       } catch {}
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
@@ -258,6 +259,7 @@ export function attachPlaza(io) {
         moving: false,
         mood: moodNow(me.id),
         pet: me.pet || null,
+        member: !!me.member,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -455,6 +457,15 @@ export function notifyLook(userId, look) {
     if (p.userId !== userId) continue;
     p.look = look;
     ioRef.to(p.room).emit("player:look", { id: p.id, look });
+  }
+}
+// a membership started (or ended): the golden name shows for everyone
+export function notifyMember(userId, member) {
+  if (!ioRef) return;
+  for (const p of players.values()) {
+    if (p.userId !== userId) continue;
+    p.member = member;
+    ioRef.to(p.room).emit("player:member", { id: p.id, member });
   }
 }
 // the pet walking with a player changed (adopted, sent home, called out)

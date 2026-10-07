@@ -141,6 +141,12 @@
     "No room to turn it here.": "אין מקום לסובב כאן.", "There's already something there.": "כבר יש שם משהו.", "Keep the furniture inside the room.": "הרהיטים צריכים להיות בתוך החדר.",
     "Keep the door free so you can get out!": "השאירו את הדלת פנויה כדי שתוכלו לצאת!", "Some furniture was moved so nothing is stuck in a wall or another piece.": "הזזנו כמה רהיטים כדי ששום דבר לא יהיה תקוע בקיר או ברהיט אחר.",
     "Couldn't open that home.": "לא הצלחנו לפתוח את הבית.", "That home isn't there any more.": "הבית הזה כבר לא קיים.", "You're already here!": "אתם כבר כאן!",
+    // special offers (Jumpi Store)
+    "SPECIAL OFFERS": "הצעות מיוחדות", "Special offers": "הצעות מיוחדות", "Coin packs": "חבילות מטבעות", "Membership": "מנוי", "Owned": "כבר שלך", "You have this one!": "זה כבר שלך!",
+    "Real-money purchases happen on the Jumpi website. Always ask a parent first!": "קניות בכסף אמיתי נעשות באתר של ג'אמפי. תמיד שואלים הורה קודם!",
+    "The Jumpi Store opened in a new tab. Ask a grown-up to help you buy.": "החנות של ג'אמפי נפתחה בלשונית חדשה. בקשו ממבוגר לעזור בקנייה.",
+    "Store bundle": "בחבילת חנות", "See it in Special Offers": "לראות בהצעות המיוחדות", "Get more coins": "עוד מטבעות", "Thank you for your purchase!": "תודה על הקנייה!",
+    "Sakura Breeze": "סאקורה", "Crown of Stars": "כתר הכוכבים", "This one is only in the Jumpi Store bundles.": "את זה יש רק בחבילות של החנות.",
     // pets
     "PET CENTER": "מרכז חיות המחמד", "ENTER PET CENTER": "כניסה למרכז חיות המחמד", "ADOPT A PET": "אמצו חיית מחמד", "Adopt": "אימוץ", "Name your pet": "תנו שם לחיה",
     "Puppy": "כלבלב", "Kitten": "חתלתול", "Bunny": "ארנבון", "Hamster": "אוגר", "Panda": "פנדה", "Baby Dragon": "דרקון קטן",

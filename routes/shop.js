@@ -43,6 +43,7 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
     const item = ITEMS.get(String(req.body.item || ""));
     if (!item) return res.status(400).json({ error: "That item doesn't exist." });
     if (item.free) return res.status(409).json({ error: "Everyone already has this one!" });
+    if (item.exclusive) return res.status(409).json({ error: "This one is only in the Jumpi Store bundles." });
     const isFurniture = item.category === "furniture";
     if (!isFurniture && req.user.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });
     if (isFurniture && (req.user.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX_FURNITURE)

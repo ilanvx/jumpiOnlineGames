@@ -36,14 +36,15 @@ function dailyState(user) {
 router.get("/rewards/daily", requireUser, (req, res) => {
   const s = dailyState(req.user);
   res.set("Cache-Control", "no-store");
-  res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS });
+  const k = req.user.isMember() ? 2 : 1; // members see (and get) double gifts
+  res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS.map((r) => r * k), member: k === 2 });
 });
 
 router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, next) => {
   try {
     const s = dailyState(req.user);
     if (!s.canClaim) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
-    const reward = DAILY_REWARDS[s.day];
+    const reward = DAILY_REWARDS[s.day] * (req.user.isMember() ? 2 : 1); // members get a double gift
     // only succeeds if nobody claimed in the meantime (two tabs, double clicks)
     const updated = await User.findOneAndUpdate(
       { _id: req.user._id, dailyLast: sameAs(req.user.dailyLast, "") },
@@ -59,7 +60,8 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
 });
 
 /* ---------- mini-games ---------- */
-const DAILY_GAME_CAP = 200; // most coins mini-games can give in one day
+const DAILY_GAME_CAP = 200; // most coins mini-games can give in one day (members: twice as much)
+const dailyCapOf = (user) => DAILY_GAME_CAP * (user.isMember() ? 2 : 1);
 const ROUND_CAP = 40; // most coins one round can give
 const ROUND_SECS = 30; // fruit and shell rounds
 const GAMES = ["fruit", "shell", "dig"];
@@ -164,7 +166,7 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
     id,
     game,
     todayEarned: todayEarned(req.user),
-    dailyCap: DAILY_GAME_CAP,
+    dailyCap: dailyCapOf(req.user),
     roundCap: ROUND_CAP,
     ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels } : { secs: ROUND_SECS, items: forPage(round.items) }),
   });
@@ -235,7 +237,8 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       if (!user) return res.status(401).json({ error: "Please log in first." });
       const today = dayKey();
       const earnedToday = todayEarned(user);
-      const coins = Math.max(0, Math.min(ROUND_CAP, score, DAILY_GAME_CAP - earnedToday));
+      const cap = dailyCapOf(user);
+      const coins = Math.max(0, Math.min(ROUND_CAP, score, cap - earnedToday));
       const updated = await User.findOneAndUpdate(
         { _id: user._id, gamesDay: sameAs(user.gamesDay, ""), gamesEarned: sameAs(user.gamesEarned, 0) },
         { $set: { gamesDay: today, gamesEarned: earnedToday + coins }, $inc: { coins } },
@@ -244,7 +247,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
       bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
-      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: DAILY_GAME_CAP });
+      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });
   } catch (err) {

@@ -334,6 +334,33 @@
       main.append(h("div", { class: "tools" }, sel), box);
       await load();
     },
+    async orders() {
+      page("Store orders");
+      const sel = h("select", { class: "inp" }, [["", "All orders"], ["paid", "Paid"], ["pending", "Waiting for payment"], ["failed", "Failed"], ["duplicate", "Paid twice (refund by hand)"], ["refunded", "Refunded"]].map(([v, t]) => h("option", { value: v }, t)));
+      const q = h("input", { class: "inp", placeholder: "Player name…", maxlength: 32 });
+      const box = h("div");
+      const ils = (n) => "₪" + (Math.round(n * 100) / 100).toFixed(2);
+      const load = async () => {
+        const d = await api("/orders?status=" + sel.value + "&q=" + encodeURIComponent(q.value.trim()));
+        const sum = (st) => d.sums.find((x) => x._id === st) || { n: 0, total: 0 };
+        box.replaceChildren(
+          h("div", { class: "tiles" },
+            h("div", { class: "tile", style: "--c:#2fd36b;--e:#17a24a" }, h("b", null, ils(d.month.total)), h("span", null, `paid in the last 30 days (${d.month.n})`)),
+            h("div", { class: "tile", style: "--c:#1fb6ff;--e:#06488a" }, h("b", null, ils(sum("paid").total)), h("span", null, `paid in total (${sum("paid").n})`)),
+            h("div", { class: "tile", style: "--c:#ff9a1f;--e:#a3410a" }, h("b", null, fmtNum(sum("pending").n)), h("span", null, "waiting for payment")),
+            h("div", { class: "tile", style: "--c:#c8263c;--e:#7a1020" }, h("b", null, fmtNum(sum("duplicate").n)), h("span", null, "paid twice: refund by hand"))),
+          panel(null, table([
+            ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.createdAt))], ["Player", (r) => userLink(r.username, r.user)],
+            ["Product", (r) => r.product], ["Price", (r) => ils(r.amount)],
+            ["Status", (r) => h("span", { class: "tag " + ({ paid: "green", pending: "", duplicate: "red", failed: "red", refunded: "" }[r.status] || "") }, r.status)],
+            ["Payment", (r) => h("span", { class: "small muted" }, r.provider === "test" ? "test (pretend)" : r.providerRef || "–")],
+          ], d.list)));
+      };
+      sel.onchange = () => load().catch(oops);
+      q.addEventListener("input", () => { clearTimeout(q.t); q.t = setTimeout(() => load().catch(oops), 300); });
+      main.append(h("div", { class: "tools" }, sel, q), box);
+      await load();
+    },
   };
 
   /* ---------- history tables ---------- */

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
+import { Order } from "../models/Order.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
@@ -457,6 +458,24 @@ router.get("/items", async (req, res, next) => {
 });
 
 /* ---------- messages from the Contact page ---------- */
+// Jumpi Store orders (real money) and totals
+router.get("/orders", async (req, res, next) => {
+  try {
+    const status = ["pending", "paid", "failed", "cancelled", "duplicate", "refunded"].includes(req.query.status) ? req.query.status : null;
+    const q = status ? { status } : {};
+    const name = clean(req.query.q, 32).toLowerCase();
+    if (name) q.username = new RegExp("^" + esc(name), "i");
+    const [list, sums] = await Promise.all([
+      Order.find(q).sort({ createdAt: -1 }).limit(200).lean(),
+      Order.aggregate([{ $group: { _id: "$status", n: { $sum: 1 }, total: { $sum: "$amount" } } }]),
+    ]);
+    const since = new Date(Date.now() - 30 * 86400000);
+    const month = await Order.aggregate([{ $match: { status: "paid", paidAt: { $gte: since } } }, { $group: { _id: null, n: { $sum: 1 }, total: { $sum: "$amount" } } }]);
+    res.json({ list, sums, month: month[0] || { n: 0, total: 0 } });
+  } catch (err) {
+    next(err);
+  }
+});
 router.get("/contact", async (req, res, next) => {
   try {
     const q = req.query.show === "all" ? {} : { handled: false };

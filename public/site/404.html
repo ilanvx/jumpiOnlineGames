@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page not found · Jumpi Games</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/jumpi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/404.css">
+</head>
+<body>
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <a class="lg-back" href="/">← Back to Jumpi</a>
+</header>
+
+<main class="nf">
+  <div class="nf-sky" aria-hidden="true"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
+  <div class="nf-stage"><canvas id="nfCanvas" role="img" aria-label="A Jumpi standing on a little island next to giant 404 numbers, holding a map upside down and looking around, lost"></canvas></div>
+  <div class="nf-text">
+    <h1>Oops! Jumpi got lost.</h1>
+    <p class="nf-code">Error 404 · Page not found</p>
+    <p>We looked behind every tree in the Plaza, but this page isn't here. The link might have a typo, or the page has moved.</p>
+    <p class="nf-path" id="nfPath" hidden>You were looking for <code></code></p>
+    <div class="nf-btns">
+      <a class="nf-btn home" href="/">Take me home</a>
+      <a class="nf-btn play" href="/play">Play Jumpi</a>
+    </div>
+    <p class="nf-help">Still stuck? <a href="/contact">Tell us about it</a>.</p>
+  </div>
+</main>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms">Terms of Use</a> · <a href="/privacy">Privacy Policy</a> · <a href="/contact">Contact</a></footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="/site/404.js"></script>
+</body>
+</html>
