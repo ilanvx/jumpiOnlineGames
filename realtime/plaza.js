@@ -18,7 +18,9 @@ const COOKIE = "jumpi_token";
 // the whole world: Plaza, Beach (and shallow sea), Park and Desert
 const BOUNDS = { x0: -42, x1: 86, z0: -46, z1: 60 };
 const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
-const POSES = new Set(["sit", "sleep", "play"]);
+const POSES = new Set(["sit", "sleep", "play", "dance"]);
+// the shops on the Plaza you can walk into (each one is its own room, the same size as a home)
+const PLACES = new Set(["furniture", "clothes", "club", "diner"]);
 const MAX_CHAT = 80;
 const MAX_ANNOUNCE = 160;
 const EMOTES = new Set(EMOTE_LIST);
@@ -192,7 +194,9 @@ export function attachPlaza(io) {
       // which room: the Plaza, or someone's home (that player has to exist)
       let room = ROOM;
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
-      if (homeOf) {
+      const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
+      if (place) room = "place:" + place;
+      else if (homeOf) {
         try {
           if (!(await User.exists({ usernameLower: homeOf }))) return socket.emit("home:gone");
         } catch {
@@ -247,7 +251,7 @@ export function attachPlaza(io) {
       p.z = clamp(num(d?.z, p.z), B.z0, B.z1);
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
-      p.pose = p.room === ROOM ? null : cleanPose(d?.pose); // sitting and sleeping only happen at home
+      p.pose = p.room === ROOM ? null : cleanPose(d?.pose); // sitting, sleeping and dancing only happen indoors
       p.run = p.moving && d?.run === true;
       socket.to(p.room).volatile.emit("player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose });
     });

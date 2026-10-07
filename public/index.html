@@ -337,6 +337,20 @@ body.login-mode .site-btn{display:none}
 .tears i:nth-child(1){left:22px}.tears i:nth-child(2){left:76px;animation-delay:.6s}.tears i:nth-child(3){left:30px;animation-delay:1.2s}
 @keyframes tear{0%{opacity:0;transform:translateY(0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translateY(46px) scale(1)}}
 .bye-overlay .idle-exit{color:#c8263c}
+/* the restaurant menu and the juice bar */
+.idle-card.menu-card{width:min(460px,100%);padding:26px 22px 22px}
+.idle-card.menu-card h2{margin-top:0;color:#ff8a1c;text-shadow:0 4px 0 #ffe0bf}
+.menu-overlay.bar .idle-card.menu-card h2{color:#9b5cff;text-shadow:0 4px 0 #e6dbff}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:0 0 18px}
+.menu-dish{--c:#ff8a1c;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 8px 12px;border:0;border-radius:22px;cursor:pointer;background:#fff;color:#22324a;
+  box-shadow:inset 0 0 0 3px var(--c),0 5px 0 color-mix(in srgb,var(--c) 65%,#000);font:600 1.02rem "Fredoka",system-ui,sans-serif;transition:transform .12s,box-shadow .12s}
+.menu-dish img{width:92px;height:92px;pointer-events:none}
+.menu-dish:hover{transform:translateY(-3px)}
+.menu-dish:active{transform:translateY(3px);box-shadow:inset 0 0 0 3px var(--c),0 2px 0 color-mix(in srgb,var(--c) 65%,#000)}
+.menu-dish:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
+@media (max-width:420px){.menu-dish img{width:70px;height:70px}}
+.carry{position:fixed;z-index:4;width:62px;height:62px;pointer-events:none;translate:-50% -100%;filter:drop-shadow(0 4px 0 rgb(0 0 0 / .18));animation:idleBob 2s ease-in-out infinite}
+.carry[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){.tears i,.bye-card .idle-face{animation:none}}
 body.login-mode .logout-btn{opacity:0;translate:-140% 0;pointer-events:none}
 .toast{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);translate:-50% 0;max-width:calc(100% - 32px);
@@ -986,7 +1000,7 @@ body.in-game.logged .gift-btn{display:flex}
 body.in-game.logged .home-btn{display:flex}
 body.in-home .home-btn,body.in-home .gift-btn,body.in-home .minimap,body.in-home .mg-prompt:not(.seat-prompt),body.in-home .exit-game,body.decorating .chat-dock,body.decorating .seat-prompt{display:none!important}
 .seat-prompt{--c:#ff5fb4}
-body:not(.in-home) .seat-prompt{display:none!important}
+body:not(.in-home):not(.at-door) .seat-prompt{display:none!important}
 .zzz{position:fixed;z-index:3;pointer-events:none;translate:-50% -100%;font:700 1.6rem "Lilita One","Fredoka",system-ui,sans-serif;color:#fff;text-shadow:0 3px 0 #3e5b86,0 0 12px rgb(110 160 255 / .8)}
 .zzz i{position:absolute;left:0;bottom:0;font-style:normal;opacity:0;animation:zzz 2.4s ease-out infinite}
 .zzz.notes{color:#ffd23a;text-shadow:0 3px 0 #9a1a52,0 0 12px rgb(255 120 190 / .8)}
@@ -1671,6 +1685,14 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
     </div>
   </div>
 </div>
+<div class="idle-overlay menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-labelledby="menuTitle" aria-describedby="menuText" hidden>
+  <div class="idle-card menu-card">
+    <h2 id="menuTitle">TODAY'S MENU</h2>
+    <p id="menuText">Everything is free! Pick a dish, then sit at a table.</p>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div class="idle-acts"><button class="idle-exit" id="menuClose" type="button">Maybe later</button></div>
+  </div>
+</div>
 <div class="idle-overlay" id="idleOverlay" role="alertdialog" aria-modal="true" aria-labelledby="idleTitle" aria-describedby="idleText" hidden>
   <div class="idle-card">
     <img class="idle-face" id="idleFace" alt="">
@@ -2011,9 +2033,23 @@ const Sound=(()=>{
     if(s16%4===0)tone({f:midi([48,45,41,43][Math.floor(i/16)%4]),t:rel,dur:1.6,type:"triangle",vol:.16,bus:musicBus,att:.05});}
   const TRACKS=[{name:"Jumpi Bounce",by:"Plaza theme",step:STEP,fn:playStep,col:"#ff8a1c"},{name:"Piano Waltz",by:"Cozy home",step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus),col:"#9b5cff"},
     {name:"Sunny Beach",by:"Chill",step:60/90/2,fn:beachStep,col:"#12b8a0"},{name:"Night Sky",by:"Dreamy",step:60/80/2,fn:nightStep,col:"#1f6bff"}];
+  /* "Club Night": the dance club's own disco beat (A minor, 124 bpm, 16th notes) */
+  const dRoots=[45,41,48,43],dChord=[[57,60,64],[53,57,60],[55,60,64],[55,59,62]],dMel=[76,null,76,79,null,76,74,null,72,null,74,76,null,72,69,null];
+  function discoStep(i,t){const rel=t-ctx.currentTime,s=i%16,bar=Math.floor(i/16)%4,root=dRoots[bar];
+    if(s%4===0)tone({f:150,f2:42,t:rel,dur:.2,vol:.55,bus:musicBus});                                        // four on the floor
+    if(s===4||s===12)noise({t:rel,dur:.12,vol:.16,type:"bandpass",f:1600,q:.7,bus:musicBus});                // clap
+    if(s%4===2)noise({t:rel,dur:.09,vol:.08,type:"highpass",f:6500,bus:musicBus});else noise({t:rel,dur:.025,vol:.025,type:"highpass",f:8000,bus:musicBus});
+    if(s%2===0)tone({f:midi(root-12+(s%4===2?12:0)),t:rel,dur:.13,type:"sawtooth",vol:.11,bus:musicBus});     // octave bass
+    if(s===6||s===14)dChord[bar].forEach(n=>tone({f:midi(n),t:rel,dur:.18,type:"square",vol:.03,bus:musicBus}));
+    tone({f:midi(dChord[bar][s%3]+12),t:rel,dur:.07,type:"triangle",vol:.045,bus:musicBus});
+    if(bar%2===1){const m=dMel[s];if(m)tone({f:midi(m),t:rel,dur:.16,type:"triangle",vol:.16,bus:musicBus,vib:4});}}
+  // a shop can play its own music while you're inside (it doesn't change your chosen track)
+  const VENUE_TRACKS={club:{step:60/124/4,fn:discoStep},diner:{step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus)}};
+  let venueT=null;
+  function venue(k){const T=k&&VENUE_TRACKS[k]||null;if(T===venueT)return;venueT=T;if(timer){stopMusic();startMusic();}}
   let musicOn=true,track=0,analyser=null,levelsBuf=null;
   try{musicOn=localStorage.getItem("jumpi-music")!=="0";track=Math.min(TRACKS.length-1,Math.max(0,+(localStorage.getItem("jumpi-track")||0)));}catch(e){}
-  function scheduler(){const T=TRACKS[track];while(nextT<ctx.currentTime+0.15){T.fn(step,nextT);nextT+=T.step;step++;}}
+  function scheduler(){const T=venueT||TRACKS[track];while(nextT<ctx.currentTime+0.15){T.fn(step,nextT);nextT+=T.step;step++;}}
   function startMusic(){if(timer||!ctx||!musicOn)return;step=0;nextT=ctx.currentTime+0.08;timer=setInterval(scheduler,25);}
   function stopMusic(){if(timer){clearInterval(timer);timer=null;}}
   function unlock(){init();if(!ctx)return;if(ctx.state==="suspended")ctx.resume();if(!started){started=true;startMusic();}}
@@ -2032,7 +2068,7 @@ const Sound=(()=>{
     const node=kind==="music"?mVol:sVol;if(ctx&&node)node.gain.setTargetAtTime(curve(v),ctx.currentTime,.05);}
   // old on/off switch: off = both silent, on = bring back anything that was silent
   function setMuted(m){if(m){setVolume("music",0);setVolume("sfx",0);}else{if(!vol.music)setVolume("music",.8);if(!vol.sfx)setVolume("sfx",.8);}}
-  return {sfx,unlock,setMuted,setVolume,piano,music,levels,get muted(){return !vol.music&&!vol.sfx;},get musicVol(){return vol.music;},get sfxVol(){return vol.sfx;}};
+  return {sfx,unlock,setMuted,setVolume,piano,music,venue,levels,get muted(){return !vol.music&&!vol.sfx;},get musicVol(){return vol.music;},get sfxVol(){return vol.sfx;}};
 })();
 // browsers only allow sound after the first tap or key press
 ["pointerdown","keydown"].forEach(ev=>addEventListener(ev,()=>Sound.unlock(),{capture:true}));
@@ -2851,7 +2887,39 @@ function makeTable(x,z,umbrellaColor){
   const umb=new THREE.Mesh(new THREE.ConeGeometry(1.35,.55,8,1,true),new THREE.MeshStandardMaterial({map:texCanvas(256,64,(x,w,h)=>{for(let i=0;i<8;i++){x.fillStyle=i%2?"#ffffff":umbrellaColor;x.fillRect(i*w/8,0,w/8,h);}}),side:THREE.DoubleSide,roughness:.8}));
   umb.position.y=2.35;umb.castShadow=true;g.add(umb);return g;
 }
-function makeRestaurant(x,z,ry,{name,wall,roof,stripe,signBg}){
+/* the four shops on the Plaza you can walk into (door faces the fountain) */
+const VENUES={
+  furniture:{x:-19.2,z:-7,ry:Math.PI/2,title:"FURNITURE SHOP",enter:"ENTER SHOP",hello:"Welcome to the Furniture Shop! Try out the sofas and the bed.",o:{name:"FURNITURE",wall:"#e3f1ff",roof:"#1f6bff",stripe:"#2e8bff",signBg:"#1f6bff"}},
+  clothes:{x:-19.2,z:6,ry:Math.PI/2,title:"CLOTHES SHOP",enter:"ENTER SHOP",hello:"Welcome to the Clothes Shop! Check out the new outfits.",o:{name:"CLOTHES",wall:"#ffe8f3",roof:"#ff5fa8",stripe:"#ff7fbf",signBg:"#ff3d96"}},
+  club:{x:19.2,z:-7,ry:-Math.PI/2,title:"DANCE CLUB",enter:"ENTER CLUB",hello:"Welcome to the Dance Club! Step on the dance floor and press E.",o:{name:"DANCE CLUB",wall:"#3a2a6e",roof:"#1a1240",stripe:"#9b5cff",signBg:"#9b5cff",glow:true}},
+  diner:{x:19.2,z:6,ry:-Math.PI/2,title:"RESTAURANT",enter:"ENTER RESTAURANT",hello:"Welcome to the Restaurant! Order at the counter, then find a table.",o:{name:"RESTAURANT",wall:"#fff1d6",roof:"#d94a3a",stripe:"#e8423b",signBg:"#d94a3a"}},
+};
+// a point in a shop's own space (front = +z) in the world
+const venueLocal=(V,lx,lz)=>[V.x+lx*Math.cos(V.ry)+lz*Math.sin(V.ry),V.z-lx*Math.sin(V.ry)+lz*Math.cos(V.ry)];
+// a clothes rail with shirts hanging on it (rail along x)
+function makeRack(seed=0){
+  const g=new THREE.Group(),metal=mat("#c9d3e3",{metalness:.7,roughness:.3});
+  [-.85,.85].forEach(x=>{g.add(cyl(.04,.04,1.95,metal,x,.98,0,8));g.add(box(.55,.05,.5,metal,x,.03,0));});
+  const rail=cyl(.035,.035,1.8,metal,0,1.92,0,8);rail.rotation.z=Math.PI/2;g.add(rail);
+  const cols=["#ff4545","#1f9bff","#2fd36b","#ffd23a","#9b5cff","#ff5fb4","#ff8a1c","#12b8a0"];
+  for(let k=0;k<6;k++){const c=mat(cols[(k*3+seed*5)%8],{roughness:.9}),s=new THREE.Group();s.position.set(-.62+k*.25,1.9,0);
+    s.add(box(.07,.66,.5,c,0,-.44,0));s.add(box(.07,.17,.78,c,0,-.22,0));s.add(box(.02,.1,.02,metal,0,-.05,0));
+    const hg=new THREE.Mesh(new THREE.TorusGeometry(.05,.012,6,12,Math.PI),metal);hg.rotation.y=Math.PI/2;hg.position.y=.02;s.add(hg);g.add(s);}
+  return g;}
+// what stands outside each shop (local space, the door is at z=D/2)
+function venueOutside(id,g,D,stripe){
+  const z=D/2+3.3;
+  if(id==="furniture"){const a=buildFurniture(1);a.position.set(-1.9,0,z);g.add(a);const l=buildFurniture(5);l.position.set(1.35,0,z-.35);g.add(l);const p=buildFurniture(6);p.position.set(2.3,0,z+.25);g.add(p);}
+  else if(id==="clothes"){[-1.9,1.9].forEach((x,i)=>{const r=makeRack(i);r.position.set(x,0,z);g.add(r);});}
+  else if(id==="club"){// red carpet and velvet ropes
+    const c=new THREE.Mesh(new THREE.PlaneGeometry(1.7,5),mat("#c8283c",{roughness:1}));c.rotation.x=-Math.PI/2;c.position.set(0,.02,D/2+2.5);c.receiveShadow=true;g.add(c);
+    const gold=mat("#ffc21a",{metalness:.8,roughness:.25}),rope=mat("#b0122a",{roughness:.7});
+    [-1.25,1.25].forEach(x=>{[3.4,4.9,6.4].forEach(lz=>{g.add(cyl(.06,.06,1,gold,x,.5,lz,10));g.add(cyl(.2,.24,.06,gold,x,.03,lz,16));
+        const k=new THREE.Mesh(new THREE.SphereGeometry(.1,12,10),gold);k.position.set(x,1.02,lz);g.add(k);});
+      [4.15,5.65].forEach(lz=>{const r=cyl(.045,.045,1.5,rope,x,.82,lz,8);r.rotation.x=Math.PI/2;g.add(r);});});}
+  else{g.add(makeTable(-1.9,z,stripe));g.add(makeTable(1.9,z,stripe));}
+}
+function makeRestaurant(x,z,ry,{name,wall,roof,stripe,signBg,glow},id){
   const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;   // front faces +z in local space
   const W=6.4,D=5,H=4.4;
   g.add(box(W,H,D,mat(wall),0,H/2,0));
@@ -2866,10 +2934,12 @@ function makeRestaurant(x,z,ry,{name,wall,roof,stripe,signBg}){
   const scallop=new THREE.Mesh(new THREE.PlaneGeometry(W+.2,.32),new THREE.MeshStandardMaterial({map:texCanvas(512,32,(x,w,h)=>{for(let i=0;i<10;i++){x.fillStyle=i%2?"#ffffff":stripe;x.beginPath();x.moveTo(i*w/10,0);x.lineTo((i+1)*w/10,0);x.lineTo((i+1)*w/10,h*.4);x.arc((i+.5)*w/10,h*.4,w/20,0,Math.PI);x.fill();}}),transparent:true,side:THREE.DoubleSide}));
   scallop.position.set(0,2.66,D/2+1.53);g.add(scallop);
   // sign
-  const sign=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.05),new THREE.MeshStandardMaterial({map:textTex(name,{bg:signBg,fg:"#fff",stroke:"rgba(0,0,0,.25)",size:100,w:640,h:160}),transparent:true}));
+  const signMap=textTex(name,{bg:signBg,fg:"#fff",stroke:"rgba(0,0,0,.25)",size:name.length>9?90:100,w:640,h:160});
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.05),new THREE.MeshStandardMaterial({map:signMap,transparent:true,...(glow?{emissive:"#ffffff",emissiveMap:signMap,emissiveIntensity:.9}:{})}));
   sign.position.set(0,3.75,D/2+.06);g.add(sign);
-  // outdoor seating
-  g.add(makeTable(-1.9,D/2+3.3,stripe));g.add(makeTable(1.9,D/2+3.3,stripe));
+  // a welcome mat in front of the door
+  const dm=new THREE.Mesh(new THREE.PlaneGeometry(1.6,.9),mat(stripe,{roughness:1}));dm.rotation.x=-Math.PI/2;dm.position.set(0,.025,D/2+.6);dm.receiveShadow=true;g.add(dm);
+  venueOutside(id,g,D,stripe);
   return g;
 }
 function makeFountain(){
@@ -3138,15 +3208,11 @@ function buildPlaza(){
   // fountain in the centre
   world.add(makeFountain());G.colliders.push({c:[0,0],r:3.7});
   // restaurants around the edges, facing the plaza
-  const shops=[
-    {x:-19.2,z:-7,ry:Math.PI/2,o:{name:"PIZZA",wall:"#ffe1b0",roof:"#d94a3a",stripe:"#e8423b",signBg:"#d94a3a"}},
-    {x:-19.2,z:6,ry:Math.PI/2,o:{name:"SUSHI",wall:"#f1f6ff",roof:"#2c3e66",stripe:"#2f6fd6",signBg:"#2c3e66"}},
-    {x:19.2,z:-7,ry:-Math.PI/2,o:{name:"CAFÉ",wall:"#e9d6c0",roof:"#6b4226",stripe:"#7a4a2a",signBg:"#6b4226"}},
-    {x:19.2,z:6,ry:-Math.PI/2,o:{name:"ICE CREAM",wall:"#ffe3f1",roof:"#ff5fa8",stripe:"#ff7fbf",signBg:"#ff5fa8"}},
-  ];
-  shops.forEach(({x,z,ry,o})=>{world.add(makeRestaurant(x,z,ry,o));
-    const s=Math.sign(x);G.colliders.push({box:[x-2.5-.3,z-3.2-.3,x+2.5+.3,z+3.2+.3]});
-    [-1.9,1.9].forEach(dz=>G.colliders.push({c:[x-s*5.8,z+dz],r:1.25}));});
+  // the shops you can walk into, around the edges, facing the plaza
+  Object.entries(VENUES).forEach(([id,V])=>{const {x,z}=V;world.add(makeRestaurant(x,z,V.ry,V.o,id));
+    G.colliders.push({box:[x-2.5-.3,z-3.2-.3,x+2.5+.3,z+3.2+.3]});
+    if(id==="club")[-1.25,1.25].forEach(lx=>[3.4,4.9,6.4].forEach(lz=>{const [wx,wz]=venueLocal(V,lx,lz);G.colliders.push({c:[wx,wz],r:.2});}));
+    else [-1.9,1.9].forEach(lx=>{const [wx,wz]=venueLocal(V,lx,5.8);G.colliders.push({c:[wx,wz],r:1.25});});});
   // benches facing the fountain
   [45,135,225,315].forEach(d=>{const a=d*Math.PI/180,x=Math.sin(a)*6.4,z=Math.cos(a)*6.4;world.add(makeBench(x,z,a+Math.PI));G.colliders.push({c:[x,z],r:1.25});});
   // lamps around the plaza
@@ -3298,7 +3364,7 @@ function updateRemotes(t,dt){
     placeBubbleAt(c.bubble,c.root,3.05);
   }
 }
-function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
+function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
 function netJoin(){
   if(typeof io==="undefined"){updateOnline();return;}   // page opened without our server: play alone
   if(!socket){
@@ -3340,11 +3406,11 @@ function netLeave(){if(socket&&socket.connected)socket.emit("leave");clearRemote
 function netMove(moving){
   if(!socket||!socket.connected)return;
   const t=now(),st=netState();
-  const poseKey=st.pose?st.pose.k:"";
+  const poseKey=st.pose?st.pose.k+st.pose.y:"";
   const changed=!!G.running!==!!NET.run||Math.abs(st.x-NET.x)>.01||Math.abs(st.z-NET.z)>.01||Math.abs(st.face-NET.face)>.02||moving!==NET.moving||poseKey!==NET.pose;
   if(!changed&&t-NET.last<2)return;            // a gentle heartbeat even when standing still
   if(t-NET.last<.08&&moving===NET.moving)return; // at most ~12 updates a second
-  delete st.home;socket.emit("move",{...st,moving,run:!!(moving&&G.running)});Object.assign(NET,st,{moving,last:t,pose:poseKey,run:!!G.running});
+  delete st.home;delete st.place;socket.emit("move",{...st,moving,run:!!(moving&&G.running)});Object.assign(NET,st,{moving,last:t,pose:poseKey,run:!!G.running});
 }
 
 /* ---------- coins, muting, announcements, admin panel ---------- */
@@ -3531,16 +3597,20 @@ function paintMapArt(){
   circle(0,0,3.9,"#ffffff","#b9c9e6",6);circle(0,0,3.2,"#3cb4ff");circle(0,0,2.2,"rgba(255,255,255,.35)");circle(0,0,.9,"#e9f2ff","#b9c9e6",4);
   // benches
   [45,135,225,315].forEach(d=>{const a=d*Math.PI/180,x=Math.sin(a)*6.4,z=Math.cos(a)*6.4;g.save();g.translate(mpX(x),mpZ(z));g.rotate(-a);g.fillStyle="#a0663a";g.beginPath();g.roundRect(-U(1.2),-U(.35),U(2.4),U(.7),6);g.fill();g.restore();});
-  // restaurants (roofs seen from above)
-  [[-19.2,-7,"#d94a3a","#e8423b","PIZZA"],[-19.2,6,"#2c3e66","#2f6fd6","SUSHI"],[19.2,-7,"#6b4226","#9a6a42","CAFÉ"],[19.2,6,"#ff5fa8","#ff9fcf","ICE CREAM"]].forEach(([x,z,roof,stripe,name])=>{
+  // the shops (roofs seen from above, with what they sell)
+  [[-19.2,-7,"#1f6bff","#5aa0ff","furniture"],[-19.2,6,"#ff3d96","#ff8fc8","clothes"],[19.2,-7,"#2b2350","#9b5cff","club"],[19.2,6,"#d94a3a","#e8423b","diner"]].forEach(([x,z,roof,stripe,id])=>{
     g.save();g.fillStyle="rgba(0,0,0,.18)";g.beginPath();g.roundRect(mpX(x-2.5)+8,mpZ(z-3.2)+10,U(5),U(6.4),U(.8));g.fill();g.restore();
     rrect(x,z,5,6.4,.8,roof,"rgba(0,0,0,.25)",4);
     g.save();g.beginPath();g.roundRect(mpX(x-2.5),mpZ(z-3.2),U(5),U(6.4),U(.8));g.clip();g.fillStyle=stripe;for(let k=0;k<6;k+=2)g.fillRect(mpX(x-2.5),mpZ(z-3.2+k*1.07),U(5),U(1.07));g.restore();
     g.save();g.translate(mpX(x),mpZ(z));g.fillStyle="#fff";g.beginPath();g.arc(0,0,21,0,Math.PI*2);g.fill();g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke();
-    if(name==="PIZZA"){g.fillStyle="#ffc94d";g.beginPath();g.moveTo(-11,-9);g.lineTo(11,-9);g.lineTo(0,13);g.closePath();g.fill();g.fillStyle="#c96a2a";g.fillRect(-12,-12,24,5);g.fillStyle="#e8423b";[[-4,-3],[4,-2],[0,5]].forEach(([a,b])=>{g.beginPath();g.arc(a,b,2.8,0,Math.PI*2);g.fill();});}
-    else if(name==="SUSHI"){g.fillStyle="#1d2b4f";g.beginPath();g.arc(0,0,13,0,Math.PI*2);g.fill();g.fillStyle="#fff";g.beginPath();g.arc(0,0,9,0,Math.PI*2);g.fill();g.fillStyle="#ff7a59";g.beginPath();g.arc(0,0,4.5,0,Math.PI*2);g.fill();}
-    else if(name==="CAFÉ"){g.fillStyle="#7a4a2a";g.beginPath();g.roundRect(-10,-6,17,16,4);g.fill();g.lineWidth=3.5;g.strokeStyle="#7a4a2a";g.beginPath();g.arc(8,2,5,-1.3,1.3);g.stroke();g.strokeStyle="#c9b9a8";g.lineWidth=2.5;g.beginPath();g.moveTo(-5,-9);g.quadraticCurveTo(-2,-13,-5,-17);g.moveTo(1,-9);g.quadraticCurveTo(4,-13,1,-17);g.stroke();}
-    else{g.fillStyle="#e8a85a";g.beginPath();g.moveTo(-8,-1);g.lineTo(8,-1);g.lineTo(0,15);g.closePath();g.fill();g.fillStyle="#ff8fc8";g.beginPath();g.arc(0,-5,9,0,Math.PI*2);g.fill();g.fillStyle="#ff3b6b";g.beginPath();g.arc(1,-14,3,0,Math.PI*2);g.fill();}
+    if(id==="furniture"){g.fillStyle="#2e8bff";g.beginPath();g.roundRect(-13,-4,26,11,4);g.fill();g.beginPath();g.roundRect(-11,-11,22,9,4);g.fill();g.fillStyle="#6ab6ff";g.fillRect(-9,-3,8,5);g.fillRect(1,-3,8,5);g.fillStyle="#6b4226";g.fillRect(-11,7,3,4);g.fillRect(8,7,3,4);}
+    else if(id==="clothes"){g.fillStyle="#ff3d96";g.beginPath();g.moveTo(-5,-12);g.quadraticCurveTo(0,-7,5,-12);g.lineTo(13,-7);g.lineTo(10,-1);g.lineTo(7,-3);g.lineTo(7,12);g.lineTo(-7,12);g.lineTo(-7,-3);g.lineTo(-10,-1);g.lineTo(-13,-7);g.closePath();g.fill();
+      g.fillStyle="#ffd23a";g.beginPath();g.arc(0,2,3,0,Math.PI*2);g.fill();}
+    else if(id==="club"){g.strokeStyle="#9aa6bf";g.lineWidth=2;g.beginPath();g.moveTo(0,-17);g.lineTo(0,-11);g.stroke();const gr=g.createRadialGradient(-3,-5,1,0,0,11);gr.addColorStop(0,"#ffffff");gr.addColorStop(1,"#8a7dd9");g.fillStyle=gr;g.beginPath();g.arc(0,0,11,0,Math.PI*2);g.fill();
+      g.strokeStyle="rgba(43,35,80,.35)";g.lineWidth=1.2;for(let k=-8;k<=8;k+=4){g.beginPath();g.moveTo(-11,k);g.lineTo(11,k);g.stroke();g.beginPath();g.moveTo(k,-11);g.lineTo(k,11);g.stroke();}
+      g.fillStyle="#ff2fa0";[[13,-12],[-14,9],[14,10]].forEach(([a,b])=>{g.beginPath();g.arc(a,b,2.4,0,Math.PI*2);g.fill();});}
+    else{g.strokeStyle="#d94a3a";g.lineWidth=3.2;g.lineCap="round";g.beginPath();g.moveTo(-6,-13);g.lineTo(-6,13);g.moveTo(-10,-13);g.lineTo(-10,-5);g.quadraticCurveTo(-6,-1,-2,-5);g.lineTo(-2,-13);
+      g.moveTo(7,13);g.lineTo(7,-13);g.quadraticCurveTo(13,-8,12,1);g.lineTo(7,1);g.stroke();g.lineCap="butt";}
     g.restore();});
   // ---- trees ----
   const avoid=(x,z)=>Math.hypot(x,z)<17||Math.abs(x)<5.5&&z>10||Math.abs(z-42)<4&&Math.abs(x)<26||Math.hypot(x+13,z-48)<9||Math.abs(z-1)<4.5&&x>10&&x<32||Math.abs(x)>14&&Math.abs(x)<26&&Math.abs(z)<12||Math.hypot(x-9,z-37.5)<4;
@@ -3721,7 +3791,7 @@ function gameTick(dt,t,hy){
   if(act.jump&&!G.seat){const k=(now()-act.jump.t)/JUMP_T;
     if(k<1)applyFlip(P,k,G.jumpDir||-1,G.face);
     else if(!G.jumpLanded){G.jumpLanded=true;sfx.step();if(P.armL)P.armL.rotation.z=P.armR.rotation.z=0;}}
-  if(G.home)homeTick(t);
+  if(G.home)homeTick(t);else doorTick();
   if(TL.on)tlTick(dt,moving,!!(ix||iz));
   // splash when jumping into the sea
   const wet=deepWater(G.pos.x,G.pos.z);if(wet!==G.wasWet){if(wet){splash(G.pos.x,G.pos.z,t);sfx.splash();}G.wasWet=wet;}
@@ -4152,10 +4222,10 @@ async function openStore(mode){
 }
 // the shop and the wardrobe can also open inside the game (from the phone) without leaving it
 const GS={open:false};
-async function openGameStore(mode){
+async function openGameStore(mode,slot){
   if(!inGame||!me||GS.open)return;
   closePhone(true);closeChat();closePlayerCard();if(G.home)closeDecorate();G.keys={};G.target=null;
-  GS.open=true;storeMode=mode;storeSlot=STORE_MODES[mode].slots[0];storeSel=null;
+  GS.open=true;storeMode=mode;storeSlot=slot&&STORE_MODES[mode].slots.includes(slot)?slot:STORE_MODES[mode].slots[0];storeSel=null;
   document.getElementById("storeTitle").textContent=mode==="shop"?"SHOP":"MY LOOK";storeMsg.textContent="";
   const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,tag:a.tag??-1,aura:a.aura??-1});
   setPreview(true);if(!THUMBS.hair||!THUMBS.hair.length)queueThumbs();
@@ -4288,7 +4358,7 @@ function buildRoom(){
     g.add(box(.08,.3,HOME_D*2+.6,trim,s*(HOME_W+.16),.15,0));});
   g.add(box(HOME_W*2+.6,.3,.08,trim,0,.15,-HOME_D-.16));
   // window and door
-  const win=new THREE.Group();win.position.set(-2.8,2.6,-HOME_D-.18);g.add(win);win.add(box(2.4,1.8,.1,trim,0,0,0));
+  const win=new THREE.Group();win.position.set(-2.8,2.6,-HOME_D-.18);g.add(win);HOME.win=win;win.add(box(2.4,1.8,.1,trim,0,0,0));
   const sky=new THREE.Mesh(new THREE.PlaneGeometry(2.1,1.5),new THREE.MeshBasicMaterial({map:texCanvas(128,96,(c,w,h)=>{const gr=c.createLinearGradient(0,0,0,h);gr.addColorStop(0,"#3aa0ff");gr.addColorStop(1,"#bfe9ff");c.fillStyle=gr;c.fillRect(0,0,w,h);c.fillStyle="#fff";[[30,30],[90,60]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,12,0,7);c.arc(x+13,y-4,14,0,7);c.arc(x+26,y,10,0,7);c.fill();});})}));
   sky.position.z=.06;win.add(sky);win.add(box(.08,1.5,.05,trim,0,0,.08));win.add(box(2.1,.08,.05,trim,0,0,.08));
   const door=new THREE.Group();door.position.set(3.4,0,-HOME_D-.18);g.add(door);door.add(box(1.5,2.9,.1,trim,0,1.45,0));door.add(box(1.25,2.7,.12,mat("#c27a3a"),0,1.35,.02));
@@ -4297,10 +4367,10 @@ function buildRoom(){
     c.fillStyle="#fff";c.font="bold 50px Fredoka, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillText("EXIT",w/2,h/2+3);})}));sign.position.set(0,3.2,.08);door.add(sign);
   const doormat=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.8),mat("#2fd36b",{roughness:1}));doormat.rotation.x=-Math.PI/2;doormat.position.set(0,.012,.55);doormat.receiveShadow=true;door.add(doormat);
   g.add(HOME.pieces);
-  g.add(new THREE.HemisphereLight(0xfff6e8,0x8a6a4a,1.25));
+  HOME.hemi=new THREE.HemisphereLight(0xfff6e8,0x8a6a4a,1.25);g.add(HOME.hemi);
   const sun=new THREE.DirectionalLight(0xffffff,1.6);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
   Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:1,far:40});sun.shadow.bias=-.0005;sun.position.set(4,12,7);g.add(sun,sun.target);HOME.sun=sun;
-  const lamp=new THREE.PointLight(0xffd9a0,14,18,1.6);lamp.position.set(0,4.2,0);g.add(lamp);
+  const lamp=new THREE.PointLight(0xffd9a0,14,18,1.6);lamp.position.set(0,4.2,0);g.add(lamp);HOME.lamp=lamp;
 }
 function paintRoom(){const L=HOME.layout;HOME.wallMat.map=wallTex(L.wall);HOME.wallMat.needsUpdate=true;HOME.floorMat.map=floorTex(L.floor);HOME.floorMat.needsUpdate=true;}
 // a yellow arrow on the floor in front of a seat, showing which way you face when you sit (shown while decorating)
@@ -4320,43 +4390,58 @@ function placePieces(){
   G.colliders=HOME.layout.items.filter(it=>!FLAT.has(it.f)).map(it=>({box:footprint(it)}));
 }
 // the door is on the back wall at x=3.4: stepping onto the doormat takes you outside
-function homeTick(t){updateSeatPrompt();Sound.piano(pianoLevel());if(G.home&&!HOME.leaving&&!ghost&&!G.seat&&Math.abs(G.pos.x-3.4)<.75&&G.pos.z<-4.75)leaveHome();}
+function homeTick(t){updateSeatPrompt();placeTick(t);Sound.piano(pianoLevel());if(G.home&&!HOME.leaving&&!ghost&&!G.seat&&Math.abs(G.pos.x-3.4)<.75&&G.pos.z<-4.75)leaveHome();}
 /* ---------- sitting and sleeping ---------- */
 // where you sit on each piece (in the piece's own space), how high, and if you face the other way (piano bench)
 const SEATS={0:{k:"sit",y:.8,at:[[-.7,.08],[.7,.08]]},1:{k:"sit",y:.8,at:[[0,.08]]},3:{k:"sit",y:.6,at:[[0,0]]},10:{k:"sit",y:.58,at:[[0,.08]]},
   13:{k:"play",y:.52,at:[[0,1.32]],flip:true},4:{k:"sleep",y:1.38,at:[[0,.95]],reach:2.1}};
 const seatPrompt=document.getElementById("seatPrompt");
-const SEAT_ICON={sit:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 9 V6 Q4 4 6 4 H14 Q16 4 16 6 V9 M3 9 H17 V13 H3 Z M5 13 V16 M15 13 V16" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+const SEAT_ICON={dance:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L12 7.5 L18 8 L13.4 11.6 L15 17.5 L10 14.2 L5 17.5 L6.6 11.6 L2 8 L8 7.5 Z" fill="#ff5fb4"/></svg>',
+  shop:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7 H16 L15 18 H5 Z" fill="#ff5fb4"/><path d="M7 9 V5.5 Q7 2.5 10 2.5 Q13 2.5 13 5.5 V9" fill="none" stroke="#ff5fb4" stroke-width="2" stroke-linecap="round"/></svg>',
+  dress:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 6 Q10 3 12 3.5 M10 6 L2.5 13.5 Q2 15 3.5 15 H16.5 Q18 15 17.5 13.5 Z" fill="none" stroke="#ff5fb4" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  order:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5 V8 Q5 10 7 10 V17.5 M7 2.5 V8 M9 2.5 V8 Q9 10 7 10 M14 17.5 V2.5 Q11 4 11 9 Q11 11 14 11" fill="none" stroke="#ff5fb4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  sit:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 9 V6 Q4 4 6 4 H14 Q16 4 16 6 V9 M3 9 H17 V13 H3 Z M5 13 V16 M15 13 V16" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   sleep:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 12.5 A6.5 6.5 0 1 1 8 4 A5 5 0 0 0 15 12.5 Z" fill="#ff5fb4"/></svg>',
   play:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 14.5 V4.5 L16 3 V12.5" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6" cy="14.5" r="2.6" fill="#ff5fb4"/><circle cx="14" cy="12.5" r="2.6" fill="#ff5fb4"/></svg>'};
 let nearSeat=null;
-function seatSpots(){const out=[];if(!HOME.layout)return out;
+function seatSpots(){const out=[];if(!HOME.layout)return out;const PC=HOME.place&&PLACE.cur;
   HOME.layout.items.forEach((it,k)=>{const S=SEATS[it.f];if(!S)return;const a=it.r*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
-    S.at.forEach(([sx,sz],n)=>out.push({k:S.k,y:S.y,x:it.x+sx*c+sz*s,z:it.z-sx*s+sz*c,f:a+(S.flip?Math.PI:0),reach:S.reach||1.9,piece:k,n}));});
+    S.at.forEach(([sx,sz],n)=>out.push({k:S.k,y:S.y,x:it.x+sx*c+sz*s,z:it.z-sx*s+sz*c,f:a+(S.flip?Math.PI:0),reach:S.reach||1.9,piece:k,n,tab:PC&&PC.chairTab&&it.f===3?PC.chairTab:null}));});
+  if(PC){out.push(...PC.spots);const D=PC.dance;   // anywhere on the dance floor is a place to dance
+    if(D&&G.pos.x>D[0]&&G.pos.x<D[2]&&G.pos.z>D[1]&&G.pos.z<D[3])out.push({k:"dance",y:0,x:G.pos.x,z:G.pos.z,f:G.face,reach:1,piece:"dance",n:0});}
   return out;}
+const SEAT_KINDS=new Set(["sit","sleep","play"]);
 function updateSeatPrompt(){
   let best=null;
   if(G.home&&!G.seat&&!HOME.leaving&&deco.hidden){let bd=Infinity;
     for(const sp of seatSpots()){const d=Math.hypot(G.pos.x-sp.x,G.pos.z-sp.z);if(d>sp.reach||d>=bd)continue;
       // someone else is already sitting there
-      if([...remotes.values()].some(c=>c.pose&&Math.hypot(c.tx-sp.x,c.tz-sp.z)<.3))continue;bd=d;best=sp;}}
+      if(SEAT_KINDS.has(sp.k)&&[...remotes.values()].some(c=>c.pose&&Math.hypot(c.tx-sp.x,c.tz-sp.z)<.3))continue;bd=d;best=sp;}}
   const key=best?best.piece+":"+best.n:"",was=nearSeat?nearSeat.piece+":"+nearSeat.n:"";nearSeat=best;
   if(key===was)return;seatPrompt.hidden=!best;
-  if(best){document.getElementById("seatText").textContent={sleep:"SLEEP",play:"PLAY PIANO",sit:"SIT"}[best.k];document.getElementById("seatIcon").innerHTML=SEAT_ICON[best.k];sfx.tick(true);}}
+  if(best){document.getElementById("seatText").textContent=best.label||{sleep:"SLEEP",play:"PLAY PIANO",sit:G.order&&best.tab?(G.order.kind==="club"?"SIT & DRINK":"SIT & EAT"):"SIT",dance:"DANCE"}[best.k];document.getElementById("seatIcon").innerHTML=SEAT_ICON[best.k];sfx.tick(true);}}
 function sitDown(){if(!nearSeat||G.seat)return;const sp=nearSeat;
-  G.seat={...sp,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(sp.x,0,sp.z);G.face=sp.f;G.target=null;G.keys={};G.marker.visible=false;
+  if(sp.act){sp.act();return;}   // shop counters, mirrors, ordering food
+  G.seat={...sp,back:{x:G.pos.x,z:G.pos.z}};if(sp.k==="dance")G.seat.y=Math.floor(Math.random()*DANCES.length);G.pos.set(sp.x,0,sp.z);G.face=sp.f;G.target=null;G.keys={};G.marker.visible=false;
   seatPrompt.hidden=true;nearSeat=null;sp.k==="sleep"?sfx.close():sfx.tick(true);
-  toast({sleep:"Sweet dreams! Move to wake up.",play:"🎹 Playing the piano! Move to stop.",sit:"Ahh, comfy! Move to get up."}[sp.k]);}
+  if(sp.tab&&G.order){serveFood(sp);toast(G.order.kind==="club"?"Enjoy your drink!":"Enjoy your meal!");return;}
+  toast({sleep:"Sweet dreams! Move to wake up.",play:"🎹 Playing the piano! Move to stop.",sit:"Ahh, comfy! Move to get up.",dance:"Let's dance! Press E for a new move, move to stop."}[sp.k]);}
 // get up and step back to where you were standing
-function standUp(quiet){if(!G.seat)return;const b=G.seat.back;G.seat=null;
+function standUp(quiet){if(!G.seat)return;const b=G.seat.back;G.seat=null;stopEating();P.armL.rotation.z=P.armR.rotation.z=0;P.root.rotation.z=0;
   if(b){const p=new THREE.Vector3(b.x,0,b.z);collide(p);if(walkable(p.x,p.z))G.pos.copy(p);}
   P.root.rotation.x=0;P.eyeL.scale.y=P.eyeR.scale.y=1;if(!quiet)sfx.hover();}
 // draws a character sitting or lying down (works for me and for other players)
 function applyPose(C,pose,t){const r=C.root,br=Math.sin(t*1.4);
+  if(pose.k==="dance"){const b=t*124/60*Math.PI,s=Math.sin(b),a=Math.abs(s),m=Math.round(pose.y)||0;r.rotation.set(0,pose.f,0);
+    if(m===1){r.rotation.y=pose.f+t*4.5;r.position.y=a*.12;C.armL.rotation.set(0,0,-1.35+a*.25);C.armR.rotation.set(0,0,1.35-a*.25);}       // spin, arms out
+    else if(m===2){const up=Math.sin(b*.5)>0;r.position.y=a*.1;r.rotation.z=up?-.12:.12;C.armR.rotation.set(up?-2.9:-.5,0,up?.45:-.35);C.armL.rotation.set(0,0,-.3);}  // disco point
+    else{r.position.y=a*.22;r.rotation.z=s*.09;C.armL.rotation.set(-2.75+s*.35,0,-.25);C.armR.rotation.set(-2.75-s*.35,0,.25);}            // bounce, hands up
+    floatIcon(C,"notes","<i>♪</i><i>♫</i><i>♪</i>");return;}
   if(pose.k==="sit"||pose.k==="play"){r.position.y=pose.y;r.rotation.set(0,pose.f,0);
     if(pose.k==="play"){C.armL.rotation.x=-1.25+Math.max(0,Math.sin(t*9))*.35;C.armR.rotation.x=-1.25+Math.max(0,Math.sin(t*9+2.1))*.35;r.rotation.z=Math.sin(t*2.9)*.06;
       floatIcon(C,"notes","<i>♪</i><i>♫</i><i>♪</i>");}
-    else{C.armL.rotation.x=-.35;C.armR.rotation.x=-.35;if(C.zzz){C.zzz.remove();C.zzz=null;}}return;}
+    else{C.armL.rotation.x=-.35;C.armR.rotation.x=-.35;if(C.zzz){C.zzz.remove();C.zzz=null;}
+      if(C===P&&G.eating){const k=Math.max(0,Math.sin(t*3.2));C.armR.rotation.x=-.9-k*1.25;C.armR.rotation.z=-k*.35;r.rotation.x=k*.05;}}return;}
   // sleeping: on the back with the head on the pillow, breathing slowly, eyes shut, floating Zzz
   r.position.y=pose.y+br*.015;r.rotation.set(-Math.PI/2,pose.f,0);C.armL.rotation.x=C.armR.rotation.x=0;C.eyeL.scale.y=C.eyeR.scale.y=.1;
   floatIcon(C,"sleep","<i>Z</i><i>Z</i><i>Z</i>");}
@@ -4368,8 +4453,8 @@ function floatIcon(C,kind,html){
 // piano sound: loud when I play, softer the further away a visitor is playing
 function pianoLevel(){if(!G.home)return 0;let l=G.seat&&G.seat.k==="play"?1:0;
   for(const c of remotes.values())if(c.pose&&c.pose.k==="play")l=Math.max(l,1-Math.hypot(c.root.position.x-G.pos.x,c.root.position.z-G.pos.z)/16);return l;}
-seatPrompt.onclick=e=>{press(e.currentTarget);sitDown();};
-addEventListener("keydown",e=>{if(!G.home||!nearSeat||G.seat||!deco.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;if(e.code==="KeyE"){e.preventDefault();sitDown();}});
+seatPrompt.onclick=e=>{press(e.currentTarget);if(!G.home&&nearDoor)enterPlace(nearDoor);else sitDown();};
+
 // the owner changed the room while I'm visiting
 function homeUpdated(home){if(!G.home||HOME.mine||!home)return;HOME.layout=home;paintRoom();placePieces();
   if(G.seat&&!seatSpots().some(sp=>Math.hypot(sp.x-G.seat.x,sp.z-G.seat.z)<.05))standUp();}
@@ -4384,6 +4469,7 @@ async function enterHome(username){
   if(!r.ok){toast(r.data.error||"Couldn't open that home.");sfx.error();return;}
   closePlayerCard();closeChat();closeMinigame();clearEmotes();nearStation=null;mgPrompt.hidden=true;clearTimeout(bubbleHide);bubbleEl().classList.remove("show");
   if(!HOME.group)buildRoom();
+  placeDetach();
   HOME.layout=r.data.home;HOME.owner=r.data.owner;HOME.mine=r.data.mine;
   if(HOME.mine){const ok=[];let changed=0;for(const it of HOME.layout.items){const fixed=clampInside({...it});if(fixed.x!==it.x||fixed.z!==it.z)changed++;
       if(placeProblem(fixed,ok)){changed++;continue;}ok.push(fixed);}
@@ -4401,7 +4487,7 @@ async function enterHome(username){
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
 }
 // put everything back the way the Plaza needs it
-function homeReset(){standUp(true);Sound.piano(0);seatPrompt.hidden=true;closeDecorate();G.home=false;HOME.group.visible=false;body.classList.remove("in-home");
+function homeReset(){standUp(true);Sound.piano(0);seatPrompt.hidden=true;nearSeat=null;nearDoor=null;body.classList.remove("at-door");closeDecorate();placeDetach();G.home=false;HOME.group.visible=false;body.classList.remove("in-home");
   if(G.tag)world.add(G.tag);world.add(G.marker);G.marker.visible=false;if(worldSaved)G.colliders=worldSaved.colliders;}
 async function leaveHome(){
   if(!G.home||HOME.leaving)return;HOME.leaving=true;closeDecorate();
@@ -4415,6 +4501,272 @@ async function leaveHome(){
 document.getElementById("homeBtn").onclick=e=>{press(e.currentTarget);enterHome();};
 document.getElementById("homeLeave").onclick=()=>leaveHome();
 document.getElementById("pcHome").onclick=()=>{const name=pcChar&&pcChar.username;closePlayerCard();if(name)enterHome(name);};
+
+/* =====================================================================
+   INSIDE THE PLAZA SHOPS: furniture shop, clothes shop, dance club, restaurant.
+   Each one is a room like a home (same size, same exit door) with its own things in it.
+   Walk up to something and press E: sit, sleep, play, dance, shop, dress up or order food.
+   ===================================================================== */
+const PLACE={cur:null,cache:{}};
+const NPC_BASE={color:0,eyes:0,hair:-1,shirt:-1,pants:-1,glasses:-1,tag:-1,aura:-1};
+// a shop worker or a mannequin (a copy of the Jumpi model in its own clothes)
+function makeNPC(C,look,x,z,face,anim){
+  const n=makeCharacter({...NPC_BASE,...look},"");n.root.position.set(x,look.y||0,z);n.root.rotation.set(0,face,0);n.root.rotation.order="YXZ";
+  n.face=face;n.anim=anim||"idle";n.ph=Math.random()*7;n.baseY=look.y||0;C.g.add(n.root);C.npcs.push(n);return n;}
+// the top of an NPC's head (world space, while the NPC still stands at the origin)
+function headBox(n){n.root.updateMatrixWorld(true);const b=new THREE.Box3();
+  n.head.traverseVisible(o=>{if(o.isMesh){if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();b.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));}});return b;}
+function wearOnHead(n,build){const keep={p:n.root.position.clone(),r:n.root.rotation.clone()};n.root.position.set(0,0,0);n.root.rotation.set(0,0,0);
+  const b=headBox(n),c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3());const hat=build(c,s);hat.updateMatrixWorld(true);n.head.attach(hat);
+  n.root.position.copy(keep.p);n.root.rotation.copy(keep.r);}
+const chefHat=(c,s)=>{const g=new THREE.Group(),w=mat("#ffffff",{roughness:.9}),r=s.x*.36;g.position.set(c.x,c.y+s.y*.42,c.z);
+  g.add(cyl(r,r,r*1.1,w,0,r*.55,0,20));[[0,0],[-.55,0],[.55,0],[0,-.5],[0,.5]].forEach(([a,b])=>{const p=new THREE.Mesh(new THREE.SphereGeometry(r*.62,14,10),w);p.position.set(a*r,r*1.25,b*r);g.add(p);});return g;};
+const headphones=(c,s)=>{const g=new THREE.Group(),k=mat("#16161e",{roughness:.4}),pink=mat("#ff2fa0",{emissive:"#ff2fa0",emissiveIntensity:.5});g.position.copy(c);
+  const band=new THREE.Mesh(new THREE.TorusGeometry(s.x*.53,s.x*.05,8,24,Math.PI),k);band.position.y=s.y*.05;g.add(band);
+  [-1,1].forEach(d=>{const cup=cyl(s.x*.17,s.x*.17,s.x*.12,k,d*s.x*.53,s.y*.02,0,18);cup.rotation.z=Math.PI/2;g.add(cup);const ring=cyl(s.x*.1,s.x*.1,s.x*.13,pink,d*s.x*.54,s.y*.02,0,14);ring.rotation.z=Math.PI/2;g.add(ring);});return g;};
+function npcTick(n,t){
+  const r=n.root;
+  if(n.anim!=="mannequin"){if(t>n.blinkT){n.blinkT=t+2.5+Math.random()*3;n.blinkStart=t;}const bk=(t-n.blinkStart)/.25;n.eyeL.scale.y=n.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
+    const br=Math.sin(t*2.1+n.ph);n.body.scale.set(1+br*.012,1+br*.018,1+br*.012);}
+  const beat=t*124/60*Math.PI;
+  switch(n.anim){
+    case "dj":r.position.y=Math.abs(Math.sin(beat))*.07;r.rotation.z=Math.sin(beat*.5)*.05;
+      n.armL.rotation.set(-1.25+Math.sin(beat*2)*.12,0,.15);n.armR.rotation.set(-1.15,0,-.2+Math.sin(t*3.3)*.35);break;
+    case "shake":{const k=(t+n.ph)%6;if(k<2){n.armR.rotation.set(-2.3+Math.sin(t*16)*.35,0,.25);n.armL.rotation.set(-2.3+Math.sin(t*16+.5)*.35,0,-.25);}else{n.armR.rotation.set(-.4,0,0);n.armL.rotation.set(-.4,0,0);}break;}
+    case "stir":n.armR.rotation.set(-1.05+Math.sin(t*3)*.15,Math.cos(t*3)*.25,0);n.armL.rotation.set(-.3,0,0);break;
+    case "mannequin":r.rotation.y=n.face+Math.sin(t*.45+n.ph)*.7;break;
+    default:{const k=(t+n.ph)%8;if(k<1.3){n.armR.rotation.set(0,0,2.5+Math.sin(k*14)*.28);}else n.armR.rotation.set(0,0,0);n.armL.rotation.set(0,0,0);}
+  }
+}
+// small helpers to fill a room
+function newVenue(layout,extra={}){const g=new THREE.Group();return {g,layout,spots:[],col:[],npcs:[],ticks:[],...extra};}
+function vSpot(C,o){C.spots.push({y:0,f:0,reach:1.5,n:0,piece:"x"+C.spots.length,...o});}
+function wallSign(C,text,x,y,w,{bg="#ff8a1c",fg="#fff",glow=false,h}={}){const H=h||w*.25,t=textTex(text,{bg,fg,stroke:"rgba(0,0,0,.22)",size:text.length>12?78:96,w:768,h:Math.round(768*H/w)});
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(w,H),new THREE.MeshStandardMaterial({map:t,transparent:true,...(glow?{emissive:"#ffffff",emissiveMap:t,emissiveIntensity:1.1}:{})}));
+  m.position.set(x,y,-HOME_D-.19);C.g.add(m);return m;}
+function hangSign(C,text,x,y,z,w,bg){const s=wallSign(C,text,x,y,w,{bg});s.position.z=z;const k=mat("#5a6a80",{metalness:.5});[-1,1].forEach(d=>C.g.add(cyl(.015,.015,4.8-y,k,x+d*w*.38,y+(4.8-y)/2,z,6)));return s;}
+const CTR_H=.78;   // counters are low enough to see the shop workers behind them
+function counter(C,x,z,w,d,top,front){C.g.add(box(w,CTR_H,d,mat(front,{roughness:.6}),x,CTR_H/2,z));C.g.add(box(w+.12,.08,d+.12,mat(top,{roughness:.4}),x,CTR_H+.04,z));}
+function register(C,x,z){const y=CTR_H+.08;C.g.add(box(.5,.22,.4,mat("#2b3a55"),x,y+.11,z));const sc=new THREE.Mesh(new THREE.PlaneGeometry(.4,.2),new THREE.MeshBasicMaterial({color:"#39ff9a"}));sc.position.set(x,y+.38,z+.06);sc.rotation.x=-.4;C.g.add(sc);
+  C.g.add(box(.44,.24,.05,mat("#2b3a55"),x,y+.38,z+.03).rotateX(-.4));}
+
+/* ---------- the furniture shop: a showroom where everything can be tried ---------- */
+function venueFurniture(){
+  const C=newVenue({wall:1,floor:0,items:[[7,-6.2,-5.2,0],[0,-3.3,-4.7,0],[5,-1.25,-5,0],[13,.6,-4.6,0],[8,6,-5.2,0],[10,5,-3,2],[10,6.6,-3,2],[4,5.8,2.6,3],[6,6.9,5,0],
+    [2,-1,.6,0],[3,-1,-.75,0],[3,-1,1.95,2],[9,-4.7,-1.3,0],[1,-5.9,-1.3,1],[10,-3.6,-1.5,3],[12,-6.8,2.4,1],[15,-5.6,4.8,0],[14,-6.9,4.9,0]].map(([f,x,z,r])=>({f,x,z,r}))});
+  wallSign(C,"JUMPI HOME STORE",-2.4,3.55,3.8,{bg:"#1f6bff"});
+  counter(C,3,.2,2.6,.8,"#ffd23a","#2e8bff");register(C,3.6,.15);
+  makeNPC(C,{color:1,eyes:1,hair:1,shirt:4,pants:2},3,-.75,0,"idle");
+  hangSign(C,"CHECKOUT",3,3.3,-.55,2.2,"#ff8a1c");
+  C.col.push({box:[1.6,-1.25,4.4,.65]});
+  vSpot(C,{k:"shop",label:"BUY FURNITURE",x:3,z:1.35,reach:1.4,act:()=>openGameStore("shop","furniture")});
+  return C;}
+
+/* ---------- the clothes shop: racks, mannequins, a mirror and fitting rooms ---------- */
+function venueClothes(){
+  const C=newVenue({wall:2,floor:1,items:[[1,-5.4,4.3,0],[1,-3.8,4.3,0],[6,-6.9,4.9,0],[6,6.9,-5,0]].map(([f,x,z,r])=>({f,x,z,r}))});
+  wallSign(C,"JUMPI STYLE",-2.4,3.55,3.4,{bg:"#ff3d96"});
+  // racks along the left wall and in the middle
+  [[-6.6,-3.2,Math.PI/2],[-6.6,0,Math.PI/2],[-3.4,-1.4,0],[-3.4,1.2,0]].forEach(([x,z,ry],i)=>{const r=makeRack(i+1);r.position.set(x,0,z);r.rotation.y=ry;C.g.add(r);
+    C.col.push({box:ry?[x-.4,z-1,x+.4,z+1]:[x-1,z-.4,x+1,z+.4]});});
+  // mannequins on round stands showing outfits
+  const looks=[{color:7,hair:1,shirt:7,pants:1,glasses:3},{color:7,hair:3,shirt:5,pants:4,glasses:4},{color:7,hair:4,shirt:6,pants:6,glasses:5}],slots=["shirt","pants","glasses"];
+  [-4.6,-2.2,.2].forEach((x,i)=>{C.g.add(cyl(.55,.62,.3,mat("#ffffff",{roughness:.4}),x,.15,-4.5,28));C.g.add(cyl(.56,.56,.04,mat("#ff5fa8"),x,.31,-4.5,28));
+    makeNPC(C,{...looks[i],y:.32},x,-4.5,0,"mannequin");C.col.push({c:[x,-4.5],r:.6});
+    vSpot(C,{k:"shop",label:"SEE OUTFITS",x,z:-3.3,reach:1.1,act:()=>openGameStore("shop",slots[i])});});
+  // a table of folded clothes and glasses
+  C.g.add(box(2.2,.7,1.2,mat("#ffffff",{roughness:.5}),1,.35,1.4));C.g.add(box(2.3,.08,1.3,mat("#ff9ec4"),1,.74,1.4));
+  ["#1f9bff","#ffd23a","#2fd36b","#9b5cff"].forEach((c,i)=>{for(let k=0;k<3;k++)C.g.add(box(.42,.09,.36,mat(c,{roughness:.9}),.3+i*.47,.83+k*.095,1.15));});
+  [[.5,1.75],[1.5,1.75]].forEach(([x,z])=>{const gl=new THREE.Group();gl.position.set(x,.86,z);[-1,1].forEach(d=>{const l=new THREE.Mesh(new THREE.TorusGeometry(.09,.02,8,18),mat("#16161e"));l.position.x=d*.11;gl.add(l);});C.g.add(gl);});
+  C.col.push({box:[-.15,.75,2.15,2.05]});
+  // checkout
+  counter(C,5,-1,2.6,.8,"#ffffff","#ff5fa8");register(C,5.6,-1.05);
+  makeNPC(C,{color:3,eyes:7,hair:3,shirt:3,pants:4,glasses:4},5,-1.95,0,"idle");
+  hangSign(C,"CHECKOUT",5,3.3,-1.75,2.2,"#9b5cff");
+  C.col.push({box:[3.6,-2.45,6.4,-.55]});
+  vSpot(C,{k:"shop",label:"BUY CLOTHES",x:5,z:.2,reach:1.3,act:()=>openGameStore("shop","shirt")});
+  // the big mirror: dress up
+  const mir=new THREE.Group();mir.position.set(7.22,0,-3.6);mir.rotation.y=-Math.PI/2;C.g.add(mir);
+  mir.add(box(1.7,3,.12,mat("#ffd23a",{metalness:.5,roughness:.35}),0,1.6,0));
+  const glass=new THREE.Mesh(new THREE.PlaneGeometry(1.45,2.75),new THREE.MeshStandardMaterial({metalness:.9,roughness:.08,map:texCanvas(128,256,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#eaf6ff");gr.addColorStop(.5,"#b9dcf5");gr.addColorStop(1,"#e8f4ff");c.fillStyle=gr;c.fillRect(0,0,w,h);
+    c.fillStyle="rgba(255,255,255,.75)";c.beginPath();c.moveTo(20,0);c.lineTo(48,0);c.lineTo(8,90);c.lineTo(0,90);c.fill();c.beginPath();c.moveTo(70,0);c.lineTo(82,0);c.lineTo(30,120);c.lineTo(24,120);c.fill();})}));
+  glass.position.set(0,1.6,.07);mir.add(glass);C.col.push({box:[6.9,-4.5,7.4,-2.7]});
+  vSpot(C,{k:"dress",label:"DRESS UP",x:6.1,z:-3.6,reach:1.3,act:()=>openGameStore("inventory","hair")});
+  // fitting rooms with curtains
+  const wallM=mat("#ffffff",{roughness:.6});[1.35,3.25,5.15].forEach(z=>C.g.add(box(1.8,2.6,.1,wallM,6.5,1.3,z)));
+  [2.3,4.2].forEach((z,i)=>{const cur=new THREE.Mesh(new THREE.BoxGeometry(.06,2.3,1.75),new THREE.MeshStandardMaterial({roughness:1,map:texCanvas(64,128,(c,w,h)=>{c.fillStyle=i?"#9b5cff":"#1fb6ff";c.fillRect(0,0,w,h);c.fillStyle="rgba(255,255,255,.25)";for(let k=0;k<64;k+=10)c.fillRect(k,0,4,h);})}));
+    cur.position.set(5.62,1.35,z);cur.castShadow=true;C.g.add(cur);C.g.add(cyl(.03,.03,1.9,mat("#c9d3e3",{metalness:.6}),5.62,2.55,z,8).rotateX(Math.PI/2));});
+  C.col.push({box:[5.55,1.3,7.4,5.2]});
+  vSpot(C,{k:"dress",label:"FITTING ROOM",x:4.75,z:3.25,reach:1.3,act:()=>openGameStore("inventory","shirt")});
+  return C;}
+
+/* ---------- the dance club: light-up floor, a DJ, a juice bar ---------- */
+function venueClub(){
+  const C=newVenue({wall:4,floor:1,items:[[0,-6.6,2.4,1],[10,-4.6,4.7,0],[10,-3,4.7,0]].map(([f,x,z,r])=>({f,x,z,r}))},{dance:[-4.5,-3,1.5,2],dim:true,bg:"#0b0820",music:"club",chairTab:null});
+  const g=C.g;
+  // dance floor: 6×5 glowing tiles
+  const tiles=[];for(let i=0;i<6;i++)for(let j=0;j<5;j++){const m=new THREE.MeshStandardMaterial({color:"#1a1630",emissive:"#000000",roughness:.35});
+    const t=new THREE.Mesh(new THREE.BoxGeometry(.94,.06,.94),m);t.position.set(-4+i,.03,-2.5+j);t.receiveShadow=true;g.add(t);tiles.push({m,i,j});}
+  const edge=mat("#c9d3e3",{metalness:.7,roughness:.3});[[-1.5,-3.03,6.1,.06],[-1.5,2.03,6.1,.06]].forEach(([x,z,w,d])=>g.add(box(w,.08,d,edge,x,.04,z)));[[-4.53,-.5],[1.53,-.5]].forEach(([x,z])=>g.add(box(.06,.08,5.1,edge,x,.04,z)));
+  const PAL=["#ff2fa0","#1fb6ff","#ffd23a","#2fd36b","#9b5cff","#ff8a1c"];
+  // DJ booth and speakers
+  g.add(box(3,1.1,.9,mat("#16161e",{roughness:.3}),-1.5,.55,-4.15));
+  const stripe=new THREE.Mesh(new THREE.PlaneGeometry(2.9,.9),new THREE.MeshBasicMaterial({map:texCanvas(256,80,(c,w,h)=>{c.fillStyle="#16161e";c.fillRect(0,0,w,h);for(let k=0;k<8;k++){c.fillStyle=PAL[k%6];c.fillRect(8+k*31,12,22,h-24);}})}));
+  stripe.position.set(-1.5,.55,-3.69);g.add(stripe);
+  const decks=[];[-2.25,-.75].forEach(x=>{g.add(cyl(.36,.36,.06,mat("#2b2b38"),x,1.13,-4.2,24));const rec=cyl(.3,.3,.03,mat("#0d0d12",{roughness:.2}),x,1.17,-4.2,24);g.add(rec);
+    const lab=cyl(.1,.1,.035,mat("#ff2fa0"),x,1.17,-4.2,16);g.add(lab);decks.push(rec,lab);});
+  const dj=makeNPC(C,{color:4,eyes:5,hair:0,shirt:6,pants:1,glasses:3},-1.5,-5.05,0,"dj");wearOnHead(dj,headphones);
+  const cones=[];[-4,1].forEach(x=>{g.add(box(1,2.3,.8,mat("#1b1b26",{roughness:.4}),x,1.15,-4.9));[.7,1.65].forEach((y,k)=>{const c=cyl(k?.22:.34,k?.22:.34,.08,mat("#3a3a4a",{roughness:.3}),x,y,-4.47,24);c.rotation.x=Math.PI/2;g.add(c);cones.push(c);
+      const d=cyl(k?.08:.12,k?.08:.12,.1,mat("#ff2fa0",{emissive:"#ff2fa0",emissiveIntensity:.6}),x,y,-4.44,16);d.rotation.x=Math.PI/2;g.add(d);cones.push(d);});});
+  C.col.push({box:[-3.05,-5.6,.05,-3.65]},{box:[-4.55,-5.6,-3.45,-4.45]},{box:[.45,-5.6,1.55,-4.45]});
+  wallSign(C,"JUMPI CLUB",-1.5,3.4,4,{bg:"#9b5cff",glow:true});
+  // disco ball and moving coloured lights
+  const ball=new THREE.Mesh(new THREE.IcosahedronGeometry(.55,2),new THREE.MeshStandardMaterial({color:"#e8eef7",metalness:1,roughness:.15,flatShading:true,emissive:"#556",emissiveIntensity:.4}));
+  ball.position.set(-1.5,4.1,-.5);g.add(ball);g.add(cyl(.02,.02,1,mat("#c9d3e3"),-1.5,4.9,-.5,6));
+  const lights=PAL.slice(0,3).map(c=>{const l=new THREE.PointLight(c,26,12,1.6);g.add(l);return l;});
+  const spots=new THREE.Group();g.add(spots);
+  const beams=PAL.slice(0,4).map((c,k)=>{const b=new THREE.Mesh(new THREE.ConeGeometry(.9,4.2,24,1,true),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.13,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+    b.position.set(-4.5+k*2,4.3,-.5);g.add(b);return b;});
+  // juice bar on the right
+  counter(C,5.9,.2,.8,4.6,"#ff2fa0","#2b2350");
+  const neon=new THREE.Mesh(new THREE.BoxGeometry(.04,.06,4.5),new THREE.MeshBasicMaterial({color:"#1fb6ff"}));neon.position.set(5.48,.62,.2);g.add(neon);
+  makeNPC(C,{color:2,eyes:2,hair:2,shirt:1,pants:0},6.85,.2,-Math.PI/2,"shake");
+  [-1,.6].forEach(y0=>{g.add(box(.35,.06,4,mat("#6b4226"),7.22,1.7+y0*.0+(y0>0?.8:0),.2));});
+  const bot=["#ff8a1c","#2fd36b","#ffd23a","#ff4f8b","#1fb6ff","#9b5cff"];for(let k=0;k<12;k++){const y=k<6?1.73:2.53;const b=cyl(.07,.08,.32,mat(bot[k%6],{roughness:.2,emissive:bot[k%6],emissiveIntensity:.25}),7.22,y+.16,-1.4+(k%6)*.6,10);g.add(b);}
+  [-1.4,0,1.4].forEach(z=>{const st=new THREE.Group();st.position.set(4.85,0,z);g.add(st);st.add(cyl(.05,.05,.56,mat("#c9d3e3",{metalness:.7,roughness:.3}),0,.28,0,10));st.add(cyl(.28,.3,.04,mat("#c9d3e3",{metalness:.7,roughness:.3}),0,.02,0,18));
+    st.add(cyl(.3,.3,.12,mat("#ff2fa0",{roughness:.6}),0,.56,0,20));C.col.push({c:[4.85,z],r:.25});
+    vSpot(C,{k:"sit",x:4.85,z,y:.62,f:Math.PI/2,reach:1.6,tab:[.98,CTR_H+.08]});});
+  C.col.push({box:[5.45,-2.15,7.4,2.55]});
+  vSpot(C,{k:"order",label:"GET A DRINK",x:5.9,z:3.3,reach:1.25,act:()=>openMenu("club")});
+  // the beat drives the floor, the lights and the speakers
+  C.ticks.push(t=>{const b=t*124/60,step=Math.floor(b),f=b-step,pulse=1-f;
+    tiles.forEach(({m,i,j})=>{const on=((i+j+step)%3===0)||((i*7+j*3+step*5)%11===0),c=PAL[(i+j*2+Math.floor(step/4))%6];
+      m.emissive.set(on?c:"#000000");m.emissiveIntensity=on?.55+pulse*.9:0;m.color.set(on?c:"#1a1630");});
+    ball.rotation.y=t*.8;decks.forEach(d=>d.rotation.y=t*6);
+    lights.forEach((l,k)=>{const a=t*(.7+k*.25)+k*2.1;l.position.set(-1.5+Math.cos(a)*3.2,3+Math.sin(t*1.3+k)*.4,-.5+Math.sin(a)*2.4);l.intensity=18+pulse*16;});
+    beams.forEach((bm,k)=>{bm.rotation.z=Math.sin(t*1.1+k*1.7)*.45;bm.rotation.x=Math.cos(t*.9+k)*.3;bm.material.opacity=.08+pulse*.1;});
+    cones.forEach((c,k)=>c.scale.set(1+pulse*.12,1,1+pulse*.12));});
+  return C;}
+
+/* ---------- the restaurant: order at the counter, eat at a table ---------- */
+function venueDiner(){
+  const items=[];[[-5,-1.3],[4.5,-1.3],[-4,2.6],[3,2.6]].forEach(([x,z])=>{items.push([2,x,z,0],[3,x-1.35,z,1],[3,x+1.35,z,3]);});
+  items.push([6,6.9,-5,0],[6,-6.9,4.9,0],[6,6.9,4.9,0]);
+  const C=newVenue({wall:5,floor:2,items:items.map(([f,x,z,r])=>({f,x,z,r}))},{music:"diner",chairTab:[.85,.99]});
+  const g=C.g;
+  counter(C,-3.9,-4.4,6.4,.9,"#e8423b","#ffffff");register(C,-1.3,-4.4);
+  const chef=makeNPC(C,{color:0,eyes:0,hair:-1,shirt:1,pants:1},-3.9,-5.15,0,"stir");wearOnHead(chef,chefHat);
+  // a pot on the counter, a glass case with treats
+  g.add(cyl(.32,.28,.38,mat("#c9d3e3",{metalness:.7,roughness:.3}),-3.9,CTR_H+.27,-4.45,20));g.add(cyl(.28,.28,.02,mat("#ff9a3a"),-3.9,CTR_H+.44,-4.45,20));
+  const steam=[];for(let k=0;k<5;k++){const s=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshBasicMaterial({color:"#ffffff",transparent:true,opacity:.5,depthWrite:false}));g.add(s);steam.push(s);}
+  const caseG=new THREE.Mesh(new THREE.BoxGeometry(1.8,.6,.7),new THREE.MeshStandardMaterial({color:"#bfe9ff",transparent:true,opacity:.3,roughness:.05}));caseG.position.set(-6,CTR_H+.38,-4.4);g.add(caseG);
+  [[-6.5,"#ff9ec4"],[-6,"#7a4a2a"],[-5.5,"#ffe08a"]].forEach(([x,c])=>{g.add(cyl(.2,.2,.24,mat(c,{roughness:.7}),x,CTR_H+.2,-4.4,18));g.add(cyl(.2,.2,.05,mat("#ffffff"),x,CTR_H+.34,-4.4,18));
+    const ch=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8),mat("#e8172f"));ch.position.set(x,CTR_H+.4,-4.4);g.add(ch);});
+  C.col.push({box:[-7.4,-5.6,-.6,-3.9]});
+  // the menu board
+  wallSign(C,"",-3.9,3.25,3.6,{bg:"#2b3a2f",h:1.9}).material.map=texCanvas(720,380,(c,w,h)=>{c.fillStyle="#7a4a2a";c.beginPath();c.roundRect(0,0,w,h,28);c.fill();c.fillStyle="#24382c";c.beginPath();c.roundRect(16,16,w-32,h-32,18);c.fill();
+    c.fillStyle="#ffd23a";c.font='72px "Lilita One", sans-serif';c.textAlign="center";c.fillText("MENU",w/2,92);c.font='40px "Fredoka", sans-serif';c.fillStyle="#fff";
+    FOODS.diner.forEach((f,i)=>{const x=i%2?w*.73:w*.27,y=170+Math.floor(i/2)*92;c.fillText(f.name,x,y);c.fillStyle="#7dffb0";c.font='28px "Fredoka", sans-serif';c.fillText("FREE",x,y+34);c.fillStyle="#fff";c.font='40px "Fredoka", sans-serif';});});
+  // lamps over the tables
+  [[-5,-1.3],[4.5,-1.3],[-4,2.6],[3,2.6]].forEach(([x,z])=>{g.add(cyl(.012,.012,1.4,mat("#333"),x,4.2,z,6));const sh=new THREE.Mesh(new THREE.ConeGeometry(.45,.4,24,1,true),mat("#e8423b",{side:THREE.DoubleSide}));sh.position.set(x,3.35,z);g.add(sh);
+    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10),new THREE.MeshBasicMaterial({color:"#fff3c4"}));bulb.position.set(x,3.18,z);g.add(bulb);});
+  vSpot(C,{k:"order",label:"ORDER FOOD",x:-3.9,z:-3,reach:1.5,act:()=>openMenu("diner")});
+  C.ticks.push(t=>steam.forEach((s,k)=>{const q=(t*.4+k/5)%1;s.position.set(-3.9+Math.sin(q*6+k)*.12,CTR_H+.5+q*1.2,-4.45);s.scale.setScalar(.6+q*1.3);s.material.opacity=.45*(1-q);}));
+  return C;}
+const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner};
+const venueContent=id=>PLACE.cache[id]||(PLACE.cache[id]=VENUE_BUILD[id]());
+
+/* ---------- food and drinks ---------- */
+const FOODS={diner:[{name:"Pizza",c:"#e8423b"},{name:"Burger",c:"#ff8a1c"},{name:"Sushi",c:"#2f6fd6"},{name:"Ice cream",c:"#ff5fa8"}],
+  club:[{name:"Orange juice",c:"#ff8a1c"},{name:"Berry smoothie",c:"#c13cff"},{name:"Lemon fizz",c:"#2fd36b"},{name:"Choc shake",c:"#7a4a2a"}]};
+function makeFood(kind,i){
+  const g=new THREE.Group(),add=(m)=>{m.castShadow=true;g.add(m);return m;},sph=(r,c,x,y,z,sy=1)=>{const m=add(new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c,{roughness:.6})));m.position.set(x,y,z);m.scale.y=sy;return m;};
+  if(kind==="diner"){add(cyl(.34,.3,.035,mat("#ffffff",{roughness:.3}),0,.018,0,28));
+    if(i===0){add(cyl(.27,.27,.04,mat("#ffd36b"),0,.055,0,28));const cr=add(new THREE.Mesh(new THREE.TorusGeometry(.27,.035,8,28),mat("#d58a3a")));cr.rotation.x=Math.PI/2;cr.position.y=.07;
+      [[.1,.08],[-.12,.05],[.02,-.13],[-.06,.14],[.15,-.08]].forEach(([x,z])=>add(cyl(.045,.045,.012,mat("#d9312b"),x,.08,z,14)));}
+    else if(i===1){sph(.2,"#e8a24a",0,.08,0,.45);add(cyl(.21,.21,.06,mat("#6b3a1e"),0,.15,0,20));add(cyl(.23,.22,.015,mat("#ffd23a"),0,.19,0,4)).rotation.y=.4;add(cyl(.22,.22,.02,mat("#4fc04a"),0,.205,0,16));
+      const top=sph(.2,"#f0a94a",0,.22,0,.6);top.scale.set(1,.6,1);[[.06,.05],[-.07,.02],[0,-.08]].forEach(([x,z])=>sph(.018,"#fff6dc",x,.33,z));}
+    else if(i===2){[[-.14,0],[.02,.1],[.13,-.06]].forEach(([x,z])=>{add(cyl(.075,.075,.1,mat("#1d2b2f"),x,.085,z,16));add(cyl(.062,.062,.102,mat("#ffffff"),x,.086,z,16));add(cyl(.028,.028,.104,mat("#ff7a59"),x,.087,z,12));});
+      add(box(.04,.02,.04,mat("#7fd36b"),.15,.04,.15));}
+    else{add(cyl(.12,.07,.16,mat("#bfe9ff",{transparent:true,opacity:.6,roughness:.05}),0,.11,0,18));sph(.11,"#ff9ec4",0,.24,0,.85);sph(.1,"#fff6dc",-.07,.31,.02,.85);sph(.09,"#7a4a2a",.06,.33,-.02,.85);sph(.035,"#e8172f",0,.43,0);}}
+  else{const L=["#ffa21c","#c13cff","#e8ff6a","#8a5532"][i];
+    add(cyl(.11,.09,.36,new THREE.MeshStandardMaterial({color:"#dff4ff",transparent:true,opacity:.35,roughness:.05}),0,.18,0,20));add(cyl(.095,.08,.3,mat(L,{roughness:.3,emissive:L,emissiveIntensity:.15}),0,.16,0,18));
+    const straw=add(cyl(.012,.012,.3,mat(i===1?"#ffd23a":"#ff2fa0"),.04,.4,0,8));straw.rotation.z=-.25;
+    if(i===3)sph(.1,"#fff6dc",0,.34,0,.6);else{const sl=add(cyl(.07,.07,.015,mat(i===2?"#f4ff6a":i===1?"#ff4f8b":"#ff9a1c"),-.1,.34,0,16));sl.rotation.x=Math.PI/2;}}
+  return g;}
+const FOOD_THUMB={};let foodR=null;
+function foodThumb(kind,i){const key=kind+i;if(FOOD_THUMB[key])return FOOD_THUMB[key];
+  if(!foodR){foodR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});foodR.setPixelRatio(1);foodR.setSize(160,160);foodR.outputColorSpace=THREE.SRGBColorSpace;}
+  const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(3,5,4);sc.add(dl);
+  const g=makeFood(kind,i);g.rotation.y=-.4;sc.add(g);const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*2.2;
+  const cm=new THREE.PerspectiveCamera(30,1,.01,20);cm.position.set(c.x,c.y+d*.55,c.z+d*.95);cm.lookAt(c);foodR.render(sc,cm);return FOOD_THUMB[key]=foodR.domElement.toDataURL("image/png");}
+const menuOverlay=document.getElementById("menuOverlay"),menuGrid=document.getElementById("menuGrid");
+function openMenu(kind){if(!menuOverlay.hidden)return;G.keys={};G.target=null;
+  const bar=kind==="club";menuOverlay.classList.toggle("bar",bar);
+  document.getElementById("menuTitle").textContent=bar?"JUICE BAR":"TODAY'S MENU";
+  document.getElementById("menuText").textContent=bar?"Pick a drink, then grab a stool at the bar!":"Everything is free! Pick a dish, then sit at a table.";
+  menuGrid.innerHTML=FOODS[kind].map((f,i)=>`<button type="button" class="menu-dish" data-i="${i}" style="--c:${f.c}"><img alt="" src="${foodThumb(kind,i)}"><span>${f.name}</span></button>`).join("");
+  menuGrid.onclick=e=>{const b=e.target.closest(".menu-dish");if(!b)return;press(b);pickFood(kind,+b.dataset.i);};
+  menuOverlay.hidden=false;sfx.whoosh();setTimeout(()=>{const b=menuGrid.querySelector("button");if(b)b.focus({preventScroll:true});},60);}
+function closeMenu(quiet){if(menuOverlay.hidden)return;menuOverlay.hidden=true;if(!quiet)sfx.close();}
+document.getElementById("menuClose").onclick=()=>closeMenu();
+menuOverlay.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();closeMenu();}});
+menuOverlay.addEventListener("click",e=>{if(e.target===menuOverlay)closeMenu();});
+const carryEl=document.createElement("img");carryEl.className="carry";carryEl.alt="";carryEl.hidden=true;document.body.appendChild(carryEl);
+function pickFood(kind,i){closeMenu(true);if(G.eating)finishFood(true);G.order={kind,i};carryEl.src=foodThumb(kind,i);sfx.tick(true);
+  toast(kind==="club"?`Here's your ${FOODS[kind][i].name.toLowerCase()}! Sit on a bar stool to drink it.`:`Here's your ${FOODS[kind][i].name.toLowerCase()}! Sit at a table to eat it.`);}
+function serveFood(sp){if(!G.order||!PLACE.cur)return;const m=makeFood(G.order.kind,G.order.i),[d,h]=sp.tab;
+  m.position.set(sp.x+Math.sin(sp.f)*d,h,sp.z+Math.cos(sp.f)*d);m.rotation.y=sp.f;PLACE.cur.g.add(m);G.eating={m,t0:performance.now()/1000,dur:12};carryEl.hidden=true;}
+function stopEating(){if(!G.eating)return;G.eating.m.removeFromParent();G.eating=null;}
+function finishFood(quiet){const o=G.order;stopEating();G.order=null;carryEl.hidden=true;
+  if(!quiet&&o){sfx.tick(true);toast(o.kind==="club"?"Slurp! That was so refreshing!":"Yum! That was delicious!");}}
+
+/* ---------- dancing ---------- */
+const DANCES=["Bounce","Spin","Disco"];
+function nextDance(){if(!G.seat||G.seat.k!=="dance")return;G.seat.y=(G.seat.y+1)%DANCES.length;sfx.tick(true);toast("New move: "+DANCES[G.seat.y]+"!");}
+
+/* ---------- walking in and out ---------- */
+let nearDoor=null;
+const DOOR_ICON='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 18 V3.5 Q5 2.5 6 2.5 H14 Q15 2.5 15 3.5 V18 M2.5 18 H17.5" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10.5" r="1.3" fill="#ff5fb4"/></svg>';
+function doorTick(){
+  let best=null;
+  if(inGame&&!G.home&&!TL.on&&!GS.open&&menuOverlay.hidden)for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
+  if(best===nearDoor)return;nearDoor=best;seatPrompt.hidden=!best;body.classList.toggle("at-door",!!best);
+  if(best){document.getElementById("seatText").textContent=VENUES[best].enter;document.getElementById("seatIcon").innerHTML=DOOR_ICON;sfx.tick(true);}}
+function roomLights(C){if(!HOME.hemi)return;const dim=!!(C&&C.dim);HOME.hemi.intensity=dim?.55:1.25;HOME.sun.intensity=dim?.35:1.6;HOME.lamp.intensity=dim?0:14;HOME.win.visible=!C;}
+function placeDetach(){if(PLACE.cur){PLACE.cur.g.removeFromParent();PLACE.cur=null;}HOME.place=null;roomLights(null);Sound.venue(null);closeMenu(true);stopEating();G.order=null;carryEl.hidden=true;}
+async function enterPlace(id){
+  const V=VENUES[id];if(!inGame||G.home||!V||HOME.leaving||PLACE.busy)return;PLACE.busy=true;
+  closePlayerCard();closeChat();closeMinigame();clearEmotes();nearStation=null;mgPrompt.hidden=true;clearTimeout(bubbleHide);bubbleEl().classList.remove("show");
+  nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");
+  if(!HOME.group)buildRoom();
+  const C=venueContent(id);
+  HOME.layout=C.layout;HOME.owner="";HOME.mine=false;
+  const [ox,oz]=venueLocal(V,0,5.4);
+  worldSaved={pos:new THREE.Vector3(ox,0,oz),face:V.ry,colliders:G.colliders,bg:scene.background,fog:scene.fog};
+  clearRemotes();
+  const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
+  await new Promise(res=>setTimeout(res,500));
+  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);
+  scene.background=new THREE.Color(C.bg||"#1d2b4a");scene.fog=null;
+  G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;
+  if(socket&&socket.connected)socket.emit("join",netState());   // everyone in this shop sees each other
+  body.classList.add("in-home");homeTitle.textContent=V.title;document.getElementById("homeDecorate").hidden=true;
+  Sound.venue(C.music||null);
+  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
+  PLACE.busy=false;setTimeout(()=>{if(HOME.place===id)toast(V.hello);},650);
+}
+function placeTick(t){const C=PLACE.cur;if(!C)return;C.ticks.forEach(f=>f(t));C.npcs.forEach(n=>npcTick(n,t));
+  if(G.eating){const k=(performance.now()/1000-G.eating.t0)/G.eating.dur;G.eating.m.scale.setScalar(Math.max(.2,1-k*.8));if(k>=1)finishFood();}
+  carryEl.hidden=!(G.order&&!G.eating);
+  if(!carryEl.hidden){P.head.getWorldPosition(_rp);_rp.y+=1.15;_rp.project(cam);carryEl.style.left=((_rp.x+1)/2*innerWidth)+"px";carryEl.style.top=((1-_rp.y)/2*innerHeight)+"px";}}
+addEventListener("keydown",e=>{if(e.code!=="KeyE"||!inGame||e.repeat)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
+  if(GS.open||!menuOverlay.hidden||!mgOverlay.hidden||!dailyOverlay.hidden)return;
+  if(!G.home){if(nearDoor){e.preventDefault();enterPlace(nearDoor);}return;}
+  if(!deco.hidden)return;
+  if(G.seat&&G.seat.k==="dance"){e.preventDefault();nextDance();return;}
+  if(nearSeat&&!G.seat){e.preventDefault();sitDown();}});
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");
@@ -4742,7 +5094,8 @@ const PH={open:false,k:0,target:0,stack:[],tok:0,unread:0,reqs:0,chat:null,mesh:
 const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const avatarImg=(look,size=46)=>`<img class="ph-av" style="--s:${size}px" alt="" src="${emoteImage("happy",skinOf(look||{}))}">`;
 const lower=n=>String(n||"").toLowerCase();
-function whereText(w,name){if(!w)return "Offline";if(w==="plaza")return "In the Plaza";const owner=w.slice(5);
+function whereText(w,name){if(!w)return "Offline";if(w==="plaza")return "In the Plaza";
+  if(w.startsWith("place:")){const V=VENUES[w.slice(6)];return V?"At the "+V.title.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):"In the Plaza";}const owner=w.slice(5);
   if(me&&owner===lower(me.username))return lower(name)===owner?"At home":"At your home";return lower(name)===owner?"At home":`At ${owner}'s home`;}
 const timeFmt=ms=>new Date(ms).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 function dayFmt(ms){const d=new Date(ms),t=new Date();const same=(a,b)=>a.toDateString()===b.toDateString();if(same(d,t))return "Today";
