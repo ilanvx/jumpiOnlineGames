@@ -66,6 +66,7 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const page = (file) => (req, res) => res.sendFile(path.join(PUBLIC_DIR, file));
 app.get("/", page("site/index.html"));
 app.get(["/play", "/play/"], page("index.html"));
+app.get(["/studio", "/studio/"], page("index.html"));   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/contact", page("site/contact.html"));

@@ -10,6 +10,8 @@ import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bum
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
 import { BAR_MENU } from "../public/shared/bar.js";
+import { JOBS } from "../public/shared/jobs.js";
+const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
@@ -69,7 +71,7 @@ function limiter(max, windowMs) {
 }
 
 const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null });
-const UNIFORMS = new Set(["police", "waiter"]);   // work uniforms other players can see
+const UNIFORMS = new Set(Object.keys(JOBS));   // work uniforms other players can see
 
 /* ---------- invisible admins ----------
    An admin can play invisibly (on by default; "adminInvisible" on the User). Then only other admins
@@ -265,7 +267,11 @@ export function attachPlaza(io) {
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
       const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
       if (place) room = "place:" + place;
-      else if (pos?.work === true) room = "work:" + me.id;   // at work: a restaurant of your own (the customers are bots)
+      else if (pos?.work === true || pos?.work === "delivery") {   // at work: a restaurant / a whole town of your own (the customers are bots)
+        room = "work:" + me.id;
+        if (pos.work === "delivery") homeBounds.set(room, TOWN_BOUNDS);
+        else homeBounds.delete(room);
+      }
       else if (homeOf) {
         try {
           const owner = await User.findOne({ usernameLower: homeOf }, { house: 1 }).lean();

@@ -28,6 +28,15 @@ export const JOBS = {
     xp: [0, 5, 13, 24, 38, 55, 76, 100, 128, 160],
     payMul: 1.6, minSecs: 9, unit: "case", units: "cases", done: "cases solved",
   },
+  delivery: {
+    id: "delivery",
+    name: "Pizza Delivery",
+    place: "Jumpi Pizza · Pizza Town",
+    about: "Grab a hot pizza at Jumpi Pizza, hop on your scooter and follow the GPS to the hungry customer. Deliver it, ride back for the next one. Fast delivery = tips!",
+    titles: ["New Rider", "Pizza Rider", "Street Rider", "Fast Rider", "Road Pro", "Turbo Rider", "Pizza Pilot", "Delivery Star", "Town Legend", "Legendary Rider"],
+    xp: [0, 3, 8, 14, 22, 32, 44, 58, 75, 95],
+    payMul: 2.6, minSecs: 14, unit: "delivery", units: "deliveries", done: "pizzas delivered", shift: 240,
+  },
 };
 export const JOB_LIST = Object.values(JOBS);
 // each job's uniform: real clothes (outfits.js, gift: job). Worn during the shift, and all of them are a gift at the top level.
@@ -47,6 +56,8 @@ export function jobLevel(job, xp) {
   return lv;
 }
 export const maxLevel = (job) => JOBS[job].xp.length;
+// how long one shift of this job lasts (seconds)
+export const shiftSecs = (job) => JOBS[job]?.shift || SHIFT_SECONDS;
 // coins for one task at this level (job: which job; the waiter is the base), and the tip for a fast one
 export const payPerOrder = (level, job = "waiter") => Math.round((8 + (level - 1) * 3) * (JOBS[job]?.payMul || 1));
 export const tipFor = (level, job = "waiter") => Math.round(payPerOrder(level, job) / 2);

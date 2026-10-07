@@ -6,7 +6,7 @@ import { requireUser } from "./shop.js";
 import { notifyCoins } from "../realtime/plaza.js";
 import { addSeasonXp } from "./season.js";
 import { SEASON_XP } from "../public/shared/season.js";
-import { JOBS, JOB_LIST, SHIFT_SECONDS, MIN_SECONDS_PER_ORDER, JOB_DAILY_CAP, jobView, jobLevel, maxLevel, payPerOrder, tipFor, JOB_GIFTS } from "../public/shared/jobs.js";
+import { JOBS, JOB_LIST, SHIFT_SECONDS, MIN_SECONDS_PER_ORDER, JOB_DAILY_CAP, jobView, jobLevel, maxLevel, payPerOrder, tipFor, JOB_GIFTS, shiftSecs } from "../public/shared/jobs.js";
 
 /*
   Jobs: get hired, then work shifts (the game runs the restaurant; the server decides the pay).
@@ -30,7 +30,7 @@ const view = (user) => ({
 // one shift at a time per player, kept in memory
 const shifts = new Map();
 setInterval(() => {
-  const old = Date.now() - (SHIFT_SECONDS + 600) * 1000;
+  const old = Date.now() - (Math.max(...JOB_LIST.map((J) => shiftSecs(J.id))) + 600) * 1000;
   for (const [id, s] of shifts) if (s.t0 < old) shifts.delete(id);
 }, 60_000).unref?.();
 
@@ -58,7 +58,7 @@ router.post("/jobs/start", requireJson, requireUser, (req, res) => {
   const id = crypto.randomUUID();
   shifts.set(id, { id, userId: uid, job, t0: Date.now() });
   const level = jobLevel(job, rec.xp || 0);
-  res.json({ shiftId: id, job, seconds: SHIFT_SECONDS, level, pay: payPerOrder(level, job), tip: tipFor(level, job), todayEarned: todayEarned(req.user), dailyCap: capOf(req.user) });
+  res.json({ shiftId: id, job, seconds: shiftSecs(job), level, pay: payPerOrder(level, job), tip: tipFor(level, job), todayEarned: todayEarned(req.user), dailyCap: capOf(req.user) });
 });
 
 router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => {
@@ -67,7 +67,7 @@ router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => 
     if (!s || s.userId !== req.user._id.toString()) return res.status(404).json({ error: "That shift is over." });
     shifts.delete(s.id);   // before any await: finishing twice pays once
     const secs = (Date.now() - s.t0) / 1000;
-    const most = Math.max(0, Math.floor(Math.min(secs, SHIFT_SECONDS + 5) / (JOBS[s.job].minSecs || MIN_SECONDS_PER_ORDER)));
+    const most = Math.max(0, Math.floor(Math.min(secs, shiftSecs(s.job) + 5) / (JOBS[s.job].minSecs || MIN_SECONDS_PER_ORDER)));
     const served = Math.max(0, Math.min(most, Math.floor(Number(req.body?.served) || 0)));
     const fast = Math.max(0, Math.min(served, Math.floor(Number(req.body?.fast) || 0)));
     for (let attempt = 0; attempt < 3; attempt++) {

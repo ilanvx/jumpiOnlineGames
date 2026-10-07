@@ -176,5 +176,10 @@ add("hat", { id: "crown", name: "Galaxy crown", price: 0, gift: "season:s1", tie
 /* ---------- the Lucky Wheel's rare prize ---------- */
 add("hat", { id: "party", name: "Lucky hat", price: 0, gift: "wheel", col: "#ffd23a", col2: "#2fd36b" });
 
+// pizza delivery uniform (jobs.js "delivery"): red jersey, red cap, black shorts
+add("shirt", { id: "jersey", name: "Delivery shirt", price: 0, gift: "delivery", fill: "#e8423b", hem: "#ffffff", acc: "#ffffff" });
+add("pants", { id: "khaki", name: "Delivery shorts", price: 0, gift: "delivery", base: "#26262e", waist: "#15151a" });
+add("hat", { id: "cap", name: "Delivery cap", price: 0, gift: "delivery", col: "#e8423b", col2: "#ffffff" });
+
 export const OUTFITS = out;
 export const OUTFIT_SLOTS = Object.keys(out);
