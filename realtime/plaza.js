@@ -6,6 +6,7 @@ import { attachDuels } from "./duel.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
+import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds } from "./needs.js";
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
@@ -61,7 +62,7 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null });
 const roomOf = (sid) => players.get(sid)?.room || ROOM;
 // a sitting / sleeping pose: what, how high (seat height) and which way
 function cleanPose(p) {
@@ -168,11 +169,29 @@ export function attachPlaza(io) {
 
   function removePlayer(id, sock) {
     if (!players.has(id)) return;
-    const room = players.get(id)?.room || ROOM;
+    const { room = ROOM, userId } = players.get(id);
     players.delete(id);
     sock?.leave(room);
     io.to(room).emit("player:leave", id);
+    // the last game window of this player closed: stop counting their needs
+    // (wait a moment: moving to another room or reloading the page removes and adds the player again)
+    setTimeout(() => {
+      if (![...players.values()].some((p) => p.userId === userId)) needsOffline(userId);
+    }, 5000);
   }
+
+  // hunger, energy, stamina and fun go down while playing
+  startNeeds({
+    playersOf: (userId) => [...players.values()].filter((p) => p.userId === userId),
+    send: (userId, event, data) => emitToUser(userId, event, data),
+    mood: (userId, mood) => {
+      for (const p of players.values())
+        if (p.userId === userId) {
+          p.mood = mood;
+          io.to(p.room).emit("player:mood", { id: p.id, mood });
+        }
+    },
+  });
 
   io.on("connection", (socket) => {
     const me = socket.data.user;
@@ -209,6 +228,7 @@ export function attachPlaza(io) {
         const fresh = await User.findById(me.id);
         if (!fresh || fresh.isBanned()) return socket.disconnect(true);
         Object.assign(me, fresh.toPublic());
+        needsOnline(me.id, fresh.needs);
       } catch {}
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
@@ -234,6 +254,7 @@ export function attachPlaza(io) {
         z: clamp(num(pos?.z, 9), B.z0, B.z1),
         face: num(pos?.face),
         moving: false,
+        mood: moodNow(me.id),
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -241,6 +262,14 @@ export function attachPlaza(io) {
       socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room).map(publicView));
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0 });
       if (!already) socket.to(room).emit("player:join", publicView(player));
+      sendNeeds(me.id);
+    });
+
+    // finished a meal or a drink (only counts inside the Restaurant or the Dance Club)
+    const canEat = limiter(3, 60_000);
+    socket.on("needs:ate", () => {
+      const p = players.get(socket.id);
+      if (p && canEat()) ateMeal(p.userId, p.room);
     });
 
     socket.on("move", (d) => {

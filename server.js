@@ -13,6 +13,8 @@ import homeRoutes from "./routes/home.js";
 import socialRoutes from "./routes/social.js";
 import contactRoutes from "./routes/contact.js";
 import adminRoutes from "./routes/admin.js";
+import needsRoutes from "./routes/needs.js";
+import { saveAllNeeds } from "./realtime/needs.js";
 import { currentUser } from "./routes/auth.js";
 import "./models/Logs.js";
 import { attachPlaza } from "./realtime/plaza.js";
@@ -47,6 +49,7 @@ app.use("/api", rewardRoutes);
 app.use("/api", homeRoutes);
 app.use("/api", socialRoutes);
 app.use("/api", contactRoutes);
+app.use("/api", needsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -100,4 +103,10 @@ try {
 // one server for the website and the real-time Plaza
 const server = http.createServer(app);
 attachPlaza(new Server(server));
+// Ctrl+C: save everyone's needs before stopping
+for (const sig of ["SIGINT", "SIGTERM"])
+  process.once(sig, async () => {
+    await Promise.race([saveAllNeeds(), new Promise((r) => setTimeout(r, 3000))]);
+    process.exit(0);
+  });
 server.listen(PORT, () => console.log(`✓ Jumpi is running: website http://localhost:${PORT}  ·  game http://localhost:${PORT}/play`));

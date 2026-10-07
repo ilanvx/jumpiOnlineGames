@@ -141,6 +141,14 @@
     "No room to turn it here.": "אין מקום לסובב כאן.", "There's already something there.": "כבר יש שם משהו.", "Keep the furniture inside the room.": "הרהיטים צריכים להיות בתוך החדר.",
     "Keep the door free so you can get out!": "השאירו את הדלת פנויה כדי שתוכלו לצאת!", "Some furniture was moved so nothing is stuck in a wall or another piece.": "הזזנו כמה רהיטים כדי ששום דבר לא יהיה תקוע בקיר או ברהיט אחר.",
     "Couldn't open that home.": "לא הצלחנו לפתוח את הבית.", "That home isn't there any more.": "הבית הזה כבר לא קיים.", "You're already here!": "אתם כבר כאן!",
+    // needs
+    "Hunger": "רעב", "Energy": "אנרגיה", "Stamina": "כוח", "Fun": "כיף", "Fill it up": "למלא", "It's full!": "מלא!", "How your Jumpi feels": "איך הג'אמפי שלך מרגיש",
+    "Eat at the Restaurant, or grab a drink at the Dance Club.": "אכלו במסעדה, או קחו משקה במועדון הריקודים.",
+    "Sleep in a bed: in your home, or try the one in the Furniture Shop.": "ישנו במיטה: בבית שלכם, או במיטה שבחנות הרהיטים.",
+    "Sit down somewhere for a rest. Running uses it up faster.": "שבו לנוח קצת. ריצה מורידה את זה מהר יותר.",
+    "Dance at the Dance Club, play the piano, or play a mini-game.": "רקדו במועדון, נגנו בפסנתר או שחקו במיני־משחק.",
+    "Yum, all full!": "יאמי, שבעים!", "Wide awake again!": "ערים לגמרי!", "Full of energy, let's run!": "מלאי כוח, יאללה לרוץ!", "Yay, that was fun!": "יש, היה כיף!",
+    "Phew, I need a rest! Sit down for a bit to get your stamina back.": "פיו, צריך לנוח! שבו קצת כדי להחזיר כוח.",
     // plaza shops
     "FURNITURE SHOP": "חנות רהיטים", "CLOTHES SHOP": "חנות בגדים", "DANCE CLUB": "מועדון ריקודים", "RESTAURANT": "מסעדה",
     "ENTER SHOP": "כניסה לחנות", "ENTER CLUB": "כניסה למועדון", "ENTER RESTAURANT": "כניסה למסעדה",
@@ -200,6 +208,9 @@
   // sentences with names / numbers inside (also messages from the server). $1, $2… are the parts in ( )
   const T1 = (t) => (DICT.he[t] || t);
   const PATTERNS = [
+    [/^You need (\d+) coins for that\. Play mini-games to earn more!$/, "צריך $1 מטבעות בשביל זה. שחקו במיני־משחקים כדי להרוויח עוד!"],
+    [/^You need (\d+) coins for that\.$/, "צריך $1 מטבעות בשביל זה."],
+    [/^(Hunger|Energy|Stamina|Fun) (\d+)%$/, (m, n, v) => ({ Hunger: "רעב", Energy: "אנרגיה", Stamina: "כוח", Fun: "כיף" })[n] + " " + v + "%"],
     [/^You've come (\d+) days in a row!$/, "הגעתם $1 ימים ברצף!"],
     [/^Streak: (\d+) days?\. Your next gift is ready tomorrow\.$/, "רצף: $1 ימים. המתנה הבאה מחכה מחר."],
     [/^DAY (\d+)$/, "יום $1"], [/^Day (\d+) gift collected$/, "המתנה של יום $1 נאספה"],

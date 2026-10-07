@@ -1091,6 +1091,54 @@ body.game-store .phone-btn,body.game-store .home-btn,body.game-store .gift-btn{o
 /* ---------- the phone ---------- */
 .phone-btn{--c:#1f9bff;--hi:#7fd0ff;--lo:#0b6fd6;--edge:#06488a;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 234px);left:18px;width:58px;height:58px;border-radius:16px;padding:0;display:none}
 .phone-btn svg{width:34px;height:34px}
+/* needs: four round gauges under the phone button */
+.needs{position:fixed;z-index:4;left:18px;top:calc(env(safe-area-inset-top,0px) + 306px);display:none;flex-direction:column;gap:6px;padding:6px;border-radius:20px;
+  background:rgb(22 32 72 / .42);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 4px 0 rgb(0 0 0 / .12)}
+body.in-game.logged .needs:not([hidden]){display:flex}
+body.in-home .needs{top:calc(env(safe-area-inset-top,0px) + 162px)}
+body.tutorial .needs,body.tutorial .need-pop,body.game-store .needs,body.game-store .need-pop{display:none!important}
+.need{--nc:#ff8a1c;--p:100;--lc:#2fd36b;position:relative;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 3px 0 rgb(0 0 0 / .18);transition:transform .12s}
+.need[data-level="mid"]{--lc:#ffc21a}.need[data-level="low"]{--lc:#ff4545}
+.need .ring{position:absolute;inset:0;width:100%;height:100%;rotate:-90deg}
+.need .trk{fill:none;stroke:#e6ecf5;stroke-width:5}
+.need .val{fill:none;stroke:var(--lc);stroke-width:5;stroke-linecap:round;stroke-dasharray:calc(var(--p) * 1) 100;transition:stroke-dasharray .6s ease,stroke .4s}
+.need .ic{position:absolute;inset:9px;display:grid;place-items:center}.need .ic svg{width:100%;height:100%}
+.need:hover{transform:scale(1.06)}.need:active{transform:scale(.94)}
+.need.on{outline:3px solid #fff;outline-offset:2px}
+.need:focus-visible{outline:3px solid #1f9bff;outline-offset:2px}
+.need[data-level="low"] .ic{animation:needShake 1.6s ease-in-out infinite}
+@keyframes needShake{0%,70%,100%{transform:none}75%{transform:rotate(-14deg) scale(1.1)}85%{transform:rotate(12deg) scale(1.1)}93%{transform:rotate(-6deg)}}
+.need-pop{--nc:#ff8a1c;position:fixed;z-index:6;left:86px;top:calc(env(safe-area-inset-top,0px) + 306px);width:min(290px,calc(100vw - 104px));padding:16px 16px 16px;border-radius:24px;color:#22324a;
+  background:linear-gradient(180deg,#fff,#f1f6ff);box-shadow:0 7px 0 #b9c9e6,0 18px 40px rgb(0 0 0 / .3);animation:idlePop .4s cubic-bezier(.2,1.4,.4,1)}
+.need-pop[hidden]{display:none}
+body.in-home .need-pop{top:calc(env(safe-area-inset-top,0px) + 162px)}
+.np-head{display:flex;align-items:center;gap:10px;padding-right:26px}
+.np-ic{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--nc) 16%,#fff)}.np-ic svg{width:28px;height:28px}
+.np-head h3{margin:0;font:400 1.5rem/1 var(--font);color:var(--nc);letter-spacing:.02em}
+.np-pc{margin-left:auto;font:600 1.1rem "Fredoka",system-ui,sans-serif;color:#4a5b75}
+.np-x{position:absolute;top:10px;right:10px;width:30px;height:30px;padding:5px;border:0;border-radius:50%;background:#e8eef7;color:#4a5b75;cursor:pointer}
+.np-x svg{width:100%;height:100%}
+.np-bar{--lc:#2fd36b;height:16px;margin:12px 0 10px;border-radius:9px;background:#e6ecf5;overflow:hidden;box-shadow:inset 0 2px 0 rgb(0 0 0 / .08)}
+.np-bar[data-level="mid"]{--lc:#ffc21a}.np-bar[data-level="low"]{--lc:#ff4545}
+.np-fill{display:block;height:100%;border-radius:9px;background:linear-gradient(180deg,color-mix(in srgb,var(--lc) 70%,#fff),var(--lc));transition:width .6s ease}
+.np-tip{margin:0 0 14px;font:500 .95rem/1.4 "Fredoka",system-ui,sans-serif;color:#4a5b75}
+.np-buy{width:100%;height:50px;border:0;border-radius:25px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font:600 1.08rem "Fredoka",system-ui,sans-serif;color:#fff;
+  background:linear-gradient(180deg,#ffb04a,#ff8a1c);box-shadow:0 5px 0 #c25e00;transition:transform .12s,box-shadow .12s}
+.np-buy:active{transform:translateY(3px);box-shadow:0 2px 0 #c25e00}
+.np-buy:disabled{background:#e8eef7;color:#8a97ab;box-shadow:0 5px 0 #c3cfdf;cursor:default;transform:none}
+.np-cost{display:inline-flex;align-items:center;gap:4px;padding:3px 10px 3px 6px;border-radius:14px;background:rgb(0 0 0 / .16)}.np-cost svg{width:20px;height:20px}
+.np-buy:focus-visible,.np-x:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
+@media (max-height:640px){.needs{gap:4px;padding:5px}.need{width:38px;height:38px}.need .ic{inset:8px}}
+@media (max-height:520px){.needs{flex-direction:row;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}.need-pop{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);left:18px}}
+/* thought bubble over a character */
+.think{--nc:#ff8a1c;position:fixed;z-index:3;width:52px;height:52px;padding:10px;border-radius:50%;background:#fff;pointer-events:none;translate:-50% -100%;
+  box-shadow:0 0 0 3px var(--nc),0 4px 0 rgb(0 0 0 / .15);animation:thinkIn .5s cubic-bezier(.2,1.5,.4,1)}
+.think[hidden]{display:none}
+.think svg{width:100%;height:100%}
+.think::before,.think::after{content:"";position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 0 2.5px var(--nc)}
+.think::before{width:12px;height:12px;left:-6px;bottom:-4px}.think::after{width:7px;height:7px;left:-16px;bottom:-14px}
+@keyframes thinkIn{from{transform:scale(.3);opacity:0}}
+body:not(.in-game) .think,body.game-store .think{display:none!important}
 body.in-game.logged .phone-btn{display:flex}
 body.in-home .phone-btn{top:calc(env(safe-area-inset-top,0px) + 90px)}
 body.phone-open .phone-btn{outline:3px solid #fff;outline-offset:2px}
@@ -1592,6 +1640,14 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
   </div>
   <div class="pp" id="ppTradeThem"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>Player</b></div>
  </div>
+</div>
+<div class="needs" id="needsBar" role="group" aria-label="How your Jumpi feels" hidden></div>
+<div class="need-pop" id="needPop" role="dialog" aria-labelledby="needPopTitle" hidden>
+  <button class="np-x" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+  <div class="np-head"><span class="np-ic"></span><h3 id="needPopTitle">Hunger</h3><b class="np-pc">100%</b></div>
+  <div class="np-bar"><i class="np-fill"></i></div>
+  <p class="np-tip"></p>
+  <button class="np-buy" type="button">Fill it up</button>
 </div>
 <button class="btn phone-btn" id="phoneBtn" type="button" aria-label="Phone" aria-expanded="false"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="4" width="14" height="25" rx="3.5" fill="#1b4f8a" transform="translate(0 1.6)"/><rect x="9" y="4" width="14" height="25" rx="3.5" fill="#fff"/><rect x="11" y="7.5" width="10" height="16" rx="1.6" fill="#4fc8ff"/><rect x="12.5" y="9.5" width="3" height="3" rx="1" fill="#ffb21f"/><rect x="16.5" y="9.5" width="3" height="3" rx="1" fill="#25c36a"/><rect x="12.5" y="14" width="3" height="3" rx="1" fill="#ff5fb4"/><rect x="16.5" y="14" width="3" height="3" rx="1" fill="#9b5cff"/><circle cx="16" cy="26.2" r="1.3" fill="#9fb3d1"/></svg><span class="ph-badge" id="phBadge" hidden></span></button>
 <div class="phone" id="phone" role="dialog" aria-label="Phone" data-view="home" hidden>
@@ -3341,9 +3397,9 @@ function addRemote(p){
   const c=makeCharacter(p.look||{},p.username||"Player",p.role==="admin"?"#ff4545":"#fff");
   c.root.position.set(p.x,0,p.z);Object.assign(c,{look:p.look||{},role:p.role,username:p.username,tx:p.x,tz:p.z,face:p.face||0,cur:p.face||0,moving:!!p.moving,phase:0,hopT:-9,typing:false,bubble:makeBubbleEl()});
   if(p.role==="admin")c.bubble.classList.add("admin");
-  c.pose=p.pose||null;(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);setBadge(c,p.status);updateOnline();refreshAdminOnline();
+  c.pose=p.pose||null;c.mood=p.mood||"";(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);setBadge(c,p.status);updateOnline();refreshAdminOnline();
 }
-function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
+function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
 function clearRemotes(){[...remotes.keys()].forEach(removeRemote);}
 function updateRemotes(t,dt){
   for(const c of remotes.values()){
@@ -3361,6 +3417,7 @@ function updateRemotes(t,dt){
     const br=Math.sin(t*2.1+c.phase*.1);c.body.scale.set(1+br*.012,1+br*.018,1+br*.012);c.head.position.y=c.headY+br*.012;
     if(t>c.blinkT){c.blinkT=t+2.5+Math.random()*3;c.blinkStart=t;}
     const bk=(t-c.blinkStart)/.25;c.eyeL.scale.y=c.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
+    if(c.mood||c.moodWas){c.head.rotation.x=0;c.moodWas=!!c.mood;moodLook(c,null,c.mood||"",t,c.pose);}thinkTick(c,c.mood,t,!!c.pose||c.moving);
     placeBubbleAt(c.bubble,c.root,3.05);
   }
 }
@@ -3374,6 +3431,8 @@ function netJoin(){
     socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}});
     socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
     socket.on("player:join",p=>{addRemote(p);});
+    socket.on("needs",setNeeds);
+    socket.on("player:mood",d=>{const c=remotes.get(d.id);if(c)c.mood=d.mood||"";});
     socket.on("player:move",d=>{const c=remotes.get(d.id);if(c){c.tx=d.x;c.tz=d.z;c.face=d.face;c.moving=d.moving;c.run=!!d.run;c.pose=d.pose||null;}});
     socket.on("home:update",d=>homeUpdated(d.home));
     socket.on("home:gone",()=>{toast("That home isn't there any more.");leaveHome();});
@@ -3468,6 +3527,7 @@ const jumpY=k=>4*JUMP_H*k*(1-k);
 function bigJump(){
   if(act.jump&&(now()-act.jump.t)<JUMP_T)return;                       // already in the air
   if(G.seat||PH.open||GS.open)return;
+  if(NEEDS.v&&NEEDS.v.stamina<6){noRunWarn();return;}
   if(wadeK(G.pos.z)>.25){doAction("hop");if(socket&&socket.connected)socket.emit("hop",{small:true});return;}   // in the water: just a little hop
   G.jumpDir=(G.keys.ArrowUp||G.keys.KeyW||G.keys.ArrowDown||G.keys.KeyS||G.keys.ArrowLeft||G.keys.KeyA||G.keys.ArrowRight||G.keys.KeyD||G.target)?1:-1;
   G.jumpLanded=false;doAction("jump",null,true);tlEvent("jump");sfx.hop();setTimeout(()=>sfx.whoosh(),160);
@@ -3774,7 +3834,8 @@ function gameTick(dt,t,hy){
   const moving=!!(mx||mz);if(!moving)G.running=false;
   if(moving){
     G.running=!G.seat&&(!!(G.keys.ShiftLeft||G.keys.ShiftRight)||!!(G.target&&G.runTarget));
-    const before=G.pos.clone(),sp=SPEED*(1-.38*wadeK(G.pos.z))*(G.running&&!deepWater(G.pos.x,G.pos.z)?RUN:1)*dt;
+    if(G.running&&!canRun()){G.running=false;noRunWarn();}   // out of stamina: no running
+    const before=G.pos.clone(),sp=SPEED*needSpeed()*(1-.38*wadeK(G.pos.z))*(G.running&&!deepWater(G.pos.x,G.pos.z)?RUN:1)*dt;
     // try the full step, then slide along x or z if it would leave the walkable areas
     const tryStep=(dx,dz)=>{const p=before.clone();p.x+=dx;p.z+=dz;collide(p);return walkable(p.x,p.z)?p:null;};
     const nextPos=tryStep(mx*sp,mz*sp)||tryStep(mx*sp,0)||tryStep(0,mz*sp);
@@ -3787,7 +3848,7 @@ function gameTick(dt,t,hy){
   poseCharacter(P,G.pos.x,G.pos.z,G.face,moving,G.phase,hy,t,G);
   if(G.seat)applyPose(P,G.seat,t);else if(P.zzz){P.zzz.remove();P.zzz=null;}
   if(G.running&&moving&&!inWater(G.pos.x,G.pos.z)){P.root.rotation.x=.16;P.armL.rotation.x*=1.6;P.armR.rotation.x*=1.6;}
-  phonePose(dt,t);
+  phonePose(dt,t);needsFx(t,moving);
   if(act.jump&&!G.seat){const k=(now()-act.jump.t)/JUMP_T;
     if(k<1)applyFlip(P,k,G.jumpDir||-1,G.face);
     else if(!G.jumpLanded){G.jumpLanded=true;sfx.step();if(P.armL)P.armL.rotation.z=P.armR.rotation.z=0;}}
@@ -4408,7 +4469,7 @@ function seatSpots(){const out=[];if(!HOME.layout)return out;const PC=HOME.place
   HOME.layout.items.forEach((it,k)=>{const S=SEATS[it.f];if(!S)return;const a=it.r*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
     S.at.forEach(([sx,sz],n)=>out.push({k:S.k,y:S.y,x:it.x+sx*c+sz*s,z:it.z-sx*s+sz*c,f:a+(S.flip?Math.PI:0),reach:S.reach||1.9,piece:k,n,tab:PC&&PC.chairTab&&it.f===3?PC.chairTab:null}));});
   if(PC){out.push(...PC.spots);const D=PC.dance;   // anywhere on the dance floor is a place to dance
-    if(D&&G.pos.x>D[0]&&G.pos.x<D[2]&&G.pos.z>D[1]&&G.pos.z<D[3])out.push({k:"dance",y:0,x:G.pos.x,z:G.pos.z,f:G.face,reach:1,piece:"dance",n:0});}
+    if(D&&G.pos.x>D[0]&&G.pos.x<D[2]&&G.pos.z>D[1]&&G.pos.z<D[3])out.push({k:"dance",y:0,x:G.pos.x,z:G.pos.z,f:0,reach:1,piece:"dance",n:0});}   // dance facing the camera
   return out;}
 const SEAT_KINDS=new Set(["sit","sleep","play"]);
 function updateSeatPrompt(){
@@ -4588,7 +4649,7 @@ function venueClothes(){
   // the big mirror: dress up
   const mir=new THREE.Group();mir.position.set(7.22,0,-3.6);mir.rotation.y=-Math.PI/2;C.g.add(mir);
   mir.add(box(1.7,3,.12,mat("#ffd23a",{metalness:.5,roughness:.35}),0,1.6,0));
-  const glass=new THREE.Mesh(new THREE.PlaneGeometry(1.45,2.75),new THREE.MeshStandardMaterial({metalness:.9,roughness:.08,map:texCanvas(128,256,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#eaf6ff");gr.addColorStop(.5,"#b9dcf5");gr.addColorStop(1,"#e8f4ff");c.fillStyle=gr;c.fillRect(0,0,w,h);
+  const glass=new THREE.Mesh(new THREE.PlaneGeometry(1.45,2.75),new THREE.MeshBasicMaterial({map:texCanvas(128,256,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#eaf6ff");gr.addColorStop(.5,"#b9dcf5");gr.addColorStop(1,"#e8f4ff");c.fillStyle=gr;c.fillRect(0,0,w,h);
     c.fillStyle="rgba(255,255,255,.75)";c.beginPath();c.moveTo(20,0);c.lineTo(48,0);c.lineTo(8,90);c.lineTo(0,90);c.fill();c.beginPath();c.moveTo(70,0);c.lineTo(82,0);c.lineTo(30,120);c.lineTo(24,120);c.fill();})}));
   glass.position.set(0,1.6,.07);mir.add(glass);C.col.push({box:[6.9,-4.5,7.4,-2.7]});
   vSpot(C,{k:"dress",label:"DRESS UP",x:6.1,z:-3.6,reach:1.3,act:()=>openGameStore("inventory","hair")});
@@ -4619,10 +4680,10 @@ function venueClub(){
   const cones=[];[-4,1].forEach(x=>{g.add(box(1,2.3,.8,mat("#1b1b26",{roughness:.4}),x,1.15,-4.9));[.7,1.65].forEach((y,k)=>{const c=cyl(k?.22:.34,k?.22:.34,.08,mat("#3a3a4a",{roughness:.3}),x,y,-4.47,24);c.rotation.x=Math.PI/2;g.add(c);cones.push(c);
       const d=cyl(k?.08:.12,k?.08:.12,.1,mat("#ff2fa0",{emissive:"#ff2fa0",emissiveIntensity:.6}),x,y,-4.44,16);d.rotation.x=Math.PI/2;g.add(d);cones.push(d);});});
   C.col.push({box:[-3.05,-5.6,.05,-3.65]},{box:[-4.55,-5.6,-3.45,-4.45]},{box:[.45,-5.6,1.55,-4.45]});
-  wallSign(C,"JUMPI CLUB",-1.5,3.4,4,{bg:"#9b5cff",glow:true});
+  wallSign(C,"JUMPI CLUB",-1.5,3.15,3.6,{bg:"#9b5cff",glow:true});
   // disco ball and moving coloured lights
-  const ball=new THREE.Mesh(new THREE.IcosahedronGeometry(.55,2),new THREE.MeshStandardMaterial({color:"#e8eef7",metalness:1,roughness:.15,flatShading:true,emissive:"#556",emissiveIntensity:.4}));
-  ball.position.set(-1.5,4.1,-.5);g.add(ball);g.add(cyl(.02,.02,1,mat("#c9d3e3"),-1.5,4.9,-.5,6));
+  const ball=new THREE.Mesh(new THREE.IcosahedronGeometry(.5,2),new THREE.MeshStandardMaterial({color:"#ffffff",metalness:.55,roughness:.2,flatShading:true,emissive:"#8a90b0",emissiveIntensity:.55}));
+  ball.position.set(-1.5,4.55,.6);g.add(ball);g.add(cyl(.02,.02,.6,mat("#c9d3e3"),-1.5,5.1,.6,6));
   const lights=PAL.slice(0,3).map(c=>{const l=new THREE.PointLight(c,26,12,1.6);g.add(l);return l;});
   const spots=new THREE.Group();g.add(spots);
   const beams=PAL.slice(0,4).map((c,k)=>{const b=new THREE.Mesh(new THREE.ConeGeometry(.9,4.2,24,1,true),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.13,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
@@ -4668,8 +4729,8 @@ function venueDiner(){
     c.fillStyle="#ffd23a";c.font='72px "Lilita One", sans-serif';c.textAlign="center";c.fillText("MENU",w/2,92);c.font='40px "Fredoka", sans-serif';c.fillStyle="#fff";
     FOODS.diner.forEach((f,i)=>{const x=i%2?w*.73:w*.27,y=170+Math.floor(i/2)*92;c.fillText(f.name,x,y);c.fillStyle="#7dffb0";c.font='28px "Fredoka", sans-serif';c.fillText("FREE",x,y+34);c.fillStyle="#fff";c.font='40px "Fredoka", sans-serif';});});
   // lamps over the tables
-  [[-5,-1.3],[4.5,-1.3],[-4,2.6],[3,2.6]].forEach(([x,z])=>{g.add(cyl(.012,.012,1.4,mat("#333"),x,4.2,z,6));const sh=new THREE.Mesh(new THREE.ConeGeometry(.45,.4,24,1,true),mat("#e8423b",{side:THREE.DoubleSide}));sh.position.set(x,3.35,z);g.add(sh);
-    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10),new THREE.MeshBasicMaterial({color:"#fff3c4"}));bulb.position.set(x,3.18,z);g.add(bulb);});
+  [[-5,-1.3],[4.5,-1.3],[-4,2.6],[3,2.6]].forEach(([x,z])=>{g.add(cyl(.012,.012,.7,mat("#333"),x,4.75,z,6));const sh=new THREE.Mesh(new THREE.ConeGeometry(.38,.34,24,1,true),mat("#e8423b",{side:THREE.DoubleSide}));sh.position.set(x,4.25,z);g.add(sh);
+    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.1,12,10),new THREE.MeshBasicMaterial({color:"#fff3c4"}));bulb.position.set(x,4.1,z);g.add(bulb);});
   vSpot(C,{k:"order",label:"ORDER FOOD",x:-3.9,z:-3,reach:1.5,act:()=>openMenu("diner")});
   C.ticks.push(t=>steam.forEach((s,k)=>{const q=(t*.4+k/5)%1;s.position.set(-3.9+Math.sin(q*6+k)*.12,CTR_H+.5+q*1.2,-4.45);s.scale.setScalar(.6+q*1.3);s.material.opacity=.45*(1-q);}));
   return C;}
@@ -4693,12 +4754,12 @@ function makeFood(kind,i){
     add(cyl(.11,.09,.36,new THREE.MeshStandardMaterial({color:"#dff4ff",transparent:true,opacity:.35,roughness:.05}),0,.18,0,20));add(cyl(.095,.08,.3,mat(L,{roughness:.3,emissive:L,emissiveIntensity:.15}),0,.16,0,18));
     const straw=add(cyl(.012,.012,.3,mat(i===1?"#ffd23a":"#ff2fa0"),.04,.4,0,8));straw.rotation.z=-.25;
     if(i===3)sph(.1,"#fff6dc",0,.34,0,.6);else{const sl=add(cyl(.07,.07,.015,mat(i===2?"#f4ff6a":i===1?"#ff4f8b":"#ff9a1c"),-.1,.34,0,16));sl.rotation.x=Math.PI/2;}}
-  return g;}
+  g.scale.setScalar(kind==="club"?1.45:1.25);return g;}
 const FOOD_THUMB={};let foodR=null;
 function foodThumb(kind,i){const key=kind+i;if(FOOD_THUMB[key])return FOOD_THUMB[key];
   if(!foodR){foodR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});foodR.setPixelRatio(1);foodR.setSize(160,160);foodR.outputColorSpace=THREE.SRGBColorSpace;}
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(3,5,4);sc.add(dl);
-  const g=makeFood(kind,i);g.rotation.y=-.4;sc.add(g);const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*2.2;
+  const g=makeFood(kind,i);g.rotation.y=-.4;sc.add(g);const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*1.75;
   const cm=new THREE.PerspectiveCamera(30,1,.01,20);cm.position.set(c.x,c.y+d*.55,c.z+d*.95);cm.lookAt(c);foodR.render(sc,cm);return FOOD_THUMB[key]=foodR.domElement.toDataURL("image/png");}
 const menuOverlay=document.getElementById("menuOverlay"),menuGrid=document.getElementById("menuGrid");
 function openMenu(kind){if(!menuOverlay.hidden)return;G.keys={};G.target=null;
@@ -4719,7 +4780,7 @@ function serveFood(sp){if(!G.order||!PLACE.cur)return;const m=makeFood(G.order.k
   m.position.set(sp.x+Math.sin(sp.f)*d,h,sp.z+Math.cos(sp.f)*d);m.rotation.y=sp.f;PLACE.cur.g.add(m);G.eating={m,t0:performance.now()/1000,dur:12};carryEl.hidden=true;}
 function stopEating(){if(!G.eating)return;G.eating.m.removeFromParent();G.eating=null;}
 function finishFood(quiet){const o=G.order;stopEating();G.order=null;carryEl.hidden=true;
-  if(!quiet&&o){sfx.tick(true);toast(o.kind==="club"?"Slurp! That was so refreshing!":"Yum! That was delicious!");}}
+  if(!quiet&&o){sfx.tick(true);if(socket&&socket.connected)socket.emit("needs:ate");toast(o.kind==="club"?"Slurp! That was so refreshing!":"Yum! That was delicious!");}}
 
 /* ---------- dancing ---------- */
 const DANCES=["Bounce","Spin","Disco"];
@@ -4767,6 +4828,91 @@ addEventListener("keydown",e=>{if(e.code!=="KeyE"||!inGame||e.repeat)return;if(e
   if(!deco.hidden)return;
   if(G.seat&&G.seat.k==="dance"){e.preventDefault();nextDance();return;}
   if(nearSeat&&!G.seat){e.preventDefault();sitDown();}});
+
+/* =====================================================================
+   NEEDS: hunger, energy, stamina and fun (the server counts them; see realtime/needs.js).
+   They slowly go down while playing. The character shows how it feels: heavy eyelids when
+   tired, slumping when hungry, puffing when out of stamina, head down when bored.
+   Click a bar to fill it with coins, or look after it in the world (eat, sleep, sit, dance, play).
+   ===================================================================== */
+const NEED_INFO={
+  hunger:{name:"Hunger",col:"#ff8a1c",low:"I'm hungry!",tip:"Eat at the Restaurant, or grab a drink at the Dance Club.",
+    icon:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 Q4 4.5 12 4.5 Q20 4.5 20 11 Z" fill="#f2a43a"/><rect x="3.5" y="12" width="17" height="3" rx="1.5" fill="#7a3e12"/><path d="M3 11.2 H21 L19.5 12.6 H4.5 Z" fill="#5fc04f"/><path d="M4.5 16 H19.5 Q19.5 19.5 16 19.5 H8 Q4.5 19.5 4.5 16 Z" fill="#f2a43a"/><circle cx="9" cy="7.5" r=".8" fill="#fff6dc"/><circle cx="13" cy="6.6" r=".8" fill="#fff6dc"/><circle cx="15.5" cy="8.4" r=".8" fill="#fff6dc"/></svg>'},
+  energy:{name:"Energy",col:"#7b6bff",low:"I'm so sleepy...",tip:"Sleep in a bed: in your home, or try the one in the Furniture Shop.",
+    icon:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 15.5 A7.5 7.5 0 1 1 9.5 4.5 A6 6 0 0 0 17.5 15.5 Z" fill="#ffd23a"/><path d="M15 4 h3 l-3 3.5 h3" fill="none" stroke="#7b6bff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'},
+  stamina:{name:"Stamina",col:"#2fb8ff",low:"Phew, I need a rest!",tip:"Sit down somewhere for a rest. Running uses it up faster.",
+    icon:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2.5 L5 13.5 H11 L9.5 21.5 L19 9.5 H13 Z" fill="#ffd23a" stroke="#e8a300" stroke-width="1.2" stroke-linejoin="round"/></svg>'},
+  fun:{name:"Fun",col:"#ff5fb4",low:"I'm bored...",tip:"Dance at the Dance Club, play the piano, or play a mini-game.",
+    icon:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#ffd23a"/><circle cx="9" cy="10" r="1.3" fill="#7a3e12"/><circle cx="15" cy="10" r="1.3" fill="#7a3e12"/><path d="M7.5 13.5 Q12 18.5 16.5 13.5" fill="none" stroke="#7a3e12" stroke-width="1.7" stroke-linecap="round"/></svg>'},
+};
+const NEED_KEYS=Object.keys(NEED_INFO),MOOD_NEED={tired:"energy",hungry:"hunger",puffed:"stamina",bored:"fun"};
+const NEEDS={v:null,price:25,open:null,busy:false};
+const needsBar=document.getElementById("needsBar"),needPop=document.getElementById("needPop");
+needsBar.innerHTML=NEED_KEYS.map(k=>`<button type="button" class="need" data-need="${k}" style="--nc:${NEED_INFO[k].col}" aria-label="${NEED_INFO[k].name}">
+  <svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="18.5" class="trk"/><circle cx="22" cy="22" r="18.5" class="val" pathLength="100"/></svg>
+  <span class="ic">${NEED_INFO[k].icon}</span></button>`).join("");
+const needLevel=v=>v>50?"ok":v>25?"mid":"low";
+const needCost=v=>{const m=100-v;return m<1?0:Math.max(1,Math.ceil(NEEDS.price*m/100));};
+function paintNeeds(){
+  const v=NEEDS.v;needsBar.hidden=!v;if(!v)return;
+  needsBar.querySelectorAll(".need").forEach(b=>{const k=b.dataset.need,x=v[k];b.style.setProperty("--p",x);b.dataset.level=needLevel(x);
+    b.setAttribute("aria-label",`${NEED_INFO[k].name}: ${Math.round(x)}%`);b.title=`${NEED_INFO[k].name} ${Math.round(x)}%`;});
+  if(NEEDS.open)paintNeedPop();}
+function paintNeedPop(){
+  const k=NEEDS.open,I=NEED_INFO[k],x=NEEDS.v[k],cost=needCost(x);
+  needPop.style.setProperty("--nc",I.col);
+  needPop.querySelector(".np-ic").innerHTML=I.icon;
+  needPop.querySelector("h3").textContent=I.name;
+  needPop.querySelector(".np-pc").textContent=Math.round(x)+"%";
+  needPop.querySelector(".np-fill").style.width=x+"%";needPop.querySelector(".np-bar").dataset.level=needLevel(x);
+  needPop.querySelector(".np-tip").textContent=I.tip;
+  const b=needPop.querySelector(".np-buy");b.disabled=!cost||NEEDS.busy;
+  b.innerHTML=cost?`Fill it up<span class="np-cost">${COIN_SVG}${cost}</span>`:"It's full!";}
+function openNeedPop(k){if(NEEDS.open===k){closeNeedPop();return;}NEEDS.open=k;needPop.hidden=false;
+  needsBar.querySelectorAll(".need").forEach(b=>b.classList.toggle("on",b.dataset.need===k));paintNeedPop();sfx.open();}
+function closeNeedPop(){if(!NEEDS.open)return;NEEDS.open=null;needPop.hidden=true;needsBar.querySelectorAll(".need").forEach(b=>b.classList.remove("on"));}
+needsBar.addEventListener("click",e=>{const b=e.target.closest(".need");if(!b)return;press(b);openNeedPop(b.dataset.need);});
+needPop.querySelector(".np-x").onclick=()=>{closeNeedPop();sfx.close();};
+addEventListener("pointerdown",e=>{if(NEEDS.open&&!e.target.closest("#needPop,#needsBar"))closeNeedPop();},true);
+addEventListener("keydown",e=>{if(e.key==="Escape"&&NEEDS.open)closeNeedPop();});
+needPop.querySelector(".np-buy").onclick=async e=>{
+  const k=NEEDS.open;if(!k||NEEDS.busy)return;const cost=needCost(NEEDS.v[k]);if(!cost)return;
+  if(!me||me.coins<cost){toast("You need "+cost+" coins for that. Play mini-games to earn more!");sfx.error();return;}
+  press(e.currentTarget);NEEDS.busy=true;paintNeedPop();
+  const r=await api("/api/needs/fill",{need:k});NEEDS.busy=false;
+  if(!r.ok){toast(r.data.error||"Couldn't do that right now.");sfx.error();paintNeedPop();return;}
+  if(me)me.coins=r.data.coins;paintCoins(true);NEEDS.v[k]=100;paintNeeds();sfx.success();
+  toast({hunger:"Yum, all full!",energy:"Wide awake again!",stamina:"Full of energy, let's run!",fun:"Yay, that was fun!"}[k]);};
+function setNeeds(d){NEEDS.v=d.needs;if(d.price)NEEDS.price=d.price;paintNeeds();}
+const myMood=()=>{const v=NEEDS.v;if(!v)return "";const m=[];if(v.energy<25)m.push("tired");if(v.hunger<25)m.push("hungry");if(v.stamina<20)m.push("puffed");if(v.fun<25)m.push("bored");return m.join(",");};
+const canRun=()=>!NEEDS.v||NEEDS.v.stamina>=12;
+// slower when very tired, hungry or out of breath
+function needSpeed(){const v=NEEDS.v;if(!v)return 1;let s=1;if(v.energy<20)s=Math.min(s,.85);if(v.hunger<12)s=Math.min(s,.88);if(v.stamina<12)s=Math.min(s,.8);return s;}
+// a thought bubble now and then, showing what the character needs
+function thinkTick(C,mood,t,busy){
+  if(!mood||busy){if(C.think&&!C.think.hidden)C.think.hidden=true;return;}
+  if(!C.think){C.think=document.createElement("div");C.think.className="think";C.think.setAttribute("aria-hidden","true");C.think.hidden=true;document.body.appendChild(C.think);C.thinkT=t+3+Math.random()*6;C.thinkN=0;}
+  const list=mood.split(",");
+  if(C.think.hidden&&t>C.thinkT){const k=MOOD_NEED[list[C.thinkN++%list.length]];if(k){C.think.innerHTML=NEED_INFO[k].icon;C.think.style.setProperty("--nc",NEED_INFO[k].col);C.think.hidden=false;C.thinkEnd=t+3.4;}}
+  if(!C.think.hidden){if(t>C.thinkEnd){C.think.hidden=true;C.thinkT=t+14+Math.random()*10;return;}
+    C.head.getWorldPosition(_rp);_rp.y+=.95;_rp.project(cam);if(_rp.z>1){C.think.hidden=true;return;}C.think.style.left=((_rp.x+1)/2*innerWidth+34)+"px";C.think.style.top=((1-_rp.y)/2*innerHeight)+"px";}}
+// how a character looks with these feelings (me: from my bars, others: from their mood)
+function moodLook(C,v,mood,t,seated){
+  const has=m=>mood.includes(m);
+  // heavy eyelids, and a big yawn now and then
+  let lid=1;if(v)lid=v.energy<35?.42+.58*Math.max(0,v.energy)/35:1;else if(has("tired"))lid=.5;
+  if(has("tired")&&!(seated&&seated.k==="sleep")){const y=(t+(C.phase||0))%11;if(y<1.4){const k=Math.sin(Math.PI*y/1.4);lid*=1-.85*k;C.head.rotation.x-=.25*k;}}
+  if(lid<1&&!(seated&&seated.k==="sleep")){C.eyeL.scale.y*=lid;C.eyeR.scale.y*=lid;}
+  if(seated)return;
+  if(has("bored"))C.head.rotation.x+=.2;                                  // looking at the floor
+  if(has("hungry")){C.root.rotation.x+=.07;const g=(t+(C.phase||0)*.3)%7;if(g<.6)C.body.scale.x*=1+.04*Math.sin(g*30);}   // slumped, tummy rumbles
+  if(has("puffed")){const b=Math.sin(t*9);C.body.scale.y*=1+b*.03;C.body.scale.x*=1-b*.015;}  // out of breath
+}
+function needsFx(t,moving){if(!NEEDS.v||!P)return;const mood=myMood();
+  moodLook(P,NEEDS.v,mood,t,G.seat);
+  thinkTick(P,mood,t,!!G.seat||moving||PH.open||GS.open);}
+let puffWarnT=0;
+function noRunWarn(){if(now()-puffWarnT<6)return;puffWarnT=now();toast(NEED_INFO.stamina.low+" Sit down for a bit to get your stamina back.");}
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");

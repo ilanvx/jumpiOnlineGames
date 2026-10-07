@@ -4,6 +4,7 @@ import { User } from "../models/User.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { notifyCoins } from "../realtime/plaza.js";
+import { bumpNeeds } from "../realtime/needs.js";
 
 /*
   Ways to earn coins:
@@ -242,6 +243,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       );
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
+      bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
       return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: DAILY_GAME_CAP });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });

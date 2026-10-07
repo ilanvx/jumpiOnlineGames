@@ -70,6 +70,19 @@ const userSchema = new mongoose.Schema(
     // mini-game coins earned today (capped per day)
     gamesDay: { type: String, default: "" },
     gamesEarned: { type: Number, default: 0, min: 0 },
+    // hunger / energy / stamina / fun, 0–100 (they only go down while playing; see realtime/needs.js)
+    needs: {
+      type: new mongoose.Schema(
+        {
+          hunger: { type: Number, default: 100, min: 0, max: 100 },
+          energy: { type: Number, default: 100, min: 0, max: 100 },
+          stamina: { type: Number, default: 100, min: 0, max: 100 },
+          fun: { type: Number, default: 100, min: 0, max: 100 },
+        },
+        { _id: false }
+      ),
+      default: () => ({}),
+    },
   },
   { timestamps: true }
 );
