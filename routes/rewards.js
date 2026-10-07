@@ -5,6 +5,8 @@ import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { notifyCoins } from "../realtime/plaza.js";
 import { bumpNeeds } from "../realtime/needs.js";
+import { addSeasonXp } from "./season.js";
+import { SEASON_XP } from "../public/shared/season.js";
 
 /*
   Ways to earn coins:
@@ -53,6 +55,7 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
     );
     if (!updated) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
     notifyCoins(updated._id.toString(), updated.coins);
+    addSeasonXp(updated._id, SEASON_XP.daily);
     res.json({ reward, streak: s.streak, day: s.day, coins: updated.coins });
   } catch (err) {
     next(err);
@@ -64,7 +67,7 @@ const DAILY_GAME_CAP = 200; // most coins mini-games can give in one day (member
 const dailyCapOf = (user) => DAILY_GAME_CAP * (user.isMember() ? 2 : 1);
 const ROUND_CAP = 40; // most coins one round can give
 const ROUND_SECS = 30; // fruit and shell rounds
-const GAMES = ["fruit", "shell", "dig"];
+const GAMES = ["fruit", "shell", "dig", "flap"];
 const rnd = () => crypto.randomInt(1_000_000) / 1_000_000;
 
 /*
@@ -107,6 +110,40 @@ function shellScript() {
 }
 const forPage = (items) => items.map(({ i, t, x, h, k, v, life }) => ({ i, t, x, h, k, v, life }));
 
+/*
+  Jumpi Flap (Flappy-style, on the beach): the course is made here too. Obstacle k sits at
+  x = FLAP.first + k * FLAP.gap and scrolls left at FLAP.speed px/s; Jumpi flies at x = FLAP.jumpiX.
+  So obstacle k can't be passed before (first + k*gap + half width - jumpiX) / speed seconds,
+  and a golden shell in gap k can't be picked up before it reaches Jumpi. The page reports how many
+  obstacles it passed and which shells it took; anything faster than that is not counted.
+*/
+const FLAP = { count: 400, first: 800, gap: 270, speed: 200, jumpiX: 180, half: 40, shellEvery: 3 };
+function flapScript() {
+  const items = [];
+  for (let k = 0; k < FLAP.count; k++) {
+    const size = Math.round(Math.max(150, 190 - k * 1.2));   // the gaps get a little smaller
+    const y = Math.round(130 + rnd() * 200);                  // centre of the gap (the play area is 480 high)
+    items.push({ i: k, y, size, shell: k % FLAP.shellEvery === 1 && rnd() < 0.85 });
+  }
+  return items;
+}
+const flapPassAt = (k) => (FLAP.first + k * FLAP.gap + FLAP.half - FLAP.jumpiX) / FLAP.speed;
+function flapScore(round, passed, shells) {
+  const elapsed = (Date.now() - round.start) / 1000 + 1;   // 1 s for the network
+  let n = Math.max(0, Math.min(FLAP.count, Math.floor(Number(passed) || 0)));
+  while (n > 0 && flapPassAt(n - 1) > elapsed) n--;
+  const seen = new Set();
+  let got = 0;
+  for (const raw of Array.isArray(shells) ? shells.slice(0, FLAP.count) : []) {
+    const k = Number(raw);
+    if (!Number.isInteger(k) || seen.has(k) || k > n || !round.items[k]?.shell) continue;
+    if ((FLAP.first + k * FLAP.gap - FLAP.jumpiX) / FLAP.speed > elapsed) continue;
+    seen.add(k);
+    got++;
+  }
+  return n + got * 2;
+}
+
 // treasure map for the dig game: built here, never sent to the page
 const DIG = { cols: 7, rows: 5, shovels: 10, items: [["chest", 10, 2], ["gem", 5, 3], ["coins", 2, 6]] };
 function makeDigBoard() {
@@ -144,6 +181,13 @@ const todayEarned = (user) => (user.gamesDay === dayKey() ? user.gamesEarned || 
 // older accounts may not have the new fields stored yet: "" / 0 also match a missing field
 const sameAs = (v, empty) => (v === empty || v == null ? { $in: [empty, null] } : v);
 
+const bestOf = (user, game) => (user.gameBest && typeof user.gameBest.get === "function" ? user.gameBest.get(game) : 0) || 0;
+
+// for the start screen of a game: coins left today and your best scores
+router.get("/minigame/status", requireUser, (req, res) => {
+  res.json({ todayEarned: todayEarned(req.user), dailyCap: dailyCapOf(req.user), best: Object.fromEntries(GAMES.map((g) => [g, bestOf(req.user, g)])) });
+});
+
 const recentStarts = new Map();
 router.post("/minigame/start", requireJson, requireUser, (req, res) => {
   const game = String(req.body.game || "");
@@ -159,7 +203,7 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
   const id = crypto.randomUUID();
   const round = { id, userId, game, start: now, done: false };
   if (game === "dig") Object.assign(round, { board: makeDigBoard(), dug: new Set(), shovels: DIG.shovels, score: 0 });
-  else round.items = game === "fruit" ? fruitScript() : shellScript();
+  else round.items = game === "fruit" ? fruitScript() : game === "flap" ? flapScript() : shellScript();
   sessions.set(id, round);
   activeByUser.set(userId, id);
   res.json({
@@ -168,7 +212,10 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
     todayEarned: todayEarned(req.user),
     dailyCap: dailyCapOf(req.user),
     roundCap: ROUND_CAP,
-    ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels } : { secs: ROUND_SECS, items: forPage(round.items) }),
+    best: bestOf(req.user, game),
+    ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels }
+      : game === "flap" ? { flap: { first: FLAP.first, gap: FLAP.gap, speed: FLAP.speed, jumpiX: FLAP.jumpiX, half: FLAP.half }, items: round.items }
+      : { secs: ROUND_SECS, items: forPage(round.items) }),
   });
 });
 
@@ -229,7 +276,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
     round.done = true; // before any await: a second finish for the same round gets nothing
     sessions.delete(round.id);
     if (activeByUser.get(round.userId) === round.id) activeByUser.delete(round.userId);
-    const score = round.game === "dig" ? round.score : scriptedScore(round, req.body.caught);
+    const score = round.game === "dig" ? round.score : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
 
     // add the coins, keeping today's total under the daily cap (retry if two rounds finish together)
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -239,15 +286,17 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       const earnedToday = todayEarned(user);
       const cap = dailyCapOf(user);
       const coins = Math.max(0, Math.min(ROUND_CAP, score, cap - earnedToday));
+      const oldBest = bestOf(user, round.game);
       const updated = await User.findOneAndUpdate(
         { _id: user._id, gamesDay: sameAs(user.gamesDay, ""), gamesEarned: sameAs(user.gamesEarned, 0) },
-        { $set: { gamesDay: today, gamesEarned: earnedToday + coins }, $inc: { coins } },
+        { $set: { gamesDay: today, gamesEarned: earnedToday + coins }, $inc: { coins }, $max: { ["gameBest." + round.game]: score } },
         { new: true }
       );
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
       bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
-      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap });
+      addSeasonXp(updated._id, SEASON_XP.minigame);
+      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap, best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });
   } catch (err) {

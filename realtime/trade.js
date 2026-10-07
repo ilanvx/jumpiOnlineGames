@@ -192,6 +192,7 @@ function offerProblem(user, items, who) {
   const counts = user.itemCounts(), want = new Map();
   for (const id of items) want.set(id, (want.get(id) || 0) + 1);
   for (const [id, n] of want) {
+    if (ITEMS.get(id)?.gift) return `${ITEMS.get(id).name} was earned at work, it can't be traded.`;
     const have = counts.get(id) || 0;
     if (have < n) return have ? `${who === "You" ? "You only have" : who + " only has"} ${have} × ${ITEMS.get(id)?.name || "that item"}.` : `${who === "You" ? "You don't" : who + " doesn't"} have ${ITEMS.get(id)?.name || "that item"}.`;
   }

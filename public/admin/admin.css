@@ -48,6 +48,8 @@ input,select,textarea,button{font:inherit}
 .count:empty{display:none}
 .who{margin-top:auto;display:grid;gap:6px;padding:12px;border-radius:14px;background:rgb(255 255 255 / .06);font-size:.9rem;color:#d6e3f7}
 .who b{color:#fff}.timer{font-size:.8rem;color:#9fb3d1}
+.invis-btn{background:#5a6b8a;box-shadow:0 4px 0 #2c3a55;white-space:normal;text-align:center;line-height:1.2}
+.invis-btn[aria-pressed="true"]{background:#8a4dff;box-shadow:0 4px 0 #3a1192}
 .main{padding:24px clamp(14px,3vw,34px) 60px;min-width:0}
 .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
 .head h1{font-size:2rem}

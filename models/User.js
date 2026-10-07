@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
     bannedUntil: { type: Date, default: null }, // far-future date = permanent
     banReason: { type: String, default: "" },
     mutedUntil: { type: Date, default: null },
+    // admins: play invisibly (only other admins see them). On by default; switched in the game or on the admin website
+    adminInvisible: { type: Boolean, default: true },
+    // best score in each mini-game ("fruit", "shell", "dig", "flap")
+    gameBest: { type: Map, of: Number, default: {} },
     // bumped when an admin resets the password: every old login stops working
     tokenVersion: { type: Number, default: 0 },
     // the player's own home: wallpaper, floor and where each piece of furniture stands
@@ -65,6 +69,23 @@ const userSchema = new mongoose.Schema(
       ),
       default: () => ({}),
     },
+    // house upgrades bought with coins (public/shared/houses.js)
+    house: {
+      type: new mongoose.Schema(
+        { big: { type: Boolean, default: false }, garden: { type: Boolean, default: false }, pool: { type: Boolean, default: false }, upstairs: { type: Boolean, default: false } },
+        { _id: false }
+      ),
+      default: () => ({}),
+    },
+    // jobs: per job { hired, since, xp, served, shifts, earned } (public/shared/jobs.js), and today's job pay (capped per day)
+    jobs: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
+    jobsDay: { type: String, default: "" },
+    jobsEarned: { type: Number, default: 0, min: 0 },
+    // the Season (public/shared/season.js): { id, xp, claimed: [tiers] }, XP earned today (capped), and the last Lucky Wheel spin
+    season: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
+    seasonDay: { type: String, default: "" },
+    seasonDayXp: { type: Number, default: 0, min: 0 },
+    wheelAt: { type: Date, default: null },
     // friends (both players list each other) and friend requests waiting for this player's answer
     friends: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     friendReqIn: { type: [mongoose.Schema.Types.ObjectId], default: [] },

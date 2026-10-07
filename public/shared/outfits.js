@@ -157,5 +157,24 @@ add("pants", { id: "gold", name: "Rose gold shorts", price: 750, metal: ["#ffd0c
   .forEach(([n, col, col2]) => add("neck", { id: "scarf", name: `${n} scarf`, price: 350, col, col2 }));
 [["Red", "#d61f3a"], ["Blue", "#1f6bff"], ["Black", "#1d1d24"], ["Pink", "#ff5fa8"]].forEach(([n, col]) => add("neck", { id: "bowtie", name: `${n} bow tie`, price: 250, col }));
 
+/* ---------- work uniforms: gifts for reaching the top level of a job (never sold, never traded) ---------- */
+add("shirt", { id: "police", name: "Police shirt", price: 0, gift: "police" });
+add("pants", { id: "police", name: "Police pants", price: 0, gift: "police" });
+add("hat", { id: "police", name: "Police cap", price: 0, gift: "police", col: "#1c3c86", col2: "#ffd23a" });
+add("shirt", { id: "waiter", name: "Waiter vest & bow tie", price: 0, gift: "waiter" });
+add("pants", { id: "waiter", name: "Waiter pants", price: 0, gift: "waiter" });
+add("neck", { id: "apron", name: "Waiter apron", price: 0, gift: "waiter", col: "#ffffff", col2: "#e8423b" });
+
+/* ---------- season-only clothes (public/shared/season.js): prizes on the season track, never sold or traded ---------- */
+// Galaxy Season (s1)
+add("glasses", { id: "neon", name: "Nebula shades", price: 0, gift: "season:s1", tier: 5, frame: "#5fe0ff", glow: "#5fe0ff" });
+add("neck", { id: "star", name: "Comet necklace", price: 0, gift: "season:s1", tier: 10, col: "#e8e8ff", col2: "#9b5cff", metal: true });
+add("hair", { id: "spiky", name: "Nebula spikes", price: 0, gift: "season:s1", tier: 15, col: ["#7b3fe4", "#5fe0ff"] });
+add("pants", { id: "gold", name: "Cosmic pants", price: 0, gift: "season:s1", tier: 20, metal: ["#e6d6ff", "#7b3fe4"] });
+add("shirt", { id: "star", name: "Starlight tee", price: 0, gift: "season:s1", tier: 25, fill: "#1b1446", hem: "#9b5cff", acc: "#ffd23a" });
+add("hat", { id: "crown", name: "Galaxy crown", price: 0, gift: "season:s1", tier: 30, col: "#c9b6ff", col2: "#5fe0ff" });
+/* ---------- the Lucky Wheel's rare prize ---------- */
+add("hat", { id: "party", name: "Lucky hat", price: 0, gift: "wheel", col: "#ffd23a", col2: "#2fd36b" });
+
 export const OUTFITS = out;
 export const OUTFIT_SLOTS = Object.keys(out);

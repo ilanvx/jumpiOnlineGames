@@ -5,6 +5,7 @@
   "starter" items are the ones offered for free at sign-up; they're cheaper in the shop.
 */
 import { OUTFITS, OUTFIT_SLOTS } from "./public/shared/outfits.js";
+import { spotProblem } from "./public/shared/houses.js";
 
 const items = [];
 const add = (category, index, name, price, starter = false) => items.push({ id: `${category}:${index}`, category, index, name, price, starter });
@@ -32,7 +33,10 @@ add("eyes", 13, "Galaxy", 700);
 // hair, shirts, pants, glasses, hats, necklaces: the list lives in public/shared/outfits.js
 // (shared with the game, so the item numbers always match)
 for (const slot of OUTFIT_SLOTS)
-  OUTFITS[slot].forEach((o, i) => add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter));
+  OUTFITS[slot].forEach((o, i) => {
+    add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter);
+    if (o.gift) Object.assign(items[items.length - 1], { gift: true, rarity: "legendary" });   // work uniforms: only as a job prize
+  });
 
 // name tags (an icon next to the name)
 add("tag", 0, "Star", 150);
@@ -127,10 +131,16 @@ export function footprint({ f, x, z, r }) {
 export const HOME_BOUNDS = { halfW: 7.4, halfD: 5.6, door: [2.5, -5.6, 4.3, -4.2] };
 const hits = (a, b) => a[0] < b[2] - 0.02 && a[2] > b[0] + 0.02 && a[1] < b[3] - 0.02 && a[3] > b[1] + 0.02;
 // why this piece can't go there (given the pieces already placed), or null
-export function placeProblem(it, others) {
+// shape: houseShape(user.house) from public/shared/houses.js (bigger rooms, garden, second floor); none = the starter room
+export function placeProblem(it, others, shape) {
   const fp = footprint(it), B = HOME_BOUNDS;
-  if (fp[0] < -B.halfW - 0.01 || fp[2] > B.halfW + 0.01 || fp[1] < -B.halfD - 0.01 || fp[3] > B.halfD + 0.01) return "Keep the furniture inside the room.";
-  if (hits(fp, B.door)) return "Keep the door free so you can get out!";
+  if (shape) {
+    const why = spotProblem(shape, fp);
+    if (why) return why;
+  } else {
+    if (fp[0] < -B.halfW - 0.01 || fp[2] > B.halfW + 0.01 || fp[1] < -B.halfD - 0.01 || fp[3] > B.halfD + 0.01) return "Keep the furniture inside the room.";
+    if (hits(fp, B.door)) return "Keep the door free so you can get out!";
+  }
   const flat = FLAT_FURNITURE.has(it.f);
   for (const o of others) if (FLAT_FURNITURE.has(o.f) === flat && hits(fp, footprint(o))) return "There's already something there.";
   return null;

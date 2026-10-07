@@ -8,6 +8,7 @@ import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
 import { outPet } from "../routes/pets.js";
+import { houseShape } from "../public/shared/houses.js";
 
 /*
   Real-time Plaza: everyone in the same room sees each other move, type and chat.
@@ -20,6 +21,9 @@ const COOKIE = "jumpi_token";
 // the whole world: Plaza, Beach (and shallow sea), Park and Desert
 const BOUNDS = { x0: -42, x1: 86, z0: -46, z1: 60 };
 const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
+// homes come in different sizes (bigger room, garden, second floor): the box players may move in, per home room
+const homeBounds = new Map();
+const boundsOf = (room) => (room === ROOM ? BOUNDS : homeBounds.get(room) || HOME_BOUNDS);
 const POSES = new Set(["sit", "sleep", "play", "dance"]);
 // the shops on the Plaza you can walk into (each one is its own room, the same size as a home)
 const PLACES = new Set(["furniture", "clothes", "club", "diner", "pets"]);
@@ -63,7 +67,47 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null });
+const UNIFORMS = new Set(["police", "waiter"]);   // work uniforms other players can see
+
+/* ---------- invisible admins ----------
+   An admin can play invisibly (on by default; "adminInvisible" on the User). Then only other admins
+   in the same room see them (half see-through); everyone else gets nothing at all from them:
+   not their character, moves, chat, emotes, pets, badges, and they don't show as online. */
+// may player q see player p?
+const sees = (q, p) => !p.invisible || q.role === "admin";
+// send something about player p to the people in p's room who can see p (self: include p's own window)
+function roomSend(p, event, data, { self = true, volatile = false } = {}) {
+  if (!ioRef) return;
+  if (!p.invisible) {
+    const s = ioRef.sockets.sockets.get(p.id);
+    let to = self || !s ? ioRef.to(p.room) : s.to(p.room);
+    if (volatile) to = to.volatile;
+    return to.emit(event, data);
+  }
+  for (const q of players.values()) {
+    if (q.room !== p.room || !sees(q, p) || (!self && q.id === p.id)) continue;
+    (volatile ? ioRef.to(q.id).volatile : ioRef.to(q.id)).emit(event, data);
+  }
+}
+// turn invisibility on or off for every open window of this admin (from the game banner or the admin website)
+export function setInvisible(userId, on) {
+  if (!ioRef) return 0;
+  let n = 0;
+  for (const p of players.values()) {
+    if (p.userId !== userId || !!p.invisible === !!on) continue;
+    n++;
+    p.invisible = !!on;
+    for (const q of players.values()) {
+      if (q.room !== p.room) continue;
+      if (q.id === p.id) ioRef.to(q.id).emit("self:invisible", { on: p.invisible });
+      else if (q.role === "admin") ioRef.to(q.id).emit("player:invisible", { id: p.id, on: p.invisible });
+      else if (p.invisible) ioRef.to(q.id).emit("player:leave", p.id);
+      else ioRef.to(q.id).emit("player:join", publicView(p));
+    }
+  }
+  return n;
+}
 const roomOf = (sid) => players.get(sid)?.room || ROOM;
 // a sitting / sleeping pose: what, how high (seat height) and which way
 function cleanPose(p) {
@@ -189,7 +233,7 @@ export function attachPlaza(io) {
       for (const p of players.values())
         if (p.userId === userId) {
           p.mood = mood;
-          io.to(p.room).emit("player:mood", { id: p.id, mood });
+          roomSend(p, "player:mood", { id: p.id, mood });
         }
     },
   });
@@ -200,12 +244,13 @@ export function attachPlaza(io) {
     const canMove = limiter(25, 1000);
     const canAdmin = limiter(20, 10000);
     const canEmote = limiter(4, 4000);
+    const canPhone = limiter(12, 10000);
     // "trade" / "duel" badge above a player, seen by everyone
     const setStatus = (sid, status) => {
       const p = players.get(sid);
       if (!p || (p.status || null) === status) return;
       p.status = status;
-      io.to(p.room).emit("player:status", { id: sid, status });
+      roomSend(p, "player:status", { id: sid, status });
     };
     attachTrading(io, socket, { players, me, notifyLook, limiter, setStatus });
     attachDuels(io, socket, { players, limiter, notifyCoins, setStatus });
@@ -216,9 +261,12 @@ export function attachPlaza(io) {
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
       const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
       if (place) room = "place:" + place;
+      else if (pos?.work === true) room = "work:" + me.id;   // at work: a restaurant of your own (the customers are bots)
       else if (homeOf) {
         try {
-          if (!(await User.exists({ usernameLower: homeOf }))) return socket.emit("home:gone");
+          const owner = await User.findOne({ usernameLower: homeOf }, { house: 1 }).lean();
+          if (!owner) return socket.emit("home:gone");
+          homeBounds.set("home:" + homeOf, houseShape(owner.house).bounds);
         } catch {
           return;
         }
@@ -232,6 +280,7 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
+        me.invisible = fresh.role === "admin" && fresh.adminInvisible !== false;   // admins come in invisible unless they switched it off
       } catch {}
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
@@ -241,7 +290,7 @@ export function attachPlaza(io) {
           removePlayer(id, old);
         }
       }
-      const B = room === ROOM ? BOUNDS : HOME_BOUNDS;
+      const B = boundsOf(room);
       // moving to another room: the old room sees you leave
       const before = players.get(socket.id);
       if (before && before.room !== room) removePlayer(socket.id, socket);
@@ -249,6 +298,8 @@ export function attachPlaza(io) {
         id: socket.id,
         room,
         status: players.get(socket.id)?.status || null,
+        phone: pos?.phone === true || !!players.get(socket.id)?.phone,
+        uniform: UNIFORMS.has(pos?.uniform) ? pos.uniform : players.get(socket.id)?.uniform || null,   // holding the phone (also after moving to another room)
         userId: me.id,
         username: me.username,
         look: me.look,
@@ -260,13 +311,14 @@ export function attachPlaza(io) {
         mood: moodNow(me.id),
         pet: me.pet || null,
         member: !!me.member,
+        invisible: !!me.invisible,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
       socket.join(room);
-      socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room).map(publicView));
-      socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0 });
-      if (!already) socket.to(room).emit("player:join", publicView(player));
+      socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room && sees(player, p)).map(publicView));
+      socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0, invisible: !!player.invisible });
+      if (!already) roomSend(player, "player:join", publicView(player), { self: false });
       sendNeeds(me.id);
     });
 
@@ -279,7 +331,8 @@ export function attachPlaza(io) {
       const owner = typeof d?.owner === "string" ? players.get(d.owner) : null;   // a pet walking with someone
       const pid = typeof d?.pid === "string" && /^[a-f0-9]{10}$/.test(d.pid) ? d.pid : null; // a pet at home
       if (owner ? owner.room !== p.room || !owner.pet : !pid) return;
-      io.to(p.room).emit("pet:pat", owner ? { owner: owner.id, by: p.id } : { pid, by: p.id });
+      if (owner && owner.invisible && !sees(p, owner)) return;
+      roomSend(p.invisible ? p : owner || p, "pet:pat", owner ? { owner: owner.id, by: p.id } : { pid, by: p.id });
       if (Date.now() - lastPatFun > 20_000) {
         lastPatFun = Date.now();
         bumpNeeds(p.userId, { fun: 4 });
@@ -296,14 +349,14 @@ export function attachPlaza(io) {
     socket.on("move", (d) => {
       const p = players.get(socket.id);
       if (!p || !canMove()) return;
-      const B = p.room === ROOM ? BOUNDS : HOME_BOUNDS;
+      const B = boundsOf(p.room);
       p.x = clamp(num(d?.x, p.x), B.x0, B.x1);
       p.z = clamp(num(d?.z, p.z), B.z0, B.z1);
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
       p.pose = p.room === ROOM ? null : cleanPose(d?.pose); // sitting, sleeping and dancing only happen indoors
       p.run = p.moving && d?.run === true;
-      socket.to(p.room).volatile.emit("player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose });
+      roomSend(p, "player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose }, { self: false, volatile: true });
     });
 
     socket.on("chat", async (raw) => {
@@ -320,15 +373,31 @@ export function attachPlaza(io) {
         return socket.emit("chat:blocked", { message: FRIENDLY_MESSAGE, left: s.left ?? 0, muted: !!s.muted });
       }
       if (!canChat()) return socket.emit("chat:slow");
-      io.to(p.room).emit("chat", { id: p.id, username: p.username, role: p.role, text });
+      roomSend(p, "chat", { id: p.id, username: p.username, role: p.role, text });
       logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text });
+    });
+
+    // taking the phone out / putting it away: everyone around sees the character hold it
+    socket.on("phone", (on) => {
+      const p = players.get(socket.id);
+      if (!p || !canPhone()) return;
+      p.phone = on === true;
+      roomSend(p, "player:phone", { id: p.id, on: p.phone }, { self: false });
+    });
+
+    // put on / take off a work uniform (the police uniform on patrol)
+    socket.on("uniform", (job) => {
+      const p = players.get(socket.id);
+      if (!p || !canPhone()) return;
+      p.uniform = UNIFORMS.has(job) ? job : null;
+      roomSend(p, "player:uniform", { id: p.id, job: p.uniform }, { self: false });
     });
 
     socket.on("typing", (on) => {
       const p = players.get(socket.id);
       if (!p) return;
       if (on === true && (mutedUntil.get(me.id) || 0) > Date.now()) return;
-      socket.to(p.room).emit("typing", { id: p.id, on: on === true });
+      roomSend(p, "typing", { id: p.id, on: on === true }, { self: false });
     });
 
     // emotes: only the known faces, a few at a time, not while muted
@@ -348,7 +417,7 @@ export function attachPlaza(io) {
         if (!hasEmote(me.inventory, e)) return reply({ ok: false, why: "locked" });
       }
       if (!players.has(socket.id)) return;
-      io.to(p.room).emit("emote", { id: p.id, e });
+      roomSend(p, "emote", { id: p.id, e });
       const seen = (io.sockets.adapter?.rooms?.get(p.room)?.size || 1) - 1;
       console.log(`[emote] ${p.username} ${e} in ${p.room} -> seen by ${seen} other player(s)`);
       reply({ ok: true, seen });
@@ -358,7 +427,7 @@ export function attachPlaza(io) {
     socket.on("hop", (d) => {
       const p = players.get(socket.id);
       if (!p) return;
-      socket.to(p.room).emit("hop", { id: p.id, dir: d?.dir === 1 ? 1 : -1, small: d?.small === true });
+      roomSend(p, "hop", { id: p.id, dir: d?.dir === 1 ? 1 : -1, small: d?.small === true }, { self: false });
     });
 
     socket.on("leave", () => removePlayer(socket.id, socket));
@@ -441,6 +510,14 @@ export function attachPlaza(io) {
       return { message: `${user.username} now has ${coins.toLocaleString("en-US")} coins.` };
     });
 
+    adminAction("admin:invisible", async ({ on }, admin) => {
+      admin.adminInvisible = on === true;
+      await admin.save();
+      setInvisible(admin._id.toString(), admin.adminInvisible);
+      audit(admin, admin.adminInvisible ? "invisible on" : "invisible off", admin);
+      return { invisible: admin.adminInvisible, message: admin.adminInvisible ? "You're invisible again." : "Everyone can see you now." };
+    });
+
     adminAction("admin:announce", async ({ text }, admin) => {
       const msg = moderation.announce(text, admin.username);
       if (!msg) throw fail("Write a message first.");
@@ -456,7 +533,7 @@ export function notifyLook(userId, look) {
   for (const p of players.values()) {
     if (p.userId !== userId) continue;
     p.look = look;
-    ioRef.to(p.room).emit("player:look", { id: p.id, look });
+    roomSend(p, "player:look", { id: p.id, look });
   }
 }
 // a membership started (or ended): the golden name shows for everyone
@@ -465,7 +542,7 @@ export function notifyMember(userId, member) {
   for (const p of players.values()) {
     if (p.userId !== userId) continue;
     p.member = member;
-    ioRef.to(p.room).emit("player:member", { id: p.id, member });
+    roomSend(p, "player:member", { id: p.id, member });
   }
 }
 // the pet walking with a player changed (adopted, sent home, called out)
@@ -474,8 +551,13 @@ export function notifyPet(userId, pet) {
   for (const p of players.values()) {
     if (p.userId !== userId) continue;
     p.pet = pet;
-    ioRef.to(p.room).emit("player:pet", { id: p.id, pet });
+    roomSend(p, "player:pet", { id: p.id, pet });
   }
+}
+// send something to every open game window of one player (season XP, etc.)
+export function notifyUser(userId, event, data) {
+  if (!ioRef) return;
+  for (const p of players.values()) if (p.userId === userId) ioRef.to(p.id).emit(event, data);
 }
 // called after a purchase so an open game window shows the new balance
 export function notifyCoins(userId, coins) {
@@ -484,18 +566,22 @@ export function notifyCoins(userId, coins) {
 }
 // the owner changed their home: visitors who are inside see it right away
 export function notifyHome(usernameLower, home) {
+  if (home?.house) homeBounds.set("home:" + usernameLower, houseShape(home.house).bounds);
   if (ioRef) ioRef.to("home:" + usernameLower).emit("home:update", { home });
 }
 
 /* ---------- who is online (for the phone: friends, online list, JumpiChat) ---------- */
 // where a player is right now: "plaza", "home:<name>" or null when not in the game
-export function onlineWhere(userId) {
-  for (const p of players.values()) if (p.userId === userId) return p.room || ROOM;
+// seeHidden: false for regular players (invisible admins don't show as online to them)
+export function onlineWhere(userId, seeHidden = true) {
+  for (const p of players.values()) if (p.userId === userId && (seeHidden || !p.invisible)) return p.room || ROOM;
   return null;
 }
-export function onlinePlayers() {
+export function onlinePlayers(seeHidden = true, selfId = "") {
   const seen = new Map();
-  for (const p of players.values()) if (!seen.has(p.userId)) seen.set(p.userId, { userId: p.userId, username: p.username, look: p.look, role: p.role, where: p.room || ROOM });
+  for (const p of players.values())
+    if (!seen.has(p.userId) && (seeHidden || !p.invisible || p.userId === selfId))
+      seen.set(p.userId, { userId: p.userId, username: p.username, look: p.look, role: p.role, where: p.room || ROOM, invisible: !!p.invisible });
   return [...seen.values()];
 }
 // send something to every window this player has open in the game

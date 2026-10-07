@@ -304,3 +304,7 @@ p{margin:0}
 .dev-btn{flex:none}
 .dev-btn svg{width:1em;height:1em}
 @media (max-width:720px){.dev-card{flex-direction:column;text-align:center;padding:26px 20px}}
+
+/* no scrollbars anywhere on the website (pages still scroll) */
+*{scrollbar-width:none;-ms-overflow-style:none}
+*::-webkit-scrollbar{display:none;width:0;height:0}

@@ -9,7 +9,7 @@ import { Order } from "../models/Order.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
-import { moderation, onlinePlayers, onlineWhere } from "../realtime/plaza.js";
+import { moderation, onlinePlayers, onlineWhere, setInvisible } from "../realtime/plaza.js";
 import { checkName } from "../public/shared/profanity.js";
 
 /*
@@ -102,7 +102,7 @@ function setUnlock(req, res) {
 
 router.get("/session", (req, res) => {
   const until = unlockedUntil(req);
-  res.json({ admin: req.admin.username, unlocked: until > Date.now(), until });
+  res.json({ admin: req.admin.username, unlocked: until > Date.now(), until, invisible: req.admin.adminInvisible !== false });
 });
 
 router.post("/unlock", async (req, res, next) => {
@@ -370,6 +370,19 @@ router.post("/users/:id/:action", async (req, res, next) => {
     if (!fn) return fail(res, 404, "Unknown action.");
     const message = await fn(req, res);
     if (message && !res.headersSent) res.json({ ok: true, message });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- invisible in the game (only other admins see you) ---------- */
+router.post("/invisible", async (req, res, next) => {
+  try {
+    req.admin.adminInvisible = req.body.on === true;
+    await req.admin.save();
+    const windows = setInvisible(req.admin._id.toString(), req.admin.adminInvisible);
+    audit(req, req.admin.adminInvisible ? "invisible on" : "invisible off", req.admin);
+    res.json({ ok: true, invisible: req.admin.adminInvisible, windows });
   } catch (err) {
     next(err);
   }

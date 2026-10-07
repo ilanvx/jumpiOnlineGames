@@ -55,7 +55,7 @@ router.get("/friends", requireUser, async (req, res, next) => {
     ]);
     res.json({
       friends: friends
-        .map((u) => ({ username: u.username, look: u.publicLook(), where: onlineWhere(idStr(u._id)) }))
+        .map((u) => ({ username: u.username, look: u.publicLook(), where: onlineWhere(idStr(u._id), me.role === "admin") }))
         .sort((a, b) => (!!b.where - !!a.where) || a.username.localeCompare(b.username)),
       requests: reqs.map((u) => ({ username: u.username, look: u.publicLook() })),
     });
@@ -129,7 +129,7 @@ router.post("/friends/remove", requireJson, requireUser, async (req, res, next) 
 /* ---------- who is online ---------- */
 router.get("/online", requireUser, (req, res) => {
   const me = req.user, mine = new Set((me.friends || []).map(idStr)), asked = new Set((me.friendReqIn || []).map(idStr));
-  const list = onlinePlayers()
+  const list = onlinePlayers(me.role === "admin", idStr(me._id))
     .slice(0, 300)
     .map((p) => ({ username: p.username, look: p.look, role: p.role, where: p.where, me: p.userId === idStr(me._id), friend: mine.has(p.userId), askedMe: asked.has(p.userId) }))
     .sort((a, b) => b.me - a.me || b.friend - a.friend || a.username.localeCompare(b.username));
@@ -156,13 +156,13 @@ router.get("/dm", requireUser, async (req, res, next) => {
       .filter((r) => byId.has(idStr(r._id)))
       .map((r) => {
         const u = byId.get(idStr(r._id));
-        return { username: u.username, look: u.publicLook(), friend: friendIds.has(idStr(u._id)), where: onlineWhere(idStr(u._id)), unread: r.unread, last: msgView(r.last, names) };
+        return { username: u.username, look: u.publicLook(), friend: friendIds.has(idStr(u._id)), where: onlineWhere(idStr(u._id), req.user.role === "admin"), unread: r.unread, last: msgView(r.last, names) };
       });
     // friends you haven't talked to yet, so a new chat is one tap away
     const talked = new Set(rows.map((r) => idStr(r._id)));
     const fresh = [...friendIds].filter((id) => !talked.has(id) && byId.has(id)).map((id) => {
       const u = byId.get(id);
-      return { username: u.username, look: u.publicLook(), friend: true, where: onlineWhere(id), unread: 0, last: null };
+      return { username: u.username, look: u.publicLook(), friend: true, where: onlineWhere(id, req.user.role === "admin"), unread: 0, last: null };
     });
     res.json({ chats: [...chats, ...fresh], unread: chats.reduce((n, c) => n + c.unread, 0) });
   } catch (err) {
@@ -183,7 +183,7 @@ router.get("/dm/with/:username", requireUser, async (req, res, next) => {
     const r = await Message.updateMany({ from: other._id, to: me._id, read: false }, { $set: { read: true } });
     if (r.modifiedCount) emitToUser(idStr(other._id), "dm:read", { by: me.username });
     res.json({
-      with: { username: other.username, look: other.publicLook(), friend: isFriend(me, other._id), where: onlineWhere(idStr(other._id)) },
+      with: { username: other.username, look: other.publicLook(), friend: isFriend(me, other._id), where: onlineWhere(idStr(other._id), me.role === "admin") },
       messages: list.reverse().map((m) => msgView(m, names)),
       more: list.length === PAGE,
     });

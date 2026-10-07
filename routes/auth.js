@@ -100,6 +100,47 @@ export async function currentUser(req) {
 }
 export { setAuthCookie, clearAuthCookie, COOKIE as AUTH_COOKIE };
 
+/* ---------- saved accounts: up to 3 players on one device (switch on the start screen without typing passwords) ----------
+   A second httpOnly cookie holds a signed list of { s: user id, v: token version }. Page scripts can't read it.
+   Changing the password / "log out everywhere" (tokenVersion) also removes the account from every device's list. */
+const ACC_COOKIE = "jumpi_accounts";
+export const MAX_SAVED = 3;
+function readSaved(req) {
+  const raw = req.cookies?.[ACC_COOKIE];
+  if (!raw) return [];
+  try {
+    const { a } = jwt.verify(raw, process.env.JWT_SECRET);
+    return Array.isArray(a) ? a.filter((x) => x && typeof x.s === "string").slice(0, MAX_SAVED) : [];
+  } catch {
+    return [];
+  }
+}
+function writeSaved(res, list) {
+  const opts = { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" };
+  if (!list.length) return res.clearCookie(ACC_COOKIE, opts);
+  res.cookie(ACC_COOKIE, jwt.sign({ a: list.map(({ s, v }) => ({ s, v })) }, process.env.JWT_SECRET, { expiresIn: "30d" }), { ...opts, maxAge: THIRTY_DAYS });
+}
+// add (or refresh) accounts; new ones go at the end, and the oldest other one drops off when there are too many
+function saveAccounts(req, res, users) {
+  const list = readSaved(req), keep = users.map((u) => u._id.toString());
+  for (const user of users) {
+    const id = user._id.toString(), at = list.findIndex((x) => x.s === id);
+    if (at >= 0) list[at] = { s: id, v: user.tokenVersion || 0 };
+    else list.push({ s: id, v: user.tokenVersion || 0 });
+  }
+  while (list.length > MAX_SAVED) { const i = list.findIndex((x) => !keep.includes(x.s)); list.splice(i >= 0 ? i : 0, 1); }
+  writeSaved(res, list);
+}
+// the saved accounts that still work (not banned, not signed out everywhere, not deleted)
+async function savedUsers(req) {
+  const list = readSaved(req);
+  if (!list.length) return { list, users: [] };
+  const found = await User.find({ _id: { $in: list.map((x) => x.s) } });
+  const byId = new Map(found.map((u) => [u._id.toString(), u]));
+  const users = list.map((x) => ({ x, u: byId.get(x.s) })).filter(({ x, u }) => u && (x.v || 0) === (u.tokenVersion || 0) && !u.isBanned());
+  return { list, users };
+}
+
 /* ---------- routes ---------- */
 
 // Is this username / email free? (used by sign-up step 1)
@@ -143,7 +184,10 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
       lastLoginAt: now,
     });
 
+    // adding a second account from the start screen ("+") keeps the one that was playing on the list too
+    const prev = req.body.addAccount === true ? await currentUser(req) : null;
     setAuthCookie(res, user._id.toString(), true);
+    saveAccounts(req, res, prev && !prev._id.equals(user._id) ? [prev, user] : [user]);
     res.status(201).json({ user: user.toPublic() });
   } catch (err) {
     if (err?.code === 11000) {
@@ -170,7 +214,10 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
 
     user.lastLoginAt = new Date();
     await user.save();
-    setAuthCookie(res, user._id.toString(), req.body.remember === true, user.tokenVersion || 0);
+    const prev = req.body.addAccount === true ? await currentUser(req) : null;
+    setAuthCookie(res, user._id.toString(), req.body.remember === true || !!prev, user.tokenVersion || 0);
+    // "Remember me" (or adding an account with "+") keeps it on the start screen
+    if (req.body.remember === true || prev) saveAccounts(req, res, prev && !prev._id.equals(user._id) ? [prev, user] : [user]);
     res.json({ user: user.toPublic() });
   } catch (err) {
     next(err);
@@ -191,9 +238,69 @@ router.get("/me", async (req, res, next) => {
   }
 });
 
-router.post("/logout", (req, res) => {
-  clearAuthCookie(res);
-  res.json({ ok: true });
+// log out: the account also leaves this device's saved list; if another saved account is left, it takes over
+router.post("/logout", async (req, res, next) => {
+  try {
+    const me = await currentUser(req);
+    const { users } = await savedUsers(req);
+    const rest = users.filter(({ x }) => !me || x.s !== me._id.toString());
+    writeSaved(res, rest.map(({ x }) => x));
+    if (rest.length) {
+      const next = rest[0].u;
+      setAuthCookie(res, next._id.toString(), true, next.tokenVersion || 0);
+      return res.json({ ok: true, user: next.toPublic() });
+    }
+    clearAuthCookie(res);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// the accounts saved on this device, in their saved order, for the start screen
+router.get("/accounts", async (req, res, next) => {
+  try {
+    const me = await currentUser(req);
+    const { list, users } = await savedUsers(req);
+    if (users.length !== list.length) writeSaved(res, users.map(({ x }) => x));   // tidy up ones that stopped working
+    res.json({
+      max: MAX_SAVED,
+      accounts: users.map(({ u }) => ({ username: u.username, look: u.publicLook(), role: u.role === "admin" ? "admin" : "player",
+        member: u.isMember(), current: !!me && u._id.equals(me._id) })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// take a saved account off this device (the X next to its name on the start screen); not the one playing (that's /logout)
+router.post("/forget", requireJson, async (req, res, next) => {
+  try {
+    const name = clean(req.body.username).toLowerCase();
+    const me = await currentUser(req);
+    const { users } = await savedUsers(req);
+    writeSaved(res, users.filter(({ u }) => u.usernameLower !== name || (me && u._id.equals(me._id))).map(({ x }) => x));
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// switch to another saved account (no password needed: it was logged in on this device with "remember me")
+router.post("/switch", requireJson, async (req, res, next) => {
+  try {
+    const name = clean(req.body.username).toLowerCase();
+    const { users } = await savedUsers(req);
+    const hit = users.find(({ u }) => u.usernameLower === name);
+    if (!hit) return res.status(404).json({ error: "That account isn't saved on this device any more. Please log in again." });
+    const user = hit.u;
+    user.lastLoginAt = new Date();
+    await user.save();
+    setAuthCookie(res, user._id.toString(), true, user.tokenVersion || 0);
+    res.json({ user: user.toPublic() });
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default router;
