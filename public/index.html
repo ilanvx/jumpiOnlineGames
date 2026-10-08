@@ -604,6 +604,9 @@ body.in-game.is-admin .admin-btn:not([hidden]){display:flex}
 .adm-btn.wide{width:100%}
 .adm-invis-txt{margin:0;color:#e6dcff;font-size:.95rem}
 .adm-btn.violet{background:#8a4dff;box-shadow:0 4px 0 #3a1192}
+.adm-btn.green{background:#2fd36b;box-shadow:0 4px 0 #17a24a}
+.adm-row .adm-input.adm-code{flex:2 1 150px;text-transform:uppercase}.adm-row .adm-input.adm-num{flex:1 1 80px}
+.adm-code-out{margin:0;padding:10px;border-radius:10px;background:#fff;color:#17803d;text-align:center;font:400 1.5rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.08em;user-select:all}
 .adm-btn:active{transform:translateY(3px);box-shadow:none}
 .adm-btn:disabled{opacity:.6;cursor:progress}
 .adm-btn:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
@@ -800,6 +803,18 @@ body.signup-in .swatches{opacity:1;visibility:visible;pointer-events:auto;transf
 .picker{display:flex;flex-direction:column;gap:12px}
 /* ----- shop / tags / inventory ----- */
 .inv{--c:#ffa94d;--hi:#ffd29a;--lo:#e2731f;--edge:#8a3c0a}
+/* Codes (gift codes): green button with a gift box; Jumpi holds up a sign the code is typed on */
+.codes{--c:#2fd36b;--hi:#8ff0b0;--lo:#17a24a;--edge:#0d6b2f}
+.codes svg{animation:giftWiggle 3.2s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes giftWiggle{0%,78%,100%{rotate:0deg}82%{rotate:-9deg}86%{rotate:8deg}90%{rotate:-5deg}94%{rotate:3deg}}
+body.code-in #codeCard{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%);transition:transform .5s cubic-bezier(.2,1.3,.4,1),opacity .25s ease,visibility 0s}
+.code-card .code-about{margin:-6px 0 0;color:#dbe7f7;line-height:1.45}
+.code-card .code-about b{color:#ffd23a;font-weight:600}
+.code-card .cta:disabled{opacity:.7;cursor:default}
+.code-input{position:fixed;z-index:3;left:0;top:0;width:10px;height:10px;margin:0;padding:0;border:0;border-radius:18px;background:transparent;opacity:0;font-size:16px;cursor:text;display:none}
+body.code-in .code-input{display:block}
+@media (max-height:700px) and (min-width:701px){.side.left{gap:16px}.side.left .btn{width:104px;height:104px;font-size:1.1rem;border-radius:26px}.side.left .btn svg{width:54px;height:54px}}
+@media (max-height:540px) and (min-width:701px){.side.left{gap:12px}.side.left .btn{width:84px;height:84px;font-size:.9rem;border-radius:22px}.side.left .btn svg{width:42px;height:42px}}
 .inv span{font-size:1.05rem}
 .store-card{width:min(470px,calc(100% - 32px));gap:12px;max-height:calc(100% - 40px)}
 .store-head{display:flex;align-items:center;gap:10px}
@@ -922,6 +937,15 @@ body.signup-in.no-swatches .swatches{opacity:0;visibility:hidden;pointer-events:
   .btn svg{width:44px;height:44px}
   .play{width:clamp(120px,36vw,170px);height:88px;font-size:1.7rem}
   .play svg{width:34px;height:34px}
+}
+@media (max-width:700px){
+  /* four buttons on the left: they get the bottom row, TUTORIAL + PLAY sit right above them */
+  .side.left{right:16px;justify-content:space-between;gap:8px}
+  .side.left .btn{width:auto;flex:1;max-width:84px;height:72px;border-radius:20px;gap:3px;font-size:.8rem}
+  .side.left .btn svg{width:34px;height:34px}.side.left .btn span,.inv span{font-size:.72rem}
+  .side.right{bottom:calc(env(safe-area-inset-bottom,0px) + 112px)}
+  body.code-in #codeCard{transform:none}
+  .code-card{gap:10px;padding:16px}.code-card .code-about{display:none}
 }
 @media (prefers-reduced-motion:reduce){.tags svg,.tags::after,.play,.shake,.burst,.welcome-title span,.welcome-sub,.welcome-stars svg{animation:none}.side,.login-card,.back{transition:none!important}.play-menu,.play-menu .btn{transition:none!important}}
 /* ---------- daily gift + mini-games ---------- */
@@ -2173,6 +2197,24 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
     </svg>
     <span>Inventory</span>
   </button>
+  <button class="btn codes" id="codesBtn" type="button">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="giftBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8cc6"/><stop offset="1" stop-color="#e2358a"/></linearGradient>
+        <linearGradient id="giftLid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffa6d4"/><stop offset="1" stop-color="#ff5fa8"/></linearGradient>
+      </defs>
+      <rect x="11" y="27" width="42" height="30" rx="6" fill="#8a1450" transform="translate(0 4)"/>
+      <rect x="11" y="27" width="42" height="30" rx="6" fill="url(#giftBox)"/>
+      <rect x="7" y="20" width="50" height="13" rx="5" fill="#8a1450" transform="translate(0 3)"/>
+      <rect x="7" y="20" width="50" height="13" rx="5" fill="url(#giftLid)"/>
+      <rect x="28" y="20" width="8" height="37" fill="#ffd23a"/><rect x="28" y="33" width="8" height="3" fill="#c98a00" opacity=".55"/>
+      <path d="M32 20 C26 9 13 9 15 16 C16.5 21 26 20.5 32 20 Z" fill="#ffd23a" stroke="#c98a00" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M32 20 C38 9 51 9 49 16 C47.5 21 38 20.5 32 20 Z" fill="#ffd23a" stroke="#c98a00" stroke-width="2.4" stroke-linejoin="round"/>
+      <circle cx="32" cy="20" r="4" fill="#ffc21a" stroke="#c98a00" stroke-width="2.2"/>
+      <path d="M12 24 Q14 22 19 22" stroke="#fff" stroke-opacity=".7" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span>Codes</span>
+  </button>
 </nav>
 
 <nav class="side right" aria-label="Play">
@@ -2753,6 +2795,19 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
       <button class="adm-btn blue wide" id="admSend" type="button"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Send to everyone</button>
     </section>
 
+    <section class="adm-sec">
+      <h3>GIFT CODE</h3>
+      <div class="adm-row">
+        <input class="adm-input adm-code" id="admCode" type="text" maxlength="20" placeholder="Code (empty = random)" autocomplete="off" aria-label="Code">
+        <input class="adm-input adm-num" id="admCodeCoins" type="number" min="1" max="100000" value="500" aria-label="Coins">
+        <select class="adm-select" id="admCodeUses" aria-label="How many players">
+          <option value="0">No limit</option><option value="1">1 player</option><option value="10">10 players</option><option value="100" selected>100 players</option><option value="1000">1,000 players</option>
+        </select>
+      </div>
+      <button class="adm-btn green wide" id="admCodeGo" type="button">Make code</button>
+      <p class="adm-code-out" id="admCodeOut" hidden></p>
+    </section>
+
     <p class="adm-msg" id="admMsg" role="status"></p>
   </div>
 </div>
@@ -2798,6 +2853,14 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
   <button class="cta" id="loginSubmit" type="submit">Log In</button>
 </form>
 
+
+<form class="login-card code-card" id="codeCard" novalidate aria-labelledby="codeTitle">
+  <h2 id="codeTitle">CODES</h2>
+  <p class="code-about">Got a secret code? Type it on Jumpi's sign and press <b>REDEEM</b> to get your coins. Every code works once for each player.</p>
+  <p class="form-msg" id="codeMsg" role="status"></p>
+  <button class="cta" id="codeGo" type="submit">REDEEM</button>
+</form>
+<input class="code-input" id="codeInput" type="text" maxlength="24" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Type your code">
 
 <div class="login-card store-card" id="storeCard" aria-labelledby="storeTitle" role="region">
   <div class="store-head">
@@ -3272,6 +3335,7 @@ renderer.setAnimationLoop(()=>{
     // holding up the name sign (tags shop): pops up, gently bobs, both hands on it
     if(menuTag){const k=Math.min(1,(now()-menuTag.userData.t0)/.45),pop=k<1?1+Math.sin(k*Math.PI)*.18:1;menuTag.scale.setScalar(Math.max(.01,ease(k)*pop*.6));
       menuTag.position.y=.42+Math.sin(t*2.1)*.015;P.armL.rotation.set(-.95,0,.35);P.armR.rotation.set(-.95,0,-.35);}
+    if(CODE.sign)codeTick(t);
     P.root.position.y=hy+bob;P.root.rotation.x=flipRot;const ss=Math.max(.2,1-hy*1.4);shadow.scale.set(ss,ss,1);shadow.material.opacity=Math.max(0,1-hy*2);
     accTick(t);
     }
@@ -5288,6 +5352,13 @@ document.getElementById("admUnban").onclick=e=>adminSend("admin:unban",{username
 document.getElementById("admMute").onclick=e=>adminSend("admin:mute",{username:admUser.value,minutes:+val("admMuteTime")},e.currentTarget);
 document.getElementById("admUnmute").onclick=e=>adminSend("admin:unmute",{username:admUser.value},e.currentTarget);
 document.getElementById("admCoins").onclick=e=>adminSend("admin:coins",{username:admUser.value,amount:+val("admAmount")},e.currentTarget);
+document.getElementById("admCodeGo").onclick=e=>{const btn=e.currentTarget,out=document.getElementById("admCodeOut");
+  if(!socket||!socket.connected){adminSend("admin:code",{},btn);return;}
+  btn.disabled=true;admMsg.className="adm-msg";admMsg.textContent="Working…";
+  socket.timeout(8000).emit("admin:code",{code:val("admCode"),coins:Number(val("admCodeCoins")),maxUses:Number(val("admCodeUses"))},(err,res)=>{btn.disabled=false;
+    if(err||!res){admMsg.className="adm-msg err";admMsg.textContent="The server didn't answer. Try again.";return;}
+    admMsg.className="adm-msg "+(res.ok?"ok":"err");admMsg.textContent=res.ok?res.message:res.error;(res.ok?sfx.success:sfx.error)();
+    if(res.ok){out.hidden=false;out.textContent=res.code;document.getElementById("admCode").value="";try{navigator.clipboard.writeText(res.code);}catch(x){}}});};
 document.getElementById("admSend").onclick=e=>{const t=val("admAnnounce").trim();if(!t){admMsg.className="adm-msg err";admMsg.textContent="Write a message first.";return;}
   adminSend("admin:announce",{text:t},e.currentTarget);document.getElementById("admAnnounce").value="";};
 document.getElementById("adminBtn").onclick=e=>{press(e.currentTarget);openAdmin();};
@@ -5818,11 +5889,12 @@ function openPanel(name){
   if(name==="signup"){colorIdx=0;eyeIdx=0;Object.assign(outfit,{hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1});resetSignup();setPreview(true);}
   setTimeout(()=>walkTo(sideX(),()=>{body.classList.add("panel-in",name+"-in");sfx.whoosh();
     if(name==="store")refreshMenuTag();
-    setTimeout(()=>{if(name==="login")(user.value?pass:user).focus({preventScroll:true});else if(name==="signup")suUser.focus({preventScroll:true});else storeTabs.querySelector("button")?.focus({preventScroll:true})||storeGrid.querySelector(".item")?.focus({preventScroll:true});},350);}),280);
+    if(name==="code")codeSignOn();
+    setTimeout(()=>{if(name==="login")(user.value?pass:user).focus({preventScroll:true});else if(name==="code")codeInput.focus({preventScroll:true});else if(name==="signup")suUser.focus({preventScroll:true});else storeTabs.querySelector("button")?.focus({preventScroll:true})||storeGrid.querySelector(".item")?.focus({preventScroll:true});},350);}),280);
 }
 function closePanel(){
   if(!body.classList.contains("panel-in"))return;sfx.whoosh();
-  body.classList.remove("panel-in","login-in","signup-in","store-in","no-swatches");panel=null;eyeFocus=false;setPreview(false);refreshMenuTag();ACC.adding=false;
+  body.classList.remove("panel-in","login-in","signup-in","store-in","code-in","no-swatches");panel=null;eyeFocus=false;setPreview(false);refreshMenuTag();codeSignOff();ACC.adding=false;
   setTimeout(()=>walkTo(0,()=>{body.classList.remove("login-mode");playBtn.focus({preventScroll:true});}),200);
 }
 document.getElementById("login").onclick=e=>{press(e.currentTarget);openPanel("login");};
@@ -6378,6 +6450,98 @@ function refreshMenuTag(){
   if(show&&!menuTag&&P){menuTag=nameSign(me.username,me.role==="admin"?"#ff4545":"#fff",lk("tag")??-1);menuTagKey=key;
     menuTag.position.set(0,.42,.6);menuTag.rotation.x=-.06;menuTag.userData.t0=now();P.root.add(menuTag);}
 }
+
+/* ---------- gift codes (Codes button on the start screen) ----------
+   Jumpi walks to the side and holds up a sign; whatever you type shows up on the sign (the real text box is an
+   invisible input laid over it, so typing, pasting and phone keyboards all work). The server decides everything:
+   routes/codes.js (codes are made by admins in the admin panel → Gift codes). */
+const CODE={sign:null,face:null,tex:null,cv:null,t0:0,state:"",note:"",shake:-9,busy:false,key:""};
+const codeInput=document.getElementById("codeInput"),codeMsg=document.getElementById("codeMsg"),codeGo=document.getElementById("codeGo"),codeCard=document.getElementById("codeCard");
+const CODE_W=2.7,CODE_H=1.5,CODE_PX=[1024,568];
+function codeSignBuild(){
+  const g=new THREE.Group(),W=CODE_W+.16,H=CODE_H+.16,r=.24,x=-W/2,y=-H/2,sh=new THREE.Shape();
+  sh.moveTo(x+r,y);sh.lineTo(x+W-r,y);sh.quadraticCurveTo(x+W,y,x+W,y+r);sh.lineTo(x+W,y+H-r);sh.quadraticCurveTo(x+W,y+H,x+W-r,y+H);
+  sh.lineTo(x+r,y+H);sh.quadraticCurveTo(x,y+H,x,y+H-r);sh.lineTo(x,y+r);sh.quadraticCurveTo(x,y,x+r,y);
+  const board=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.06,bevelEnabled:true,bevelThickness:.03,bevelSize:.04,bevelSegments:3,curveSegments:10}),
+    [new THREE.MeshStandardMaterial({color:"#1d2b4f",roughness:.5}),new THREE.MeshStandardMaterial({color:"#2fd36b",roughness:.35,metalness:.2})]);
+  board.castShadow=true;g.add(board);
+  const cv=document.createElement("canvas");cv.width=CODE_PX[0];cv.height=CODE_PX[1];
+  const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=8;
+  const face=new THREE.Mesh(new THREE.PlaneGeometry(CODE_W,CODE_H),new THREE.MeshBasicMaterial({map:tex,toneMapped:false}));face.position.z=.096;g.add(face);
+  // a little gift bow on the top corner
+  const bowM=new THREE.MeshStandardMaterial({color:"#ffd23a",roughness:.35,metalness:.2}),bow=new THREE.Group();bow.position.set(W/2-.22,H/2-.08,.09);g.add(bow);
+  [-1,1].forEach(sx=>{const l=new THREE.Mesh(new THREE.TorusGeometry(.1,.04,10,20),bowM);l.position.x=sx*.11;l.scale.set(1.2,.8,.8);l.rotation.z=sx*.5;bow.add(l);});
+  bow.add(new THREE.Mesh(new THREE.SphereGeometry(.06,14,10),bowM));
+  Object.assign(CODE,{sign:g,face,tex,cv});return g;}
+function rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();}
+function drawCodeSign(force){
+  if(!CODE.cv)return;
+  const focus=document.activeElement===codeInput,blink=focus&&!CODE.busy&&(now()*2|0)%2===0,v=codeInput.value;
+  const key=[v,blink,focus,CODE.state,CODE.note].join("|");if(!force&&key===CODE.key)return;CODE.key=key;
+  const [w,h]=CODE_PX,x=CODE.cv.getContext("2d");
+  const bg=x.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#2c4a86");bg.addColorStop(1,"#1d2b4f");x.fillStyle=bg;x.fillRect(0,0,w,h);
+  // sparkly dots
+  x.fillStyle="rgba(255,255,255,.12)";[[70,60],[960,90],[120,500],[930,520],[520,40]].forEach(([a,b],i)=>{x.beginPath();x.arc(a,b,6+i%3*3,0,7);x.fill();});
+  x.textAlign="center";x.textBaseline="middle";
+  x.font='88px "Lilita One"';x.fillStyle="#0d1730";x.fillText("ENTER A CODE",w/2,98+7);x.fillStyle="#ffd23a";x.fillText("ENTER A CODE",w/2,98);
+  // the slot you type in
+  const sx=64,sy=170,sw=w-128,sh=196,col={ok:"#2fd36b",err:"#ff5a5a",busy:"#1fb6ff"}[CODE.state]||(focus?"#ffb547":"#8fa6c9");
+  rr(x,sx,sy+8,sw,sh,40);x.fillStyle="#0d1730";x.fill();
+  rr(x,sx,sy,sw,sh,40);x.fillStyle=col;x.fill();
+  rr(x,sx+12,sy+12,sw-24,sh-24,30);x.fillStyle="#dbe5ee";x.fill();
+  rr(x,sx+12,sy+22,sw-24,sh-34,30);x.fillStyle="#ffffff";x.fill();
+  let size=124;x.font=size+'px "Lilita One"';x.letterSpacing="8px";
+  const txt=v||"",room=sw-110;let tw=x.measureText(txt).width;if(tw>room){size=Math.max(56,size*room/tw);x.font=size+'px "Lilita One"';tw=x.measureText(txt).width;}
+  const cy=sy+sh/2+10;
+  if(txt){x.fillStyle=CODE.state==="ok"?"#17a24a":"#1d2b4f";x.fillText(txt,w/2,cy);}
+  else{x.font='96px "Lilita One"';x.fillStyle="#b8c4d8";x.fillText(focus?"":"TAP TO TYPE",w/2,cy);}
+  x.letterSpacing="0px";
+  if(blink){const cx=txt?w/2+tw/2+10:w/2;x.fillStyle="#ff9a1f";rr(x,cx-6,cy-58,12,112,6);x.fill();}
+  // the line under it: a tip, "checking…", the coins you got or what went wrong
+  if(CODE.state==="ok"){x.font='78px "Lilita One"';x.fillStyle="#0d1730";x.fillText(CODE.note,w/2,470+6);x.fillStyle="#ffd23a";x.fillText(CODE.note,w/2,470);}
+  else{x.font='600 44px "Fredoka"';x.fillStyle=CODE.state==="err"?"#ffb3b3":"#c8d4f2";
+    let t=CODE.note||"Press ENTER or REDEEM when you're done";while(x.measureText(t).width>w-90&&t.length>4)t=t.slice(0,-2);x.fillText(t,w/2,466);}
+  CODE.tex.needsUpdate=true;}
+function codeSignOn(){
+  if(!P)return;if(!CODE.sign)codeSignBuild();
+  CODE.sign.position.set(0,.5,.62);CODE.sign.rotation.x=-.06;CODE.sign.scale.setScalar(.01);CODE.t0=now();P.root.add(CODE.sign);
+  drawCodeSign(true);if(document.fonts)document.fonts.load('88px "Lilita One"').then(()=>drawCodeSign(true));sfx.pop&&sfx.pop();}
+function codeSignOff(){if(CODE.sign&&CODE.sign.parent)CODE.sign.removeFromParent();codeInput.blur();}
+const _cv=new THREE.Vector3();
+function codeTick(t){
+  const s=CODE.sign;if(!s.parent)return;
+  const k=Math.min(1,(now()-CODE.t0)/.45),pop=k<1?1+Math.sin(k*Math.PI)*.18:1;s.scale.setScalar(Math.max(.01,ease(k)*pop*.54));
+  const sk=(now()-CODE.shake)/.5;s.position.x=sk>=0&&sk<1?Math.sin(sk*40)*.06*(1-sk):0;
+  s.position.y=.5+Math.sin(t*2.1)*.015;P.armL.rotation.set(-.95,0,.35);P.armR.rotation.set(-.95,0,-.35);
+  drawCodeSign();
+  // lay the invisible text box over the sign on the screen
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;s.updateWorldMatrix(true,false);
+  for(const [a,b] of [[-1,-1],[1,-1],[1,1],[-1,1]]){_cv.set(a*CODE_W/2,b*CODE_H/2,.1).applyMatrix4(CODE.face.matrixWorld).project(cam);
+    const px=(_cv.x+1)/2*innerWidth,py=(1-_cv.y)/2*innerHeight;x0=Math.min(x0,px);x1=Math.max(x1,px);y0=Math.min(y0,py);y1=Math.max(y1,py);}
+  codeInput.style.cssText=`left:${x0|0}px;top:${y0|0}px;width:${(x1-x0)|0}px;height:${(y1-y0)|0}px`;}
+function openCodes(){
+  if(!me){openGate("codes");return;}
+  CODE.state="";CODE.note="";codeInput.value="";codeMsg.textContent="";codeMsg.className="form-msg";codeGo.classList.remove("ready");openPanel("code");}
+codeInput.addEventListener("input",()=>{
+  const v=codeInput.value.toUpperCase().replace(/[^A-Z0-9-]/g,"").slice(0,20);if(v!==codeInput.value)codeInput.value=v;
+  if(CODE.state&&CODE.state!=="busy"){CODE.state="";CODE.note="";codeMsg.textContent="";}
+  codeGo.classList.toggle("ready",v.replace(/-/g,"").length>=3);sfx.type();});
+codeInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();redeemCode();}});
+codeCard.addEventListener("submit",e=>{e.preventDefault();redeemCode();});
+async function redeemCode(){
+  if(CODE.busy)return;const v=codeInput.value.replace(/-/g,"");
+  const bad=(text,short)=>{CODE.state="err";CODE.note=short||text;codeMsg.className="form-msg";codeMsg.textContent=text;CODE.shake=now();sfx.error();
+    codeCard.classList.remove("shake");void codeCard.offsetWidth;codeCard.classList.add("shake");codeInput.focus({preventScroll:true});};
+  if(v.length<3)return bad("Type your code on the sign first.","Type your code first");
+  CODE.busy=true;CODE.state="busy";CODE.note="Checking…";codeGo.disabled=true;codeMsg.textContent="";
+  const r=await api("/api/codes/redeem",{code:v});
+  CODE.busy=false;codeGo.disabled=false;
+  if(!r.ok)return bad(r.data.error||"Something went wrong. Try again.");
+  const n=r.data.coins||0;CODE.state="ok";CODE.note=`+${n.toLocaleString("en-US")} COINS!`;
+  codeMsg.className="form-msg ok";codeMsg.textContent=`Yay! ${n.toLocaleString("en-US")} coins were added to your account.`;
+  setMyCoins(r.data.total);codeInput.value="";codeGo.classList.remove("ready");
+  sfx.coin();setTimeout(()=>sfx.success(),160);coinRain(18);doAction("hop",null,true);}
+document.getElementById("codesBtn").onclick=e=>{press(e.currentTarget);openCodes();};
 async function openStore(mode){
   if(!me){openGate(mode);return;}
   storeMode=mode;storeSlot=STORE_MODES[mode].slots[0];storeSel=null;storePets=false;
@@ -6411,7 +6575,7 @@ document.getElementById("storeBackGame").onclick=()=>closeGameStore();
 document.getElementById("storeCard").addEventListener("keydown",e=>{if(!GS.open)return;e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeGameStore();}});
 // login gate for players who aren't signed in
 const gateOverlay=document.getElementById("gateOverlay");
-function openGate(mode){document.getElementById("gateText").textContent="You need to log in to "+({shop:"visit the shop",tags:"see the tag shop",inventory:"open your inventory"}[mode])+".";
+function openGate(mode){document.getElementById("gateText").textContent="You need to log in to "+({shop:"visit the shop",tags:"see the tag shop",inventory:"open your inventory",codes:"use a code"}[mode])+".";
   gateOverlay.hidden=false;sfx.open();setTimeout(()=>document.getElementById("gateLogin").focus(),50);}
 function closeGate(){if(gateOverlay.hidden)return;gateOverlay.hidden=true;}
 document.getElementById("gateClose").onclick=()=>{closeGate();sfx.close();};

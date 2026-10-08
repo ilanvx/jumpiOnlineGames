@@ -12,6 +12,7 @@ import { houseShape } from "../public/shared/houses.js";
 import { BAR_MENU } from "../public/shared/bar.js";
 import { foodOf, PARK_STANDS, PARK_MENU, STAND_REACH } from "../public/shared/food.js";
 import { foodBag, addFood, biteFood, dropFood } from "./food.js";
+import { createCode } from "../models/Code.js";
 import { JOBS } from "../public/shared/jobs.js";
 import { isBirthdayOn } from "../public/shared/birthday.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
@@ -612,6 +613,14 @@ export function attachPlaza(io) {
       setInvisible(admin._id.toString(), admin.adminInvisible);
       audit(admin, admin.adminInvisible ? "invisible on" : "invisible off", admin);
       return { invisible: admin.adminInvisible, message: admin.adminInvisible ? "You're invisible again." : "Everyone can see you now." };
+    });
+
+    adminAction("admin:code", async ({ code, coins, maxUses, days }, admin) => {
+      let c;
+      try { c = await createCode({ code, coins, maxUses, days, note: "made in the game", by: admin.username }); }
+      catch (err) { throw err.publicMessage ? fail(err.publicMessage) : err; }
+      audit(admin, "code-create", null, `${c.code} · ${c.coins} coins · ${c.maxUses || "no limit"} uses`);
+      return { code: c.code, message: `Code ${c.code} is ready: ${c.coins.toLocaleString("en-US")} coins${c.maxUses ? ` for ${c.maxUses} player(s)` : ""}.` };
     });
 
     adminAction("admin:announce", async ({ text }, admin) => {

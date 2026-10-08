@@ -279,6 +279,60 @@
       hist.replaceChildren(logTable(d.history));
     },
 
+    async codes() {
+      page("Gift codes");
+      const f = {
+        code: h("input", { maxlength: 20, placeholder: "Empty = a random code", autocomplete: "off", style: "text-transform:uppercase" }),
+        coins: h("input", { type: "number", min: 1, max: 100000, value: 500 }),
+        uses: h("select", null, [["0", "No limit"], ["1", "1 player"], ["10", "10 players"], ["50", "50 players"], ["100", "100 players"], ["500", "500 players"], ["1000", "1,000 players"]].map(([v, t]) => h("option", { value: v }, t))),
+        days: h("select", null, [["0", "Never ends"], ["1", "1 day"], ["3", "3 days"], ["7", "7 days"], ["30", "30 days"], ["90", "90 days"]].map(([v, t]) => h("option", { value: v }, t))),
+        note: h("input", { maxlength: 120, placeholder: "Where it's given out (only admins see this)" }),
+      };
+      const made = h("div");
+      const copy = (code) => navigator.clipboard?.writeText(code).then(() => toast(`Copied ${code}`), () => toast(code));
+      const go = h("button", { class: "b b-orange", type: "submit" }, "Create code");
+      const form = h("form", { class: "code-form" },
+        h("label", { class: "fld" }, h("span", null, "Code"), f.code), h("label", { class: "fld" }, h("span", null, "Coins it gives"), f.coins),
+        h("label", { class: "fld" }, h("span", null, "How many players can use it"), f.uses), h("label", { class: "fld" }, h("span", null, "Ends"), f.days),
+        h("label", { class: "fld" }, h("span", null, "Note"), f.note), go);
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault(); go.disabled = true;
+        try {
+          const r = await api("/codes", { code: f.code.value, coins: Number(f.coins.value), maxUses: Number(f.uses.value), days: Number(f.days.value), note: f.note.value });
+          toast(r.message); f.code.value = ""; f.note.value = "";
+          made.replaceChildren(h("div", { class: "code-new" }, h("b", null, r.code.code), h("span", null, `${fmtNum(r.code.coins)} coins`), h("span", { style: "flex:1" }),
+            h("button", { class: "b b-sm b-ghost", type: "button", onclick: () => copy(r.code.code) }, "Copy")));
+          load();
+        } catch (err) { oops(err); }
+        go.disabled = false;
+      });
+      const list = h("div");
+      const status = (c) => (!c.active ? h("span", { class: "tag red" }, "Off") : c.ended ? h("span", { class: "tag orange" }, c.maxUses && c.uses >= c.maxUses ? "Used up" : "Ended") : h("span", { class: "tag green" }, "Working"));
+      const load = async () => list.replaceChildren(table([
+        ["Code", (c) => h("span", { class: "code-txt" }, c.code)], ["Coins", (c) => fmtNum(c.coins)],
+        ["Used", (c) => `${fmtNum(c.uses)}${c.maxUses ? " / " + fmtNum(c.maxUses) : ""}`],
+        ["Ends", (c) => h("span", { class: "nowrap small" }, c.expiresAt ? fmtDate(c.expiresAt) : "Never")], ["", status],
+        ["Note", (c) => h("span", { class: "small muted" }, c.note || "")], ["Made by", (c) => h("span", { class: "small" }, c.createdBy, h("br"), h("span", { class: "muted" }, fmtDate(c.createdAt)))],
+        ["", (c) => h("div", { class: "acts" },
+          h("button", { class: "b b-sm b-ghost", onclick: () => copy(c.code) }, "Copy"),
+          h("button", { class: "b b-sm b-ghost", onclick: () => usesOf(c).catch(oops) }, "Who used it"),
+          h("button", { class: "b b-sm " + (c.active ? "b-red" : "b-green"), onclick: async () => {
+            if (c.active && !confirm(`Switch off ${c.code}? Players won't be able to use it any more.`)) return;
+            try { toast((await api("/codes/" + c.id, { active: !c.active })).message); load(); } catch (e) { oops(e); }
+          } }, c.active ? "Switch off" : "Switch on"))],
+      ], (await api("/codes")).list));
+      async function usesOf(c) {
+        const d = await api(`/codes/${c.id}/uses`), card = $("#modalCard");
+        card.replaceChildren(h("h2", null, c.code), h("p", { class: "muted", style: "margin:0" }, `${fmtNum(c.uses)} player(s) used it · ${fmtNum(c.coins)} coins each`),
+          h("div", { class: "code-uses" }, table([["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => userLink(r.username, r.userId)], ["Coins", (r) => fmtNum(r.coins)]], d.list)),
+          h("div", { class: "row" }, h("button", { class: "b b-ghost", type: "button", onclick: () => ($("#modal").hidden = true) }, "Close")));
+        $("#modal").hidden = false;
+      }
+      main.append(panel("Make a new code", h("p", { class: "small muted", style: "margin:0 0 12px" }, "Players type the code on the sign in the game's start screen (the Codes button). Every player can use a code once. Letters and numbers only; spaces and dashes are ignored."), form, made),
+        panel("All codes", list));
+      await load();
+    },
+
     async announce() {
       page("Announcements");
       const ta = h("textarea", { class: "inp", maxlength: 160, placeholder: "Write a message everyone in the game will see on their screen…" });
@@ -378,7 +432,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "code-off": "Switched off a code", "code-on": "Switched on a code" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],

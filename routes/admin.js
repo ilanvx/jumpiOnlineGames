@@ -6,6 +6,7 @@ import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
 import { Order } from "../models/Order.js";
+import { Code, CodeUse, createCode } from "../models/Code.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
@@ -506,6 +507,46 @@ router.post("/contact/:id", async (req, res, next) => {
     if (!m) return fail(res, 404, "Not found.");
     audit(req, m.handled ? "contact-done" : "contact-reopen", null, `${m.email} · ${m.topic}`);
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- gift codes (players type them on the sign in the game's start screen, routes/codes.js) ---------- */
+const codeRow = (c) => ({ id: c._id.toString(), code: c.code, coins: c.coins, maxUses: c.maxUses, uses: c.uses, expiresAt: c.expiresAt, active: c.active,
+  ended: !!(c.expiresAt && c.expiresAt.getTime() < Date.now()) || (c.maxUses > 0 && c.uses >= c.maxUses), note: c.note, createdBy: c.createdBy, createdAt: c.createdAt });
+router.get("/codes", async (req, res, next) => {
+  try {
+    res.json({ list: (await Code.find().sort({ createdAt: -1 }).limit(300)).map(codeRow) });
+  } catch (err) {
+    next(err);
+  }
+});
+router.post("/codes", async (req, res, next) => {
+  try {
+    const c = await createCode({ ...req.body, by: req.admin.username });
+    audit(req, "code-create", null, `${c.code} · ${c.coins} coins · ${c.maxUses || "no limit"} uses${c.expiresAt ? " · until " + c.expiresAt.toISOString().slice(0, 10) : ""}`);
+    res.json({ ok: true, message: `Code ${c.code} is ready.`, code: codeRow(c) });
+  } catch (err) {
+    if (err.publicMessage) return fail(res, 400, err.publicMessage);
+    next(err);
+  }
+});
+router.post("/codes/:id", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const c = await Code.findByIdAndUpdate(req.params.id, { active: req.body.active === true }, { new: true });
+    if (!c) return fail(res, 404, "Not found.");
+    audit(req, c.active ? "code-on" : "code-off", null, c.code);
+    res.json({ ok: true, message: c.active ? `${c.code} works again.` : `${c.code} is switched off.` });
+  } catch (err) {
+    next(err);
+  }
+});
+router.get("/codes/:id/uses", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    res.json({ list: await CodeUse.find({ codeId: req.params.id }).sort({ at: -1 }).limit(500).lean() });
   } catch (err) {
     next(err);
   }

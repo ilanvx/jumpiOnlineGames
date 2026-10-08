@@ -68,6 +68,7 @@ input,select,textarea,button{font:inherit}
 .ic-duel{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h8v8H3zM13 13h8v8h-8zM13 3h8v8h-8zm-10 10h8v8H3z' opacity='.9'/%3E%3C/svg%3E")}
 .ic-box{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 3 6.5v11L12 22l9-4.5v-11zm0 2.2 6.5 3.3L12 10.8 5.5 7.5z'/%3E%3C/svg%3E")}
 .ic-coin{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 3.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zM11 8v8h2V8z'/%3E%3C/svg%3E")}
+.ic-gift{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 8h18v4H3zm1 5h7v8H4zm9 0h7v8h-7zM11 8h2v13h-2zM12 8C10 3 6 3 6 5.5S9 8 12 8zm0 0c2-5 6-5 6-2.5S15 8 12 8z'/%3E%3C/svg%3E")}
 .ic-mail{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 5h20v14H2zm2 2v.5l8 5 8-5V7z'/%3E%3C/svg%3E")}
 .ic-log{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 2h10l5 5v15H5zm3 8v2h9v-2zm0 4v2h9v-2zm0 4v2h6v-2z'/%3E%3C/svg%3E")}
 
@@ -113,6 +114,15 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .ann textarea{min-height:90px;resize:vertical}
 .preview{border-radius:16px;padding:14px 18px;background:linear-gradient(180deg,#ffc04d,#ff9a1f);color:#fff;box-shadow:0 5px 0 var(--orange-edge);font-weight:600;text-shadow:0 1px 0 rgb(0 0 0 / .15)}
 .preview small{display:block;opacity:.9;font-weight:500}
+
+/* gift codes */
+.code-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;align-items:end}
+.code-form .fld input,.code-form .fld select{background:#f3f6fb}
+.code-new{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;padding:14px 18px;border-radius:16px;background:linear-gradient(180deg,#3fd47a,#22a85a);box-shadow:0 5px 0 #136b39;color:#fff}
+.code-new b{font:400 1.9rem/1 var(--display);letter-spacing:.08em;text-shadow:0 3px 0 #136b39}
+.code-new span{font-weight:600}
+.code-txt{font:400 1.05rem var(--display);letter-spacing:.06em;color:var(--ink)}
+.code-uses{max-height:360px;overflow:auto}
 
 /* modal + toast */
 .modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgb(10 20 50 / .55);backdrop-filter:blur(3px)}
