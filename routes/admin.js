@@ -7,6 +7,8 @@ import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
 import { Order } from "../models/Order.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
+import { EMAIL_ON, sendMail } from "../mail/send.js";
+import { contactReplyEmail, ANSWER_SLOT } from "../mail/contactReply.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
@@ -531,6 +533,36 @@ router.get("/contact", async (req, res, next) => {
   try {
     const q = req.query.show === "all" ? {} : { handled: false };
     res.json({ list: await ContactMessage.find(q).sort({ createdAt: -1 }).limit(200).lean() });
+  } catch (err) {
+    next(err);
+  }
+});
+// the answer letter: the email as the player will get it, with a spot for the admin's text (the panel puts a text box there)
+router.get("/contact/:id/letter", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const m = await ContactMessage.findById(req.params.id).lean();
+    if (!m) return fail(res, 404, "Not found.");
+    res.json({ html: contactReplyEmail({ name: m.name, message: m.message, topic: m.topic, sentAt: m.createdAt, answer: ANSWER_SLOT, lang: m.lang }).html, slot: ANSWER_SLOT, lang: m.lang, email: m.email, emailOn: EMAIL_ON() });
+  } catch (err) {
+    next(err);
+  }
+});
+router.post("/contact/:id/reply", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const text = String(req.body.text ?? "").replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim().slice(0, 5000);
+    if (text.length < 2) return fail(res, 400, "Write your answer first.");
+    if (!EMAIL_ON()) return fail(res, 503, "Email isn't set up on the server (RESEND_API_KEY).");
+    const m = await ContactMessage.findById(req.params.id);
+    if (!m) return fail(res, 404, "Not found.");
+    const sent = await sendMail({ to: m.email, ...contactReplyEmail({ name: m.name, message: m.message, topic: m.topic, sentAt: m.createdAt, answer: text, lang: m.lang }) });
+    if (!sent.ok) return fail(res, 502, sent.error);
+    m.replies.push({ text, admin: req.admin.username });
+    m.handled = true;
+    await m.save();
+    audit(req, "contact-reply", null, `${m.email} · ${text.slice(0, 120)}`);
+    res.json({ ok: true, message: `Answer sent to ${m.email}.` });
   } catch (err) {
     next(err);
   }

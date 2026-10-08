@@ -138,6 +138,7 @@
   const userLink = (name, id) => (id ? h("a", { href: "#player/" + id }, name) : name);
   function modal(title, fields, okText, onOk, danger) {
     const card = $("#modalCard"), inputs = {};
+    card.classList.remove("wide");
     const form = h("form", { class: "ann" }, h("h2", null, title),
       fields.map((f) => f.text ? h("p", { class: "muted" }, f.text) : h("label", { class: "fld" }, h("span", null, f.label),
         (inputs[f.name] = f.options ? h("select", null, f.options.map(([v, t]) => h("option", { value: v }, t)))
@@ -390,8 +391,10 @@
         box.replaceChildren(d.list.length ? h("div", null, d.list.map((m) => panel(null,
           h("div", { class: "tools" }, h("span", { class: "tag blue" }, m.topic), h("b", null, m.name || "(no name)"), h("a", { href: "mailto:" + m.email }, m.email),
             m.username ? h("span", { class: "tag" }, "player: " + m.username) : null, h("span", { class: "muted small" }, fmtDate(m.createdAt)), h("span", { style: "flex:1" }),
+            h("button", { class: "b b-sm b-orange", onclick: () => replyLetter(m, load).catch(oops) }, (m.replies || []).length ? "Reply again" : "Reply"),
             h("button", { class: "b b-sm " + (m.handled ? "b-ghost" : "b-green"), onclick: async () => { try { await api("/contact/" + m._id, { handled: !m.handled }); load(); refreshCounts(); } catch (e) { oops(e); } } }, m.handled ? "Mark as open" : "Mark as answered")),
-          h("p", { style: "white-space:pre-wrap;margin:6px 0 0" }, m.message)))) : h("p", { class: "empty" }, "No messages waiting."));
+          h("p", { style: "white-space:pre-wrap;margin:6px 0 0" }, m.message),
+          (m.replies || []).map((r) => h("div", { class: "reply-done" }, h("small", null, `Answered by ${r.admin} · ${fmtDate(r.at)}`), h("p", null, r.text)))))) : h("p", { class: "empty" }, "No messages waiting."));
       };
       sel.onchange = () => load().catch(oops);
       main.append(h("div", { class: "tools" }, sel), box);
@@ -426,6 +429,37 @@
     },
   };
 
+  /* ---------- answer a Contact message: the real email, with the answer typed right inside the letter ---------- */
+  async function replyLetter(m, after) {
+    const d = await api(`/contact/${m._id}/letter`), card = $("#modalCard");
+    const he = d.lang === "he";
+    const frame = h("iframe", { class: "letter-frame", title: "The answer email" });
+    const send = h("button", { class: "b b-orange", type: "button" }, "Send answer");
+    const note = h("span", { class: "small muted" }, `To ${d.email} · in ${he ? "Hebrew" : "English"} (the language they wrote in)`);
+    card.replaceChildren(...[h("h2", null, `Answer ${m.name || m.email}`), note, frame,
+      d.emailOn ? null : h("p", { class: "bad small", style: "margin:0" }, "Email isn't set up on the server (RESEND_API_KEY), so it can't be sent yet."),
+      h("div", { class: "row" }, h("button", { class: "b b-ghost", type: "button", onclick: close }, "Cancel"), send)].filter(Boolean));
+    card.classList.add("wide");
+    $("#modal").hidden = false;
+    // the letter, with a text box where the answer goes
+    const box = `<textarea id="ans" dir="${he ? "rtl" : "ltr"}" placeholder="${he ? "כתבו כאן את התשובה…" : "Write your answer here…"}"></textarea>`;
+    const css = `<style>#ans{display:block;width:100%;box-sizing:border-box;min-height:140px;border:2px dashed #ffc98a;border-radius:14px;background:#fffaf0;padding:12px 14px;
+      font:inherit;font-size:17px;line-height:28px;color:#33456e;resize:none;overflow:hidden;outline:0}#ans:focus{border-color:#ff9a1f;background:#fff}a{pointer-events:none}</style>`;
+    frame.srcdoc = d.html.replace(d.slot, box).replace("</head>", css + "</head>");
+    let ans = null;
+    const fit = () => { const doc = frame.contentDocument; if (!doc) return; if (ans) { ans.style.height = "auto"; ans.style.height = ans.scrollHeight + 4 + "px"; } frame.style.height = doc.documentElement.scrollHeight + "px"; };
+    frame.onload = () => { ans = frame.contentDocument.getElementById("ans"); ans.addEventListener("input", fit); fit(); setTimeout(fit, 400); ans.focus(); };
+    send.onclick = async () => {
+      const text = ans ? ans.value.trim() : "";
+      if (text.length < 2) return toast("Write your answer inside the letter first.", true);
+      if (!confirm(`Send this answer to ${d.email}?`)) return;
+      send.disabled = true;
+      try { toast((await api(`/contact/${m._id}/reply`, { text })).message); close(); after(); refreshCounts(); } catch (e) { oops(e); }
+      send.disabled = false;
+    };
+    function close() { $("#modal").hidden = true; card.classList.remove("wide"); }
+  }
+
   /* ---------- history tables ---------- */
   const chatTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => userLink(r.username, r.userId)],
@@ -441,7 +475,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "code-off": "Switched off a code", "code-on": "Switched on a code" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "code-off": "Switched off a code", "code-on": "Switched on a code" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],

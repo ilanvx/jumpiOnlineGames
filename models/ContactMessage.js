@@ -10,6 +10,8 @@ const contactSchema = new mongoose.Schema(
     username: { type: String, default: "" },   // filled in when the sender is signed in to Jumpi
     lang: { type: String, default: "en" },
     handled: { type: Boolean, default: false },
+    // answers sent by email from the admin panel (mail/contactReply.js)
+    replies: { type: [{ text: String, admin: String, at: { type: Date, default: Date.now } }], default: [] },
   },
   { timestamps: true }
 );

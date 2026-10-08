@@ -124,6 +124,12 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .code-txt{font:400 1.05rem var(--display);letter-spacing:.06em;color:var(--ink)}
 .code-uses{max-height:360px;overflow:auto}
 
+/* contact answers */
+.modal-card.wide{width:min(720px,100%);max-height:calc(100vh - 32px);overflow:auto}
+.letter-frame{width:100%;height:600px;border:0;border-radius:16px;background:#1fb6ff;display:block}
+.reply-done{margin-top:10px;padding:10px 14px;border-radius:12px;background:#e3f8ea;border-inline-start:4px solid #2fd36b}
+.reply-done small{color:#17803d;font-weight:600}.reply-done p{margin:4px 0 0;white-space:pre-wrap}
+
 /* modal + toast */
 .modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgb(10 20 50 / .55);backdrop-filter:blur(3px)}
 .modal-card{width:min(440px,100%);background:#fff;border-radius:22px;padding:22px;box-shadow:0 10px 0 #c3cfdf,0 30px 60px rgb(0 0 0 / .3);display:grid;gap:12px}
