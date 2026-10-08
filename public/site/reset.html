@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumpi · New password</title>
+<meta name="description" content="Forgot your Jumpi password? Get a link by email and make a new one.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/jumpi-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/reset.css">
+</head>
+<body class="rp">
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <a class="lg-back" href="/play" data-en="← Back to the game" data-he="חזרה למשחק →">← Back to the game</a>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<main class="rp-hero">
+  <div class="rp-sky" aria-hidden="true"><i class="cl c1"></i><i class="cl c2"></i><i class="cl c3"></i></div>
+  <div class="rp-stage"><canvas id="rpCanvas" role="img" aria-label="A Jumpi with a big golden key next to a padlock"></canvas></div>
+
+  <section class="rp-card" aria-live="polite">
+    <!-- 1. ask for the link -->
+    <form class="rp-view" data-v="forgot" id="fForm" novalidate>
+      <h1 data-en="Forgot your password?" data-he="שכחת את הסיסמה?">Forgot your password?</h1>
+      <p data-en="No worries, it happens to everyone! Type the email of your Jumpi account and we'll send you a link to make a new password." data-he="לא נורא, זה קורה לכולם! כתבו את האימייל של חשבון הג'אמפי ונשלח לכם קישור ליצירת סיסמה חדשה.">No worries, it happens to everyone! Type the email of your Jumpi account and we'll send you a link to make a new password.</p>
+      <label class="rp-field"><span data-en="Email or username" data-he="אימייל או שם משתמש">Email or username</span>
+        <input id="fEmail" type="text" inputmode="email" autocomplete="email" maxlength="254" required></label>
+      <p class="rp-msg" id="fMsg" role="alert"></p>
+      <button class="rp-cta" id="fGo" type="submit" data-en="SEND ME A LINK" data-he="שלחו לי קישור">SEND ME A LINK</button>
+      <p class="rp-small"><span data-en="Remembered it?" data-he="נזכרתם?">Remembered it?</span> <a href="/play" data-en="Back to log in" data-he="חזרה להתחברות">Back to log in</a></p>
+    </form>
+
+    <!-- 2. the email is on its way -->
+    <div class="rp-view" data-v="sent" hidden>
+      <h1 data-en="Check your email!" data-he="בדקו את האימייל!">Check your email!</h1>
+      <p><span data-en="If there's a Jumpi account for" data-he="אם יש חשבון ג'אמפי עבור">If there's a Jumpi account for</span> <b id="sTo" dir="ltr"></b><span data-en=", a link is on its way. It works for 30 minutes." data-he=", קישור כבר בדרך. הוא עובד 30 דקות.">, a link is on its way. It works for 30 minutes.</span></p>
+      <ul class="rp-tips">
+        <li data-en="Don't see it? Look in the spam or promotions folder." data-he="לא רואים אותו? חפשו בתיקיית הספאם או קידומי מכירות.">Don't see it? Look in the spam or promotions folder.</li>
+        <li data-en="Kids: ask a grown-up to help you open the email." data-he="ילדים: בקשו ממבוגר שיעזור לכם לפתוח את האימייל.">Kids: ask a grown-up to help you open the email.</li>
+      </ul>
+      <button class="rp-cta ghost" id="sAgain" type="button" disabled data-en="SEND AGAIN" data-he="שליחה שוב">SEND AGAIN</button>
+      <p class="rp-small"><a href="/play" data-en="Back to the game" data-he="חזרה למשחק">Back to the game</a></p>
+    </div>
+
+    <!-- 3. pick a new password -->
+    <form class="rp-view" data-v="reset" id="rForm" novalidate hidden>
+      <h1 data-en="Make a new password" data-he="יוצרים סיסמה חדשה">Make a new password</h1>
+      <p><span data-en="Hi" data-he="היי">Hi</span> <b id="rName"></b>! <span data-en="Pick a new password you'll remember, and don't share it with anyone." data-he="בחרו סיסמה חדשה שתזכרו, ואל תשתפו אותה עם אף אחד.">Pick a new password you'll remember, and don't share it with anyone.</span></p>
+      <label class="rp-field"><span data-en="New password" data-he="סיסמה חדשה">New password</span>
+        <span class="rp-pw"><input id="rPass" type="password" autocomplete="new-password" minlength="8" maxlength="128" required dir="ltr"><button class="rp-eye" type="button" aria-label="Show password" data-for="rPass"></button></span></label>
+      <div class="rp-meter" aria-hidden="true"><i id="rBar"></i></div>
+      <p class="rp-hint" id="rHint" data-en="At least 8 characters. A mix of words and numbers is best!" data-he="לפחות 8 תווים. הכי טוב שילוב של מילים ומספרים!">At least 8 characters. A mix of words and numbers is best!</p>
+      <label class="rp-field"><span data-en="Type it again" data-he="הקלידו שוב">Type it again</span>
+        <span class="rp-pw"><input id="rPass2" type="password" autocomplete="new-password" maxlength="128" required dir="ltr"><button class="rp-eye" type="button" aria-label="Show password" data-for="rPass2"></button></span></label>
+      <p class="rp-msg" id="rMsg" role="alert"></p>
+      <button class="rp-cta" id="rGo" type="submit" data-en="SAVE MY NEW PASSWORD" data-he="שמירת הסיסמה החדשה">SAVE MY NEW PASSWORD</button>
+    </form>
+
+    <!-- 4. all done -->
+    <div class="rp-view" data-v="done" hidden>
+      <h1 data-en="You're all set!" data-he="הכל מוכן!">You're all set!</h1>
+      <p><span data-en="Your new password is saved," data-he="הסיסמה החדשה נשמרה,">Your new password is saved,</span> <b id="dName"></b>. <span data-en="For safety we signed you out on every device, so log in again with the new password." data-he="ליתר ביטחון ניתקנו אתכם מכל המכשירים, אז התחברו שוב עם הסיסמה החדשה.">For safety we signed you out on every device, so log in again with the new password.</span></p>
+      <a class="rp-cta" href="/play" data-en="LET'S PLAY!" data-he="יאללה לשחק!">LET'S PLAY!</a>
+    </div>
+
+    <!-- 5. the link is old / used -->
+    <div class="rp-view" data-v="bad" hidden>
+      <h1 data-en="This link doesn't work any more" data-he="הקישור הזה כבר לא עובד">This link doesn't work any more</h1>
+      <p data-en="Links work for 30 minutes and only once. No problem: ask for a new one!" data-he="קישורים עובדים 30 דקות ופעם אחת בלבד. אין בעיה, בקשו קישור חדש!">Links work for 30 minutes and only once. No problem: ask for a new one!</p>
+      <a class="rp-cta" href="/forgot-password" data-en="SEND ME A NEW LINK" data-he="שלחו לי קישור חדש">SEND ME A NEW LINK</a>
+    </div>
+
+    <div class="rp-view rp-wait" data-v="wait" hidden><span class="rp-spin" aria-hidden="true"></span><span data-en="Checking your link…" data-he="בודקים את הקישור…">Checking your link…</span></div>
+  </section>
+</main>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">Contact</a></footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="/site/reset.js"></script>
+</body>
+</html>

@@ -195,7 +195,7 @@
       const filter = arg || "";
       page("Players");
       const q = h("input", { class: "inp", type: "search", placeholder: "Search username or email…" });
-      const sel = h("select", { class: "inp" }, [["", "All players"], ["online", "Online now"], ["new", "New this week"], ["banned", "Banned"], ["muted", "Muted"], ["admins", "Admins"], ["rich", "Most coins"]].map(([v, t]) => h("option", { value: v, selected: v === filter }, t)));
+      const sel = h("select", { class: "inp" }, [["", "All players"], ["online", "Online now"], ["new", "New this week"], ["banned", "Banned"], ["muted", "Muted"], ["admins", "Admins"], ["unverified", "Email not checked"], ["rich", "Most coins"]].map(([v, t]) => h("option", { value: v, selected: v === filter }, t)));
       const box = h("div");
       let pageNo = 0;
       const load = async (more) => {
@@ -204,7 +204,8 @@
         const t = table([
           ["Player", (r) => h("b", null, r.username)], ["Email", (r) => h("span", { class: "small" }, r.email)], ["Coins", (r) => fmtNum(r.coins)],
           ["Status", (r) => h("span", { class: "chips" }, r.role === "admin" ? h("span", { class: "tag red" }, "admin") : null, r.online ? h("span", { class: "tag green" }, "online") : null,
-            r.bannedUntil ? h("span", { class: "tag red" }, "banned") : null, r.mutedUntil ? h("span", { class: "tag orange" }, "muted") : null)],
+            r.bannedUntil ? h("span", { class: "tag red" }, "banned") : null, r.mutedUntil ? h("span", { class: "tag orange" }, "muted") : null,
+            !r.verified ? h("span", { class: "tag orange" }, "email not checked") : null)],
           ["Joined", (r) => h("span", { class: "small nowrap" }, fmtDate(r.createdAt))], ["Last sign-in", (r) => h("span", { class: "small nowrap" }, ago(r.lastLoginAt))],
         ], d.users, (r) => (location.hash = "#player/" + r.id));
         if (!more) box.replaceChildren();
@@ -229,7 +230,8 @@
             isAdmin ? h("span", { class: "tag red" }, "admin") : h("span", { class: "tag" }, "player"),
             u.online ? h("span", { class: "tag green" }, where(u.online)) : h("span", { class: "tag" }, "offline"),
             u.bannedUntil ? h("span", { class: "tag red" }, `banned · ${until(u.bannedUntil)}`) : null,
-            u.mutedUntil ? h("span", { class: "tag orange" }, `muted · ${until(u.mutedUntil)}`) : null))),
+            u.mutedUntil ? h("span", { class: "tag orange" }, `muted · ${until(u.mutedUntil)}`) : null,
+            !u.verified ? h("span", { class: "tag orange" }, "email not checked") : null))),
         h("dl", { class: "facts", style: "margin-top:14px" },
           [["Email", u.email], ["Coins", fmtNum(u.coins)], ["Joined", fmtDate(u.createdAt)], ["Last sign-in", fmtDate(u.lastLoginAt)],
             ["Friends", u.friends.length], ["Daily streak", u.dailyStreak], ["Furniture placed", u.homeItems], ["Terms accepted", fmtDate(u.acceptedTermsAt)],
@@ -237,8 +239,15 @@
             ["Ban reason", u.banReason || "—"]].map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, String(v)))))));
       // actions
       const A = (label, cls, fn) => h("button", { class: "b b-sm " + cls, onclick: fn }, label);
-      main.append(panel("Actions", isAdmin ? h("p", { class: "muted" }, "Admins can't be moderated from the panel. Use npm run remove-admin on the server first.") : null,
+      const self = u.username === $("#whoName").textContent;
+      const roleDialog = (make) => modal(make ? `Make ${u.username} an admin?` : `Remove admin from ${u.username}?`,
+        [{ text: make ? "Admins can ban, mute, give coins and items, read private messages and see this panel. Only do this for people you fully trust." : "They become a regular player and lose every admin tool right away." },
+          { name: "password", label: "Your password (to confirm it's you)", type: "password", max: 128 }],
+        make ? "Make admin" : "Remove admin", (v) => act(u.id, make ? "make-admin" : "remove-admin", { password: v.password }), !make);
+      main.append(panel("Actions", isAdmin ? h("p", { class: "muted" }, self ? "This is you." : "Admins can't be moderated. Remove the admin role first to ban, mute or rename them.") : null,
         h("div", { class: "acts" },
+          !u.verified ? A("Mark email as checked", "b-green", () => act(u.id, "verify", {}, `Let ${u.username} log in without the email code?`)) : null,
+          !self ? (isAdmin ? A("Remove admin", "b-red", () => roleDialog(false)) : A("Make admin", "b-violet", () => roleDialog(true))) : null,
           !isAdmin && u.online ? A("Kick from game", "b-red", () => act(u.id, "kick", {}, `Kick ${u.username} out of the game?`)) : null,
           !isAdmin ? (u.bannedUntil ? A("Unban", "b-green", () => act(u.id, "unban", {}, `Unban ${u.username}?`)) : A("Ban", "b-red", () => banDialog(u))) : null,
           !isAdmin ? (u.mutedUntil ? A("Unmute", "b-green", () => act(u.id, "unmute", {}, `Let ${u.username} chat again?`)) : A("Mute chat", "b-orange", () => muteDialog(u.id, u.username))) : null,
@@ -432,7 +441,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "code-off": "Switched off a code", "code-on": "Switched on a code" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "code-off": "Switched off a code", "code-on": "Switched on a code" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],

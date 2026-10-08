@@ -7,6 +7,8 @@ import { checkName } from "../public/shared/profanity.js";
 import crypto from "node:crypto";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { welcomeEmail } from "../mail/welcome.js";
+import { resetEmail } from "../mail/reset.js";
+import { PUBLIC_URL } from "../mail/send.js";
 
 const router = express.Router();
 
@@ -422,6 +424,71 @@ router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
     await user.save();
     if (p) await finishLogin(req, res, user, p.remember);
     res.json({ user: user.toPublic(), tab: tabToken(user) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- forgot password: a link by email (/forgot-password → email → /reset-password?token=…) ----------
+   The answer never says whether an account exists. The link works for 30 minutes and once; only its hash is saved.
+   A new password signs the account out everywhere and also counts as checking the email. */
+const RESET_MIN = 30, RESET_GAP = 60_000, RESETS_PER_HOUR = 3;
+const resetHash = (token) => crypto.createHash("sha256").update(String(token)).digest("hex");
+const forgotLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 8 });
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
+async function resetUser(token) {
+  const t = String(token || "");
+  if (!/^[A-Za-z0-9_-]{30,80}$/.test(t)) return null;
+  const user = await User.findOne({ "reset.hash": resetHash(t) });
+  return user && user.reset && Date.now() < user.reset.expires ? user : null;
+}
+router.post("/forgot", requireJson, forgotLimiter, async (req, res, next) => {
+  try {
+    if (!EMAIL_ON()) return res.status(503).json({ code: "off", error: "Password reset by email isn't switched on yet. Write to support@jumpigames.com and we'll help." });
+    const id = clean(req.body.email).toLowerCase();
+    if (!id || id.length > 254) return res.status(400).json({ code: "empty", error: "Type the email of your Jumpi account." });
+    const user = await User.findOne(id.includes("@") ? { email: id } : { usernameLower: id });
+    const done = () => res.json({ ok: true, wait: Math.ceil(RESET_GAP / 1000) });
+    if (!user) return done();   // same answer either way
+    const now = Date.now(), old = user.reset || {};
+    const sends = (old.sends || []).filter((t) => now - t < 3600_000);
+    if ((sends.length && now - sends[sends.length - 1] < RESET_GAP) || sends.length >= RESETS_PER_HOUR) return done();   // quietly: no flood of emails
+    const token = crypto.randomBytes(32).toString("base64url");
+    user.reset = { hash: resetHash(token), expires: now + RESET_MIN * 60_000, sends: [...sends, now] };
+    user.markModified("reset");
+    await user.save();
+    done();   // answer first (the same speed whether or not the account exists), then send
+    sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN }) })
+      .then((r) => { if (!r.ok) console.error("reset email failed for", user.username); });
+  } catch (err) {
+    next(err);
+  }
+});
+// is this link still good? (the page asks before showing the new-password form)
+router.post("/reset/check", requireJson, resetLimiter, async (req, res, next) => {
+  try {
+    const user = await resetUser(req.body.token);
+    if (!user) return res.status(400).json({ code: "bad", error: "This link doesn't work any more." });
+    res.json({ ok: true, username: user.username });
+  } catch (err) {
+    next(err);
+  }
+});
+router.post("/reset", requireJson, resetLimiter, async (req, res, next) => {
+  try {
+    const user = await resetUser(req.body.token);
+    if (!user) return res.status(400).json({ code: "bad", error: "This link doesn't work any more." });
+    const pw = req.body.password;
+    if (typeof pw !== "string" || pw.length < MIN_PASSWORD) return res.status(400).json({ code: "short", error: `Password needs at least ${MIN_PASSWORD} characters.` });
+    if (pw.length > MAX_PASSWORD) return res.status(400).json({ code: "long", error: "That password is too long." });
+    if (pw.toLowerCase() === user.username.toLowerCase()) return res.status(400).json({ code: "name", error: "Your password can't be your username." });
+    user.passwordHash = await bcrypt.hash(pw, 12);
+    user.tokenVersion = (user.tokenVersion || 0) + 1;   // signed out on every device
+    user.reset = undefined;
+    user.emailVerified = true;                            // they opened the email, so it's theirs
+    user.verify = undefined;
+    await user.save();
+    res.json({ ok: true, username: user.username });
   } catch (err) {
     next(err);
   }

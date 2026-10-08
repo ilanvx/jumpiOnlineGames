@@ -136,6 +136,7 @@ router.use((req, res, next) => {
 const brief = (u) => ({
   id: u._id.toString(), username: u.username, email: u.email, role: u.role || "player", coins: u.coins || 0,
   createdAt: u.createdAt, lastLoginAt: u.lastLoginAt || null,
+  verified: u.emailVerified !== false,   // false only while an email code is still waiting
   bannedUntil: u.bannedUntil && u.bannedUntil.getTime() > Date.now() ? u.bannedUntil : null, banReason: u.banReason || "",
   mutedUntil: u.mutedUntil && u.mutedUntil.getTime() > Date.now() ? u.mutedUntil : null,
   online: onlineWhere(u._id.toString()),
@@ -184,11 +185,12 @@ router.get("/users", async (req, res, next) => {
     if (filter === "banned") find.bannedUntil = { $gt: now };
     else if (filter === "muted") find.mutedUntil = { $gt: now };
     else if (filter === "admins") find.role = "admin";
+    else if (filter === "unverified") find.emailVerified = false;
     else if (filter === "new") find.createdAt = { $gte: new Date(Date.now() - 7 * 864e5) };
     else if (filter === "online") find._id = { $in: onlinePlayers().map((p) => p.userId).filter(isId) };
     const sort = filter === "rich" ? { coins: -1 } : { createdAt: -1 };
     const [list, total] = await Promise.all([
-      User.find(find).sort(sort).skip(page * PAGE).limit(PAGE).select("username email role coins createdAt lastLoginAt bannedUntil banReason mutedUntil"),
+      User.find(find).sort(sort).skip(page * PAGE).limit(PAGE).select("username email role coins createdAt lastLoginAt bannedUntil banReason mutedUntil emailVerified"),
       User.countDocuments(find),
     ]);
     res.json({ users: list.map(brief), total, page, pages: Math.ceil(total / PAGE) });
@@ -246,6 +248,7 @@ router.get("/users/:id/messages/:other", async (req, res, next) => {
 });
 
 /* ---------- actions on a player ---------- */
+const passwordOk = async (req) => typeof req.body.password === "string" && req.body.password.length <= 128 && (await bcrypt.compare(req.body.password, req.admin.passwordHash));
 const ACTIONS = {
   async kick(req, res) {
     const u = await target(req, res); if (!u) return;
@@ -350,6 +353,38 @@ const ACTIONS = {
     moderation.refresh(u);
     audit(req, "take-item", u, `${item.name} (${id})`);
     return `Took ${item.name} from ${u.username}.`;
+  },
+  // the email check (code) is skipped: the account can log in right away
+  async verify(req, res) {
+    const u = await target(req, res, { allowAdmin: true }); if (!u) return;
+    if (u.emailVerified === true) return fail(res, 409, `${u.username}'s email is already checked.`);
+    u.emailVerified = true;
+    u.verify = undefined;
+    await u.save();
+    audit(req, "verify-email", u, u.email);
+    return `${u.username} can log in now (email marked as checked).`;
+  },
+  // admin role: the acting admin types their own password again
+  async "make-admin"(req, res) {
+    const u = await target(req, res); if (!u) return;
+    if (!(await passwordOk(req))) return fail(res, 401, "Wrong password. The role wasn't changed.");
+    if (u.isBanned()) return fail(res, 409, "Unban them first.");
+    u.role = "admin";
+    u.adminInvisible = true;
+    await u.save();
+    moderation.kick(u._id.toString(), "kicked:role");   // the game reloads with the admin tools
+    audit(req, "make-admin", u);
+    return `${u.username} is an admin now.`;
+  },
+  async "remove-admin"(req, res) {
+    const u = await target(req, res, { allowAdmin: true }); if (!u) return;
+    if (u.role !== "admin") return fail(res, 409, `${u.username} isn't an admin.`);
+    if (!(await passwordOk(req))) return fail(res, 401, "Wrong password. The role wasn't changed.");
+    u.role = "player";
+    await u.save();
+    moderation.kick(u._id.toString(), "kicked:role");
+    audit(req, "remove-admin", u);
+    return `${u.username} is a regular player now.`;
   },
   async delete(req, res) {
     const u = await target(req, res); if (!u) return;

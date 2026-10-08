@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
     // email check: a 6-digit code sent with Resend (only when RESEND_API_KEY is set). Accounts can't log in until it's true.
     emailVerified: { type: Boolean },
     verify: { type: mongoose.Schema.Types.Mixed },   // { hash, expires, tries, sentAt, sends: [times] } while a code is waiting
+    reset: { type: mongoose.Schema.Types.Mixed },    // forgot password: { hash, expires, sends: [times] } while a reset link is waiting
     lastLoginAt: { type: Date },
     // set to true for paying members (for now, flip it by hand in Atlas)
     subscriber: { type: Boolean, default: false },

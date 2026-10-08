@@ -1,0 +1,56 @@
+/* Forgot / reset password: a bright sky, a 3D Jumpi with a golden key, and a card styled like the game's login window */
+html,body{overflow-x:clip}
+body.rp{background:#0b8fe0;display:flex;flex-direction:column;min-height:100vh}
+.rp-hero{position:relative;flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:20px;padding:36px clamp(16px,5vw,72px) 56px;overflow:hidden;
+  background:radial-gradient(circle at 20% 15%,#7ddcff 0,transparent 40%),radial-gradient(circle at 85% 80%,#5fc8ff 0,transparent 35%),linear-gradient(180deg,#1fb6ff,#0b8fe0)}
+.rp-sky{position:absolute;inset:0;pointer-events:none}
+.rp-sky .cl{position:absolute;height:44px;border-radius:44px;background:rgb(255 255 255 / .6);animation:rpCl 70s linear infinite}
+.rp-sky .cl::before,.rp-sky .cl::after{content:"";position:absolute;bottom:14px;border-radius:50%;background:inherit}
+.rp-sky .cl::before{left:18%;width:46%;height:56px}.rp-sky .cl::after{left:48%;width:36%;height:40px}
+.rp-sky .c1{width:200px;left:-12%;top:14%}.rp-sky .c2{width:140px;left:35%;top:70%;animation-duration:90s;animation-delay:-40s;opacity:.7}.rp-sky .c3{width:240px;left:62%;top:8%;animation-duration:110s;animation-delay:-70s;opacity:.55}
+@keyframes rpCl{to{transform:translateX(120vw)}}
+.rp-stage{position:relative;z-index:1;height:clamp(320px,42vw,540px)}
+.rp-stage canvas{width:100%;height:100%;display:block;cursor:pointer}
+.rp-card{position:relative;z-index:1;width:min(460px,100%);justify-self:center;box-sizing:border-box;padding:26px 24px 22px;border-radius:22px;
+  background:#3e5b86;border:3px solid #1f3355;box-shadow:0 10px 0 #1f3355,0 26px 50px rgb(6 40 90 / .35);color:#fff;font-family:var(--body)}
+.rp-view{display:flex;flex-direction:column;gap:14px}
+.rp-view[hidden]{display:none}
+.rp-card h1{margin:0;font:400 clamp(1.7rem,3vw,2.15rem)/1.08 var(--display);letter-spacing:.02em;text-shadow:0 4px 0 #1f3355}
+.rp-card p{margin:0;color:#dbe7f7;line-height:1.5}
+.rp-card p b{color:#ffd23a;font-weight:600}
+.rp-field{display:flex;flex-direction:column;gap:6px;font-weight:500;color:#dbe7f7}
+.rp-field input{box-sizing:border-box;width:100%;height:56px;border:0;border-radius:12px;padding:6px 18px 0;background:#fff;box-shadow:inset 0 6px 0 #dbe5ee;color:#33456e;font:500 1.1rem var(--body)}
+.rp-field input:focus{outline:3px solid #ffb547;outline-offset:2px}
+.rp-pw{position:relative;display:block}
+.rp-pw input{padding-inline-end:56px}
+.rp-eye{position:absolute;top:50%;inset-inline-end:8px;translate:0 -42%;width:42px;height:42px;border:0;border-radius:10px;background:#eef3fa center/24px no-repeat;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z' fill='none' stroke='%2333456e' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='3.2' fill='%2333456e'/%3E%3C/svg%3E")}
+.rp-eye.on{background-color:#ffe2b0}
+.rp-meter{height:10px;border-radius:10px;background:rgb(0 0 0 / .2);overflow:hidden;margin-top:-4px}
+.rp-meter i{display:block;height:100%;width:0;border-radius:10px;background:#ff5a5a;transition:width .25s,background .25s}
+.rp-hint{font-size:.92rem;margin-top:-6px!important}
+.rp-msg{min-height:1.2em;margin:-4px 0 0!important;color:#ffd2d2!important;font-weight:500}
+.rp-msg.ok{color:#b8ffcf!important}
+.rp-cta{display:flex;align-items:center;justify-content:center;min-height:58px;border:0;border-radius:14px;cursor:pointer;text-decoration:none;
+  font:400 1.35rem/1 var(--display);letter-spacing:.04em;color:#fff;background:linear-gradient(180deg,#5fe08a,#2fd36b 55%);box-shadow:0 6px 0 #17913f,inset 0 2px 0 rgb(255 255 255 / .4);text-shadow:0 2px 0 #17913f;transition:transform .1s,filter .15s}
+.rp-cta:hover{filter:brightness(1.06)}.rp-cta:active{transform:translateY(4px);box-shadow:0 2px 0 #17913f}
+.rp-cta:disabled{filter:grayscale(.6) brightness(.85);cursor:default;transform:none}
+.rp-cta.ghost{background:linear-gradient(180deg,#5a77a6,#2c4468 60%);box-shadow:0 6px 0 #1b2c47;text-shadow:0 2px 0 #1b2c47}
+.rp-small{font-size:.95rem;text-align:center}
+.rp-small a{color:#ffd23a;font-weight:600}
+.rp-tips{margin:0;padding-inline-start:20px;color:#dbe7f7;display:grid;gap:6px}
+.rp-wait{flex-direction:row;align-items:center;justify-content:center;min-height:120px;font:500 1.1rem var(--body)}
+.rp-spin{width:26px;height:26px;border-radius:50%;border:4px solid rgb(255 255 255 / .3);border-top-color:#ffd23a;animation:rpSpin .8s linear infinite}
+@keyframes rpSpin{to{transform:rotate(360deg)}}
+.shake{animation:rpShake .4s}
+@keyframes rpShake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.rp .lg-foot{background:#0e1838;color:#c8d4f2}.rp .lg-foot a{color:#ffd23a}
+[lang="he"] .rp-card h1,[lang="he"] .rp-cta{font-family:"Secular One",var(--display)}
+body.hero-shot .lg-top,body.hero-shot .lg-foot,body.hero-shot .rp-card,body.hero-shot .rp-sky{display:none}
+body.hero-shot .rp-hero{display:block;padding:0}body.hero-shot .rp-stage{position:fixed;inset:0;height:auto}
+@media (max-width:860px){
+  .rp-hero{grid-template-columns:1fr;padding-top:10px;gap:0}
+  .rp-stage{height:clamp(220px,58vw,320px)}
+  .rp-card{margin-top:-10px}
+}
+@media (prefers-reduced-motion:reduce){.rp-sky .cl,.rp-spin{animation:none}}

@@ -226,6 +226,9 @@ body.login-in #loginForm,body.signup-in #signupForm,body.store-in #storeCard{opa
 .cta.ready{background:#2fd36b;color:#fff;box-shadow:0 4px 0 #17a24a;text-shadow:0 2px 0 #17a24a}
 .cta.ready:hover{background:#45e07e}
 .cta.ready:active{box-shadow:0 0 0 #17a24a}
+.login-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.forgot-link{color:#ffd23a;font-weight:600;font-size:.95rem;text-decoration:underline;text-underline-offset:3px}
+.forgot-link:hover{color:#ffe58a}
 .form-msg{min-height:1.2em;margin:-6px 0 0;color:var(--err);font-weight:500;font-size:.95rem}
 .form-msg.ok{color:#b8ffcf}
 .shake{animation:shake .4s}
@@ -2844,11 +2847,14 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
     <label for="password">Password</label>
     <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password...">
   </div>
+  <div class="login-row">
   <label class="remember" for="remember">
     <input id="remember" name="remember" type="checkbox">
     <span class="box"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 L8.5 15 L16 6" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     Remember me
   </label>
+  <a class="forgot-link" href="/forgot-password">Forgot password?</a>
+  </div>
   <p class="form-msg" id="formMsg" role="status"></p>
   <button class="cta" id="loginSubmit" type="submit">Log In</button>
 </form>
@@ -5295,6 +5301,7 @@ function netJoin(){
     socket.on("muted",d=>{myMutedUntil=d.until||0;if(myMutedUntil){setTyping(false);toast(mutedText());sfx.error();}else{toast("You can chat again.");sfx.tick(true);}});
     socket.on("chat:muted",d=>{myMutedUntil=d.until||myMutedUntil;myBubble.classList.remove("show");toast(mutedText());sfx.error();});
     socket.on("coins",d=>{if(me)me.coins=d.coins;paintCoins(true);if(d.delta>0){toast("You got "+d.delta.toLocaleString("en-US")+" coins!");sfx.success();}});
+    socket.on("kicked:role",()=>{location.reload();});   // made admin / no longer admin in the admin panel
     socket.on("kicked:admin",()=>{exitGame();toast("You were kicked from the Plaza by an admin.");sfx.error();});
     socket.on("banned",d=>{exitGame();setAccount(null);socket.disconnect();socket=null;toast(d.message||"This account was banned.");sfx.error();});
     socket.on("announce",d=>showAnnouncement(d.text,d.by));

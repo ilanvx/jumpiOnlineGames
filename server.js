@@ -77,7 +77,8 @@ const gameGate = async (req, res, next) => {
     try { admin = (await currentUser(req))?.role === "admin"; } catch {}
     res.set("Cache-Control", "no-store");
     // "?staff" opens the game anyway so an admin can log in (players who log in there are refused by the socket)
-    if (!admin && !("staff" in req.query)) return res.sendFile(path.join(PUBLIC_DIR, "site", "game-soon.html"));
+    // "?soon" shows the countdown page to anyone (so an admin can see it too)
+    if ((!admin && !("staff" in req.query)) || "soon" in req.query) return res.sendFile(path.join(PUBLIC_DIR, "site", "game-soon.html"));
   }
   page("index.html")(req, res, next);
 };
@@ -86,7 +87,8 @@ app.get(["/studio", "/studio/"], gameGate);   // image studio (pictures made in 
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/contact", page("site/contact.html"));
-app.get("/trailer", page("site/trailer.html"));   // the trailer video (public/site/trailer/)
+app.get("/trailer", page("site/trailer.html"));
+app.get(["/forgot-password", "/reset-password"], (req, res) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/reset.html")(req, res); });   // forgot password (routes/auth.js /forgot, /reset)   // the trailer video (public/site/trailer/)
 // while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
 app.get("/store", (req, res, next) => page(STORE_OPEN ? "site/store.html" : "site/store-soon.html")(req, res, next));
 app.get("/site/store.html", (req, res, next) => (STORE_OPEN ? next() : res.redirect(302, "/store")));
