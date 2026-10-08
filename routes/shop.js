@@ -1,7 +1,7 @@
 import express from "express";
 import { User } from "../models/User.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
-import { currentUser, requireJson } from "./auth.js";
+import { currentUser, requireJson, needsVerify } from "./auth.js";
 import { notifyLook, notifyCoins } from "../realtime/plaza.js";
 
 const router = express.Router();
@@ -12,6 +12,7 @@ export async function requireUser(req, res, next) {
     const user = await currentUser(req);
     if (!user) return res.status(401).json({ error: "Please log in first." });
     if (user.isBanned()) return res.status(403).json({ error: "This account is banned." });
+    if (needsVerify(user)) return res.status(403).json({ error: "Please check your email first.", code: "verify" });
     // the game says which account its window is playing. One browser keeps one login cookie, so after
     // logging in / switching in another tab this window would act for the other account: refuse instead.
     const as = req.get("x-jumpi-as");

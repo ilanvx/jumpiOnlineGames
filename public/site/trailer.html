@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trailer · Jumpi Games</title>
+<meta name="description" content="Watch the Jumpi trailer: a day in Jumpi, from sunrise on the beach to a stormy night, made with the real game.">
+<link rel="icon" href="/jumpi-logo.png">
+<meta property="og:title" content="Jumpi Games: the trailer">
+<meta property="og:image" content="/site/trailer/poster.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="/site/site.css">
+<link rel="stylesheet" href="/site/trailer.css">
+</head>
+<body class="tr-page">
+<header class="tr-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="104" height="61"></a>
+  <a class="tr-back" href="/">← Back to Jumpi</a>
+  <a class="btn btn-orange btn-sm" href="/play">Play now</a>
+</header>
+
+<main class="tr-main">
+  <h1>Live your story.</h1>
+  <p class="tr-lead">A day in Jumpi, from sunrise on the beach to a stormy night. Every shot is the real game.</p>
+
+  <div class="tr-screen">
+    <video id="trVideo" src="/site/trailer/jumpi-trailer.mp4" poster="/site/trailer/poster.jpg" preload="metadata" playsinline controls></video>
+    <button class="tr-play" id="trPlay" type="button" aria-label="Play the trailer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="#fff" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="tr-cta">
+    <a class="btn btn-orange btn-xl" href="/play">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 L19.5 12 L7 19.5 Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      Play free now
+    </a>
+    <span>No download needed · works in your browser</span>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <img src="/jumpi-logo.png" alt="Jumpi Games" width="110" height="64">
+    <nav aria-label="Footer"><a href="/">Home</a><a href="/store">Store</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/contact">Contact</a></nav>
+    <p>© 2026 Jumpi Games™. Made with lots of jumps.</p>
+  </div>
+</footer>
+<script>
+  const v = document.getElementById("trVideo"), b = document.getElementById("trPlay");
+  b.onclick = () => { v.play(); };
+  v.addEventListener("play", () => b.hidden = true);
+  v.addEventListener("pause", () => { if (!v.seeking) b.hidden = false; });
+  v.addEventListener("ended", () => b.hidden = false);
+</script>
+</body>
+</html>

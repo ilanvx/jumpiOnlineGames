@@ -39,6 +39,7 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
         theirs: t[theirs].items,
         readyMe: t[mine].ready,
         readyThem: t[theirs].ready,
+        locked: !!t.locked,
       });
   }
   // say no and put the page back in sync with the real table
@@ -63,6 +64,8 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
     if (!from) return;
     if (!target) return fail("That player isn't here any more.");
     if (target.userId === from.userId) return fail("You can't trade with yourself.");
+    // nobody can ask an admin; an admin may ask a player, but then nothing can be put on the table
+    if (target.role === "admin" && from.role !== "admin") return fail("Admins can't be asked to trade.");
     if (bySocket.has(socket.id) || io.__duel?.bySocket.has(socket.id)) return fail("Finish what you're doing first.");
     if (bySocket.has(target.id) || io.__duel?.bySocket.has(target.id)) return fail(`${target.username} is busy right now.`);
     invites.set(`${socket.id}>${target.id}`, Date.now());
@@ -84,14 +87,15 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
       a: { sid: fromId, userId: asker.userId, username: asker.username, items: [], ready: false },
       b: { sid: socket.id, userId: meP.userId, username: meP.username, items: [], ready: false },
       busy: false,
+      locked: asker.role === "admin" || meP.role === "admin",   // a trade with an admin: no items on either side
     };
     trades.set(t.id, t);
     setStatus(t.a.sid, "trade");
     setStatus(t.b.sid, "trade");
     bySocket.set(t.a.sid, t.id);
     bySocket.set(t.b.sid, t.id);
-    sock(t.a.sid)?.emit("trade:open", { id: t.id, partner: { id: t.b.sid, username: t.b.username, look: meP.look } });
-    sock(t.b.sid)?.emit("trade:open", { id: t.id, partner: { id: t.a.sid, username: t.a.username, look: asker.look } });
+    sock(t.a.sid)?.emit("trade:open", { id: t.id, locked: t.locked, partner: { id: t.b.sid, username: t.b.username, look: meP.look } });
+    sock(t.b.sid)?.emit("trade:open", { id: t.id, locked: t.locked, partner: { id: t.a.sid, username: t.a.username, look: asker.look } });
     sendState(t);
   });
 
@@ -104,6 +108,7 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
     const raw = Array.isArray(d?.items) ? d.items : [];
     // the same item may be offered more than once if the player has doubles
     const items = raw.map(String).filter((id) => ITEMS.has(id)).slice(0, MAX_ITEMS);
+    if (t.locked && items.length) return refuse(t, "Items can't be traded with an admin.");
     try {
       const u = await User.findById(t[mine].userId);
       if (!u) return closeTrade(t, "gone");

@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
-import { LOOK_SLOTS, STARTER_MAX, lookItems } from "../catalog.js";
+import { LOOK_SLOTS, STARTER_MAX, lookItems, CATALOG } from "../catalog.js";
+
+// admins always have every item in the game (furniture: this many of each). Admins can't trade, so nothing leaks out.
+const ADMIN_FURNITURE_EACH = 10;
+import { isBirthdayOn } from "../public/shared/birthday.js";
 
 // What sign-up may pick (the free starter items). Index ranges per slot.
 export const LOOK_LIMITS = Object.fromEntries(
@@ -40,6 +44,12 @@ const userSchema = new mongoose.Schema(
     inventory: { type: [String], default: [] },
     acceptedTermsAt: { type: Date, required: true },
     ageConfirmedAt: { type: Date, required: true },
+    birthDate: { type: Date },                       // asked at sign-up (accounts made before that don't have it)
+    birthdayGiftYear: { type: Number },              // the year the birthday present was last given
+    snacks: { type: Array, default: [] },            // the food bar: [{ id, k, i, b }] (realtime/food.js)
+    // email check: a 6-digit code sent with Resend (only when RESEND_API_KEY is set). Accounts can't log in until it's true.
+    emailVerified: { type: Boolean },
+    verify: { type: mongoose.Schema.Types.Mixed },   // { hash, expires, tries, sentAt, sends: [times] } while a code is waiting
     lastLoginAt: { type: Date },
     // set to true for paying members (for now, flip it by hand in Atlas)
     subscriber: { type: Boolean, default: false },
@@ -135,6 +145,11 @@ userSchema.methods.itemCounts = function () {
   const counts = new Map();
   for (const id of this.inventory || []) counts.set(id, (counts.get(id) || 0) + 1);
   for (const id of lookItems(this.publicLook())) if (!counts.has(id)) counts.set(id, 1);
+  if (this.role === "admin")
+    for (const it of CATALOG) {
+      const n = it.category === "furniture" ? ADMIN_FURNITURE_EACH : 1;
+      if ((counts.get(it.id) || 0) < n) counts.set(it.id, n);
+    }
   return counts;
 };
 // make sure everything being worn is also listed in the inventory (keeps doubles)
@@ -162,6 +177,10 @@ userSchema.methods.toPublic = function () {
     role: this.role === "admin" ? "admin" : "player",
     coins: this.coins ?? 0,
     createdAt: this.createdAt,
+    verified: this.emailVerified === true,
+    hasBirthday: !!this.birthDate,   // older accounts are asked once in the game
+    birthdayToday: isBirthdayOn(this.birthDate),
+    mustVerify: !!process.env.RESEND_API_KEY && this.emailVerified !== true,   // the game asks for the email code before playing
   };
 };
 

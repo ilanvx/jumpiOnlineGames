@@ -4,6 +4,8 @@ import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { notifyCoins, notifyUser } from "../realtime/plaza.js";
 import { TIERS, TIER_XP, SEASON_DAY_XP, currentSeason, seasonRewards, tierOf, WHEEL, WHEEL_MS, wheelItem } from "../public/shared/season.js";
+import { BIRTHDAY_COINS, isBirthdayOn, israelDay } from "../public/shared/birthday.js";
+import { OUTFITS } from "../public/shared/outfits.js";
 
 /*
   The Season (free 30-tier track) and the daily Lucky Wheel (public/shared/season.js).
@@ -105,6 +107,23 @@ router.post("/wheel/spin", requireJson, requireUser, async (req, res, next) => {
     if (W.kind === "xp") xp = await addSeasonXp(ok._id, W.amount, { capped: false });
     else await addSeasonXp(ok._id, 20);
     res.json({ slice, prize: { kind: W.kind, coins, xp: W.kind === "xp" ? W.amount : 0, item: item && !hasItem ? item : null }, nextAt: now + WHEEL_MS, user: (await User.findById(ok._id)).toPublic() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- birthday present: coins + the Birthday hat, once a year on the day ---------- */
+const BDAY_HAT = (() => { const i = OUTFITS.hat.findIndex((o) => o.gift === "birthday"); return i >= 0 ? `hat:${i}` : null; })();
+router.post("/birthday/claim", requireJson, requireUser, async (req, res, next) => {
+  try {
+    if (!isBirthdayOn(req.user.birthDate)) return res.status(400).json({ error: "It's not your birthday today." });
+    const year = israelDay().y, hasHat = BDAY_HAT && (req.user.inventory || []).includes(BDAY_HAT);
+    const update = { $set: { birthdayGiftYear: year }, $inc: { coins: BIRTHDAY_COINS } };
+    if (BDAY_HAT && !hasHat) update.$push = { inventory: BDAY_HAT };
+    const ok = await User.findOneAndUpdate({ _id: req.user._id, birthdayGiftYear: { $ne: year } }, update, { new: true });
+    if (!ok) return res.json({ already: true, user: req.user.toPublic() });
+    notifyCoins(ok._id.toString(), ok.coins);
+    res.json({ coins: BIRTHDAY_COINS, item: BDAY_HAT && !hasHat ? BDAY_HAT : null, hat: BDAY_HAT, user: ok.toPublic() });
   } catch (err) {
     next(err);
   }

@@ -38,6 +38,7 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
     if (!from) return;
     if (!target) return fail("That player isn't here any more.");
     if (target.userId === from.userId) return fail("You can't play against yourself.");
+    if (target.role === "admin" && from.role !== "admin") return fail("Admins can't be asked to play.");
     if (busy(socket.id)) return fail("Finish what you're doing first.");
     if (busy(target.id)) return fail(`${target.username} is busy right now.`);
     const u = await User.findById(from.userId).select("coins");

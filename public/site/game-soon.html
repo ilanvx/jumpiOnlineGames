@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumpi · Grand opening</title>
+<meta name="description" content="Jumpi opens on Sunday, 11 October 2026 at 17:00. Our builders are putting the last touches on the Plaza!">
+<link rel="icon" href="/jumpi-logo.png">
+<meta property="og:title" content="Jumpi opens 11.10 at 17:00!">
+<meta property="og:image" content="/site/trailer/poster.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/game-soon.css">
+</head>
+<body class="gs">
+<header class="lg-top gs-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <a class="lg-back" href="/" data-en="← Back to Jumpi" data-he="חזרה לג'אמפי →">← Back to Jumpi</a>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<main class="gs-hero">
+  <div class="gs-sky" aria-hidden="true"><i class="s1"></i><i class="s2"></i><i class="s3"></i><i class="s4"></i><i class="s5"></i><i class="s6"></i><i class="cl c1"></i><i class="cl c2"></i><i class="cl c3"></i></div>
+  <section class="gs-text">
+    <h1><span data-en="The doors open in" data-he="השערים נפתחים בעוד">The doors open in</span></h1>
+    <div class="gs-count" id="gsCount" role="timer" aria-live="off">
+      <div class="gs-unit"><b id="gsD">00</b><span data-en="days" data-he="ימים">days</span></div><i class="gs-dot" aria-hidden="true"></i>
+      <div class="gs-unit"><b id="gsH">00</b><span data-en="hours" data-he="שעות">hours</span></div><i class="gs-dot" aria-hidden="true"></i>
+      <div class="gs-unit"><b id="gsM">00</b><span data-en="minutes" data-he="דקות">minutes</span></div><i class="gs-dot" aria-hidden="true"></i>
+      <div class="gs-unit sec"><b id="gsS">00</b><span data-en="seconds" data-he="שניות">seconds</span></div>
+    </div>
+    <p class="gs-lead" data-en="Our builders are putting the last touches on the Plaza, the beach and the water park. Get ready to jump in!" data-he="הבנאים שלנו מסיימים את הנגיעות האחרונות בפלאזה, בחוף ובפארק המים. תתכוננו לקפוץ פנימה!">Our builders are putting the last touches on the Plaza, the beach and the water park. Get ready to jump in!</p>
+    <div class="gs-btns">
+      <a class="gs-btn trailer" href="/trailer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span data-en="Watch the trailer" data-he="לצפות בטריילר">Watch the trailer</span></a>
+      <a class="gs-btn home" href="/" data-en="Home page" data-he="לדף הבית">Home page</a>
+    </div>
+    <p class="gs-open" id="gsOpen" hidden data-en="Jumpi is open! Jumping in…" data-he="ג'אמפי פתוח! קופצים פנימה…">Jumpi is open! Jumping in…</p>
+  </section>
+  <div class="gs-stage"><canvas id="gsCanvas" role="img" aria-label="Jumpis in hard hats getting the Plaza ready: a crane lifts the Jumpi sign, one builder hammers, one carries a box"></canvas></div>
+</main>
+
+<div class="rn-tape gs-tape" aria-hidden="true"><div class="rn-roll">
+  <span data-en="GRAND OPENING" data-he="פתיחה חגיגית">GRAND OPENING</span><i></i><span>11.10.2026 · 17:00</span><i></i>
+  <span data-en="GRAND OPENING" data-he="פתיחה חגיגית">GRAND OPENING</span><i></i><span>11.10.2026 · 17:00</span><i></i>
+  <span data-en="GRAND OPENING" data-he="פתיחה חגיגית">GRAND OPENING</span><i></i><span>11.10.2026 · 17:00</span><i></i>
+  <span data-en="GRAND OPENING" data-he="פתיחה חגיגית">GRAND OPENING</span><i></i><span>11.10.2026 · 17:00</span><i></i>
+</div></div>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">Contact</a></footer>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module" src="/site/game-soon.js"></script>
+</body>
+</html>

@@ -19,6 +19,7 @@ import storeRoutes from "./routes/store.js";
 import jobRoutes from "./routes/jobs.js";
 import seasonRoutes from "./routes/season.js";
 import { STORE_OPEN } from "./public/shared/store.js";
+import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
 import { saveAllNeeds } from "./realtime/needs.js";
 import { currentUser } from "./routes/auth.js";
 import "./models/Logs.js";
@@ -65,11 +66,25 @@ app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 const PUBLIC_DIR = path.join(__dirname, "public");
 const page = (file) => (req, res) => res.sendFile(path.join(PUBLIC_DIR, file));
 app.get("/", page("site/index.html"));
-app.get(["/play", "/play/"], page("index.html"));
-app.get(["/studio", "/studio/"], page("index.html"));   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
+// before the grand opening (LAUNCH_AT in public/shared/launch.js) the game on jumpigames.com shows the countdown page instead;
+// localhost / other hosts always get the game, and admins who are already logged in can play
+const gameGate = async (req, res, next) => {
+  const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase();
+  if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT) {
+    let admin = false;
+    try { admin = (await currentUser(req))?.role === "admin"; } catch {}
+    res.set("Cache-Control", "no-store");
+    // "?staff" opens the game anyway so an admin can log in (players who log in there are refused by the socket)
+    if (!admin && !("staff" in req.query)) return res.sendFile(path.join(PUBLIC_DIR, "site", "game-soon.html"));
+  }
+  page("index.html")(req, res, next);
+};
+app.get(["/play", "/play/"], gameGate);
+app.get(["/studio", "/studio/"], gameGate);   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/contact", page("site/contact.html"));
+app.get("/trailer", page("site/trailer.html"));   // the trailer video (public/site/trailer/)
 // while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
 app.get("/store", (req, res, next) => page(STORE_OPEN ? "site/store.html" : "site/store-soon.html")(req, res, next));
 app.get("/site/store.html", (req, res, next) => (STORE_OPEN ? next() : res.redirect(302, "/store")));
@@ -88,7 +103,7 @@ app.get(["/admin", "/admin/"], async (req, res, next) => {
   }
 });
 // old addresses still work
-const moved = { "/admin/index.html": "/admin", "/site": "/", "/site/": "/", "/site/index.html": "/", "/index.html": "/play", "/site/terms.html": "/terms", "/site/privacy.html": "/privacy", "/site/contact.html": "/contact" };
+const moved = { "/admin/index.html": "/admin", "/site": "/", "/site/": "/", "/site/index.html": "/", "/index.html": "/play", "/site/terms.html": "/terms", "/site/privacy.html": "/privacy", "/site/contact.html": "/contact", "/site/trailer.html": "/trailer" };
 app.get(Object.keys(moved), (req, res) => res.redirect(301, moved[req.path] + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "")));
 app.use(express.static(PUBLIC_DIR, { index: false }));
 

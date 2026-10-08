@@ -181,5 +181,7 @@ add("shirt", { id: "jersey", name: "Delivery shirt", price: 0, gift: "delivery",
 add("pants", { id: "khaki", name: "Delivery shorts", price: 0, gift: "delivery", base: "#26262e", waist: "#15151a" });
 add("hat", { id: "cap", name: "Delivery cap", price: 0, gift: "delivery", col: "#e8423b", col2: "#ffffff" });
 
+// birthday present (public/shared/birthday.js): only given on your birthday, never sold or traded
+add("hat", { id: "party", name: "Birthday hat", price: 0, gift: "birthday", col: "#ff5fa8", col2: "#ffd23a" });
 export const OUTFITS = out;
 export const OUTFIT_SLOTS = Object.keys(out);

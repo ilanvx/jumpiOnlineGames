@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import { User, LOOK_LIMITS } from "../models/User.js";
 import { lookItems } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
+import crypto from "node:crypto";
+import { EMAIL_ON, sendMail } from "../mail/send.js";
+import { welcomeEmail } from "../mail/welcome.js";
 
 const router = express.Router();
 
@@ -147,6 +150,47 @@ async function savedUsers(req) {
   return { list, users };
 }
 
+/* ---------- email check (6-digit code with Resend) ----------
+   Only when RESEND_API_KEY is set. An account can't log in (no cookie, no game, no API) until emailVerified is true.
+   Between the password and the code the page holds a short "pending" token instead of a login cookie. */
+export const needsVerify = (user) => EMAIL_ON() && user && user.emailVerified !== true;
+const CODE_MIN = 15, SEND_GAP = 55_000, SENDS_PER_HOUR = 6, MAX_TRIES = 5;
+const codeHash = (user, code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(user._id.toString() + ":" + code).digest("hex");
+const pendingToken = (user, remember) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, p: "verify", r: !!remember }, process.env.JWT_SECRET, { expiresIn: "2h" });
+const maskEmail = (e) => { const [a, d] = String(e).split("@"); return (a.length <= 2 ? a[0] + "•" : a.slice(0, 2) + "•".repeat(Math.min(6, a.length - 2))) + "@" + d; };
+async function pendingUser(token) {
+  try {
+    const { sub, v, p, r } = jwt.verify(String(token || ""), process.env.JWT_SECRET);
+    if (p !== "verify") return null;
+    const user = await User.findById(sub);
+    return user && (v || 0) === (user.tokenVersion || 0) ? { user, remember: !!r } : null;
+  } catch { return null; }
+}
+// make a new code, save its hash and email it
+async function sendCode(user, again) {
+  const now = Date.now(), old = user.verify || {};
+  const sends = (old.sends || []).filter((t) => now - t < 3600_000);
+  if (old.sentAt && now - old.sentAt < SEND_GAP) return { ok: false, status: 429, error: "We just sent a code. Check your inbox (and the spam folder) or try again in a minute.", wait: Math.ceil((SEND_GAP - (now - old.sentAt)) / 1000) };
+  if (sends.length >= SENDS_PER_HOUR) return { ok: false, status: 429, error: "That's a lot of codes! Please wait a while and try again." };
+  const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+  user.verify = { hash: codeHash(user, code), expires: now + CODE_MIN * 60_000, tries: 0, sentAt: now, sends: [...sends, now] };
+  user.markModified("verify");
+  await user.save();
+  const mail = welcomeEmail({ username: user.username, code, minutes: CODE_MIN, again: !!again });
+  const sent = await sendMail({ to: user.email, ...mail });
+  if (!sent.ok) return { ok: false, status: 502, error: sent.error };
+  return { ok: true, email: maskEmail(user.email), wait: Math.ceil(SEND_GAP / 1000) };
+}
+// log in for real (cookie + this tab's token + the saved accounts of this device)
+async function finishLogin(req, res, user, remember) {
+  const prev = req.body.addAccount === true ? await currentUser(req) : null;
+  setAuthCookie(res, user._id.toString(), remember || !!prev, user.tokenVersion || 0);
+  if (remember || prev) saveAccounts(req, res, prev && !prev._id.equals(user._id) ? [prev, user] : [user]);
+}
+const verifyLimiter = (() => { const hits = new Map(); return (req, res, next) => { const now = Date.now(), k = req.ip, e = hits.get(k);
+  if (!e || e.reset < now) { hits.set(k, { n: 1, reset: now + 15 * 60_000 }); return next(); }
+  if (++e.n > 40) return res.status(429).json({ error: "Too many tries. Please wait a few minutes." }); next(); }; })();
+
 /* ---------- routes ---------- */
 
 // Is this username / email free? (used by sign-up step 1)
@@ -175,6 +219,9 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
     if (req.body.acceptedTerms !== true || req.body.ageConfirmed !== true)
       return res.status(400).json({ field: "terms", error: "Please accept both statements to continue." });
 
+    const bd = /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.birthDate || "")) ? new Date(req.body.birthDate + "T12:00:00Z") : null;
+    const ageYears = bd ? (Date.now() - bd.getTime()) / (365.25 * 86_400_000) : NaN;
+    if (!bd || isNaN(ageYears) || ageYears < 3 || ageYears > 120) return res.status(400).json({ field: "birthDate", error: "Please enter your real date of birth." });
     const look = cleanLook(req.body.look);
     const passwordHash = await bcrypt.hash(password, 12);
     const now = new Date();
@@ -188,7 +235,14 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
       acceptedTermsAt: now,
       ageConfirmedAt: now,
       lastLoginAt: now,
+      birthDate: bd,
+      ...(EMAIL_ON() ? { emailVerified: false } : {}),
     });
+    // with email checks on: no login yet, a code goes to the email first
+    if (needsVerify(user)) {
+      const sent = await sendCode(user, false);
+      return res.status(201).json({ needVerify: true, pending: pendingToken(user, true), email: maskEmail(user.email), sent: sent.ok, error: sent.ok ? undefined : sent.error });
+    }
 
     // adding a second account from the start screen ("+") keeps the one that was playing on the list too
     const prev = req.body.addAccount === true ? await currentUser(req) : null;
@@ -218,6 +272,8 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
     if (!user || !ok) return res.status(401).json({ error: "Wrong username or password." });
     if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
 
+    if (needsVerify(user))
+      return res.status(403).json({ needVerify: true, pending: pendingToken(user, req.body.remember === true), email: maskEmail(user.email), error: "Please check your email first." });
     user.lastLoginAt = new Date();
     await user.save();
     const prev = req.body.addAccount === true ? await currentUser(req) : null;
@@ -303,6 +359,68 @@ router.post("/switch", requireJson, async (req, res, next) => {
     user.lastLoginAt = new Date();
     await user.save();
     setAuthCookie(res, user._id.toString(), true, user.tokenVersion || 0);
+    res.json({ user: user.toPublic(), tab: tabToken(user) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// accounts made before sign-up asked for it: set the date of birth once (it can't be changed here afterwards)
+router.post("/birthday", requireJson, async (req, res, next) => {
+  try {
+    const user = await currentUser(req);
+    if (!user) return res.status(401).json({ error: "Please log in first." });
+    if (user.birthDate) return res.status(409).json({ error: "We already know your birthday!", user: user.toPublic() });
+    const raw = String(req.body.birthDate || ""), bd = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(raw + "T12:00:00Z") : null;
+    const age = bd ? (Date.now() - bd.getTime()) / (365.25 * 86_400_000) : NaN;
+    if (!bd || isNaN(age) || age < 3 || age > 120 || bd.toISOString().slice(0, 10) !== raw) return res.status(400).json({ error: "Please pick your real date of birth." });
+    user.birthDate = bd;
+    await user.save();
+    res.json({ user: user.toPublic() });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// send (or send again) the email code: for someone between password and code (pending token), or logged in from before
+router.post("/verify/send", requireJson, verifyLimiter, async (req, res, next) => {
+  try {
+    const p = req.body.pending ? await pendingUser(req.body.pending) : null;
+    const user = p ? p.user : await currentUser(req);
+    if (!user) return res.status(401).json({ error: "Please log in again." });
+    if (!needsVerify(user)) return res.json({ ok: true, already: true });
+    const r = await sendCode(user, !!(user.verify && user.verify.sentAt));
+    if (!r.ok) return res.status(r.status).json({ error: r.error, wait: r.wait });
+    res.json(r);
+  } catch (err) {
+    next(err);
+  }
+});
+// check the code; right: the email is checked and you're logged in
+router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
+  try {
+    const p = req.body.pending ? await pendingUser(req.body.pending) : null;
+    const user = p ? p.user : await currentUser(req);
+    if (!user) return res.status(401).json({ error: "Please log in again." });
+    if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
+    if (needsVerify(user)) {
+      const code = String(req.body.code || "").replace(/\D/g, "");
+      const V = user.verify || {};
+      if (!V.hash || Date.now() > V.expires) return res.status(400).json({ error: "That code has run out. Send a new one." , expired: true });
+      if ((V.tries || 0) >= MAX_TRIES) return res.status(429).json({ error: "Too many wrong codes. Send a new one.", expired: true });
+      const ok = code.length === 6 && crypto.timingSafeEqual(Buffer.from(codeHash(user, code)), Buffer.from(V.hash));
+      if (!ok) {
+        user.verify = { ...V, tries: (V.tries || 0) + 1 };
+        user.markModified("verify");
+        await user.save();
+        return res.status(400).json({ error: `That code isn't right. ${Math.max(0, MAX_TRIES - user.verify.tries)} tries left.` });
+      }
+      user.emailVerified = true;
+      user.verify = undefined;
+    }
+    user.lastLoginAt = new Date();
+    await user.save();
+    if (p) await finishLogin(req, res, user, p.remember);
     res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     next(err);

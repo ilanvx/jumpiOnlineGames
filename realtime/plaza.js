@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
-import { banMessage } from "../routes/auth.js";
+import { banMessage, needsVerify } from "../routes/auth.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
@@ -10,7 +10,11 @@ import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bum
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
 import { BAR_MENU } from "../public/shared/bar.js";
+import { foodOf, PARK_STANDS, PARK_MENU, STAND_REACH } from "../public/shared/food.js";
+import { foodBag, addFood, biteFood, dropFood } from "./food.js";
 import { JOBS } from "../public/shared/jobs.js";
+import { isBirthdayOn } from "../public/shared/birthday.js";
+import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
@@ -22,7 +26,7 @@ const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the d
 const ROOM = "plaza";
 const COOKIE = "jumpi_token";
 // the whole world: Plaza, Beach (and shallow sea), Park and Desert
-const BOUNDS = { x0: -42, x1: 86, z0: -46, z1: 60 };
+const BOUNDS = { x0: -64, x1: 100, z0: -64, z1: 60 };
 const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
 // homes come in different sizes (bigger room, garden, second floor): the box players may move in, per home room
 const homeBounds = new Map();
@@ -70,7 +74,9 @@ function limiter(max, windowMs) {
   };
 }
 
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null });
+// the food someone holds (only for show): { k, i, f } with f = how much is left (0..1)
+const cleanHold = (h) => (h && foodOf(h.k, Number(h.i)) ? { k: h.k, i: Number(h.i), f: Math.max(0.05, Math.min(1, Number(h.f) || 1)) } : null);
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform, bday, hold }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null, bday: !!bday, hold: hold || null });
 const UNIFORMS = new Set(Object.keys(JOBS));   // work uniforms other players can see
 
 /* ---------- invisible admins ----------
@@ -209,6 +215,10 @@ export function attachPlaza(io) {
       const user = await User.findById(sub);
       if (!user || (v || 0) !== (user.tokenVersion || 0)) return next(new Error("not-logged-in"));
       if (user.isBanned()) return next(new Error("banned"));
+      if (needsVerify(user)) return next(new Error("verify-email"));   // the email code comes first
+      // before the grand opening only admins can play on jumpigames.com (see public/shared/launch.js)
+      const host = String(socket.handshake.headers["x-forwarded-host"] || socket.handshake.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase();
+      if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT && user.role !== "admin") return next(new Error("not-open"));
       socket.data.user = user.toPublic();
       if (user.mutedUntil && user.mutedUntil.getTime() > Date.now()) mutedUntil.set(user._id.toString(), user.mutedUntil.getTime());
       next();
@@ -266,7 +276,10 @@ export function attachPlaza(io) {
       let room = ROOM;
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
       const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
-      if (place) room = "place:" + place;
+      if (place) {
+        room = "place:" + place;
+        if (place === "club") homeBounds.set(room, houseShape({ big: true }).bounds);   // the Dance Club is the big room
+      }
       else if (pos?.work === true || pos?.work === "delivery") {   // at work: a restaurant / a whole town of your own (the customers are bots)
         room = "work:" + me.id;
         if (pos.work === "delivery") homeBounds.set(room, TOWN_BOUNDS);
@@ -290,6 +303,7 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
+        me.bday = isBirthdayOn(fresh.birthDate);   // pink name with a cake all day
         me.invisible = fresh.role === "admin" && fresh.adminInvisible !== false;   // admins come in invisible unless they switched it off
       } catch {}
       // the same account in a second window: the older window leaves
@@ -309,7 +323,8 @@ export function attachPlaza(io) {
         room,
         status: players.get(socket.id)?.status || null,
         phone: pos?.phone === true || !!players.get(socket.id)?.phone,
-        uniform: UNIFORMS.has(pos?.uniform) ? pos.uniform : players.get(socket.id)?.uniform || null,   // holding the phone (also after moving to another room)
+        uniform: UNIFORMS.has(pos?.uniform) ? pos.uniform : players.get(socket.id)?.uniform || null,
+        hold: cleanHold(pos?.hold),   // the food in your hand (only for show; eating is checked by food:bite)   // holding the phone (also after moving to another room)
         userId: me.id,
         username: me.username,
         look: me.look,
@@ -322,6 +337,7 @@ export function attachPlaza(io) {
         pet: me.pet || null,
         member: !!me.member,
         invisible: !!me.invisible,
+        bday: !!me.bday,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -349,39 +365,78 @@ export function attachPlaza(io) {
       }
     });
 
-    // finished a meal or a drink (only counts inside the Restaurant or the Dance Club)
-    const canEat = limiter(3, 60_000);
-    socket.on("needs:ate", () => {
+    /* ---- the food bar: get food, hold it, eat it bite by bite (realtime/food.js) ---- */
+    const reply = (ack) => (typeof ack === "function" ? ack : () => {});
+    socket.on("food:get", async (_d, ack) => {
       const p = players.get(socket.id);
-      if (!p) return;
-      // at the club bar you pay first ("bar:buy"); finishing it fills the needs of what you bought
-      if (p.room === "place:club") {
-        const o = p.barOrder;
-        p.barOrder = null;
-        if (o && Date.now() - o.at > 5000) ateMeal(p.userId, p.room, BAR_MENU[o.i].needs);
-        return;
+      if (!p) return reply(ack)({ error: "Not in the game." });
+      try { reply(ack)({ ok: true, bag: await foodBag(p.userId) }); } catch { reply(ack)({ error: "Try again." }); }
+    });
+    // the free Restaurant and the Water Park stands (the club bar is "bar:buy" below)
+    const canTake = limiter(10, 60_000);
+    socket.on("food:take", async (d, ack) => {
+      const r = reply(ack), p = players.get(socket.id);
+      if (!p) return r({ error: "Not in the game." });
+      const k = d?.k, i = Number(d?.i), it = foodOf(k, i);
+      if (!it || (k !== "diner" && k !== "park")) return r({ error: "That isn't on the menu." });
+      if (k === "diner" && p.room !== "place:diner") return r({ error: "Get it at the Restaurant." });
+      if (k === "park") {
+        const st = PARK_STANDS.find((q) => q.id === it.stand);
+        if (p.room !== ROOM || !st || Math.hypot(p.x - st.x, p.z - st.z) > STAND_REACH + 2) return r({ error: "Walk up to the stand to buy that." });
       }
-      if (canEat()) ateMeal(p.userId, p.room);
+      if (p.foodBusy || !canTake()) return r({ error: "One at a time! Try again in a moment." });
+      p.foodBusy = true;
+      try {
+        const out = await addFood(p.userId, k, i, it.price || 0);
+        if (out.ok && it.price) notifyCoins(p.userId, out.coins);
+        r(out);
+      } catch { r({ error: "Something went wrong. Try again." }); } finally { p.foodBusy = false; }
+    });
+    // one bite or sip (at most about two a second)
+    socket.on("food:bite", async (d, ack) => {
+      const r = reply(ack), p = players.get(socket.id);
+      if (!p) return r({ error: "Not in the game." });
+      if (p.foodBusy || Date.now() - (p.lastBite || 0) < 420) return r({ error: "slow" });
+      p.foodBusy = true;p.lastBite = Date.now();
+      try {
+        const out = await biteFood(p.userId, d?.id);
+        if (out.ok) {
+          p.hold = out.left > 0 ? { k: out.k, i: out.i, f: out.left / out.n } : null;
+          roomSend(p, "player:bite", { id: p.id, hold: p.hold }, { self: false });
+        }
+        r(out);
+      } catch { r({ error: "Something went wrong. Try again." }); } finally { p.foodBusy = false; }
+    });
+    socket.on("food:drop", async (d, ack) => {
+      const r = reply(ack), p = players.get(socket.id);
+      if (!p) return r({ error: "Not in the game." });
+      try { r(await dropFood(p.userId, d?.id)); } catch { r({ error: "Something went wrong. Try again." }); }
+    });
+    // holding something / putting it away: everyone around sees it in the hand
+    const canHold = limiter(40, 60_000);
+    socket.on("food:hold", (h) => {
+      const p = players.get(socket.id);
+      if (!p || !canHold()) return;
+      p.hold = cleanHold(h);
+      roomSend(p, "player:hold", { id: p.id, hold: p.hold }, { self: false });
     });
 
-    // buy something at the club bar (juices and snacks only, no alcohol). The coins are taken here.
+    // buy something at the club bar (juices and snacks only, no alcohol). The coins are taken here and it goes into the food bar.
     const canBuy = limiter(8, 60_000);
     socket.on("bar:buy", async (d, ack) => {
-      const reply = typeof ack === "function" ? ack : () => {};
+      const r = reply(ack);
       const p = players.get(socket.id);
-      if (!p || p.room !== "place:club") return reply({ error: "Order at the bar in the Dance Club." });
+      if (!p || p.room !== "place:club") return r({ error: "Order at the bar in the Dance Club." });
       const i = Number(d?.i), it = BAR_MENU[i];
-      if (!Number.isInteger(i) || !it) return reply({ error: "That isn't on the menu." });
-      if (p.barBusy || !canBuy()) return reply({ error: "One at a time! Try again in a moment." });
+      if (!Number.isInteger(i) || !it) return r({ error: "That isn't on the menu." });
+      if (p.barBusy || !canBuy()) return r({ error: "One at a time! Try again in a moment." });
       p.barBusy = true;
       try {
-        const user = await User.findOneAndUpdate({ _id: p.userId, coins: { $gte: it.price } }, { $inc: { coins: -it.price } }, { new: true, projection: { coins: 1 } });
-        if (!user) return reply({ error: `You need ${it.price} coins for that.` });
-        p.barOrder = { i, at: Date.now() };
-        notifyCoins(p.userId, user.coins);
-        reply({ ok: true, coins: user.coins });
+        const out = await addFood(p.userId, "club", i, it.price);
+        if (out.ok) notifyCoins(p.userId, out.coins);
+        r(out);
       } catch {
-        reply({ error: "Something went wrong. Try again." });
+        r({ error: "Something went wrong. Try again." });
       } finally {
         p.barBusy = false;
       }
@@ -450,7 +505,7 @@ export function attachPlaza(io) {
       if (!canEmote()) return reply({ ok: false, why: "too fast" });
       if ((mutedUntil.get(me.id) || 0) > Date.now()) return reply({ ok: false, why: "muted" });
       // emotes you haven't bought can't be used (check the database if it was bought after joining)
-      if (!hasEmote(me.inventory, e)) {
+      if (me.role !== "admin" && !hasEmote(me.inventory, e)) {
         try {
           const fresh = await User.findById(me.id).select("inventory");
           if (fresh) me.inventory = fresh.inventory;

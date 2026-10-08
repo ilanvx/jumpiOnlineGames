@@ -22,7 +22,7 @@ export function homeView(user) {
 export function pruneHome(user) {
   if (!user.home) return;
   const left = new Map();
-  for (const id of user.inventory || []) if (id.startsWith("furniture:")) left.set(id, (left.get(id) || 0) + 1);
+  for (const [id, n] of user.itemCounts()) if (id.startsWith("furniture:")) left.set(id, n);   // admins have everything
   user.home.items = (user.home.items || []).filter((it) => {
     const key = "furniture:" + it.f, n = left.get(key) || 0;
     if (n <= 0) return false;
@@ -62,7 +62,7 @@ router.post("/home", requireJson, requireUser, async (req, res, next) => {
     const maxItems = HOME.maxItems + (shape.house.big ? 30 : 0) + (shape.house.garden ? 30 : 0) + (shape.house.upstairs ? 60 : 0);
     if (raw.length > maxItems) return res.status(400).json({ error: "That's too much furniture for one house." });
     const owned = new Map();
-    for (const id of req.user.inventory || []) if (id.startsWith("furniture:")) owned.set(id, (owned.get(id) || 0) + 1);
+    for (const [id, n] of req.user.itemCounts()) if (id.startsWith("furniture:")) owned.set(id, n);
     const used = new Map(), items = [];
     for (const it of raw) {
       const f = Number(it?.f), x = Number(it?.x), z = Number(it?.z), r = Number(it?.r);
