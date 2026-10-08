@@ -8,11 +8,13 @@ import { ContactMessage } from "../models/ContactMessage.js";
 import { Order } from "../models/Order.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
+import { discordOn, modLog, postGiftCode } from "../discord/pip.js";
 import { contactReplyEmail, ANSWER_SLOT } from "../mail/contactReply.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
-import { moderation, onlinePlayers, onlineWhere, setInvisible } from "../realtime/plaza.js";
+import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MOD_BUDGET } from "../realtime/plaza.js";
+import { MOD_ITEMS } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
 
 /*
@@ -55,6 +57,7 @@ const canChange = limiter(40, 60 * 1000);
 
 function audit(req, action, user, details = "") {
   logQuietly(AdminLog, { adminId: req.admin._id, admin: req.admin.username, action, targetId: user?._id, target: user?.username || "", details: clean(details, 300), via: "panel", ip: req.ip || "" });
+  modLog({ by: req.admin.username, byRole: "admin", action, target: user?.username, details: clean(details, 300), via: "panel" });   // #mod-log in Discord (moderation actions only)
 }
 
 /* ---------- layer 1: only admins, everything else is "Not found" ---------- */
@@ -187,6 +190,7 @@ router.get("/users", async (req, res, next) => {
     if (filter === "banned") find.bannedUntil = { $gt: now };
     else if (filter === "muted") find.mutedUntil = { $gt: now };
     else if (filter === "admins") find.role = "admin";
+    else if (filter === "mods") find.role = "mod";
     else if (filter === "unverified") find.emailVerified = false;
     else if (filter === "new") find.createdAt = { $gte: new Date(Date.now() - 7 * 864e5) };
     else if (filter === "online") find._id = { $in: onlinePlayers().map((p) => p.userId).filter(isId) };
@@ -224,6 +228,7 @@ router.get("/users/:id", async (req, res, next) => {
         ...brief(u), look: u.publicLook(), items: counts.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name)),
         friends: (u.friends || []).map((id) => names.get(id.toString())).filter(Boolean),
         requests: (u.friendReqIn || []).map((id) => names.get(id.toString())).filter(Boolean),
+        modBudgetLeft: u.role === "mod" ? modBudgetLeft(u) : null, modBudget: MOD_BUDGET,
         homeItems: (u.home?.items || []).length, dailyStreak: u.dailyStreak || 0, acceptedTermsAt: u.acceptedTermsAt, ageConfirmedAt: u.ageConfirmedAt,
         counts: { trades, duels, chats, blocked },
       },
@@ -377,6 +382,35 @@ const ACTIONS = {
     moderation.kick(u._id.toString(), "kicked:role");   // the game reloads with the admin tools
     audit(req, "make-admin", u);
     return `${u.username} is an admin now.`;
+  },
+  // moderator: a player chosen to help (kick, short bans, mutes, coins from a monthly budget; blue name and chat)
+  async "make-mod"(req, res) {
+    const u = await target(req, res); if (!u) return;
+    if (u.role === "mod") return fail(res, 409, `${u.username} is already a moderator.`);
+    if (u.isBanned()) return fail(res, 409, "Unban them first.");
+    u.role = "mod";
+    // dressed in the moderator set right away (shirt, pants, cap)
+    const look = { ...(u.look?.toObject ? u.look.toObject() : u.look || {}) };
+    for (const id of MOD_ITEMS) { const [slot, i] = id.split(":"); look[slot] = Number(i); }
+    u.look = look; u.markModified("look");
+    await u.save();
+    moderation.kick(u._id.toString(), "kicked:role");
+    audit(req, "make-mod", u);
+    return `${u.username} is a moderator now.`;
+  },
+  async "remove-mod"(req, res) {
+    const u = await target(req, res); if (!u) return;
+    if (u.role !== "mod") return fail(res, 409, `${u.username} isn't a moderator.`);
+    u.role = "player";
+    // take off the moderator clothes (they only belong to moderators)
+    const look = { ...(u.look?.toObject ? u.look.toObject() : u.look || {}) };
+    for (const id of MOD_ITEMS) { const [slot, i] = id.split(":"); if (look[slot] === Number(i)) look[slot] = -1; }
+    u.look = look; u.markModified("look");
+    u.inventory = (u.inventory || []).filter((id) => !MOD_ITEMS.includes(id));
+    await u.save();
+    moderation.kick(u._id.toString(), "kicked:role");
+    audit(req, "remove-mod", u);
+    return `${u.username} is a regular player again.`;
   },
   async "remove-admin"(req, res) {
     const u = await target(req, res, { allowAdmin: true }); if (!u) return;
@@ -584,7 +618,7 @@ const codeRow = (c) => ({ id: c._id.toString(), code: c.code, coins: c.coins, ma
   ended: !!(c.expiresAt && c.expiresAt.getTime() < Date.now()) || (c.maxUses > 0 && c.uses >= c.maxUses), note: c.note, createdBy: c.createdBy, createdAt: c.createdAt });
 router.get("/codes", async (req, res, next) => {
   try {
-    res.json({ list: (await Code.find().sort({ createdAt: -1 }).limit(300)).map(codeRow) });
+    res.json({ list: (await Code.find().sort({ createdAt: -1 }).limit(300)).map(codeRow), discord: discordOn() });
   } catch (err) {
     next(err);
   }
@@ -593,7 +627,10 @@ router.post("/codes", async (req, res, next) => {
   try {
     const c = await createCode({ ...req.body, by: req.admin.username });
     audit(req, "code-create", null, `${c.code} · ${c.coins} coins · ${c.maxUses || "no limit"} uses${c.expiresAt ? " · until " + c.expiresAt.toISOString().slice(0, 10) : ""}`);
-    res.json({ ok: true, message: `Code ${c.code} is ready.`, code: codeRow(c) });
+    // "Post in Discord": Pip posts it in #updates
+    const posted = req.body.discord === true && discordOn() ? await postGiftCode(c) : null;
+    if (posted) audit(req, "code-discord", null, c.code);
+    res.json({ ok: true, message: `Code ${c.code} is ready.${posted ? " Pip posted it in Discord." : posted === false ? " (Couldn't post it in Discord: check the server log.)" : ""}`, code: codeRow(c) });
   } catch (err) {
     if (err.publicMessage) return fail(res, 400, err.publicMessage);
     next(err);
@@ -606,6 +643,20 @@ router.post("/codes/:id", async (req, res, next) => {
     if (!c) return fail(res, 404, "Not found.");
     audit(req, c.active ? "code-on" : "code-off", null, c.code);
     res.json({ ok: true, message: c.active ? `${c.code} works again.` : `${c.code} is switched off.` });
+  } catch (err) {
+    next(err);
+  }
+});
+// post an existing code in #updates
+router.post("/codes/:id/discord", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    if (!discordOn()) return fail(res, 400, "Discord isn't on for this server (DISCORD_LIVE=1 in .env).");
+    const c = await Code.findById(req.params.id);
+    if (!c) return fail(res, 404, "Not found.");
+    if (!(await postGiftCode(c))) return fail(res, 502, "Couldn't post it in Discord. Check the server log.");
+    audit(req, "code-discord", null, c.code);
+    res.json({ ok: true, message: `Pip posted ${c.code} in Discord.` });
   } catch (err) {
     next(err);
   }

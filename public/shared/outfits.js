@@ -184,4 +184,10 @@ add("hat", { id: "cap", name: "Delivery cap", price: 0, gift: "delivery", col: "
 // birthday present (public/shared/birthday.js): only given on your birthday, never sold or traded
 add("hat", { id: "party", name: "Birthday hat", price: 0, gift: "birthday", col: "#ff5fa8", col2: "#ffd23a" });
 export const OUTFITS = out;
+
+/* ---------- moderators: worn only by players with the moderator role (never sold, never traded) ---------- */
+add("shirt", { id: "mod", name: "Moderator shirt", price: 0, gift: "mod", fill: "#1f5fe0", hem: "#123a99" });
+add("pants", { id: "black", name: "Moderator pants", price: 0, gift: "mod", base: "#173f9e", waist: "#0d2766" });
+add("hat", { id: "cap", name: "Moderator cap", price: 0, gift: "mod", col: "#1f5fe0", col2: "#ffffff" });
+
 export const OUTFIT_SLOTS = Object.keys(out);

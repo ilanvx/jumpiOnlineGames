@@ -4,7 +4,7 @@ import { banMessage, needsVerify } from "../routes/auth.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
-import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
+import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
 import { outPet } from "../routes/pets.js";
@@ -16,6 +16,7 @@ import { createCode } from "../models/Code.js";
 import { JOBS } from "../public/shared/jobs.js";
 import { isBirthdayOn } from "../public/shared/birthday.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
+import { modLog } from "../discord/pip.js";
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
@@ -138,6 +139,34 @@ function dropPlayer(id, sock) {
   ioRef?.to(room).emit("player:leave", id);
 }
 const minutesFrom = (v, max = 60 * 24 * 365) => clamp(Math.round(num(v)), 1, max);
+
+// the digits each player sent in the last 2 minutes (to catch a phone number sent in pieces)
+const PHONE_BITS = new Map();
+export function phoneBits(userId, set) {
+  const k = String(userId), now = Date.now();
+  if (set !== undefined) { if (set) PHONE_BITS.set(k, { d: set, t: now }); else PHONE_BITS.delete(k); if (PHONE_BITS.size > 5000) PHONE_BITS.clear(); return set; }
+  const e = PHONE_BITS.get(k);
+  return e && now - e.t < 120000 ? e.d : "";
+}
+
+/* ---------- moderators (role "mod"): chosen players with a few moderation tools ----------
+   kick, ban up to 7 days, mute up to 1 day, unban / unmute, and give coins from a budget that starts again every month
+   (Israel time). They can't act on admins or other moderators, and can't give coins to themselves. */
+export const MOD_BUDGET = 10000, MOD_MAX_BAN = 7 * 24 * 60, MOD_MAX_MUTE = 24 * 60;
+const modMonth = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem", year: "numeric", month: "2-digit" }).format(d).slice(0, 7);
+export const modBudgetLeft = (u) => MOD_BUDGET - (u && u.modBudget && u.modBudget.month === modMonth() ? u.modBudget.used || 0 : 0);
+function modBudgetInfo(left) {
+  const [y, m] = modMonth().split("-").map(Number);
+  return { left, limit: MOD_BUDGET, resets: `${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2, "0")}-01` };
+}
+// take n coins from this month's budget; returns what's left, or null if there isn't enough (safe when two arrive together)
+async function spendModBudget(mod, n) {
+  const month = modMonth();
+  if (n > MOD_BUDGET) return null;
+  let u = await User.findOneAndUpdate({ _id: mod._id, "modBudget.month": month, "modBudget.used": { $lte: MOD_BUDGET - n } }, { $inc: { "modBudget.used": n } }, { new: true });
+  if (!u) u = await User.findOneAndUpdate({ _id: mod._id, "modBudget.month": { $ne: month } }, { $set: { modBudget: { month, used: n } } }, { new: true });   // a new month
+  return u ? MOD_BUDGET - u.modBudget.used : null;
+}
 
 /* ---------- moderation: used by the in-game admin window and by the /admin website ---------- */
 export const moderation = {
@@ -463,8 +492,16 @@ export function attachPlaza(io) {
       if (until > Date.now()) return socket.emit("chat:muted", { until });
       const text = cleanText(raw);
       if (!text) return;
+      // phone numbers, addresses and emails never go out (not a strike: the player gets a "never share this" window)
+      const chk = checkText(text), sp = splitPhone(phoneBits(me.id), text);
+      if (chk.kind === "private" || sp.hit) {
+        phoneBits(me.id, "");
+        logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text, blocked: true });
+        return socket.emit("chat:private", { info: chk.info || "phone", message: PRIVATE_MESSAGE[chk.info || "phone"] });
+      }
+      phoneBits(me.id, sp.digits);
       // no bad words anywhere (Plaza, homes, trade and game windows all use this)
-      if (!checkText(text).ok) {
+      if (!chk.ok) {
         logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text, blocked: true });
         const s = await strike(me.id);
         return socket.emit("chat:blocked", { message: FRIENDLY_MESSAGE, left: s.left ?? 0, muted: !!s.muted });
@@ -532,13 +569,15 @@ export function attachPlaza(io) {
 
     /* ---------------- admin actions ---------------- */
     // every action re-checks the database, so a stale or forged role can't be used
-    function adminAction(name, handler) {
+    // { mods: true } = moderators may use it too (with their limits: see findTarget, ban and coins below)
+    function adminAction(name, handler, { mods = false } = {}) {
       socket.on(name, async (data, ack) => {
         const reply = typeof ack === "function" ? ack : () => {};
         try {
           if (!canAdmin()) return reply({ ok: false, error: "Too many actions. Wait a few seconds." });
           const admin = await User.findById(me.id);
-          if (!admin || admin.role !== "admin" || admin.isBanned()) return reply({ ok: false, error: "Only admins can do that." });
+          const allowed = admin && (admin.role === "admin" || (mods && admin.role === "mod"));
+          if (!allowed || admin.isBanned()) return reply({ ok: false, error: mods ? "Only moderators and admins can do that." : "Only admins can do that." });
           const result = await handler(data || {}, admin);
           console.log(`[admin] ${admin.username} ${name}`, JSON.stringify(data || {}).slice(0, 200));
           reply({ ok: true, ...result });
@@ -557,55 +596,74 @@ export function attachPlaza(io) {
       const self = user._id.equals(admin._id);
       if (self && !allowSelf) throw fail("You can't do that to yourself.");
       if (!self && user.role === "admin" && !allowAdmin) throw fail("You can't do that to another admin.");
+      if (!self && admin.role === "mod" && (user.role === "admin" || user.role === "mod")) throw fail("Moderators can't do that to admins or other moderators.");
       return user;
     }
 
-    const audit = (admin, action, user, details = "") =>
+    const audit = (admin, action, user, details = "") => {
       logQuietly(AdminLog, { adminId: admin._id, admin: admin.username, action, targetId: user?._id, target: user?.username || "", details, via: "game", ip: socket.handshake.address || "" });
+      modLog({ by: admin.username, byRole: admin.role, action, target: user?.username, details, via: "game" });   // #mod-log in Discord (moderation actions only)
+    };
 
     adminAction("admin:kick", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
       if (!moderation.kick(user._id.toString())) throw fail(`${user.username} isn't in the Plaza right now.`);
-      audit(admin, "kick", user);
+      audit(admin, "kick", user, admin.role === "mod" ? "by a moderator" : "");
       return { message: `${user.username} was kicked.` };
-    });
+    }, { mods: true });
 
     adminAction("admin:ban", async ({ username, minutes, reason }, admin) => {
       const user = await findTarget(username, admin);
+      if (admin.role === "mod" && !(num(minutes) > 0 && num(minutes) <= MOD_MAX_BAN)) throw fail("Moderators can ban for up to 7 days.");
       const how = await moderation.ban(user, minutes, reason);
       audit(admin, "ban", user, `${how}${user.banReason ? " · " + user.banReason : ""}`);
       return { message: `${user.username} is banned ${how}.` };
-    });
+    }, { mods: true });
 
     adminAction("admin:unban", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
+      if (admin.role === "mod" && user.bannedUntil && user.bannedUntil.getFullYear() >= 9000) throw fail("Only an admin can lift a permanent ban.");
       await moderation.unban(user);
       audit(admin, "unban", user);
       return { message: `${user.username} is no longer banned.` };
-    });
+    }, { mods: true });
 
     adminAction("admin:mute", async ({ username, minutes }, admin) => {
       const user = await findTarget(username, admin);
+      if (admin.role === "mod" && num(minutes) > MOD_MAX_MUTE) throw fail("Moderators can mute for up to 1 day.");
       const m = await moderation.mute(user, minutes);
       audit(admin, "mute", user, `${m} min`);
       return { message: `${user.username} is muted for ${m} min.` };
-    });
+    }, { mods: true });
 
     adminAction("admin:unmute", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
       await moderation.unmute(user);
       audit(admin, "unmute", user);
       return { message: `${user.username} can chat again.` };
-    });
+    }, { mods: true });
 
     adminAction("admin:coins", async ({ username, amount }, admin) => {
-      const user = await findTarget(username, admin, { allowSelf: true, allowAdmin: true });
+      const mod = admin.role === "mod";
+      const user = await findTarget(username, admin, { allowSelf: !mod, allowAdmin: !mod });
       const delta = Math.round(num(amount));
+      if (mod) {
+        // moderators: only giving, never to themselves, from a budget of MOD_BUDGET coins a month
+        if (!(delta > 0)) throw fail("Moderators can only give coins (1 or more).");
+        const left = await spendModBudget(admin, delta);
+        if (left === null) throw fail(`Not enough budget: you have ${modBudgetLeft(await User.findById(admin._id)).toLocaleString("en-US")} coins left this month.`);
+        const coins = await moderation.addCoins(user, delta);
+        audit(admin, "coins", user, `+${delta} → ${coins} · by a moderator (${left} left this month)`);
+        return { message: `Gave ${delta.toLocaleString("en-US")} coins to ${user.username}. Your budget: ${left.toLocaleString("en-US")} left this month.`, budget: modBudgetInfo(left) };
+      }
       if (!delta || Math.abs(delta) > 1_000_000) throw fail("Enter an amount between 1 and 1,000,000.");
       const coins = await moderation.addCoins(user, delta);
       audit(admin, "coins", user, `${delta > 0 ? "+" : ""}${delta} → ${coins}`);
       return { message: `${user.username} now has ${coins.toLocaleString("en-US")} coins.` };
-    });
+    }, { mods: true });
+
+    // a moderator's coin budget for this month
+    adminAction("mod:budget", async (_d, admin) => ({ budget: admin.role === "mod" ? modBudgetInfo(modBudgetLeft(admin)) : null }), { mods: true });
 
     adminAction("admin:invisible", async ({ on }, admin) => {
       admin.adminInvisible = on === true;

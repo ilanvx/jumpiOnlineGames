@@ -196,7 +196,7 @@
       const filter = arg || "";
       page("Players");
       const q = h("input", { class: "inp", type: "search", placeholder: "Search username or email…" });
-      const sel = h("select", { class: "inp" }, [["", "All players"], ["online", "Online now"], ["new", "New this week"], ["banned", "Banned"], ["muted", "Muted"], ["admins", "Admins"], ["unverified", "Email not checked"], ["rich", "Most coins"]].map(([v, t]) => h("option", { value: v, selected: v === filter }, t)));
+      const sel = h("select", { class: "inp" }, [["", "All players"], ["online", "Online now"], ["new", "New this week"], ["banned", "Banned"], ["muted", "Muted"], ["admins", "Admins"], ["mods", "Moderators"], ["unverified", "Email not checked"], ["rich", "Most coins"]].map(([v, t]) => h("option", { value: v, selected: v === filter }, t)));
       const box = h("div");
       let pageNo = 0;
       const load = async (more) => {
@@ -204,7 +204,7 @@
         const d = await api(`/users?q=${encodeURIComponent(q.value)}&filter=${sel.value}&page=${pageNo}`);
         const t = table([
           ["Player", (r) => h("b", null, r.username)], ["Email", (r) => h("span", { class: "small" }, r.email)], ["Coins", (r) => fmtNum(r.coins)],
-          ["Status", (r) => h("span", { class: "chips" }, r.role === "admin" ? h("span", { class: "tag red" }, "admin") : null, r.online ? h("span", { class: "tag green" }, "online") : null,
+          ["Status", (r) => h("span", { class: "chips" }, r.role === "admin" ? h("span", { class: "tag red" }, "admin") : r.role === "mod" ? h("span", { class: "tag blue" }, "moderator") : null, r.online ? h("span", { class: "tag green" }, "online") : null,
             r.bannedUntil ? h("span", { class: "tag red" }, "banned") : null, r.mutedUntil ? h("span", { class: "tag orange" }, "muted") : null,
             !r.verified ? h("span", { class: "tag orange" }, "email not checked") : null)],
           ["Joined", (r) => h("span", { class: "small nowrap" }, fmtDate(r.createdAt))], ["Last sign-in", (r) => h("span", { class: "small nowrap" }, ago(r.lastLoginAt))],
@@ -228,7 +228,7 @@
       main.append(panel(null,
         h("div", { class: "pl-head" }, h("span", { class: "avatar", style: `--c:${SKIN[u.look?.color] || "#ff9a1f"}` }, u.username[0].toUpperCase()),
           h("div", null, h("h2", { style: "margin:0" }, u.username), h("span", { class: "chips" },
-            isAdmin ? h("span", { class: "tag red" }, "admin") : h("span", { class: "tag" }, "player"),
+            isAdmin ? h("span", { class: "tag red" }, "admin") : u.role === "mod" ? h("span", { class: "tag blue" }, "moderator") : h("span", { class: "tag" }, "player"),
             u.online ? h("span", { class: "tag green" }, where(u.online)) : h("span", { class: "tag" }, "offline"),
             u.bannedUntil ? h("span", { class: "tag red" }, `banned · ${until(u.bannedUntil)}`) : null,
             u.mutedUntil ? h("span", { class: "tag orange" }, `muted · ${until(u.mutedUntil)}`) : null,
@@ -237,7 +237,7 @@
           [["Email", u.email], ["Coins", fmtNum(u.coins)], ["Joined", fmtDate(u.createdAt)], ["Last sign-in", fmtDate(u.lastLoginAt)],
             ["Friends", u.friends.length], ["Daily streak", u.dailyStreak], ["Furniture placed", u.homeItems], ["Terms accepted", fmtDate(u.acceptedTermsAt)],
             ["Chat messages (30 days)", u.counts.chats], ["Blocked by filter (30 days)", u.counts.blocked], ["Trades", u.counts.trades], ["Games", u.counts.duels],
-            ["Ban reason", u.banReason || "—"]].map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, String(v)))))));
+            ["Ban reason", u.banReason || "—"], ...(u.role === "mod" ? [["Moderator coins left this month", `${fmtNum(u.modBudgetLeft)} / ${fmtNum(u.modBudget)}`]] : [])].map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, String(v)))))));
       // actions
       const A = (label, cls, fn) => h("button", { class: "b b-sm " + cls, onclick: fn }, label);
       const self = u.username === $("#whoName").textContent;
@@ -249,6 +249,8 @@
         h("div", { class: "acts" },
           !u.verified ? A("Mark email as checked", "b-green", () => act(u.id, "verify", {}, `Let ${u.username} log in without the email code?`)) : null,
           !self ? (isAdmin ? A("Remove admin", "b-red", () => roleDialog(false)) : A("Make admin", "b-violet", () => roleDialog(true))) : null,
+          !isAdmin ? (u.role === "mod" ? A("Remove moderator", "b-ghost", () => act(u.id, "remove-mod", {}, `Make ${u.username} a regular player again? They lose the moderator tools and clothes.`))
+            : A("Make moderator", "b", () => act(u.id, "make-mod", {}, `Make ${u.username} a moderator? They can kick, ban for up to 7 days, mute, and give up to 10,000 coins a month. Their name and chat turn blue.`))) : null,
           !isAdmin && u.online ? A("Kick from game", "b-red", () => act(u.id, "kick", {}, `Kick ${u.username} out of the game?`)) : null,
           !isAdmin ? (u.bannedUntil ? A("Unban", "b-green", () => act(u.id, "unban", {}, `Unban ${u.username}?`)) : A("Ban", "b-red", () => banDialog(u))) : null,
           !isAdmin ? (u.mutedUntil ? A("Unmute", "b-green", () => act(u.id, "unmute", {}, `Let ${u.username} chat again?`)) : A("Mute chat", "b-orange", () => muteDialog(u.id, u.username))) : null,
@@ -297,19 +299,22 @@
         uses: h("select", null, [["0", "No limit"], ["1", "1 player"], ["10", "10 players"], ["50", "50 players"], ["100", "100 players"], ["500", "500 players"], ["1000", "1,000 players"]].map(([v, t]) => h("option", { value: v }, t))),
         days: h("select", null, [["0", "Never ends"], ["1", "1 day"], ["3", "3 days"], ["7", "7 days"], ["30", "30 days"], ["90", "90 days"]].map(([v, t]) => h("option", { value: v }, t))),
         note: h("input", { maxlength: 120, placeholder: "Where it's given out (only admins see this)" }),
+        discord: h("input", { type: "checkbox" }),
       };
+      let discordOn = false;
+      const discordRow = h("label", { class: "code-discord", hidden: true }, f.discord, h("span", null, "Post in Discord"), h("small", null, "Pip posts it in #updates"));
       const made = h("div");
       const copy = (code) => navigator.clipboard?.writeText(code).then(() => toast(`Copied ${code}`), () => toast(code));
       const go = h("button", { class: "b b-orange", type: "submit" }, "Create code");
       const form = h("form", { class: "code-form" },
         h("label", { class: "fld" }, h("span", null, "Code"), f.code), h("label", { class: "fld" }, h("span", null, "Coins it gives"), f.coins),
         h("label", { class: "fld" }, h("span", null, "How many players can use it"), f.uses), h("label", { class: "fld" }, h("span", null, "Ends"), f.days),
-        h("label", { class: "fld" }, h("span", null, "Note"), f.note), go);
+        h("label", { class: "fld" }, h("span", null, "Note"), f.note), discordRow, go);
       form.addEventListener("submit", async (e) => {
         e.preventDefault(); go.disabled = true;
         try {
-          const r = await api("/codes", { code: f.code.value, coins: Number(f.coins.value), maxUses: Number(f.uses.value), days: Number(f.days.value), note: f.note.value });
-          toast(r.message); f.code.value = ""; f.note.value = "";
+          const r = await api("/codes", { code: f.code.value, coins: Number(f.coins.value), maxUses: Number(f.uses.value), days: Number(f.days.value), note: f.note.value, discord: discordOn && f.discord.checked });
+          toast(r.message); f.code.value = ""; f.note.value = ""; f.discord.checked = false;
           made.replaceChildren(h("div", { class: "code-new" }, h("b", null, r.code.code), h("span", null, `${fmtNum(r.code.coins)} coins`), h("span", { style: "flex:1" }),
             h("button", { class: "b b-sm b-ghost", type: "button", onclick: () => copy(r.code.code) }, "Copy")));
           load();
@@ -318,7 +323,11 @@
       });
       const list = h("div");
       const status = (c) => (!c.active ? h("span", { class: "tag red" }, "Off") : c.ended ? h("span", { class: "tag orange" }, c.maxUses && c.uses >= c.maxUses ? "Used up" : "Ended") : h("span", { class: "tag green" }, "Working"));
-      const load = async () => list.replaceChildren(table([
+      const toDiscord = async (c) => {
+        if (!confirm(`Post ${c.code} in the Discord #updates channel? Everyone in the server will see it.`)) return;
+        try { toast((await api(`/codes/${c.id}/discord`, {})).message); } catch (e) { oops(e); }
+      };
+      const load = async () => { const d = await api("/codes"); discordOn = !!d.discord; discordRow.hidden = !discordOn; list.replaceChildren(table([
         ["Code", (c) => h("span", { class: "code-txt" }, c.code)], ["Coins", (c) => fmtNum(c.coins)],
         ["Used", (c) => `${fmtNum(c.uses)}${c.maxUses ? " / " + fmtNum(c.maxUses) : ""}`],
         ["Ends", (c) => h("span", { class: "nowrap small" }, c.expiresAt ? fmtDate(c.expiresAt) : "Never")], ["", status],
@@ -326,11 +335,12 @@
         ["", (c) => h("div", { class: "acts" },
           h("button", { class: "b b-sm b-ghost", onclick: () => copy(c.code) }, "Copy"),
           h("button", { class: "b b-sm b-ghost", onclick: () => usesOf(c).catch(oops) }, "Who used it"),
+          discordOn && c.active && !c.ended ? h("button", { class: "b b-sm b-ghost", onclick: () => toDiscord(c) }, "Post in Discord") : null,
           h("button", { class: "b b-sm " + (c.active ? "b-red" : "b-green"), onclick: async () => {
             if (c.active && !confirm(`Switch off ${c.code}? Players won't be able to use it any more.`)) return;
             try { toast((await api("/codes/" + c.id, { active: !c.active })).message); load(); } catch (e) { oops(e); }
           } }, c.active ? "Switch off" : "Switch on"))],
-      ], (await api("/codes")).list));
+      ], d.list)); };
       async function usesOf(c) {
         const d = await api(`/codes/${c.id}/uses`), card = $("#modalCard");
         card.replaceChildren(h("h2", null, c.code), h("p", { class: "muted", style: "margin:0" }, `${fmtNum(c.uses)} player(s) used it · ${fmtNum(c.coins)} coins each`),
@@ -475,7 +485,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "code-off": "Switched off a code", "code-on": "Switched on a code" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],

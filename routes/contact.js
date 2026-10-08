@@ -1,6 +1,7 @@
 import express from "express";
 import { ContactMessage } from "../models/ContactMessage.js";
 import { currentUser, requireJson } from "./auth.js";
+import { staffAlert } from "../discord/pip.js";
 
 /* The Contact page form. Messages are saved for the team to answer at support@jumpigames.com. */
 const router = express.Router();
@@ -28,7 +29,8 @@ router.post("/contact", requireJson, async (req, res, next) => {
     if (message.length < 10) return res.status(400).json({ field: "message", error: "Please write a little more (at least 10 characters)." });
     if (!allowed(req.ip || "?")) return res.status(429).json({ error: "You've sent a lot of messages. Please try again in an hour, or email support@jumpigames.com." });
     const user = await currentUser(req).catch(() => null);
-    await ContactMessage.create({ name: clean(req.body.name, 80), email, topic, message, username: user ? user.username : "", lang: req.body.lang === "he" ? "he" : "en" });
+    const saved = await ContactMessage.create({ name: clean(req.body.name, 80), email, topic, message, username: user ? user.username : "", lang: req.body.lang === "he" ? "he" : "en" });
+    staffAlert(saved);   // a heads-up in the Discord #staff-chat (no email address)
     console.log(`[contact] new ${topic} message${user ? " from " + user.username : ""}`);
     res.json({ ok: true });
   } catch (err) {

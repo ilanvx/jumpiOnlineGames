@@ -19,12 +19,15 @@ import storeRoutes from "./routes/store.js";
 import jobRoutes from "./routes/jobs.js";
 import seasonRoutes from "./routes/season.js";
 import codeRoutes from "./routes/codes.js";
+import tutorialRoutes from "./routes/tutorial.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
 import { saveAllNeeds } from "./realtime/needs.js";
 import { currentUser } from "./routes/auth.js";
 import "./models/Logs.js";
-import { attachPlaza } from "./realtime/plaza.js";
+import { attachPlaza, onlinePlayers } from "./realtime/plaza.js";
+import { startDiscordStats } from "./discord/pip.js";
+import { discordInteractions } from "./discord/interactions.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { MONGODB_URI, MONGODB_DB = "jumpi", JWT_SECRET, PORT = 3000 } = process.env;
@@ -47,6 +50,8 @@ app.use((req, res, next) => {
   res.set({ "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin", "X-Frame-Options": "SAMEORIGIN" });
   next();
 });
+// Discord buttons (the ✅ in #rules): signed by Discord, so this needs the raw body, before express.json
+app.post("/api/discord/interactions", express.raw({ type: "*/*", limit: "100kb" }), (req, res, next) => discordInteractions(req, res).catch(next));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
@@ -62,6 +67,7 @@ app.use("/api", storeRoutes);
 app.use("/api", jobRoutes);
 app.use("/api", seasonRoutes);
 app.use("/api", codeRoutes);
+app.use("/api", tutorialRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -150,3 +156,5 @@ for (const sig of ["SIGINT", "SIGTERM"])
     process.exit(0);
   });
 server.listen(PORT, () => console.log(`✓ Jumpi is running: website http://localhost:${PORT}  ·  game http://localhost:${PORT}/play`));
+// Pip in the Discord server: the "🎮 Playing now" counter (players you can see, not invisible admins)
+startDiscordStats(() => onlinePlayers(false).length);

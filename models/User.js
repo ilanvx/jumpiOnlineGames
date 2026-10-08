@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { LOOK_SLOTS, STARTER_MAX, lookItems, CATALOG } from "../catalog.js";
+import { LOOK_SLOTS, STARTER_MAX, lookItems, CATALOG, MOD_ITEMS } from "../catalog.js";
 
 // admins always have every item in the game (furniture: this many of each). Admins can't trade, so nothing leaks out.
 const ADMIN_FURNITURE_EACH = 10;
@@ -50,6 +50,8 @@ const userSchema = new mongoose.Schema(
     // email check: a 6-digit code sent with Resend (only when RESEND_API_KEY is set). Accounts can't log in until it's true.
     emailVerified: { type: Boolean },
     verify: { type: mongoose.Schema.Types.Mixed },   // { hash, expires, tries, sentAt, sends: [times] } while a code is waiting
+    tutorialAt: { type: Date },                      // finished or skipped the live tutorial (new players get it on their first visit)
+    tutorialPaid: { type: Boolean, default: false }, // the 250-coin prize for finishing it (once)
     reset: { type: mongoose.Schema.Types.Mixed },    // forgot password: { hash, expires, sends: [times] } while a reset link is waiting
     lastLoginAt: { type: Date },
     // set to true for paying members (for now, flip it by hand in Atlas)
@@ -57,7 +59,8 @@ const userSchema = new mongoose.Schema(
     // membership bought in the store: one payment, never renews by itself; buying again adds days
     memberUntil: { type: Date, default: null },
     // "admin" gets the admin panel (npm run make-admin -- <username>)
-    role: { type: String, enum: ["player", "admin"], default: "player" },
+    role: { type: String, enum: ["player", "mod", "admin"], default: "player" },   // "mod" = moderator (chosen players: kick/ban/mute, coins from a monthly budget)
+    modBudget: { type: mongoose.Schema.Types.Mixed },   // moderators: { month: "2026-10", used: coins given this month }
     coins: { type: Number, default: 0, min: 0 },
     bannedUntil: { type: Date, default: null }, // far-future date = permanent
     banReason: { type: String, default: "" },
@@ -146,6 +149,7 @@ userSchema.methods.itemCounts = function () {
   const counts = new Map();
   for (const id of this.inventory || []) counts.set(id, (counts.get(id) || 0) + 1);
   for (const id of lookItems(this.publicLook())) if (!counts.has(id)) counts.set(id, 1);
+  if (this.role === "mod") for (const id of MOD_ITEMS) if (!counts.has(id)) counts.set(id, 1);
   if (this.role === "admin")
     for (const it of CATALOG) {
       const n = it.category === "furniture" ? ADMIN_FURNITURE_EACH : 1;
@@ -175,12 +179,13 @@ userSchema.methods.toPublic = function () {
     inventory: [...this.itemCounts()].flatMap(([id, n]) => Array(n).fill(id)),
     subscriber: this.isMember(),
     memberUntil: this.memberUntil && this.memberUntil.getTime() > Date.now() ? this.memberUntil : null,
-    role: this.role === "admin" ? "admin" : "player",
+    role: this.role === "admin" ? "admin" : this.role === "mod" ? "mod" : "player",
     coins: this.coins ?? 0,
     createdAt: this.createdAt,
     verified: this.emailVerified === true,
     hasBirthday: !!this.birthDate,   // older accounts are asked once in the game
     birthdayToday: isBirthdayOn(this.birthDate),
+    tutorialDone: !!this.tutorialAt,
     mustVerify: !!process.env.RESEND_API_KEY && this.emailVerified !== true,   // the game asks for the email code before playing
   };
 };

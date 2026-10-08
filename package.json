@@ -9,7 +9,9 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "make-admin": "node scripts/set-role.js admin",
-    "remove-admin": "node scripts/set-role.js player"
+    "remove-admin": "node scripts/set-role.js player",
+    "discord": "node tools/discord/setup.js",
+    "discord:apply": "node tools/discord/setup.js --apply"
   },
   "engines": {
     "node": ">=18"

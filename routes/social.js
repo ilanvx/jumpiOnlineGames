@@ -4,8 +4,8 @@ import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
-import { onlineWhere, onlinePlayers, emitToUser, strike } from "../realtime/plaza.js";
-import { checkText, FRIENDLY_MESSAGE } from "../public/shared/profanity.js";
+import { onlineWhere, onlinePlayers, emitToUser, strike, phoneBits } from "../realtime/plaza.js";
+import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, logQuietly } from "../models/Logs.js";
 
 /*
@@ -199,7 +199,14 @@ router.post("/dm", requireJson, requireUser, async (req, res, next) => {
     if (!canSend(idStr(me._id))) return fail(res, 429, "Slow down a little!");
     const text = cleanText(req.body.text);
     if (!text) return fail(res, 400, "Write a message first.");
-    if (!checkText(text).ok) {
+    const chk = checkText(text), sp = splitPhone(phoneBits(me._id), text);
+    if (chk.kind === "private" || sp.hit) {
+      phoneBits(me._id, "");
+      logQuietly(ChatLog, { userId: me._id, username: me.username, room: "dm:" + nameOf(req.body.to), text, blocked: true });
+      return res.status(400).json({ error: PRIVATE_MESSAGE[chk.info || "phone"], private: chk.info || "phone", blocked: true });
+    }
+    phoneBits(me._id, sp.digits);
+    if (!chk.ok) {
       logQuietly(ChatLog, { userId: me._id, username: me.username, room: "dm:" + nameOf(req.body.to), text, blocked: true });
       const st = await strike(idStr(me._id));
       return res.status(400).json({ error: st.muted ? "You used bad words too many times, so you're muted for 5 minutes." : FRIENDLY_MESSAGE, blocked: true });

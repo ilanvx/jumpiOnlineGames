@@ -1,2 +1,4 @@
 node_modules/
 .env
+tools/discord/state.json
+tools/discord/last-report.txt

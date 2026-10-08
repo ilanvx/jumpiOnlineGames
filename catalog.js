@@ -96,6 +96,8 @@ export const MAX_FURNITURE = 60;
 
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
+// the moderator set (shirt, pants, cap): moderators always have it while they are moderators
+export const MOD_ITEMS = OUTFIT_SLOTS.flatMap((slot) => OUTFITS[slot].map((o, i) => (o.gift === "mod" ? `${slot}:${i}` : null)).filter(Boolean));
 
 // highest index in each look slot (and whether it can be empty)
 export const LOOK_SLOTS = {

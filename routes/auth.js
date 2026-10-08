@@ -329,7 +329,7 @@ router.get("/accounts", async (req, res, next) => {
     if (users.length !== list.length) writeSaved(res, users.map(({ x }) => x));   // tidy up ones that stopped working
     res.json({
       max: MAX_SAVED,
-      accounts: users.map(({ u }) => ({ username: u.username, look: u.publicLook(), role: u.role === "admin" ? "admin" : "player",
+      accounts: users.map(({ u }) => ({ username: u.username, look: u.publicLook(), role: u.role === "admin" ? "admin" : u.role === "mod" ? "mod" : "player",
         member: u.isMember(), current: !!me && u._id.equals(me._id) })),
     });
   } catch (err) {

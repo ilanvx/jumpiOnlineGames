@@ -122,7 +122,65 @@ function badMask(m) {
 }
 
 /** Is this text OK to show? → { ok: true } or { ok: false, word } */
+/* ---------- personal info: phone numbers, home addresses, emails (kids' safety) ----------
+   Blocked everywhere chat goes (Plaza, homes, JumpiChat, trade and game windows). These are not "bad words":
+   the player gets a friendly "never share this" window instead of a strike. */
+const NUM_WORDS = {
+  zero: 0, oh: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  אפס: 0, אחד: 1, אחת: 1, שתיימ: 2, שתימ: 2, שניימ: 2, שנימ: 2, שתי: 2, שני: 2, שלוש: 3, שלש: 3, ארבע: 4, ארבעה: 4, חמש: 5, חמישה: 5, שש: 6, שישה: 6, שבע: 7, שבעה: 7, שמונה: 8, תשע: 9, תשעה: 9,
+};
+function digitsOf(p) {
+  // number words → digits ("zero five four", "אפס חמש ארבע"), then keep runs of digits with separators between them
+  const t = p.replace(/[a-zא-ת]+/g, (w) => (w in NUM_WORDS ? String(NUM_WORDS[w]) : w));
+  const runs = t.match(/\+?\d[\d\s().\-_/\\|*,]{0,40}\d|\d/g) || [];
+  return runs.map((r) => ({ raw: r, d: r.replace(/\D/g, ""), plus: r.startsWith("+") }));
+}
+const STREET = "רחוב|רחובות|רח|שדרות|שד|סמטת|סמטה|כיכר|street|st|road|rd|avenue|ave|av|lane|ln|blvd|boulevard|drive|dr|way|court|ct|place|pl";
+const ADDRESS_RES = [
+  new RegExp(`(^| )(${STREET})\\.? [a-zא-ת][a-zא-ת ]{0,24}\\d{1,4}`),            // "רחוב הרצל 12", "street herzl 5"
+  new RegExp(`(^| )\\d{1,5} [a-zא-ת][a-zא-ת ]{0,24}(${STREET})\\.?( |$)`),       // "12 main street", "5 herzl st"
+  new RegExp(`(^| )[a-zא-ת]{2,20} (${STREET})\\.? ?\\d{1,4}( |$)`),               // "herzl street 12"
+  /(^| )(אני|אנחנו|אנו) ?(גר|גרה|גרים|גרות|גרימ)( |$)(ב|ליד|על|בעיר|ברחוב|בשכונת|בשכונה|בכתובת)/,
+  /(^| )(גר|גרה|גרים|גרימ|גרות) ב?(רחוב|רח|שכונת|שדרות|בניינ|דירה|קומה)/,
+  /(^| )(הכתובת|הכתובות|כתובת) (שלי|שלנו|של הבית)/, /(^| )הבית שלי (ב|נמצא|ליד|ברחוב)/, /(^| )(בואו|בוא|תבוא|תבואי) (אליי|אלי|אלינו) (הביתה|לבית)/,
+  /(^| )(דירה|קומה|כניסה|בניינ|מיקוד)( מספר)? ?\d/, /(^| )מיקוד( |$)/,
+  /\bi live (in|at|on|near|next to|by)\b/, /\bwe live (in|at|on|near)\b/, /\bmy (home |house |)(address|adress|adres)\b/, /\bmy (house|home|place) is (at|on|in|near)\b/,
+  /\b(apartment|apt|flat|floor|unit|suite)( number| no| #)? ?\d/, /\b(zip|zipcode|zip code|postal code|postcode)\b/, /\bcome (to|over to) my (house|home|place)\b/,
+];
+const EMAIL_RES = [/[a-z0-9._%+-]+ ?@ ?[a-z0-9.-]+\.[a-z]{2,}/, /\b(gmail|hotmail|yahoo|walla|outlook|icloud|protonmail)( ?(\.|dot) ?(com|co|net|org|il))?\b/, /(ג[׳']?ימייל|גימייל|הוטמייל|וואלה מייל)/];
+const PHONE_WORDS = /\b(phone|fone|number|cell|mobile|whatsapp|whats app|watsap|call me|text me|sms|tel)\b|(טלפונ|פלאפונ|נייד|מספר|וואטסאפ|ווטסאפ|ווצאפ|וצאפ|תתקשר|תסמס)/;
+export function privateInfo(text) {
+  const raw = String(text ?? "").normalize("NFKC");
+  const p = raw.toLowerCase().replace(/[֑-ׇ]/g, "").replace(/[םןץףך]/g, (ch) => FINALS[ch]).replace(/[׳'`´’"״]/g, "").replace(/\s+/g, " ");
+  // phone numbers: 9+ digits, or 7+ starting with 0 / +, or 5+ next to a word like "phone" / "טלפון"
+  for (const r of digitsOf(p)) {
+    const n = r.d.length;
+    if (n >= 9 || (n >= 7 && (r.d[0] === "0" || r.plus || r.d.startsWith("972"))) || (n >= 5 && PHONE_WORDS.test(p))) {
+      if (n >= 7 && /^1?0{6,}$/.test(r.d.replace(/^(\d)/, "1"))) continue;   // "1,000,000 coins" is just a big number
+      return "phone";
+    }
+  }
+  if (EMAIL_RES.some((re) => re.test(p))) return "email";
+  const words = " " + p.replace(/[^a-zא-ת0-9 ]+/g, " ").replace(/\s+/g, " ").trim() + " ";
+  if (ADDRESS_RES.some((re) => re.test(words.trim()) || re.test(words))) return "address";
+  return null;
+}
+// a phone number sent in pieces ("054", "123", "4567"): the server keeps the last digits of each player for a while
+export function splitPhone(prevDigits, text) {
+  const d = digitsOf(String(text ?? "").toLowerCase()).map((r) => r.d).join("");
+  if (!d) return { digits: "", hit: false };
+  const all = (prevDigits || "") + d;
+  return { digits: all.slice(-16), hit: all.length >= 9 && (all[0] === "0" || all.startsWith("972")) };
+}
+export const PRIVATE_MESSAGE = {
+  phone: "Never share a phone number in Jumpi, not even with friends!",
+  address: "Never share where you live or your address in Jumpi!",
+  email: "Never share an email address in Jumpi!",
+};
+
 export function checkText(text) {
+  const priv = privateInfo(text);
+  if (priv) return { ok: false, word: priv, kind: "private", info: priv };
   const p = prep(text);
   if (!p.trim()) return { ok: true };
   const chunks = p.split(/[\s,.;:?/\\()[\]{}<>~_=\-–—]+|(?<=[a-z])(?=[א-ת])|(?<=[א-ת])(?=[a-z])/).filter(Boolean);
@@ -163,4 +221,6 @@ export function checkName(name) {
   return { ok: true };
 }
 
+// the same word lists for the Discord server's AutoMod (tools/discord/server.config.js)
+export const WORD_LISTS = { exact: EXACT_W, stems: STEM_W, anywhere: ANY_W, allow: ALLOW_RAW };
 export const FRIENDLY_MESSAGE = "Let's keep Jumpi friendly! That word isn't allowed here.";

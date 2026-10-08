@@ -131,9 +131,7 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .tut-live svg{width:22px;height:22px}
 .tut-live:hover{background:color-mix(in srgb,var(--c) 16%,#fff)}
 .tut-live:focus-visible{outline:3px solid #1f9bff;outline-offset:2px}
-body.tutorial.in-game .phone-btn{display:flex}
-body.tutorial .home-btn,body.tutorial .gift-btn,body.tutorial .mg-prompt{display:none!important}
-.tl-card{position:fixed;z-index:7;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);translate:-50% 0;width:min(560px,calc(100% - 340px));box-sizing:border-box;
+.tl-card{position:fixed;z-index:44;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);translate:-50% 0;width:min(600px,calc(100% - 300px));box-sizing:border-box;overflow:hidden;
   display:flex;align-items:center;gap:14px;padding:12px 14px 12px 12px;border-radius:22px;background:#fff;color:#22324a;font-family:"Fredoka",system-ui,sans-serif;
   box-shadow:0 6px 0 #b9c9e6,0 16px 34px rgb(0 0 0 / .25);transition:background .3s,box-shadow .3s}
 .tl-card[hidden]{display:none}
@@ -161,8 +159,40 @@ body.tutorial .home-btn,body.tutorial .gift-btn,body.tutorial .mg-prompt{display
 .tl-dots{display:flex;gap:4px;margin-left:auto}
 .tl-dots i{width:7px;height:7px;border-radius:4px;background:#d5e0ee}
 .tl-dots i.done{background:#2fd36b}.tl-dots i.now{background:#ff8a1c;width:16px}
-@media (max-width:760px){.tl-card{top:calc(env(safe-area-inset-top,0px) + 86px);width:calc(100% - 24px)}.tl-av{width:52px;height:52px}.tl-say{font-size:.95rem}}
+@media (max-width:760px){.tl-card{top:calc(env(safe-area-inset-top,0px) + 86px);width:calc(100% - 24px)}.tl-card.low{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}.tl-av{width:52px;height:52px}.tl-say{font-size:.95rem}}
 .tl-done-title{color:#2fae4f!important;text-shadow:0 4px 0 #c9f2d4!important}
+.tl-card.low{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
+.tl-card{align-items:flex-start;padding:14px 16px 18px 14px}
+.tl-who{padding-right:44px}.tl-who .tl-count{margin-left:auto;color:#b0bccd}
+#tlAsk,#tlDone{z-index:46}
+#piOv{z-index:60}
+.pi-card{position:relative}
+.pi-card h2{color:#ff4f6b!important;text-shadow:0 4px 0 #ffd6dd!important}
+.pi-shield{position:absolute;top:34px;right:calc(50% - 92px);width:58px;height:58px;filter:drop-shadow(0 4px 0 rgb(0 0 0 / .15));animation:piWob 1.6s ease-in-out infinite}
+@keyframes piWob{50%{rotate:-8deg;translate:0 -3px}}
+.pi-rule{max-width:none!important;box-sizing:border-box;margin:12px 0 6px!important;padding:10px 14px;border-radius:14px;background:#fff1f3;color:#b31d2f!important;font-weight:600;font-size:.95rem}
+input.pi-warn{outline:3px solid #ff4f6b!important;outline-offset:1px;background:#fff1f3!important}
+.pi-host{position:relative}
+.pi-tip{position:absolute;left:10px;bottom:calc(100% + 8px);z-index:5;padding:6px 12px;border-radius:12px;background:#ff4f6b;color:#fff;font:600 .85rem "Fredoka",system-ui,sans-serif;box-shadow:0 3px 0 #b31d2f;white-space:nowrap;pointer-events:none}
+.pi-tip::after{content:"";position:absolute;left:18px;top:100%;border:7px solid transparent;border-top-color:#ff4f6b}
+.pi-tip[hidden]{display:none}
+.tl-edge{position:fixed;z-index:43;width:0;height:0;margin:-18px 0 0 -14px;border:14px solid transparent;border-left:30px solid #ff8a1c;border-right:0;filter:drop-shadow(0 0 6px rgb(255 190 40 / .9)) drop-shadow(0 3px 0 #a3410a);pointer-events:none;transform-origin:0 50%}
+.tl-edge[hidden]{display:none}
+.tl-acts{display:flex;align-items:center;gap:12px;margin-top:10px}.tl-acts:has(> [hidden] + [hidden]){display:none}
+.tl-nudge{border:0;background:none;padding:0;color:#8d9bb0;font:600 .85rem "Fredoka",system-ui,sans-serif;text-decoration:underline;cursor:pointer}
+.tl-nudge[hidden]{display:none}
+.tl-skip{position:absolute;top:8px;right:10px;font-size:.78rem!important;opacity:.75}
+.tl-prog{position:absolute;left:0;right:0;bottom:0;height:5px;background:#e9f0f8}.tl-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb21f,#ff8a1c);transition:width .5s}
+.tl-spot{position:fixed;z-index:43;pointer-events:none;box-sizing:border-box;border:4px solid #ffd23a;
+  box-shadow:0 0 0 4px #ff8a1c,0 0 24px 6px rgb(255 190 40 / .75),0 0 0 200vmax rgb(8 18 48 / .28);animation:tlPulse 1.1s ease-in-out infinite;transition:left .25s,top .25s,width .25s,height .25s}
+.tl-spot[hidden]{display:none}
+@keyframes tlPulse{50%{box-shadow:0 0 0 9px #ff8a1c,0 0 34px 12px rgb(255 190 40 / .9),0 0 0 200vmax rgb(8 18 48 / .28)}}
+.tl-arrow{position:absolute;left:50%;bottom:calc(100% + 10px);width:0;height:0;margin-left:-16px;border:16px solid transparent;border-top:24px solid #ff8a1c;border-bottom:0;filter:drop-shadow(0 3px 0 #a3410a);animation:tlArrow .8s ease-in-out infinite alternate}
+.tl-spot.below .tl-arrow{bottom:auto;top:calc(100% + 10px);border-top:0;border-bottom:24px solid #ff8a1c}
+@keyframes tlArrow{to{translate:0 -10px}}
+.tl-spot.below .tl-arrow{animation-name:tlArrowUp}@keyframes tlArrowUp{to{translate:0 10px}}
+.tl-done-coins{margin:10px 0 0!important;font:400 1.4rem "Lilita One",system-ui,sans-serif!important;color:#ff8a1c!important}
+@media (prefers-reduced-motion:reduce){.tl-spot,.tl-arrow{animation:none}}
 /* PLAY menu: grows out of the PLAY button */
 .play-wrap{position:relative;display:flex;flex-direction:column;align-items:stretch}
 .play-menu{position:absolute;right:0;bottom:calc(100% + 22px);width:100%;min-width:230px;box-sizing:border-box;
@@ -444,7 +474,7 @@ body.login-mode .site-btn{display:none}
 .spx-btn svg{width:36px;height:36px;animation:offerSpin 6s ease-in-out infinite}
 @keyframes offerSpin{0%,80%,100%{transform:none}86%{transform:rotate(-16deg) scale(1.12)}93%{transform:rotate(12deg) scale(1.12)}}
 body.in-game.logged .spx-btn{display:flex}
-body.in-game.is-admin .spx-btn{top:calc(env(safe-area-inset-top,0px) + 162px)}
+body.in-game.is-staff .spx-btn{top:calc(env(safe-area-inset-top,0px) + 162px)}
 body.game-store .spx-btn,body.tutorial .spx-btn{display:none!important}
 .coins{cursor:pointer}
 .coins:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
@@ -576,7 +606,16 @@ body.in-game .online{display:flex}
 body.in-game.logged .coins{display:flex}
 .admin-btn{--c:#ff5a5a;--hi:#ff9b9b;--lo:#d63333;--edge:#8a1c1c;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 90px);right:18px;width:58px;height:58px;border-radius:16px;padding:0;display:none}
 .admin-btn svg{width:32px;height:32px}
-body.in-game.is-admin .admin-btn:not([hidden]){display:flex}
+body.in-game.is-staff .admin-btn:not([hidden]){display:flex}
+/* moderators: a blue shield, a blue name and a blue chat bubble */
+body.is-mod .admin-btn{--c:#2f7bff;--hi:#8fbcff;--lo:#1a56d6;--edge:#0b3a99}
+body.is-mod .admin-btn svg g path{fill:#0b3a99}body.is-mod .admin-btn svg>path:last-child{fill:#2f7bff}
+body.is-mod .admin-card{border-color:#0b3a99;box-shadow:0 10px 0 #0b3a99,0 24px 40px rgb(0 0 0 / .35)}
+body.is-mod .adm-admin-only{display:none!important}
+.adm-budget{margin:0;color:#dbe7f7;font-size:.95rem}.adm-budget b{color:#ffd23a}
+.bubble.mod{--bb:#2f7bff;--bl:#0b3a99;--bt:#fff;box-shadow:inset 0 -4px 0 rgb(0 0 0 / .12),inset 0 3px 0 rgb(255 255 255 / .35)}
+.bubble.mod .dots i{background:#fff}
+.pc-portrait b.mod{color:#8fc4ff}
 .announce{position:fixed;z-index:8;top:calc(env(safe-area-inset-top,0px) + 84px);left:50%;translate:-50% 0;width:min(560px,calc(100% - 32px));
   display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:linear-gradient(180deg,#ff6a3d,#e8421f);border:2px solid #9c2a10;
   box-shadow:0 6px 0 #9c2a10,0 14px 26px rgb(0 0 0 / .3);color:#fff;font-family:"Fredoka",var(--font);
@@ -1313,9 +1352,9 @@ body.in-home .home-bar{display:flex}
 /* the Lucky Wheel button: just a little golden wheel on the right (no box). Hover: it spins and the bulbs light up */
 .wheel-btn{position:fixed;z-index:4;right:12px;top:calc(env(safe-area-inset-top,0px) + 86px);width:72px;height:72px;padding:0;border:0;background:none;cursor:pointer;display:none;
   align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:transform .25s cubic-bezier(.3,1.6,.6,1);filter:drop-shadow(0 4px 6px rgb(30 10 80 / .35))}
-body.is-admin .wheel-btn{top:calc(env(safe-area-inset-top,0px) + 158px)}
+body.is-staff .wheel-btn{top:calc(env(safe-area-inset-top,0px) + 158px)}
 body.has-offers .wheel-btn{top:calc(env(safe-area-inset-top,0px) + 158px)}
-body.is-admin.has-offers .wheel-btn{top:calc(env(safe-area-inset-top,0px) + 230px)}
+body.is-staff.has-offers .wheel-btn{top:calc(env(safe-area-inset-top,0px) + 230px)}
 .wheel-btn svg{width:100%;height:100%;overflow:visible}
 .wheel-btn .wb-spin{transform-origin:50px 50px;transform-box:view-box}
 .wheel-btn .wb-bulb{fill:#fff1b8;opacity:.55;transition:opacity .2s,fill .2s}
@@ -1332,7 +1371,7 @@ button.wheel-btn .hb-badge{top:-2px;right:-4px}
 @keyframes wbChase{0%,100%{opacity:.45;fill:#fff1b8}50%{opacity:1;fill:#fff;filter:drop-shadow(0 0 3px #fff6a0)}}
 body.in-game.logged .wheel-btn,body.in-game.logged .season-btn{display:flex}
 body.phone-open .wheel-btn{display:none!important}
-body.in-home .wheel-btn,body.in-home .season-btn,body.tutorial .wheel-btn,body.tutorial .season-btn,body.at-patrol .wheel-btn,body.at-patrol .season-btn{display:none!important}
+body.in-home .wheel-btn,body.in-home .season-btn,body.at-patrol .wheel-btn,body.at-patrol .season-btn{display:none!important}
 @keyframes whlSpinIcon{0%,70%{transform:none}85%{transform:rotate(200deg)}100%{transform:rotate(360deg)}}
 .season-btn.ready svg{animation:giftWiggle 1.6s ease-in-out infinite}
 .hb-badge{min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:#ff3b5c;color:#fff;font:700 .8rem/24px "Fredoka",system-ui,sans-serif;text-align:center;letter-spacing:0;text-shadow:none;box-shadow:0 2px 0 #9a1430,0 0 0 3px #fff}
@@ -1794,7 +1833,7 @@ body.in-game.logged .needs:not([hidden]){display:flex}
 body.chat-open .needs{--mb:calc(env(safe-area-inset-bottom,0px) + 158px)}
 body.in-home .needs{right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);translate:none;padding-right:10px}
 body.phone-open .needs,body.phone-open .need-pop{display:none!important}
-body.tutorial .needs,body.tutorial .need-pop,body.game-store .needs,body.game-store .need-pop{display:none!important}
+body.game-store .needs,body.game-store .need-pop{display:none!important}
 .need{--nc:#ff8a1c;--p:100;--lc:#2fd36b;position:relative;flex:none;width:46px;height:46px;padding:0;border:0;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 3px 0 #c9d6ea;transition:transform .12s}
 .need[data-level="mid"]{--lc:#ffc21a}.need[data-level="low"]{--lc:#ff4545}
 .need .ring{position:absolute;inset:0;width:100%;height:100%;rotate:-90deg}
@@ -2588,27 +2627,48 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
         <button class="nb tut-prev" id="tutPrev" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back</button>
         <button class="nb tut-next" id="tutNext" type="button">Next<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <button class="tut-live" id="tutLive" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M10 7.8 L16.4 12 L10 16.2 Z" fill="#fff"/></svg>Try it live in the game with Pip</button>
+      <button class="tut-live" id="tutLive" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M10 7.8 L16.4 12 L10 16.2 Z" fill="#fff"/></svg>Take the live tour in the game with Pip</button>
     </div>
   </div>
 </div>
+<div class="tl-spot" id="tlSpot" aria-hidden="true" hidden><i class="tl-arrow"></i></div>
+<i class="tl-edge" id="tlEdge" aria-hidden="true" hidden></i>
 <div class="tl-card" id="tlCard" role="status" aria-live="polite" hidden>
   <div class="tl-av"><img id="tlFace" alt=""><span class="ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5 L10 17.5 L19 7" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
   <div class="tl-main">
-    <div class="tl-who"><b>PIP</b><span id="tlStep">STEP 1</span><span class="tl-dots" id="tlDots" aria-hidden="true"></span></div>
+    <div class="tl-who"><b>PIP</b><span id="tlStep"></span><span class="tl-count" id="tlCount"></span></div>
     <p class="tl-say" id="tlSay"></p>
     <div class="tl-bar" id="tlBar" hidden><i id="tlBarFill"></i></div>
+    <div class="tl-acts"><button class="tl-go" id="tlGo" type="button" hidden>Next</button><button class="tl-nudge" id="tlNudge" type="button" hidden>Stuck? Go to the next step</button></div>
   </div>
-  <button class="tl-go" id="tlGo" type="button" hidden>Let's go!</button>
-  <button class="tl-skip" id="tlSkip" type="button">Exit</button>
+  <button class="tl-skip" id="tlSkip" type="button">Skip</button>
+  <div class="tl-prog" aria-hidden="true"><i id="tlProg"></i></div>
+</div>
+<div class="idle-overlay" id="piOv" role="alertdialog" aria-modal="true" aria-labelledby="piTitle" aria-describedby="piText" hidden>
+  <div class="idle-card pi-card">
+    <img class="idle-face" id="piFace" alt="">
+    <svg class="pi-shield" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4 L56 13 V31 Q56 51 32 61 Q8 51 8 31 V13 Z" fill="#c8102e" transform="translate(0 2)"/><path d="M32 4 L56 13 V31 Q56 51 32 61 Q8 51 8 31 V13 Z" fill="#ff4f6b"/><rect x="21" y="27" width="22" height="17" rx="4" fill="#fff"/><path d="M25 27 V22 Q25 15 32 15 Q39 15 39 22 V27" fill="none" stroke="#fff" stroke-width="4.5"/><circle cx="32" cy="34.5" r="3" fill="#c8102e"/><rect x="30.6" y="35" width="2.8" height="5" rx="1.2" fill="#c8102e"/></svg>
+    <h2 id="piTitle">KEEP IT SECRET!</h2>
+    <p id="piText"></p>
+    <p class="pi-rule">If someone asks for your number, address or email, don't answer. Tell a grown-up and report them.</p>
+    <div class="idle-acts"><button class="idle-back" id="piOk" type="button">Got it!</button></div>
+  </div>
+</div>
+<div class="idle-overlay" id="tlAsk" role="alertdialog" aria-modal="true" aria-labelledby="tlAskTitle" hidden>
+  <div class="idle-card">
+    <img class="idle-face" id="tlAskFace" alt="">
+    <h2 id="tlAskTitle">SKIP THE TUTORIAL?</h2>
+    <p>Are you sure? Pip still has lots of cool things to show you, and finishing the tour gives you <b>250 coins</b>! You can always take it again with the <b>TUTORIAL</b> button on the main screen.</p>
+    <div class="idle-acts"><button class="idle-back" id="tlAskStay" type="button">Keep going!</button><button class="idle-exit" id="tlAskSkip" type="button">Yes, skip it</button></div>
+  </div>
 </div>
 <div class="idle-overlay" id="tlDone" role="dialog" aria-modal="true" aria-labelledby="tlDoneTitle" hidden>
   <div class="idle-card">
     <img class="idle-face" id="tlDoneFace" alt="">
-    <span class="idle-chip" style="background:#e3f6e6;color:#17a24a">Tutorial complete</span>
     <h2 id="tlDoneTitle" class="tl-done-title">YOU DID IT!</h2>
-    <p>You know how to walk, run, jump, chat and use your phone. Now go and make some friends!</p>
-    <div class="idle-acts" id="tlDoneActs"></div>
+    <p>Now you know everything about Jumpi: moving around, your screen, chat and the phone, food, the shops, the Beach, the Water Park, jobs, pets and friends. Go have fun!</p>
+    <p class="tl-done-coins" id="tlDoneCoins" hidden>+250 coins for finishing the tour!</p>
+    <div class="idle-acts"><button class="idle-back" id="tlDoneOk" type="button">Let's play!</button></div>
   </div>
 </div>
 <div class="idle-overlay bye-overlay" id="byeOverlay" role="alertdialog" aria-modal="true" aria-labelledby="byeTitle" aria-describedby="byeText" hidden>
@@ -2751,7 +2811,7 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
     </button>
     <h2 id="adminTitle">ADMIN PANEL</h2>
 
-    <section class="adm-sec adm-invis" id="admInvis">
+    <section class="adm-sec adm-invis adm-admin-only" id="admInvis">
       <h3>INVISIBLE</h3>
       <p class="adm-invis-txt" id="admInvisTxt">Only other admins can see you.</p>
       <button class="adm-btn wide" id="admInvisBtn" type="button" aria-pressed="false">Become visible</button>
@@ -2769,7 +2829,7 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
       <div class="adm-row">
         <button class="adm-btn red" id="admKick" type="button">Kick</button>
         <select class="adm-select" id="admBanTime" aria-label="Ban length">
-          <option value="60">1 hour</option><option value="1440" selected>1 day</option><option value="10080">7 days</option><option value="43200">30 days</option><option value="0">Forever</option>
+          <option value="60">1 hour</option><option value="1440" selected>1 day</option><option value="10080">7 days</option><option value="43200" class="adm-admin-only">30 days</option><option value="0" class="adm-admin-only">Forever</option>
         </select>
         <button class="adm-btn red" id="admBan" type="button">Ban</button>
         <button class="adm-btn ghost" id="admUnban" type="button">Unban</button>
@@ -2786,19 +2846,20 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
 
     <section class="adm-sec">
       <h3>COINS</h3>
+      <p class="adm-budget" id="admBudget" hidden></p>
       <div class="adm-row">
         <input class="adm-input" id="admAmount" type="number" min="-1000000" max="1000000" step="1" value="100" aria-label="Coins to give">
         <button class="adm-btn gold" id="admCoins" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Give coins</button>
       </div>
     </section>
 
-    <section class="adm-sec">
+    <section class="adm-sec adm-admin-only">
       <h3>ANNOUNCEMENT</h3>
       <textarea class="adm-input adm-text" id="admAnnounce" maxlength="160" rows="2" placeholder="A message everyone in the Plaza will see"></textarea>
       <button class="adm-btn blue wide" id="admSend" type="button"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Send to everyone</button>
     </section>
 
-    <section class="adm-sec">
+    <section class="adm-sec adm-admin-only">
       <h3>GIFT CODE</h3>
       <div class="adm-row">
         <input class="adm-input adm-code" id="admCode" type="text" maxlength="20" placeholder="Code (empty = random)" autocomplete="off" aria-label="Code">
@@ -2970,7 +3031,7 @@ import * as THREE from "three";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
 import {OUTFITS} from "/shared/outfits.js";
-import {checkText,checkName,FRIENDLY_MESSAGE} from "/shared/profanity.js";
+import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
 import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/pets.js";
 import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf} from "/shared/food.js";
@@ -3617,6 +3678,7 @@ function galaxySky(x,w,h,seed){const R=rng(seed);x.fillStyle="#24165c";x.fillRec
   x.fillStyle="#fff";for(let i=0;i<220;i++){const r=R()*2.2+.4;x.globalAlpha=.5+R()*.5;x.beginPath();x.arc(R()*w,R()*h,r,0,7);x.fill();}x.globalAlpha=1;}
 function shirtTex(id,p={}){
   if(id==="police")return uniformShirtTex();if(id==="waiter")return waiterShirtTex();   // work uniforms
+  if(id==="mod")return modShirtTex();   // moderators
   return canvasTex(1024,256,(x,w,h)=>{
     const fill=p.fill||SHIRT_FILL[id],hem=p.hem||SHIRT_HEM[id],acc=p.acc;
     x.fillStyle=fill;x.fillRect(0,0,w,h);
@@ -5198,7 +5260,7 @@ function positionMyBubble(){if(!myBubble.classList.contains("show"))return;
 document.getElementById("chatBar").addEventListener("submit",e=>{
   e.preventDefault();const text=chatInput.value.replace(/\s+/g," ").trim();if(!text)return;
   if(mutedLeft()){toast(mutedText());sfx.error();return;}
-  if(!checkText(text).ok){blockedText(chatInput);return;}
+  if(textBlocked(text,chatInput))return;
   say(text);sfx.tick(true);chatInput.value="";if(socket&&socket.connected)socket.emit("chat",text);
 });
 chatInput.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeChat();chatFab.focus();}});
@@ -5226,7 +5288,7 @@ function addRemote(p){
   const c=makeCharacter(uniformLook(p.look||{},p.uniform),p.username||"Player",nameColor(p.role,p.member));c.uniform=p.uniform||null;c.member=!!p.member;c.invisible=!!p.invisible;
   c.bday=!!p.bday;if(c.bday){c.tag.material.map&&c.tag.material.map.dispose();c.tag=nameTag(p.username||"Player",BIRTHDAY_PINK,"bday");}   // birthday today: pink name with a cake
   c.root.position.set(p.x,0,p.z);Object.assign(c,{look:p.look||{},role:p.role,username:p.username,tx:p.x,tz:p.z,face:p.face||0,cur:p.face||0,moving:!!p.moving,phase:0,hopT:-9,typing:false,bubble:makeBubbleEl()});
-  if(p.role==="admin")c.bubble.classList.add("admin");
+  if(p.role==="admin")c.bubble.classList.add("admin");else if(p.role==="mod")c.bubble.classList.add("mod");
   c.pose=p.pose||null;c.mood=p.mood||"";c.phT=p.phone?1:0;c.hold=p.hold||null;setRemotePet(c,p.pet);(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);if(c.invisible)ghostRemote(c,true);setBadge(c,p.status);updateOnline();refreshAdminOnline();
 }
 function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();dropPetObj(c.petObj);c.petObj=null;c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
@@ -5293,6 +5355,7 @@ function netJoin(){
     socket.on("player:status",d=>setBadge(remotes.get(d.id),d.status));
     socket.on("emote",d=>{if(!d||d.id===socket.id||!EMOTES.some(e=>e.id===d.e))return;const c=remotes.get(d.id);if(c){popEmote(c.root,c.bubble,d.e,skinOf(c.look),d.id);sfx.hover();}});
     socket.on("chat:slow",()=>toast("Slow down a little!"));
+    socket.on("chat:private",d=>{myBubble.classList.remove("show");privatePop(d.info);});
     socket.on("chat:blocked",d=>{myBubble.classList.remove("show");toast(d.muted?"You used bad words too many times, so you're muted for 5 minutes.":"🚫 "+(d.message||FRIENDLY_MESSAGE));sfx.error();});
     socket.on("kicked",()=>{toast("You opened Jumpi in another window.");exitGame();});
     socket.on("self",d=>{myMutedUntil=d.mutedUntil||0;if(me){me.coins=d.coins;me.role=d.role;}paintCoins();applyRoleUI();setMyInvisible(!!d.invisible);});
@@ -5332,7 +5395,10 @@ function showAnnouncement(text,by){
   const a=document.getElementById("announce");a.classList.remove("show");void a.offsetWidth;a.classList.add("show");sfx.open();
   clearTimeout(announceT);announceT=setTimeout(()=>a.classList.remove("show"),Math.min(14000,6000+text.length*60));
 }
-function applyRoleUI(){const admin=!!(me&&me.role==="admin");document.body.classList.toggle("is-admin",admin);document.getElementById("adminBtn").hidden=!admin;}
+function applyRoleUI(){const admin=!!(me&&me.role==="admin"),mod=!!(me&&me.role==="mod");document.body.classList.toggle("is-admin",admin);document.body.classList.toggle("is-mod",mod);document.body.classList.toggle("is-staff",admin||mod);
+  const b=document.getElementById("adminBtn");b.hidden=!(admin||mod);b.setAttribute("aria-label",mod?"Moderator panel":"Admin panel");
+  document.getElementById("adminTitle").textContent=mod?"MODERATOR PANEL":"ADMIN PANEL";
+  const amt=document.getElementById("admAmount");amt.min=mod?"1":"-1000000";amt.max=mod?"10000":"1000000";}
 const adminOverlay=document.getElementById("adminOverlay"),admUser=document.getElementById("admUser"),admMsg=document.getElementById("admMsg");
 function refreshAdminOnline(){
   const names=[...remotes.values()].map(c=>c.username).filter(Boolean).sort((a,b)=>a.localeCompare(b));
@@ -5343,14 +5409,14 @@ function refreshAdminOnline(){
     b.onclick=()=>{admUser.value=n;refreshAdminOnline();};box.appendChild(b);});
 }
 admUser.addEventListener("input",refreshAdminOnline);
-function openAdmin(){if(!(me&&me.role==="admin"))return;refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
+function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
 function closeAdmin(){if(adminOverlay.hidden)return;adminOverlay.hidden=true;sfx.close();}
-function adminSend(event,payload,btn){
+function adminSend(event,payload,btn,after){
   if(!socket||!socket.connected){admMsg.className="adm-msg err";admMsg.textContent="Not connected to the Plaza server.";return;}
   btn.disabled=true;admMsg.className="adm-msg";admMsg.textContent="Working…";
   socket.timeout(8000).emit(event,payload,(err,res)=>{btn.disabled=false;
     if(err||!res){admMsg.className="adm-msg err";admMsg.textContent="The server didn't answer. Try again.";return;}
-    admMsg.className="adm-msg "+(res.ok?"ok":"err");admMsg.textContent=res.ok?res.message:res.error;(res.ok?sfx.success:sfx.error)();});
+    admMsg.className="adm-msg "+(res.ok?"ok":"err");admMsg.textContent=res.ok?res.message:res.error;(res.ok?sfx.success:sfx.error)();if(res.ok&&after)after(res);});
 }
 const val=id=>document.getElementById(id).value;
 document.getElementById("admKick").onclick=e=>adminSend("admin:kick",{username:admUser.value},e.currentTarget);
@@ -5358,7 +5424,11 @@ document.getElementById("admBan").onclick=e=>adminSend("admin:ban",{username:adm
 document.getElementById("admUnban").onclick=e=>adminSend("admin:unban",{username:admUser.value},e.currentTarget);
 document.getElementById("admMute").onclick=e=>adminSend("admin:mute",{username:admUser.value,minutes:+val("admMuteTime")},e.currentTarget);
 document.getElementById("admUnmute").onclick=e=>adminSend("admin:unmute",{username:admUser.value},e.currentTarget);
-document.getElementById("admCoins").onclick=e=>adminSend("admin:coins",{username:admUser.value,amount:+val("admAmount")},e.currentTarget);
+document.getElementById("admCoins").onclick=e=>adminSend("admin:coins",{username:admUser.value,amount:+val("admAmount")},e.currentTarget,r=>{if(r.budget)paintBudget(r.budget);});
+// moderators: how many coins they can still give this month
+function paintBudget(b){const el=document.getElementById("admBudget");if(!b){el.hidden=true;return;}el.hidden=false;
+  const d=new Date(b.resets+"T00:00:00");el.innerHTML=`Your budget this month: <b>${b.left.toLocaleString("en-US")}</b> of ${b.limit.toLocaleString("en-US")} coins. It starts again on ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long"})}.`;}
+function modBudget(){if(!socket||!socket.connected||!socket.timeout)return;socket.timeout(6000).emit("mod:budget",{},(err,r)=>{if(!err&&r&&r.ok)paintBudget(r.budget);});}
 document.getElementById("admCodeGo").onclick=e=>{const btn=e.currentTarget,out=document.getElementById("admCodeOut");
   if(!socket||!socket.connected){adminSend("admin:code",{},btn);return;}
   btn.disabled=true;admMsg.className="adm-msg";admMsg.textContent="Working…";
@@ -5607,7 +5677,7 @@ function drawMarkers(g,toScreen,big,size){
   const t=performance.now()/1000,pr=size||(big?1:.8);
   const dot=(x,z,col,name,ring)=>{const [sx,sy]=toScreen(x,z);g.beginPath();g.arc(sx,sy,8*pr+3,0,Math.PI*2);g.fillStyle="#fff";g.fill();g.beginPath();g.arc(sx,sy,8*pr,0,Math.PI*2);g.fillStyle=col;g.fill();
     if(name&&big){g.font="600 13px Fredoka,sans-serif";g.textAlign="center";g.lineWidth=4;g.strokeStyle="rgba(20,40,80,.8)";g.strokeText(name,sx,sy-16);g.fillStyle="#fff";g.fillText(name,sx,sy-16);}};
-  for(const c of remotes.values())dot(c.root.position.x,c.root.position.z,c.role==="admin"?"#ff4545":"#1fb6ff",c.username);
+  for(const c of remotes.values())dot(c.root.position.x,c.root.position.z,c.role==="admin"?"#ff4545":c.role==="mod"?"#2f5bff":"#1fb6ff",c.username);
   if(G.npc&&!G.home)dot(G.npc.root.position.x,G.npc.root.position.z,"#2fd36b","Pip");
   if(WORK.active&&WORK.job==="police")POL.tasks.forEach(k=>{if(k.stage==="done")return;const b=k.stage==="return"||k.stage==="follow"?k.b:k.a;dot(b.x,b.z,k.type==="thief"?"#ff4f4f":"#ffb21f",k.type==="thief"?"Pickpocket":"Lost kid");});
   // me: a yellow arrow with a pulsing ring
@@ -5657,8 +5727,8 @@ function renderMap(){
   document.querySelectorAll("#mapTravel button").forEach(b=>b.setAttribute("aria-current",b.dataset.zone===G.zone));
 }
 const mapOverlay=document.getElementById("mapOverlay");
-function openMap(){if(!inGame)return;initMap();mapBig=true;mapOverlay.hidden=false;G.keys={};sfx.open();mapFrame=0;}
-function closeMap(){if(mapOverlay.hidden)return;mapOverlay.hidden=true;mapBig=false;mapHover=null;sfx.close();}
+function openMap(){if(!inGame)return;initMap();mapBig=true;mapOverlay.hidden=false;G.keys={};sfx.open();mapFrame=0;tlEvent("mapOpen");}
+function closeMap(){if(mapOverlay.hidden)return;mapOverlay.hidden=true;mapBig=false;mapHover=null;sfx.close();tlEvent("mapClose");}
 document.getElementById("minimap").onclick=()=>openMap();
 document.getElementById("mapClose").onclick=closeMap;
 mapOverlay.addEventListener("pointerdown",e=>{if(e.target===mapOverlay)closeMap();});
@@ -5760,7 +5830,7 @@ function gameTick(dt,t,hy){
   if(G.home&&HOME.sun){HOME.sun.position.set(G.pos.x+5,12,G.pos.z+7);HOME.sun.target.position.set(G.pos.x,0,G.pos.z);HOME.sun.target.updateMatrixWorld();}
   weatherTick(t,dt);   // time of day, weather, sun position, lamps and weather sounds
   policeTick(t,dt);    // on patrol: the cases around the Plaza
-  updateJets(t);updateAreas(t,dt);if(!G.home&&!TL.on)updateStations(t);updateRipples(t,dt);if(!G.home)updateResident(t,dt);updateRemotes(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
+  updateJets(t);updateAreas(t,dt);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home)updateResident(t,dt);updateRemotes(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
   if(G.tag)placeTag(G.tag,P.root.position);if(G.npc)placeTag(G.npc.tag,G.npc.root.position);for(const c of remotes.values())placeTag(c.tag,c.root.position);
   if(G.seaU)G.seaU.value=t;
   G.boat.position.x=-25+Math.sin(t*.05)*30;G.boat.rotation.z=Math.sin(t*1.2)*.05;
@@ -5768,7 +5838,7 @@ function gameTick(dt,t,hy){
 
 /* ---------- entering and leaving ---------- */
 // admins have a red name, members a golden one
-const nameColor=(role,member)=>role==="admin"?"#ff4545":member?"#ffd23a":"#fff";
+const nameColor=(role,member)=>role==="admin"?"#ff4545":role==="mod"?"#3d9bff":member?"#ffd23a":"#fff";
 function refreshMyTag(){
   if(!world)return;const key=me?me.username+me.role+lk("tag")+!!me.subscriber+!!me.birthdayToday:"";
   if(G.tag&&G.tagFor!==key){world.remove(G.tag);G.tag.material.map.dispose();G.tag=null;}
@@ -5785,17 +5855,18 @@ function enterGame(){
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   P.root.traverse(o=>{if(o.isMesh){o.castShadow=true;[].concat(o.material).forEach(m=>m.needsUpdate=true);}});
   refreshMyTag();
-  myBubble.classList.toggle("admin",!!(me&&me.role==="admin"));
+  myBubble.classList.toggle("admin",!!(me&&me.role==="admin"));myBubble.classList.toggle("mod",!!(me&&me.role==="mod"));
   G.tag.visible=true;
   G.pos.set(0,0,9);G.face=Math.PI;G.target=null;G.keys={};
   G.camYaw=0;G.camPitch=1;G.running=false;
   cam.fov=45;cam.updateProjectionMatrix();G.camPos.set(0,1.2+5*zoomFactor(),G.pos.z+10.5*zoomFactor());
-  if(TL.on){initMap();return;}   // live tutorial: offline, nothing from the server
   netJoin();initMap();refreshPhoneBadges();
-  checkDaily(true);
+  // the live tutorial: asked for from the menu, or a new player who hasn't done it yet
+  if(me&&(TL.pending||!me.tutorialDone)){const fresh=TL.pending;TL.pending=false;setTimeout(()=>{if(inGame&&!TL.on)tlStart(fresh);},1800);TL.auto=true;}
+  checkDaily(!TL.auto);TL.auto=false;
 }
 function exitGame(){
-  if(TL.on){TL.on=false;tlRing(false);tlCard.hidden=true;document.getElementById("tlDone").hidden=true;body.classList.remove("tutorial");}
+  if(TL.on)tlStop();tlAsk.hidden=true;document.getElementById("tlDone").hidden=true;
   closePhone(true);closeGameStore(true);patrolExit();
   if(G.home)homeReset();
   netLeave();closeMap();clearEmotes();closeChat();closePlayerCard();answerInvite(false,true);closeTradeWindow();answerDuel(false,true);closeDuel();setBadge(myBadge,null);closeMinigame();closeDaily();mgPrompt.hidden=true;nearStation=null;
@@ -6454,7 +6525,7 @@ function nameSign(text,fill,tag){
 function refreshMenuTag(){
   const show=body.classList.contains("store-in")&&!!me&&!inGame&&storeSlot==="tag";const key=show?me.username+me.role+lk("tag"):"";
   if(menuTag&&menuTagKey!==key){menuTag.removeFromParent();menuTag.userData.map.dispose();menuTag=null;}
-  if(show&&!menuTag&&P){menuTag=nameSign(me.username,me.role==="admin"?"#ff4545":"#fff",lk("tag")??-1);menuTagKey=key;
+  if(show&&!menuTag&&P){menuTag=nameSign(me.username,me.role==="admin"?"#ff4545":me.role==="mod"?"#3d9bff":"#fff",lk("tag")??-1);menuTagKey=key;
     menuTag.position.set(0,.42,.6);menuTag.rotation.x=-.06;menuTag.userData.t0=now();P.root.add(menuTag);}
 }
 
@@ -6866,7 +6937,7 @@ async function leaveHome(){
   clearRemotes();homeReset();HOME.leaving=false;world.visible=true;
   G.pos.copy(worldSaved.pos);G.face=worldSaved.face;G.camYaw=worldSaved.yaw||0;scene.background=worldSaved.bg;scene.fog=worldSaved.fog;G.target=null;G.keys={};
   if(socket&&socket.connected)socket.emit("join",netState());else netJoin();
-  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
+  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);tlEvent("leave");
 }
 document.getElementById("homeBtn").onclick=e=>{press(e.currentTarget);enterHome();};
 document.getElementById("homeLeave").onclick=()=>leaveHome();
@@ -7241,6 +7312,22 @@ function showShiftResult(d,leaving){const el=document.getElementById("wkEnd");
 
 
 /* ---------- textures of the work uniforms (the pieces are in outfits.js: gifts, worn at work) ---------- */
+// the moderator shirt: blue polo, white collar, a shield badge on the chest and MOD across the back
+function modShirtTex(){return canvasTex(1024,256,(x,w,h)=>{
+  const blue="#1f5fe0",dark="#123a99";x.fillStyle=blue;x.fillRect(0,0,w,h);
+  const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,"rgba(255,255,255,.12)");g.addColorStop(1,"rgba(0,0,0,.12)");x.fillStyle=g;x.fillRect(0,0,w,h);
+  const cx=w*.25;
+  // white polo collar and two buttons
+  x.fillStyle="#ffffff";x.beginPath();x.moveTo(cx-90,0);x.lineTo(cx-8,62);x.lineTo(cx-8,0);x.closePath();x.fill();x.beginPath();x.moveTo(cx+90,0);x.lineTo(cx+8,62);x.lineTo(cx+8,0);x.closePath();x.fill();
+  x.fillStyle=dark;x.fillRect(cx-6,40,12,70);x.fillStyle="#ffffff";[62,92].forEach(y=>{x.beginPath();x.arc(cx,y,5,0,7);x.fill();});
+  // shield badge with a star (left chest = right side of the texture front)
+  const sx=cx+100,sy=100,sh=(k,col)=>{x.fillStyle=col;x.beginPath();x.moveTo(sx,sy-38*k);x.lineTo(sx+32*k,sy-26*k);x.lineTo(sx+30*k,sy+6*k);x.quadraticCurveTo(sx+24*k,sy+30*k,sx,sy+42*k);x.quadraticCurveTo(sx-24*k,sy+30*k,sx-30*k,sy+6*k);x.lineTo(sx-32*k,sy-26*k);x.closePath();x.fill();};
+  sh(1.08,dark);sh(1,"#ffffff");sh(.78,"#2f7bff");x.fillStyle="#ffffff";starPath(x,sx,sy+2,15,6.5);x.fill();
+  // white stripes down the sides
+  x.fillStyle="#ffffff";[w*.5,w*.0+4,w-4].forEach(u=>x.fillRect(u-4,0,8,h));
+  // MOD across the back
+  x.font='bold 120px "Lilita One", sans-serif';x.textAlign="center";x.textBaseline="middle";x.lineWidth=12;x.strokeStyle=dark;x.strokeText("MOD",w*.75,h*.52);x.fillStyle="#ffffff";x.fillText("MOD",w*.75,h*.52);
+  x.fillStyle=dark;x.fillRect(0,h-26,w,26);});}
 function uniformShirtTex(){return canvasTex(1024,256,(x,w,h)=>{
   const navy="#22468f",dark="#142c66",gold="#ffd23a";x.fillStyle=navy;x.fillRect(0,0,w,h);
   const cx=w*.25;
@@ -8765,7 +8852,7 @@ function openMenu(kind,stand){if(!menuOverlay.hidden)return;G.keys={};G.target=n
   const dish=(f,i)=>`<button type="button" class="menu-dish" data-i="${i}" style="--c:${f.c}"><img alt="" src="${foodThumb(kind,i)}"><span>${f.name}</span>${f.price?`<b class="md-price">${COIN_SVG}${f.price}</b>`:""}</button>`;
   menuGrid.innerHTML=bar?["drink","snack"].map(ty=>`<h3 class="menu-sec">${ty==="drink"?"Drinks":"Snacks"}</h3>`+FOODS.club.map((f,i)=>f.type===ty?dish(f,i):"").join("")).join(""):FOODS[kind].map((f,i)=>!park||f.stand===stand?dish(f,i):"").join("");
   menuGrid.onclick=e=>{const b=e.target.closest(".menu-dish");if(!b||b.disabled)return;press(b);takeFood(kind,+b.dataset.i,b);};
-  menuOverlay.hidden=false;sfx.whoosh();setTimeout(()=>{const b=menuGrid.querySelector("button");if(b)b.focus({preventScroll:true});},60);}
+  menuOverlay.hidden=false;sfx.whoosh();tlEvent("menuOpen");setTimeout(()=>{const b=menuGrid.querySelector("button");if(b)b.focus({preventScroll:true});},60);}
 // the club bar: the server takes the coins, then you get your order
 Sound.onClubSong=name=>{if(Sound.musicVol>0)toast("Now playing: "+name);};
 // /play?beachtest: jump around the beach (window.__beach.go(x,z,face), .walk(x,z) walks there, .ground(x,z))
@@ -8811,6 +8898,7 @@ function foodBite(){const s=heldSnack();if(!s||FB.busy)return;
   FB.biteT=now();FB.busy=true;isDrink(s)?sfx.slurp():sfx.chomp();
   socket.emit("food:bite",{id:s.id},r=>{FB.busy=false;
     if(!r||!r.ok){if(r&&r.error&&r.error!=="slow"){toast(r.error);loadFoodBag();}return;}
+    tlEvent("foodBite");
     if(r.left<=0){FB.held=null;sfx.success();toast(isDrink(s)?"All gone! That was so refreshing!":"All gone! Yum, that was delicious!");}
     setFoodBag(r.bag);});}
 function dropSnack(id){const s=FB.bag.find(q=>q.id===id);if(!s||!socket||!socket.connected)return;
@@ -8833,7 +8921,7 @@ function takeFood(kind,i,btn){const it=foodOf(kind,i);if(!it)return;
   btn.disabled=true;let done=false;
   const fin=r=>{if(done)return;done=true;btn.disabled=false;if(!r||!r.ok){toast((r&&r.error)||"Too busy right now. Try again.");sfx.error();return;}
     if(it.price){if(me){me.coins=r.coins;paintCoins(true);}sfx.coin();}else sfx.success();
-    closeMenu(true);FB.held=r.id;FB.confirm=null;setFoodBag(r.bag);
+    closeMenu(true);FB.held=r.id;FB.confirm=null;setFoodBag(r.bag);tlEvent("foodTake");
     const n=FB.bag.findIndex(s=>s.id===r.id)+1;
     toast(`${it.name} is in your hand! Click to ${it.type==="drink"?"drink":"eat"} it, or press ${n} to put it away.`);};
   socket.emit(kind==="club"?"bar:buy":"food:take",kind==="club"?{i}:{k:kind,i},fin);setTimeout(()=>fin(null),6000);}
@@ -8873,7 +8961,7 @@ let nearDoor=null;
 const DOOR_ICON='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 18 V3.5 Q5 2.5 6 2.5 H14 Q15 2.5 15 3.5 V18 M2.5 18 H17.5" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10.5" r="1.3" fill="#ff5fb4"/></svg>';
 function doorTick(){
   let best=null;
-  if(inGame&&!G.home&&!TL.on&&!GS.open&&!PLACE.busy&&!HOME.leaving&&menuOverlay.hidden&&!RIDE.on){for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,VENUES[id].door||3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
+  if(inGame&&!G.home&&!GS.open&&!PLACE.busy&&!HOME.leaving&&menuOverlay.hidden&&!RIDE.on){for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,VENUES[id].door||3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
     if(!best&&G.pos.x>30)for(const s of PARK_SPOTS)if(Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<1.9){best=s.id;break;}}
   if(best===nearDoor)return;nearDoor=best;seatPrompt.hidden=!best;body.classList.toggle("at-door",!!best);
   if(best){const sp=PARK_SPOTS.find(q=>q.id===best);document.getElementById("seatText").textContent=sp?sp.label:VENUES[best].enter;document.getElementById("seatIcon").innerHTML=sp?SPOT_ICON[best.split(":")[0]]:DOOR_ICON;sfx.tick(true);}}
@@ -9391,6 +9479,117 @@ function stPalm(h=6,lean=.25,col="#2a1238"){const g=new THREE.Group(),m=new THRE
     lf.geometry.translate(0,0,0);g.add(piv);}
   for(let k=0;k<3;k++){const c=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),m);c.position.set(top.x+Math.cos(k*2)*.2,top.y-.2,Math.sin(k*2)*.2);g.add(c);}
   return g;}
+/* ---------- Discord server art: banners, safety cards, the welcome card (tools/discord, discord/card.js) ---------- */
+// a big game-style title: navy outline, gradient fill, a darker copy under it and a shine on the top half
+function stTitle(c,txt,x,y,size,cols,dir="ltr",weight=900){c.save();c.direction=dir;c.textAlign="center";c.textBaseline="middle";c.font=`${weight} ${size}px "RubikStudio", "DejaVu Sans", sans-serif`;c.lineJoin="round";
+  c.fillStyle=cols[2];c.fillText(txt,x,y+size*.07);c.lineWidth=size*.1;c.strokeStyle=cols[3]||"#1d2b4f";c.strokeText(txt,x,y);
+  const tg=c.createLinearGradient(0,y-size*.5,0,y+size*.5);tg.addColorStop(0,cols[0]);tg.addColorStop(1,cols[1]);c.fillStyle=tg;c.fillText(txt,x,y);
+  c.fillStyle="rgba(255,255,255,.35)";c.beginPath();c.rect(0,y-size*.55,c.canvas.width,size*.42);c.clip();c.fillText(txt,x,y);c.restore();}
+// a round icon badge (heart, lock, bubble, star, gift, bell, mail, shield, question, check, key, play)
+function stIcon(c,kind,ix,iy,col,R=92){c.save();
+  c.fillStyle="rgba(0,0,0,.18)";c.beginPath();c.arc(ix,iy+R*.13,R,0,7);c.fill();
+  c.fillStyle=col;c.beginPath();c.arc(ix,iy,R,0,7);c.fill();c.strokeStyle="#ffffff";c.lineWidth=R*.13;c.beginPath();c.arc(ix,iy,R*.87,0,7);c.stroke();
+  const k=R/92;c.translate(ix,iy);c.scale(k,k);c.fillStyle="#ffffff";c.strokeStyle="#ffffff";c.lineCap="round";c.lineJoin="round";c.beginPath();
+  const star=(r1,r2,dy=4)=>{for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?r2:r1;c.lineTo(Math.cos(a)*r,dy+Math.sin(a)*r);}c.fill();};
+  if(kind==="heart"){c.moveTo(0,42);c.bezierCurveTo(-70,-5,-48,-62,0,-28);c.bezierCurveTo(48,-62,70,-5,0,42);c.fill();}
+  if(kind==="lock"){c.roundRect(-40,-8,80,62,12);c.fill();c.lineWidth=16;c.beginPath();c.arc(0,-12,26,Math.PI,0);c.stroke();c.fillStyle=col;c.beginPath();c.arc(0,18,10,0,7);c.fill();}
+  if(kind==="bubble"){c.roundRect(-52,-42,104,70,26);c.fill();c.beginPath();c.moveTo(-20,24);c.lineTo(-34,50);c.lineTo(4,26);c.fill();c.fillStyle=col;[-26,0,26].forEach(d=>{c.beginPath();c.arc(d,-7,9,0,7);c.fill();});}
+  if(kind==="star")star(56,24);
+  if(kind==="gift"){c.fillRect(-46,-10,92,56);c.fillRect(-52,-30,104,22);c.fillStyle=col;c.fillRect(-7,-30,14,76);c.fillStyle="#ffffff";c.lineWidth=11;c.beginPath();c.ellipse(-16,-40,16,10,-.5,0,7);c.stroke();c.beginPath();c.ellipse(16,-40,16,10,.5,0,7);c.stroke();}
+  if(kind==="bell"){c.moveTo(-44,30);c.quadraticCurveTo(-40,-50,0,-52);c.quadraticCurveTo(40,-50,44,30);c.closePath();c.fill();c.beginPath();c.roundRect(-52,24,104,14,7);c.fill();c.beginPath();c.arc(0,46,11,0,7);c.fill();}
+  if(kind==="mail"){c.roundRect(-54,-36,108,72,10);c.fill();c.strokeStyle=col;c.lineWidth=9;c.beginPath();c.moveTo(-48,-28);c.lineTo(0,10);c.lineTo(48,-28);c.stroke();}
+  if(kind==="shield"){c.moveTo(0,-56);c.lineTo(46,-38);c.quadraticCurveTo(46,30,0,56);c.quadraticCurveTo(-46,30,-46,-38);c.closePath();c.fill();c.strokeStyle=col;c.lineWidth=13;c.beginPath();c.moveTo(-20,0);c.lineTo(-4,16);c.lineTo(22,-14);c.stroke();}
+  if(kind==="question"){c.font='900 110px "RubikStudio", sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText("?",0,6);}
+  if(kind==="check"){c.lineWidth=20;c.moveTo(-34,2);c.lineTo(-8,28);c.lineTo(36,-26);c.stroke();}
+  if(kind==="key"){c.lineWidth=14;c.beginPath();c.arc(-22,-14,22,0,7);c.stroke();c.beginPath();c.moveTo(-6,2);c.lineTo(38,46);c.moveTo(20,28);c.lineTo(32,16);c.moveTo(30,38);c.lineTo(42,26);c.stroke();}
+  if(kind==="play"){c.moveTo(-22,-38);c.lineTo(40,0);c.lineTo(-22,38);c.closePath();c.fill();}
+  c.restore();}
+// the bright glowing background of the app icons, in any colours [centre … edge]
+function stGlowBg(cols,cx=.5,cy=.44){return stCanvasTex(2048,2048,(c,w,h)=>{const X=w*cx,Y=h*cy;
+  const g=c.createRadialGradient(X,Y,0,X,Y,w*.78);cols.forEach((col,i)=>g.addColorStop([0,.2,.48,.78,1][i],col));c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.save();c.translate(X,Y);for(let k=0;k<16;k++){c.rotate(Math.PI*2/16);c.fillStyle=k%2?"rgba(255,255,255,.07)":"rgba(255,255,255,.03)";c.beginPath();c.moveTo(0,0);c.lineTo(w,-w*.12);c.lineTo(w,w*.12);c.closePath();c.fill();}c.restore();
+  const bok=(x,y,r,a)=>{const b=c.createRadialGradient(x,y,0,x,y,r);b.addColorStop(0,`rgba(255,255,255,${a})`);b.addColorStop(1,"rgba(255,255,255,0)");c.fillStyle=b;c.beginPath();c.arc(x,y,r,0,7);c.fill();};
+  [[.14,.2,90,.3],[.86,.24,70,.26],[.1,.72,60,.22],[.9,.7,110,.2],[.78,.9,50,.22],[.22,.92,80,.18],[.5,.08,45,.22],[.66,.14,30,.3],[.3,.1,26,.35],[.94,.46,34,.26],[.06,.46,40,.26]].forEach(([x,y,r,a])=>bok(x*w,y*h,r*2,a));
+  for(let k=0;k<220;k++){c.fillStyle=`rgba(255,255,255,${.25+Math.random()*.6})`;c.beginPath();c.arc(Math.random()*w,Math.random()*h,Math.random()*2.2+.6,0,7);c.fill();}});}
+const ST_CONF=["#ff4f6b","#ffd23a","#1fb6ff","#2fd36b","#9b5cff","#ff8fc0"];
+function stConfetti(sc,n,box,avoid){for(let k=0;k<n;k++){const m=new THREE.Mesh(new THREE.PlaneGeometry(.09,.16),new THREE.MeshStandardMaterial({color:ST_CONF[k%6],side:THREE.DoubleSide,roughness:.5}));
+  let x,y;do{x=box[0]+Math.random()*(box[1]-box[0]);y=box[2]+Math.random()*(box[3]-box[2]);}while(avoid&&avoid(x,y));
+  m.position.set(x,y,box[4]+Math.random()*(box[5]-box[4]));m.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6);sc.add(m);}}
+function stLights(sc,rimCols=[0x8fe8ff,0xffe0f4]){sc.add(new THREE.HemisphereLight(0xf4f8ff,0x5a6ab8,1.3));
+  const key=new THREE.DirectionalLight(0xfff3e0,2.5);key.position.set(2.5,3.5,6);sc.add(key);
+  const fill=new THREE.DirectionalLight(0xbfe4ff,.8);fill.position.set(-4,0,5);sc.add(fill);
+  [[-4,2.5,-3,rimCols[0],2.6],[4,2,-3,rimCols[1],2.2],[0,4,-4,0xffffff,1.4]].forEach(([x,y,z,col,i])=>{const r=new THREE.DirectionalLight(col,i);r.position.set(x,y+1,z);sc.add(r);});}
+const stShadow=(sc,x,z,s=1)=>{const t=stCanvasTex(256,256,(c,w,h)=>{const g=c.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,"rgba(10,10,50,.45)");g.addColorStop(1,"rgba(10,10,50,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(1.6*s,1.6*s),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.01,z);m.scale.y=.55;sc.add(m);};
+const stJumpi=(look)=>{const J=makeCharacter({hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1,...look},"");J.root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return J;};
+// 3D props for the safety cards
+function stPadlock(){const g=new THREE.Group();const s=new THREE.Shape(),W=.95,H=.78,r=.16;
+  s.moveTo(-W/2+r,-H/2);s.lineTo(W/2-r,-H/2);s.quadraticCurveTo(W/2,-H/2,W/2,-H/2+r);s.lineTo(W/2,H/2-r);s.quadraticCurveTo(W/2,H/2,W/2-r,H/2);s.lineTo(-W/2+r,H/2);s.quadraticCurveTo(-W/2,H/2,-W/2,H/2-r);s.lineTo(-W/2,-H/2+r);s.quadraticCurveTo(-W/2,-H/2,-W/2+r,-H/2);
+  const body=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.3,bevelEnabled:true,bevelThickness:.06,bevelSize:.06,bevelSegments:6,curveSegments:12}),new THREE.MeshStandardMaterial({color:"#ffc21a",metalness:.55,roughness:.28}));body.position.z=-.15;g.add(body);
+  const sh=new THREE.Mesh(new THREE.TorusGeometry(.3,.075,16,40,Math.PI),new THREE.MeshStandardMaterial({color:"#dfe6f2",metalness:.8,roughness:.22}));sh.position.y=H/2;g.add(sh);
+  [-.3,.3].forEach(x=>{const leg=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.14,16),sh.material);leg.position.set(x,H/2-.02,0);g.add(leg);});
+  const dark=new THREE.MeshStandardMaterial({color:"#5a3a00",roughness:.6});const hole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.04,24),dark);hole.rotation.x=Math.PI/2;hole.position.set(0,.06,.22);g.add(hole);
+  const slot=new THREE.Mesh(new THREE.BoxGeometry(.06,.2,.04),dark);slot.position.set(0,-.06,.22);g.add(slot);return g;}
+function stHeart(col="#ff4f8b"){const s=new THREE.Shape();s.moveTo(0,-.55);s.bezierCurveTo(-.95,.05,-.62,.82,0,.36);s.bezierCurveTo(.62,.82,.95,.05,0,-.55);
+  const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.22,bevelEnabled:true,bevelThickness:.12,bevelSize:.1,bevelSegments:8,curveSegments:24}),new THREE.MeshStandardMaterial({color:col,roughness:.3,metalness:.05}));m.geometry.center();return m;}
+function stBubble(txt,col="#ffffff",ink="#1d2b4f"){const g=new THREE.Group(),s=new THREE.Shape(),W=1.1,H=.86,r=.3;
+  s.moveTo(-W/2+r,-H/2);s.lineTo(-.12,-H/2);s.lineTo(-.3,-H/2-.28);s.lineTo(.08,-H/2);s.lineTo(W/2-r,-H/2);s.quadraticCurveTo(W/2,-H/2,W/2,-H/2+r);s.lineTo(W/2,H/2-r);s.quadraticCurveTo(W/2,H/2,W/2-r,H/2);s.lineTo(-W/2+r,H/2);s.quadraticCurveTo(-W/2,H/2,-W/2,H/2-r);s.lineTo(-W/2,-H/2+r);s.quadraticCurveTo(-W/2,-H/2,-W/2+r,-H/2);
+  g.add(new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.12,bevelEnabled:true,bevelThickness:.05,bevelSize:.05,bevelSegments:5,curveSegments:16}),new THREE.MeshStandardMaterial({color:col,roughness:.4})));
+  const t=stCanvasTex(512,512,(c,w,h)=>{c.textAlign="center";c.textBaseline="middle";c.font='900 400px "RubikStudio", sans-serif';c.fillStyle=ink;c.fillText(txt,w/2,h/2+20);});
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(.8,.8),new THREE.MeshBasicMaterial({map:t,transparent:true,toneMapped:false}));p.position.z=.2;g.add(p);return g;}
+
+// a wide banner: the sunny hill of the Terms picture with a big sign (title, Hebrew title, icons) and two Jumpis
+function stBanner(o){
+  const T=STUDIO_SCENES.termsSign.build();const sc=T.scene;
+  const drop=[];sc.children.forEach(q=>{if(q.isGroup&&q.children.some(c=>c.geometry&&c.geometry.type==="ExtrudeGeometry"))drop.push(q);if(q.isObject3D&&q.getObjectByName&&q.getObjectByName("Body"))drop.push(q);});drop.forEach(q=>q.removeFromParent());
+  sc.children.forEach(q=>{if(q.isMesh&&q.geometry.type==="PlaneGeometry"&&Math.abs(q.position.x)<3.4&&q.position.y<3.1&&q.position.y>.2)q.position.y+=2.2;});   // confetti off the sign
+  sc.children.forEach(q=>{if(q.isMesh&&q.position.z<=-39)q.scale.x=2.6;});   // the square sky, stretched for a wide picture
+  const SW=5.3,SH=1.95,rr=.34,shp=new THREE.Shape();
+  shp.moveTo(-SW/2+rr,-SH/2);shp.lineTo(SW/2-rr,-SH/2);shp.quadraticCurveTo(SW/2,-SH/2,SW/2,-SH/2+rr);shp.lineTo(SW/2,SH/2-rr);shp.quadraticCurveTo(SW/2,SH/2,SW/2-rr,SH/2);
+  shp.lineTo(-SW/2+rr,SH/2);shp.quadraticCurveTo(-SW/2,SH/2,-SW/2,SH/2-rr);shp.lineTo(-SW/2,-SH/2+rr);shp.quadraticCurveTo(-SW/2,-SH/2,-SW/2+rr,-SH/2);
+  const face=stCanvasTex(2720,1000,(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,o.frame[0]);g.addColorStop(1,o.frame[1]);c.fillStyle=g;c.fillRect(0,0,w,h);
+    const x0=58,y0=54,x1=w-58,y1=h-66;c.fillStyle="#fffaf0";c.beginPath();c.roundRect(x0,y0,x1-x0,y1-y0,70);c.fill();
+    c.strokeStyle=o.frame[3]||"#e4dcff";c.lineWidth=10;c.setLineDash([2,26]);c.lineCap="round";c.beginPath();c.roundRect(x0+26,y0+26,x1-x0-52,y1-y0-52,50);c.stroke();c.setLineDash([]);
+    stTitle(c,o.title,w/2,y0+215,o.titleSize||290,o.tc);
+    stTitle(c,o.sub,w/2,y0+480,175,o.sc,"rtl");
+    o.icons.forEach(([col,kind],i)=>stIcon(c,kind,w/2+(i-(o.icons.length-1)/2)*330,y1-148,col));
+    const star=(x,y,s,col)=>{c.fillStyle=col;c.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r2=k%2?s*.42:s;c.lineTo(x+Math.cos(a)*r2,y+Math.sin(a)*r2);}c.fill();};
+    star(x0+120,y0+120,46,"#ffd23a");star(x1-120,y0+120,46,"#ffd23a");star(x0+200,y0+80,20,"#ff8fc0");star(x1-210,y0+84,20,"#1fb6ff");star(x0+120,y1-110,26,"#2fd36b");star(x1-120,y1-110,26,"#ff8fc0");});
+  face.repeat.set(1/SW,1/SH);face.offset.set(.5,.5);
+  const board=new THREE.Mesh(new THREE.ExtrudeGeometry(shp,{depth:.18,bevelEnabled:true,bevelThickness:.07,bevelSize:.07,bevelSegments:6,curveSegments:16}),
+    [new THREE.MeshStandardMaterial({map:face,roughness:.45}),new THREE.MeshStandardMaterial({color:o.frame[2],roughness:.5})]);
+  board.castShadow=board.receiveShadow=true;
+  const sign=new THREE.Group();sign.add(board);sign.position.set(0,1.42,.7);sign.rotation.x=-.05;sc.add(sign);
+  [-1,1].forEach(sd=>{const post=new THREE.Mesh(new THREE.CylinderGeometry(.09,.11,1.2,16),new THREE.MeshStandardMaterial({color:"#a8642c",roughness:.8}));post.position.set(sd*1.9,.45,.62);post.castShadow=true;sc.add(post);});
+  const A=stJumpi(o.left),B=stJumpi(o.right);
+  A.root.position.set(-3.15,0,1.0);A.root.rotation.y=.38;B.root.position.set(3.15,0,1.0);B.root.rotation.y=-.38;sc.add(A.root);sc.add(B.root);
+  A.armL.rotation.set(.35,0,-2.15);A.armR.rotation.set(-.4,0,1.05);A.head.rotation.z=.08;
+  B.armR.rotation.set(.35,0,2.15);B.armL.rotation.set(-.4,0,-1.05);B.head.rotation.z=-.08;
+  if(o.extra)o.extra(sc);
+  const cam=T.camera;cam.fov=25;cam.position.set(0,1.75,10.2);cam.lookAt(0,1.38,0);
+  return {scene:sc,camera:cam,glow:.16,vignette:.2};}
+
+// a safety tip card (2:1): a Jumpi with a 3D prop on a glowing background, the tip as a big title on the right
+function stTipCard(o){
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(28,2,.1,200);
+  const bg=new THREE.Mesh(new THREE.PlaneGeometry(52,26),new THREE.MeshBasicMaterial({map:stGlowBg(o.bg,.3,.5),toneMapped:false}));bg.position.set(0,1.2,-10);sc.add(bg);
+  const glow=stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,"rgba(255,250,225,.9)");g.addColorStop(1,"rgba(255,250,225,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
+  const gs=new THREE.Sprite(new THREE.SpriteMaterial({map:glow,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));gs.material.opacity=.5;gs.position.set(-2.1,1.3,-3);gs.scale.setScalar(5.5);sc.add(gs);
+  o.build(sc);
+  stLights(sc,o.rims);
+  const spT=stCanvasTex(128,128,(c,w,h)=>{const g=c.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.18,"rgba(255,250,210,.85)");g.addColorStop(1,"rgba(180,230,255,0)");c.fillStyle=g;c.fillRect(0,0,w,h);
+    c.fillStyle="rgba(255,255,255,.95)";c.beginPath();c.moveTo(64,2);c.lineTo(70,58);c.lineTo(126,64);c.lineTo(70,70);c.lineTo(64,126);c.lineTo(58,70);c.lineTo(2,64);c.lineTo(58,58);c.closePath();c.fill();});
+  [[-3.6,2.6,.5],[-.5,2.9,.35],[-3.9,.6,.3],[-.3,.9,.28],[-2.4,3.2,.22]].forEach(([x,y,s])=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:spT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));sp.position.set(x,y,-1);sp.scale.setScalar(s);sc.add(sp);});
+  cam.position.set(0,1.2,7.6);cam.lookAt(0,1.08,0);
+  const overlay=(c,W,H)=>{const x=W*.69;   // the tip, right side
+    c.save();c.fillStyle="rgba(255,255,255,.16)";c.beginPath();c.roundRect(W*.44,H*.12,W*.5,H*.76,H*.08);c.fill();c.restore();
+    const n=o.title.length;let sz=H*.15;c.font='900 100px "RubikStudio", sans-serif';o.title.forEach(t=>{sz=Math.min(sz,W*.44/c.measureText(t).width*100);});   // fit the box
+    o.title.forEach((t,i)=>stTitle(c,t,x,H*(.5-(n-1)*.09+i*.18)-H*.08,sz,["#ffffff","#fff1b8","rgba(20,20,70,.45)"]));
+    c.save();c.direction="rtl";c.textAlign="center";c.textBaseline="middle";c.font=`700 100px "RubikStudio", sans-serif`;c.font=`700 ${Math.round(Math.min(H*.07,W*.44/c.measureText(o.he).width*100))}px "RubikStudio", sans-serif`;c.fillStyle="rgba(10,16,60,.35)";c.fillText(o.he,x,H*.79+3);c.fillStyle="#ffffff";c.fillText(o.he,x,H*.79);c.restore();};
+  return {scene:sc,camera:cam,glow:.18,vignette:.2,overlay};}
+
+// where the server (discord/card.js) puts the avatar and the name on the welcome card (fractions of the picture)
+const WELCOME_LAYOUT={ring:{cx:.5,cy:.44,r:.205},plate:{x0:.3,x1:.7,y0:.7,y1:.93},title:.115};
 const STUDIO_SCENES={
   sunsetSurf:{name:"Sunset Surfer",about:"Discord server icon: Jumpi at sunset in summer clothes with a surfboard.",round:true,
     build(){
@@ -9631,16 +9830,165 @@ const STUDIO_SCENES={
       Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:1,far:30});key.shadow.bias=-.0004;key.shadow.radius=5;sc.add(key);
       const rim=new THREE.DirectionalLight(0xbfe6ff,1.4);rim.position.set(-4,4,-6);sc.add(rim);
       return {scene:sc,camera:cam,glow:.18,vignette:.25};}},
+  winkIcon:{name:"Wink Icon",about:"Discord server / app icon: Jumpi's head winking on a glowing blue background with soft light and sparkles, like a kids' app icon.",round:true,
+    build(){
+      const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(26,1,.1,200);
+      // the background: bright blue with light in the middle, soft rays and bokeh
+      const bgT=stCanvasTex(2048,2048,(c,w,h)=>{const cx=w*.5,cy=h*.44;
+        const g=c.createRadialGradient(cx,cy,0,cx,cy,w*.78);g.addColorStop(0,"#7fd8ff");g.addColorStop(.2,"#2eaaff");g.addColorStop(.48,"#1580ec");g.addColorStop(.78,"#0a56c8");g.addColorStop(1,"#08308a");c.fillStyle=g;c.fillRect(0,0,w,h);
+        c.save();c.translate(cx,cy);for(let k=0;k<16;k++){c.rotate(Math.PI*2/16);c.fillStyle=k%2?"rgba(255,255,255,.07)":"rgba(255,255,255,.03)";c.beginPath();c.moveTo(0,0);c.lineTo(w,-w*.12);c.lineTo(w,w*.12);c.closePath();c.fill();}c.restore();
+        const rays=c.createRadialGradient(cx,cy,w*.1,cx,cy,w*.7);rays.addColorStop(0,"rgba(255,255,255,0)");rays.addColorStop(1,"rgba(10,58,158,.85)");c.fillStyle=rays;c.fillRect(0,0,w,h);   // rays fade out to the edges
+        const bok=(x,y,r,a)=>{const b=c.createRadialGradient(x,y,0,x,y,r);b.addColorStop(0,`rgba(200,240,255,${a})`);b.addColorStop(.7,`rgba(170,225,255,${a*.6})`);b.addColorStop(1,"rgba(170,225,255,0)");c.fillStyle=b;c.beginPath();c.arc(x,y,r,0,7);c.fill();};
+        [[.14,.2,90,.35],[.86,.24,70,.3],[.1,.72,60,.25],[.9,.7,110,.22],[.78,.9,50,.25],[.22,.92,80,.2],[.5,.08,45,.25],[.66,.14,30,.35],[.3,.1,26,.4],[.94,.46,34,.3],[.06,.46,40,.3]].forEach(([x,y,r,a])=>bok(x*w,y*h,r*2,a));
+        for(let k=0;k<220;k++){c.fillStyle=`rgba(255,255,255,${.25+Math.random()*.6})`;c.beginPath();c.arc(Math.random()*w,Math.random()*h,Math.random()*2.2+.6,0,7);c.fill();}});
+      const bg=new THREE.Mesh(new THREE.PlaneGeometry(26,26),new THREE.MeshBasicMaterial({map:bgT,toneMapped:false}));bg.position.set(0,1.55,-9);sc.add(bg);
+      // Jumpi: orange, bright blue eyes, winking with a little head tilt
+      const J=makeCharacter({color:0,eyes:1,hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1},"");sc.add(J.root);
+      J.root.rotation.y=-.16;J.head.rotation.z=.13;J.head.rotation.x=-.04;
+      J.root.updateMatrixWorld(true);const hb=new THREE.Box3().setFromObject(J.head),hc=hb.getCenter(new THREE.Vector3()),hs=hb.getSize(new THREE.Vector3());
+      // frame the head (it fills most of the picture, a bit of the body peeks in at the bottom)
+      const dist=(hs.y*1.68)/(2*Math.tan(THREE.MathUtils.degToRad(13)));
+      cam.position.set(hc.x+.04,hc.y+.06,hc.z+dist);cam.lookAt(hc.x,hc.y-hs.y*.1,hc.z);
+      // the wink: the left eye becomes a happy closed curve (like the Wink emote)
+      {const eb=new THREE.Box3().setFromObject(J.eyeL),ec=eb.getCenter(new THREE.Vector3()),es=eb.getSize(new THREE.Vector3());J.eyeL.visible=false;
+        const out=ec.clone().sub(hc).normalize(),r=Math.max(es.x,es.y)*.42;
+        const arc=new THREE.Mesh(new THREE.TorusGeometry(r,r*.17,12,40,Math.PI*.78),new THREE.MeshStandardMaterial({color:"#3a1a08",roughness:.4}));
+        arc.rotation.z=Math.PI*.11;const g=new THREE.Group();g.add(arc);arc.position.y=-r*.35;
+        g.position.copy(ec).addScaledVector(out,es.z*.15);g.lookAt(g.position.clone().add(out));sc.add(g);}
+      // a soft glow right behind the head, and a soft shadow under it on the background
+      const blob=(col0,col1)=>stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,col0);g.addColorStop(1,col1);c.fillStyle=g;c.fillRect(0,0,w,h);});
+      const glowS=new THREE.Sprite(new THREE.SpriteMaterial({map:blob("rgba(255,250,215,.95)","rgba(160,230,255,0)"),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+      glowS.material.opacity=.6;glowS.position.set(hc.x,hc.y+.02,hc.z-2.4);glowS.scale.setScalar(hs.y*3);sc.add(glowS);
+      const shadS=new THREE.Sprite(new THREE.SpriteMaterial({map:blob("rgba(4,24,90,.55)","rgba(4,24,90,0)"),transparent:true,depthWrite:false}));
+      shadS.position.set(hc.x+.22,hc.y-hs.y*.62,hc.z-1.2);shadS.scale.set(hs.y*2.3,hs.y*.9,1);sc.add(shadS);
+      // lights: soft front key, a cool sky fill, and bright rims all around the head (the glowing edge)
+      sc.add(new THREE.HemisphereLight(0xe8f6ff,0x2a5ab8,1.25));
+      const key=new THREE.DirectionalLight(0xfff3e0,2.5);key.position.set(2.5,3.5,6);sc.add(key);
+      const fill=new THREE.DirectionalLight(0xbfe4ff,.9);fill.position.set(-4,0,5);sc.add(fill);
+      [[-4,2.5,-3,0x8fe8ff,3.2],[4,2,-3,0xc8f4ff,2.6],[0,4,-4,0xffffff,1.6]].forEach(([x,y,z,col,i])=>{const r=new THREE.DirectionalLight(col,i);r.position.set(hc.x+x,hc.y+y,hc.z+z);r.target.position.copy(hc);sc.add(r);sc.add(r.target);});
+      // sparkles and little stars around
+      const spT=stCanvasTex(128,128,(c,w,h)=>{const g=c.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.18,"rgba(255,250,210,.85)");g.addColorStop(1,"rgba(180,230,255,0)");c.fillStyle=g;c.fillRect(0,0,w,h);
+        c.fillStyle="rgba(255,255,255,.95)";c.beginPath();c.moveTo(64,2);c.lineTo(70,58);c.lineTo(126,64);c.lineTo(70,70);c.lineTo(64,126);c.lineTo(58,70);c.lineTo(2,64);c.lineTo(58,58);c.closePath();c.fill();});
+      const R=hs.y;
+      [[-.62,.42,.2],[.66,.5,.16],[.7,-.18,.11],[-.7,-.1,.13],[-.42,.66,.09],[.38,.7,.08],[.58,.22,.06]].forEach(([x,y,s])=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:spT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
+        sp.position.set(hc.x+x*R*1.25,hc.y+y*R*1.15,hc.z-.3);sp.scale.setScalar(s*R*1.6);sc.add(sp);});
+      return {scene:sc,camera:cam,glow:.2,vignette:.22};}},
+  pipBot:{name:"Pip (Discord bot)",about:"Profile picture for the Jumpi Discord bot: Pip from the game (green, quiff, round glasses, green hoodie) waving hello on a glowing purple background.",round:true,
+    build(){
+      const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(26,1,.1,200);
+      // the background: bright blue with light in the middle, soft rays and bokeh
+      const bgT=stCanvasTex(2048,2048,(c,w,h)=>{const cx=w*.5,cy=h*.44;
+        const g=c.createRadialGradient(cx,cy,0,cx,cy,w*.78);g.addColorStop(0,"#c9b8ff");g.addColorStop(.2,"#8f7bff");g.addColorStop(.48,"#6a5cf2");g.addColorStop(.78,"#4a3bc8");g.addColorStop(1,"#2a1f80");c.fillStyle=g;c.fillRect(0,0,w,h);
+        c.save();c.translate(cx,cy);for(let k=0;k<16;k++){c.rotate(Math.PI*2/16);c.fillStyle=k%2?"rgba(255,255,255,.07)":"rgba(255,255,255,.03)";c.beginPath();c.moveTo(0,0);c.lineTo(w,-w*.12);c.lineTo(w,w*.12);c.closePath();c.fill();}c.restore();
+        const rays=c.createRadialGradient(cx,cy,w*.1,cx,cy,w*.7);rays.addColorStop(0,"rgba(255,255,255,0)");rays.addColorStop(1,"rgba(42,31,128,.85)");c.fillStyle=rays;c.fillRect(0,0,w,h);   // rays fade out to the edges
+        const bok=(x,y,r,a)=>{const b=c.createRadialGradient(x,y,0,x,y,r);b.addColorStop(0,`rgba(235,225,255,${a})`);b.addColorStop(.7,`rgba(215,200,255,${a*.6})`);b.addColorStop(1,"rgba(215,200,255,0)");c.fillStyle=b;c.beginPath();c.arc(x,y,r,0,7);c.fill();};
+        [[.14,.2,90,.35],[.86,.24,70,.3],[.1,.72,60,.25],[.9,.7,110,.22],[.78,.9,50,.25],[.22,.92,80,.2],[.5,.08,45,.25],[.66,.14,30,.35],[.3,.1,26,.4],[.94,.46,34,.3],[.06,.46,40,.3]].forEach(([x,y,r,a])=>bok(x*w,y*h,r*2,a));
+        for(let k=0;k<220;k++){c.fillStyle=`rgba(255,255,255,${.25+Math.random()*.6})`;c.beginPath();c.arc(Math.random()*w,Math.random()*h,Math.random()*2.2+.6,0,7);c.fill();}});
+      const bg=new THREE.Mesh(new THREE.PlaneGeometry(26,26),new THREE.MeshBasicMaterial({map:bgT,toneMapped:false}));bg.position.set(0,1.55,-9);sc.add(bg);
+      // Jumpi: orange, bright blue eyes, winking with a little head tilt
+      const J=makeCharacter({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0,hat:-1,neck:-1,tag:-1,aura:-1},"");sc.add(J.root);
+      J.root.rotation.y=-.14;J.head.rotation.z=.08;J.head.rotation.x=-.03;
+      J.armL.rotation.z=-2.05;J.armL.rotation.x=.45;   // waving hello (the arm on the left of the picture)
+      J.root.updateMatrixWorld(true);const hb=new THREE.Box3().setFromObject(J.head),hc=hb.getCenter(new THREE.Vector3()),hs=hb.getSize(new THREE.Vector3());
+      // frame the head (it fills most of the picture, a bit of the body peeks in at the bottom)
+      const dist=(hs.y*1.72)/(2*Math.tan(THREE.MathUtils.degToRad(13)));
+      cam.position.set(hc.x+.04,hc.y+.04,hc.z+dist);cam.lookAt(hc.x-hs.y*.06,hc.y-hs.y*.2,hc.z);
+      // a soft glow right behind the head, and a soft shadow under it on the background
+      const blob=(col0,col1)=>stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,col0);g.addColorStop(1,col1);c.fillStyle=g;c.fillRect(0,0,w,h);});
+      const glowS=new THREE.Sprite(new THREE.SpriteMaterial({map:blob("rgba(255,248,225,.95)","rgba(200,180,255,0)"),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
+      glowS.material.opacity=.55;glowS.position.set(hc.x,hc.y+.02,hc.z-2.4);glowS.scale.setScalar(hs.y*3);sc.add(glowS);
+      const shadS=new THREE.Sprite(new THREE.SpriteMaterial({map:blob("rgba(30,14,90,.55)","rgba(30,14,90,0)"),transparent:true,depthWrite:false}));
+      shadS.position.set(hc.x+.22,hc.y-hs.y*.62,hc.z-1.2);shadS.scale.set(hs.y*2.3,hs.y*.9,1);sc.add(shadS);
+      // lights: soft front key, a cool sky fill, and bright rims all around the head (the glowing edge)
+      sc.add(new THREE.HemisphereLight(0xf0ecff,0x4a3bc8,1.25));
+      const key=new THREE.DirectionalLight(0xfff3e0,2.5);key.position.set(2.5,3.5,6);sc.add(key);
+      const fill=new THREE.DirectionalLight(0xbfe4ff,.9);fill.position.set(-4,0,5);sc.add(fill);
+      [[-4,2.5,-3,0xc8b0ff,3.0],[4,2,-3,0xffe0f4,2.4],[0,4,-4,0xffffff,1.6]].forEach(([x,y,z,col,i])=>{const r=new THREE.DirectionalLight(col,i);r.position.set(hc.x+x,hc.y+y,hc.z+z);r.target.position.copy(hc);sc.add(r);sc.add(r.target);});
+      // sparkles and little stars around
+      const spT=stCanvasTex(128,128,(c,w,h)=>{const g=c.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.18,"rgba(255,250,210,.85)");g.addColorStop(1,"rgba(180,230,255,0)");c.fillStyle=g;c.fillRect(0,0,w,h);
+        c.fillStyle="rgba(255,255,255,.95)";c.beginPath();c.moveTo(64,2);c.lineTo(70,58);c.lineTo(126,64);c.lineTo(70,70);c.lineTo(64,126);c.lineTo(58,70);c.lineTo(2,64);c.lineTo(58,58);c.closePath();c.fill();});
+      const R=hs.y;
+      [[-.62,.42,.2],[.66,.5,.16],[.7,-.18,.11],[-.7,-.1,.13],[-.42,.66,.09],[.38,.7,.08],[.58,.22,.06]].forEach(([x,y,s])=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:spT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
+        sp.position.set(hc.x+x*R*1.25,hc.y+y*R*1.15,hc.z-.3);sp.scale.setScalar(s*R*1.6);sc.add(sp);});
+      return {scene:sc,camera:cam,glow:.2,vignette:.22};}},
+  welcomeBanner:{name:"Welcome banner (Discord)",about:"Wide banner on top of the Discord #welcome channel: Pip and a friend next to a big green \"WELCOME TO JUMPI!\" sign.",round:false,aspect:2.4,
+    build(){return stBanner({title:"WELCOME TO JUMPI!",titleSize:228,sub:"ברוכים הבאים!",frame:["#6fe39a","#1fb35a","#138a42","#d3f3df"],tc:["#ffb84a","#ff7a1c","#c25e00"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
+      icons:[["#1fb6ff","play"],["#ff5f8f","heart"],["#ffb21f","star"],["#9b5cff","gift"]],
+      left:{color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},right:{color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19}});}},
+  rulesBanner:{name:"Rules banner (Discord)",about:"Wide banner on top of the Discord #rules channel: Pip and Jumpi holding a big \"SERVER RULES · חוקי השרת\" sign with friendly rule icons, on a sunny hill with confetti.",round:false,aspect:2.4,
+    build(){return stBanner({title:"SERVER RULES",sub:"חוקי השרת",frame:["#a98bff","#6a4cf0","#4a2fc0","#e4dcff"],tc:["#ffb84a","#ff7a1c","#c25e00"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
+      icons:[["#ff5f8f","heart"],["#2fd36b","lock"],["#1fb6ff","bubble"],["#ffb21f","star"]],
+      left:{color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},right:{color:0,eyes:1,shirt:4,pants:17,hat:1}});}},
+  safetyBanner:{name:"Safety banner (Discord)",about:"Wide banner on top of the Discord #safety channel: \"STAY SAFE ONLINE · בטיחות ברשת\" with lock, shield and key icons.",round:false,aspect:2.4,
+    build(){return stBanner({title:"STAY SAFE ONLINE",titleSize:236,sub:"בטיחות ברשת",frame:["#6fd8ff","#1f8fff","#0f5cb8","#d8eeff"],tc:["#ffb84a","#ff7a1c","#c25e00"],sc:["#6fe39a","#1fb35a","#0f7a3a"],
+      icons:[["#2fd36b","lock"],["#1fb6ff","shield"],["#ffb21f","key"],["#ff5f8f","heart"]],
+      left:{color:1,eyes:2,shirt:5,pants:2,glasses:3,hat:1},right:{color:4,eyes:6,hair:6,shirt:44,pants:41,neck:20}});}},
+  updatesBanner:{name:"Updates banner (Discord)",about:"Wide banner on top of the Discord #updates channel: \"NEWS & UPDATES · חדשות ועדכונים\" with bell and gift icons.",round:false,aspect:2.4,
+    build(){return stBanner({title:"NEWS & UPDATES",titleSize:250,sub:"חדשות ועדכונים",frame:["#ffc25a","#ff8a1c","#c25e00","#ffe4c4"],tc:["#b49bff","#7b5cff","#4a2fc0"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
+      icons:[["#ff5f8f","bell"],["#2fd36b","gift"],["#1fb6ff","play"],["#9b5cff","star"]],
+      left:{color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},right:{color:0,eyes:1,shirt:4,pants:17,hat:1}});}},
+  contactBanner:{name:"Contact banner (Discord)",about:"Wide banner on top of the Discord #contact channel: \"NEED HELP? · צריכים עזרה?\" with mail and question icons.",round:false,aspect:2.4,
+    build(){return stBanner({title:"NEED HELP?",sub:"צריכים עזרה?",frame:["#ff9ccb","#ff4f8b","#c22a63","#ffdcea"],tc:["#ffb84a","#ff7a1c","#c25e00"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
+      icons:[["#1fb6ff","mail"],["#9b5cff","question"],["#ffb21f","key"],["#2fd36b","check"]],
+      left:{color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19},right:{color:1,eyes:2,shirt:5,pants:2,glasses:3,hat:1}});}},
+  tipSecret:{name:"Safety tip: keep it secret",about:"Discord #safety card: Jumpi holding a big golden padlock. KEEP IT SECRET!",round:false,aspect:2,
+    build(){return stTipCard({bg:["#d9ccff","#9d86ff","#6a5cf2","#4a3bc8","#2a1f80"],rims:[0xc8b0ff,0xffe0f4],title:["KEEP IT","SECRET!"],he:"סיסמה, טלפון וכתובת נשארים אצלכם",
+      build(sc){const J=stJumpi({color:0,eyes:1,shirt:4,pants:17,hat:1});J.root.position.set(-1.95,0,0);J.root.rotation.y=.28;sc.add(J.root);stShadow(sc,-1.95,0,1.4);
+        J.armL.rotation.set(-1.15,0,-.45);J.armR.rotation.set(-1.15,0,.45);J.head.rotation.z=.08;
+        const L=stPadlock();L.position.set(-1.72,.62,.95);L.rotation.y=.28;L.rotation.z=-.12;L.scale.setScalar(.62);sc.add(L);}});}},
+  tipStranger:{name:"Safety tip: strangers",about:"Discord #safety card: a puzzled Jumpi under a big question-mark bubble. Not everyone online is who they say!",round:false,aspect:2,
+    build(){return stTipCard({bg:["#c6f3ff","#5fd0ff","#1f9ff0","#1468c8","#0a3a8a"],rims:[0x8fe8ff,0xc8f4ff],title:["NOT EVERYONE","IS WHO THEY SAY"],size:0,he:"לא נפגשים עם אנשים מהאינטרנט",
+      build(sc){const J=stJumpi({color:0,eyes:1,hair:8,shirt:4,pants:17});J.root.position.set(-2.3,0,0);J.root.rotation.y=.32;sc.add(J.root);stShadow(sc,-2.3,0,1.4);
+        J.armR.rotation.set(-.6,0,1.9);J.head.rotation.z=-.16;
+        const B=stBubble("?","#ffffff","#1f8fff");B.position.set(-1.05,2.2,.2);B.rotation.z=-.08;B.scale.setScalar(.85);sc.add(B);}});}},
+  tipGrownup:{name:"Safety tip: tell a grown-up",about:"Discord #safety card: a little Jumpi telling a big Jumpi something, with a ! bubble. Something feels wrong? Tell a grown-up!",round:false,aspect:2,
+    build(){return stTipCard({bg:["#ffe7a8","#ffc24a","#ff9a1c","#e86a10","#a8400a"],rims:[0xffe0a0,0xfff0d0],title:["TELL A","GROWN-UP!"],he:"משהו מרגיש לא בסדר? מספרים להורים",
+      build(sc){const P=stJumpi({color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19});P.root.scale.setScalar(1.22);P.root.position.set(-1.0,0,-.3);P.root.rotation.y=-.35;sc.add(P.root);stShadow(sc,-1.0,-.3,1.7);
+        P.head.rotation.z=.12;P.head.rotation.x=.12;P.armL.rotation.set(-.5,0,-.7);
+        const K=stJumpi({color:0,eyes:1,hair:8,shirt:4,pants:17});K.root.scale.setScalar(.82);K.root.position.set(-2.2,0,.5);K.root.rotation.y=.5;sc.add(K.root);stShadow(sc,-2.2,.5,1.1);
+        K.armR.rotation.set(.2,0,2.2);K.head.rotation.z=-.1;
+        const B=stBubble("!","#ffffff","#ff7a1c");B.position.set(-2.75,2.2,.6);B.scale.setScalar(.6);B.rotation.z=.08;sc.add(B);}});}},
+  tipKind:{name:"Safety tip: be kind",about:"Discord #safety card: Jumpi hugging a big shiny heart. Be kind online!",round:false,aspect:2,
+    build(){return stTipCard({bg:["#ffd6ec","#ff8fc0","#ff4f8b","#d42a6a","#8a1446"],rims:[0xffc0dc,0xffe0f4],title:["BE KIND","ONLINE!"],he:"מדברים יפה, כמו שהיינו רוצים שידברו אלינו",
+      build(sc){const J=stJumpi({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0});J.root.position.set(-1.95,0,0);J.root.rotation.y=.28;sc.add(J.root);stShadow(sc,-1.95,0,1.4);
+        J.armL.rotation.set(-1.15,0,-.5);J.armR.rotation.set(-1.15,0,.5);J.head.rotation.z=.1;
+        const H=stHeart();H.position.set(-1.72,.62,1.0);H.rotation.y=.28;H.rotation.z=.1;H.scale.setScalar(.62);sc.add(H);}});}},
+  welcomeCard:{name:"Welcome card (Discord, background)",about:"The background of the picture Pip posts in #welcome for every new member: the server writes their avatar into the ring and their name on the plate (discord/card.js).",round:false,aspect:2.4,
+    build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(25,2.4,.1,200);
+      const bg=new THREE.Mesh(new THREE.PlaneGeometry(60,26),new THREE.MeshBasicMaterial({map:stGlowBg(["#a8e8ff","#5fbfff","#3d7cf0","#3a3bc8","#24186e"],.5,.45),toneMapped:false}));bg.position.set(0,1.4,-12);sc.add(bg);
+      const A=stJumpi({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0}),B=stJumpi({color:0,eyes:1,shirt:4,pants:17,hat:1});
+      A.root.position.set(-3.55,0,0);A.root.rotation.y=.42;B.root.position.set(3.55,0,0);B.root.rotation.y=-.42;sc.add(A.root);sc.add(B.root);
+      A.armL.rotation.set(.35,0,-2.15);A.head.rotation.z=.1;B.armR.rotation.set(.35,0,2.15);B.head.rotation.z=-.1;
+      stShadow(sc,-3.55,0,1.5);stShadow(sc,3.55,0,1.5);
+      stConfetti(sc,90,[-6,6,-.6,3.6,-3,-1],(x,y)=>Math.abs(x)<2.6&&y<2.9);
+      stLights(sc,[0x8fe8ff,0xffd0f0]);
+      cam.position.set(0,1.35,9.0);cam.lookAt(0,1.2,0);
+      const overlay=(c,W,H)=>{const L=WELCOME_LAYOUT;
+        stTitle(c,"WELCOME TO JUMPI!",W/2,H*L.title,Math.round(H*.13),["#ffd23a","#ff8a1c","#c25e00"]);
+        // the avatar ring (the server draws the avatar inside it)
+        const cx=W*L.ring.cx,cy=H*L.ring.cy,r=H*L.ring.r;
+        c.save();c.fillStyle="rgba(10,10,60,.35)";c.beginPath();c.arc(cx,cy+r*.08,r*1.12,0,7);c.fill();
+        const rg=c.createLinearGradient(0,cy-r,0,cy+r);rg.addColorStop(0,"#ffe27a");rg.addColorStop(1,"#ff9a1c");c.fillStyle=rg;c.beginPath();c.arc(cx,cy,r*1.12,0,7);c.fill();
+        c.fillStyle="#ffffff";c.beginPath();c.arc(cx,cy,r*1.04,0,7);c.fill();
+        const ig=c.createLinearGradient(0,cy-r,0,cy+r);ig.addColorStop(0,"#d9ccff");ig.addColorStop(1,"#9d86ff");c.fillStyle=ig;c.beginPath();c.arc(cx,cy,r,0,7);c.fill();c.restore();
+        stIcon(c,"star",cx,cy,"#7b5cff",r*.55);
+        // the name plate
+        const p=L.plate,x0=W*p.x0,x1=W*p.x1,y0=H*p.y0,y1=H*p.y1,pr=(y1-y0)*.42;
+        c.save();c.fillStyle="rgba(10,10,60,.35)";c.beginPath();c.roundRect(x0,y0+8,x1-x0,y1-y0,pr);c.fill();
+        c.fillStyle="#7b5cff";c.beginPath();c.roundRect(x0-6,y0-6,x1-x0+12,y1-y0+12,pr+6);c.fill();
+        c.fillStyle="#ffffff";c.beginPath();c.roundRect(x0,y0,x1-x0,y1-y0,pr);c.fill();c.restore();};
+      return {scene:sc,camera:cam,glow:.16,vignette:.2,overlay};}},
 };
 function studioRender(id,size){const S=STUDIO_SCENES[id],{scene,camera,glow=0,vignette=0,overlay}=S.build();
+  const W=size,H=Math.round(size/(S.aspect||1));   // aspect = width / height (wide banners); everything else is square
   if(!STUDIO.R){STUDIO.R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});STUDIO.R.outputColorSpace=THREE.SRGBColorSpace;STUDIO.R.toneMapping=THREE.ACESFilmicToneMapping;STUDIO.R.toneMappingExposure=1.05;
     STUDIO.R.shadowMap.enabled=true;STUDIO.R.shadowMap.type=THREE.PCFSoftShadowMap;STUDIO.R.setPixelRatio(1);}
-  const R=STUDIO.R;R.setSize(size,size,false);camera.aspect=1;camera.updateProjectionMatrix();R.render(scene,camera);
+  const R=STUDIO.R;R.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();R.render(scene,camera);
   // finish in 2D: a soft glow of the bright parts and a gentle vignette
-  const out=document.createElement("canvas");out.width=out.height=size;const c=out.getContext("2d");c.drawImage(R.domElement,0,0);
+  const out=document.createElement("canvas");out.width=W;out.height=H;const c=out.getContext("2d");c.drawImage(R.domElement,0,0);
   if(glow){c.save();c.globalCompositeOperation="screen";c.globalAlpha=glow;c.filter=`blur(${Math.round(size/60)}px) brightness(1.1) contrast(1.6)`;c.drawImage(R.domElement,0,0);c.restore();}
-  if(vignette){const g=c.createRadialGradient(size/2,size/2,size*.35,size/2,size/2,size*.75);g.addColorStop(0,"rgba(20,8,40,0)");g.addColorStop(1,`rgba(20,8,40,${vignette})`);c.fillStyle=g;c.fillRect(0,0,size,size);}
-  if(overlay)overlay(c,size);   // 2D signs drawn on top
+  if(vignette){const g=c.createRadialGradient(W/2,H/2,Math.max(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,"rgba(20,8,40,0)");g.addColorStop(1,`rgba(20,8,40,${vignette})`);c.fillStyle=g;c.fillRect(0,0,W,H);}
+  if(overlay)overlay(c,W,H);   // 2D signs drawn on top
   scene.traverse(o=>{if(o.geometry)o.geometry.dispose();});return out;}
 const STUDIO={R:null,cur:"sunsetSurf",size:4096,fmt:"png",round:false};
 function studioOpen(){
@@ -9667,7 +10015,24 @@ function studioPaint(){const S=STUDIO_SCENES[STUDIO.cur];document.querySelectorA
   const busy=document.getElementById("stBusy");busy.hidden=false;setTimeout(()=>{document.getElementById("stPrev").src=studioRender(STUDIO.cur,1024).toDataURL("image/jpeg",.92);busy.hidden=true;},40);}
 const studioFont=STUDIO_ON?new FontFace("RubikStudio","url(/fonts/Rubik.ttf)",{weight:"300 900"}).load().then(f=>document.fonts.add(f)).catch(()=>{}):null;   // Hebrew titles
 if(STUDIO_ON){const wait=setInterval(()=>{if(!P)return;clearInterval(wait);studioFont.then(()=>setTimeout(studioOpen,300));},100);}
-if(STUDIO_ON)window.__studio={render:(id,size,type="image/jpeg",q=.9)=>studioRender(id||STUDIO.cur,size||1024).toDataURL(type,q),scenes:STUDIO_SCENES};
+// letters for the welcome card's name (discord/card.js draws names from these, the server has no fonts):
+// "name" = the big game-style title letters, "small" = plain purple letters for the member number
+const ST_ATLAS_CHARS=" !#&'-._?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzאבגדהוזחטיכךלמםנןסעפףצץקרשת";
+function studioAtlas(style){const name=style==="name",size=name?104:40,font=`${name?900:700} ${size}px "RubikStudio", "DejaVu Sans", sans-serif`,pad=name?Math.ceil(size*.12):4;
+  const m=document.createElement("canvas").getContext("2d");m.font=font;
+  const cells=[...ST_ATLAS_CHARS].map(ch=>({ch,adv:m.measureText(ch).width}));const AW=2048,CH=Math.ceil(size*1.35+pad*2);let x=0,y=0;
+  cells.forEach(c=>{c.w=Math.ceil(c.adv+pad*2);if(x+c.w>AW){x=0;y+=CH;}c.x=x;c.y=y;c.h=CH;x+=c.w;});
+  const out=document.createElement("canvas");out.width=AW;out.height=y+CH;const c=out.getContext("2d");c.font=font;c.textBaseline="alphabetic";c.lineJoin="round";
+  const base=pad+Math.round(size*1.02);
+  cells.forEach(g=>{const X=g.x+pad,Y=g.y+base;if(g.ch===" ")return;
+    if(name){c.fillStyle="#c25e00";c.fillText(g.ch,X,Y+size*.07);c.lineWidth=size*.1;c.strokeStyle="#1d2b4f";c.strokeText(g.ch,X,Y);
+      const tg=c.createLinearGradient(0,Y-size*.85,0,Y+size*.1);tg.addColorStop(0,"#ffb84a");tg.addColorStop(1,"#ff7a1c");c.fillStyle=tg;c.fillText(g.ch,X,Y);
+      c.save();c.beginPath();c.rect(g.x,g.y,g.w,base-size*.45);c.clip();c.fillStyle="rgba(255,255,255,.35)";c.fillText(g.ch,X,Y);c.restore();}
+    else{c.fillStyle="#7b5cff";c.fillText(g.ch,X,Y);}});
+  const glyphs={};cells.forEach(g=>{glyphs[g.ch]={x:g.x,y:g.y,w:g.w,h:g.h,adv:Math.round(g.adv*100)/100};});
+  return {png:out.toDataURL("image/png"),meta:{size,pad,base,height:CH,glyphs}};}
+if(STUDIO_ON)window.__studio={render:(id,size,type="image/jpeg",q=.9)=>studioRender(id||STUDIO.cur,size||1024).toDataURL(type,q),scenes:STUDIO_SCENES,
+  atlas:(style)=>studioAtlas(style),layout:WELCOME_LAYOUT};
 function giveChips(P){const g=P.give,out=[];
   (g.items||[]).forEach(id=>{const [slot,i]=id.split(":");out.push(`<span class="of-it${slot==="aura"?" aura":""}" title="${esc(itemName(slot,+i))}"><span class="pic">${itemPic(slot,+i)}</span><b>${esc(itemName(slot,+i))}</b></span>`);});
   if(g.coins)out.push(`<span class="of-it cn"><span class="pic">${COIN_SVG}</span><b>${g.coins.toLocaleString("en-US")} coins</b></span>`);
@@ -9879,7 +10244,7 @@ function drawPortrait(){
   for(let y=0;y<PR;y++)pcImg.data.set(portraitBuf.subarray((PR-1-y)*PR*4,(PR-y)*PR*4),y*PR*4);x.putImageData(pcImg,0,0);
 }
 function openPlayerCard(hit,e){
-  pcTarget=hit.id;pcChar=hit.c;const n=document.getElementById("pcName");n.textContent=hit.c.username||"Player";n.classList.toggle("admin",hit.c.role==="admin");
+  pcTarget=hit.id;pcChar=hit.c;const n=document.getElementById("pcName");n.textContent=hit.c.username||"Player";n.classList.toggle("admin",hit.c.role==="admin");n.classList.toggle("mod",hit.c.role==="mod");
   pcard.hidden=false;pcImg=null;drawPortrait();
   const w=pcard.offsetWidth,h=pcard.offsetHeight,x=e.clientX+(e.clientX>innerWidth/2?-w-24:24);
   pcard.style.left=Math.max(12,Math.min(innerWidth-w-12,x))+"px";pcard.style.top=Math.max(12,Math.min(innerHeight-h-12,e.clientY-h/2))+"px";
@@ -10009,7 +10374,7 @@ function winBubble(who,text){const w=activeWin();if(!w)return;const el=document.
 document.querySelectorAll(".win-chat").forEach(f=>f.addEventListener("submit",e=>{
   e.preventDefault();const inp=f.querySelector("input"),text=inp.value.replace(/\s+/g," ").trim();if(!text)return;
   if(mutedLeft()){toast(mutedText());sfx.error();return;}
-  if(!checkText(text).ok){blockedText(inp);return;}
+  if(textBlocked(text,inp))return;
   say(text);winBubble("me",text);sfx.tick(true);inp.value="";if(socket&&socket.connected)socket.emit("chat",text);}));
 function windowChat(d){const w=activeWin();if(w&&d.id===w.partner)winBubble("them",d.text);}
 
@@ -10103,7 +10468,7 @@ setInterval(()=>{if(PH.open)tickClock();},5000);
 
 /* ---------- open / close ---------- */
 function openPhone(){
-  if(PH.open||!inGame||(!me&&!TL.on))return;PH.open=true;PH.target=1;tlEvent("phoneOpen");netPhone(true);
+  if(PH.open||!inGame||!me)return;PH.open=true;PH.target=1;tlEvent("phoneOpen");netPhone(true);
   if(G.seat&&G.seat.k==="sleep")standUp();if(G.home)closeDecorate();
   G.keys={};G.target=null;closePlayerCard();if(!chatInput.value.trim())closeChat();
   body.classList.add("phone-open");phBtn.setAttribute("aria-expanded","true");sfx.whoosh();
@@ -10232,7 +10597,7 @@ async function appConvo(tok,name){
     :`<p class="ph-blocked">You're not friends any more, so you can't send messages.</p>`;
   if(w.friend){const f=document.getElementById("phSend"),inp=document.getElementById("phSendText"),btn=f.querySelector("button");
     inp.oninput=()=>{btn.disabled=!inp.value.trim();PH.tapT=now();};
-    f.onsubmit=e=>{e.preventDefault();const t=inp.value.trim();if(!t)return;if(!checkText(t).ok){blockedText(inp);return;}inp.value="";btn.disabled=true;sendDM(t);inp.focus();};
+    piWatch(inp);f.onsubmit=e=>{e.preventDefault();const t=inp.value.trim();if(!t)return;if(textBlocked(t,inp))return;inp.value="";btn.disabled=true;sendDM(t);inp.focus();};
     setTimeout(()=>inp.focus({preventScroll:true}),80);}
   refreshPhoneBadges();
 }
@@ -10257,6 +10622,7 @@ async function sendDM(text){
       else if(C.msgs.some(m=>m!==temp&&m.id===real.id))C.msgs.splice(i,1);              // the echo came as its own bubble
       else C.msgs[i]=real;}
     else if(!C.msgs.some(m=>m.id===real.id))C.msgs.push(real);}
+  else if(r.data.private){C.msgs.splice(C.msgs.indexOf(temp),1);privatePop(r.data.private);}
   else{temp.pending=false;temp.fail=true;toast(r.data.error||"Your message wasn't sent.");sfx.error();}
   paintConvo(true);
 }
@@ -10400,8 +10766,6 @@ document.querySelectorAll(".set-lang [data-lang]").forEach(b=>b.onclick=()=>{I18
 // redraw the parts that are built from code
 addEventListener("langchange",()=>{paintLang();
   if(!tutOverlay.hidden)paintTut();
-  if(TL.on&&!tlCard.hidden&&!TL.busy){const S=TL_STEPS[TL.i];document.getElementById("tlSay").innerHTML=I18N.lang==="he"&&S.sayHe?S.sayHe:S.say;
-    document.getElementById("tlStep").textContent=TL.i?I18N.T("STEP {n} OF {m}",{n:TL.i,m:TL_STEPS.length-1}):I18N.T("WELCOME");if(S.btn)document.getElementById("tlGo").textContent=I18N.T(S.btn);}
   if(me)paintAccount();
   try{tickClock();}catch(e){}});
 paintLang();
@@ -10452,7 +10816,7 @@ function closeTutorial(){if(tutOverlay.hidden)return;tutOverlay.hidden=true;sfx.
 function tutGo(d){const n=tutI+d;if(n<0)return;
   if(n>=TUT.length){closeTutorial();if(me)startGameTransition();else{setMenu(true);doAction("hop");}return;}
   tutI=n;paintTut();sfx.tick(d>0);}
-document.getElementById("tutorialBtn").onclick=e=>{press(e.currentTarget);openTutorial();};
+document.getElementById("tutorialBtn").onclick=e=>{press(e.currentTarget);me?startLiveTutorial():openTutorial();};
 document.getElementById("tutNext").onclick=()=>tutGo(1);
 document.getElementById("tutPrev").onclick=()=>tutGo(-1);
 document.getElementById("tutX").onclick=closeTutorial;
@@ -10465,91 +10829,185 @@ tutOverlay.addEventListener("keydown",e=>{e.stopPropagation();
     if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus();}}});
 
 /* =====================================================================
-   LIVE TUTORIAL: play offline (not connected to the server) while Pip
-   explains one thing at a time and waits until you've tried it
+   LIVE TUTORIAL: Pip walks new players through the whole game, in the real (online) world.
+   A card at the top says what to do, a glowing ring circles the button to press (or a glowing
+   circle in the world shows where to walk), and the step waits until it has been done.
+   New players get it automatically until they finish or skip it (User.tutorialAt); finishing pays
+   250 coins once (routes/tutorial.js). The TUTORIAL button on the start screen replays it any time.
    ===================================================================== */
-const TL={on:false,i:0,v:0,need:{},busy:false,ring:null,yaw0:0,lastPos:null};
-const PIP_SKIN="#4cc35a",TL_TARGET=[0,-14.5];
+const TL={on:false,i:0,v:0,need:{},busy:false,ring:null,ringKey:"",yaw0:0,lastPos:null,t0:0,pending:false,auto:false,spotEl:null};
+const PIP_SKIN="#4cc35a";
 const K=k=>`<span class="k">${k}</span>`;
+const DOOR=id=>{const V=VENUES[id],[x,z]=venueLocal(V,0,V.door||3.4);return {x,z,r:1.6};};
 const TL_STEPS=[
-  {sayHe:`היי, אני <b>פיפ</b>! אני אראה לכם את ג'אמפי. כאן משחקים <b>בלי חיבור לשרת</b>, אז אין לחץ. מוכנים?`,say:`Hi, I'm <b>Pip</b>! I'll show you around Jumpi. You're playing <b>offline</b> here, so take your time. Ready?`,btn:"Let's go!"},
-  {sayHe:`השתמשו ב־${K("W")}${K("A")}${K("S")}${K("D")} או ב${K("חיצים")} כדי <b>ללכת</b>.`,say:`Use ${K("W")}${K("A")}${K("S")}${K("D")} or the ${K("arrow keys")} to <b>walk around</b>.`,goal:7,kind:"walk"},
-  {sayHe:`אפשר גם <b>ללחוץ על הרצפה</b> והדמות תלך לשם. נסו!`,say:`You can also <b>click on the ground</b> and you'll walk there. Try it!`,ev:"click"},
-  {sayHe:`החזיקו ${K("Shift")} בזמן הליכה כדי <b>לרוץ</b>! (או לחצו פעמיים על הרצפה)`,say:`Hold ${K("Shift")} while walking to <b>run</b>! (or double-click the ground)`,goal:1.4,kind:"run"},
-  {sayHe:`לחצו על ${K("רווח")} כדי <b>לקפוץ ולעשות סלטה</b>!`,say:`Press ${K("Space")} to <b>jump and do a flip</b>!`,ev:"jump"},
-  {sayHe:`החזיקו את <b>הכפתור הימני בעכבר</b> (או לחצו על <b>הגלגלת</b>) וגררו כדי <b>לסובב את המצלמה</b>.`,say:`Hold the <b>right mouse button</b> (or press down the <b>mouse wheel</b>) and drag to <b>turn the camera</b>.`,goal:1.1,kind:"yaw"},
-  {sayHe:`גללו את <b>הגלגלת</b> כדי להתקרב ולהתרחק.`,say:`Scroll the <b>mouse wheel</b> to zoom in and out.`,ev:"zoom"},
-  {sayHe:`לחצו ${K("Enter")}, כתבו <b>שלום</b> ושלחו. ככה מדברים בצ'אט!`,say:`Press ${K("Enter")}, type <b>hello</b> and send it. That's how you chat!`,ev:"chat"},
-  {sayHe:`בסרגל הצ'אט, לחצו על פרצוף כדי לשלוח <b>אימוג'י</b>. Happy, Wow ו־Sad בחינם!`,say:`In the chat bar, tap a face to send an <b>emote</b>. Happy, Wow and Sad are free!`,ev:"emote"},
-  {sayHe:`לחצו ${K("P")} או על <b>כפתור הטלפון הכחול</b> כדי לפתוח את הטלפון. תסתכלו, ואז תסגרו אותו.`,say:`Press ${K("P")} or the <b>blue phone button</b> to open your phone. Look around, then put it away.`,ev:"phoneClose",needs:"phoneOpen"},
-  {sayHe:`אחרון! לכו אל <b>העיגול הזוהר</b> בדרך לחוף.`,say:`Last one! Walk to the <b>glowing circle</b> on the way to the beach.`,kind:"reach"},
+  // ---- welcome ----
+  {ch:"WELCOME",btn:"Let's go!",say:`Hi, I'm <b>Pip</b>! Welcome to <b>Jumpi</b>, a big world full of friends, games and surprises. I'll show you <b>everything</b>: how to move, what every button does, the shops, the Beach, the Water Park, jobs, pets and more. It takes about 10 minutes, and at the end you get <b>250 coins</b>! Ready?`},
+  // ---- moving ----
+  {ch:"MOVING AROUND",kind:"walk",goal:8,say:`Let's start with walking. Use ${K("W")}${K("A")}${K("S")}${K("D")} or the ${K("arrow keys")}: <b>W</b> goes forward, <b>S</b> goes back, <b>A</b> and <b>D</b> go to the sides. Walk around until the bar is full!`},
+  {ch:"MOVING AROUND",ev:"click",say:`You can also <b>click on the ground</b> and your Jumpi walks there by itself. A little marker shows where you're going. Try it: click somewhere on the floor!`},
+  {ch:"MOVING AROUND",kind:"run",goal:1.5,say:`In a hurry? Hold ${K("Shift")} while you walk to <b>run</b>. (You can also <b>double-click</b> the ground to run there.) Running uses up your stamina faster, so take a break now and then!`},
+  {ch:"MOVING AROUND",ev:"jump",say:`Press ${K("Space")} to <b>jump</b>! Every jump comes with a cool flip, and you can jump up onto low things too.`},
+  {ch:"MOVING AROUND",kind:"yaw",goal:1.1,say:`Hold the <b>right mouse button</b> and drag left or right to <b>turn the camera</b> around you. (Pressing down the mouse wheel and dragging works too.)`},
+  {ch:"MOVING AROUND",ev:"zoom",say:`Now roll the <b>mouse wheel</b> to <b>zoom</b>: in close to your Jumpi, or far out to see more of the world.`},
+  // ---- the screen ----
+  {ch:"YOUR SCREEN",hl:"#coins",btn:"Next",say:`These are your <b>coins</b>, the money of Jumpi. You win them in mini-games, jobs, the daily gift and the Lucky Wheel, and spend them on clothes, furniture, pets, food and house upgrades.`},
+  {ch:"YOUR SCREEN",hl:"#needsBar",btn:"Next",say:`These four circles are your Jumpi's <b>needs</b>: <b>Hunger</b>, <b>Energy</b>, <b>Stamina</b> and <b>Fun</b>. They go down slowly while you play, and your Jumpi shows it (sleepy eyes, slumping...). <b>Eat</b> for Hunger, <b>sleep</b> in a bed for Energy, <b>sit down</b> for Stamina, and <b>dance or play</b> for Fun. Click a circle any time for tips.`},
+  {ch:"YOUR SCREEN",hl:()=>mapOverlay.hidden?"#minimap":"#mapClose",needs:"mapOpen",ev:"mapClose",say:`This is the <b>mini-map</b>, and the dot in the middle is you. <b>Click it</b> to open the big map of the whole world (you can even click a place on it to walk there). Then close it with the <b>X</b>.`},
+  {ch:"YOUR SCREEN",hl:"#wxClock",btn:"Next",say:`The clock shows the <b>real time in Israel</b>. Morning, sunset and night follow the real sky, and the weather changes for everyone together: sunny, cloudy, rain and even thunderstorms! Click the clock to see the forecast.`},
+  {ch:"YOUR SCREEN",hl:"#giftBtn",btn:"Next",say:`This is your <b>daily gift</b>. Come back every day and open it for free coins. The more days in a row, the bigger the gift!`},
+  {ch:"YOUR SCREEN",hl:"#seasonBtn",btn:"Next",say:`The star is the <b>Season Pass</b>: a free prize track with 30 tiers. You get XP from mini-games, jobs, the daily gift and the wheel. Every tier gives coins, and some tiers give clothes you can only get this season!`},
+  {ch:"YOUR SCREEN",hl:"#wheelBtn",btn:"Next",say:`The golden wheel is the <b>Lucky Wheel</b>. You get <b>one free spin every 24 hours</b>: coins, Season XP, or if you're really lucky, the rare Lucky Hat!`},
+  {ch:"YOUR SCREEN",hl:"#homeBtn",btn:"Next",say:`This button takes you to <b>your own home</b>. There you can <b>Decorate</b> with furniture, sit on the sofa, sleep in your bed to get energy back, and buy upgrades: a bigger room, a garden, a swimming pool and even a second floor!`},
+  // ---- chat & phone ----
+  {ch:"CHAT & PHONE",hl:"#chatFab",ev:"chat",say:`Time to say hi! Press ${K("Enter")} or click the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`},
+  {ch:"CHAT & PHONE",hl:()=>chatDock.classList.contains("open")?"#emoteTray":"#chatFab",ev:"emote",say:`Now send an <b>emote</b>! Open the chat bar and click one of the faces: a big emoji jumps above your head. Some are free, and you can unlock more in the shop.`},
+  {ch:"CHAT & PHONE",hl:"#phoneBtn",needs:"phoneOpen",ev:"phoneClose",say:`This is your <b>phone</b>! Press ${K("P")} or click it. Inside: <b>Friends</b>, <b>JumpiChat</b> (private chat with friends), who's <b>Online</b>, your <b>Home</b>, <b>Pets</b>, <b>Music</b>, <b>Jobs</b>, <b>My Look</b> and the <b>Shop</b>. Have a look, then put it away.`},
+  // ---- eating ----
+  {ch:"EAT & DRINK",at:()=>DOOR("diner"),say:`Feeling hungry? Let's visit the <b>Restaurant</b> (the building with the red roof). Walk to the <b>glowing circle</b> at its door. Follow the orange arrow!`},
+  {ch:"EAT & DRINK",hl:"#seatPrompt",at:()=>DOOR("diner"),cond:()=>HOME.place==="diner",say:`See the button at the bottom? Press ${K("E")} (or click it) to go in. That's how you enter <b>every</b> shop and building in Jumpi.`},
+  {ch:"EAT & DRINK",at:()=>({x:-3.9,z:-3,r:1.3,room:"diner"}),ev:"menuOpen",say:`You're inside! Walk to the <b>counter</b> (the glowing circle) and press ${K("E")} at <b>ORDER FOOD</b> to see the menu. Everything here is <b>free</b>!`},
+  {ch:"EAT & DRINK",hl:"#menuGrid",ev:"foodTake",say:`Pick anything you like! It goes into your <b>food bar</b>, so you can eat it anywhere.`},
+  {ch:"EAT & DRINK",hl:"#foodBar",ev:"foodBite",say:`This is your <b>food bar</b>: up to 4 snacks and drinks you carry with you. Press ${K("1")}-${K("4")} or click a slot to hold one, then <b>click anywhere on the screen</b> to take a bite. Every bite fills your Hunger a little. Take a bite now!`},
+  {ch:"EAT & DRINK",hl:"#homeLeave",ev:"leave",say:`Yum! Half-eaten food stays in your bar for later. To go back outside, click <b>Leave</b> at the top of the screen.`},
+  // ---- places ----
+  {ch:"PLACES TO GO",btn:"Next",say:`The Plaza has more places to walk into: the <b>Clothes Shop</b> and the <b>Furniture Shop</b> on the left side (you can even try the beds!), the <b>Dance Club</b> next to the Restaurant, and the <b>Pet Center</b> at the far end of the Park.`},
+  {ch:"PLACES TO GO",at:()=>DOOR("club"),cond:()=>HOME.place==="club",say:`Let's check out the <b>Dance Club</b>! Walk to the glowing circle and press ${K("E")} to go in.`},
+  {ch:"PLACES TO GO",cond:()=>!!(G.seat&&G.seat.k==="dance"),btn:"Next",soft:true,say:`Party time! Step onto the <b>dance floor</b> and press ${K("E")} to dance (press E again for a new move). Dancing fills up your <b>Fun</b>. The <b>Juice Bar</b> sells drinks and snacks for coins, and the music is made just for Jumpi!`},
+  {ch:"PLACES TO GO",hl:"#homeLeave",ev:"leave",say:`Great moves! Click <b>Leave</b> to go back to the Plaza.`},
+  {ch:"PLAY & EARN",at:()=>({x:-17.5,z:-23.6,r:2.2}),say:`Now let's go to <b>the Beach</b>! Walk towards the sea and follow the glowing circle to the blue <b>mini-game stand</b>.`},
+  {ch:"PLAY & EARN",btn:"Next",say:`Every colourful stand is a <b>mini-game</b>: <b>Shell Snap</b>, <b>Treasure Dig</b> and <b>Jumpi Flap</b> here on the Beach, and <b>Fruit Catch</b> in the Park. Walk up to a stand and press ${K("E")} to play. Each one starts with a short how-to, and the better you play, the more coins you win!`},
+  {ch:"PLAY & EARN",btn:"Next",say:`The Beach is huge: walk along the wooden paths, splash in the sea, say hi to the crabs, and climb onto the old <b>shipwreck</b>: you can walk right up onto its deck!`},
+  {ch:"PLAY & EARN",at:()=>({x:27,z:-.5,r:3}),cond:()=>G.zone==="waterpark"&&!G.home,say:`Next stop: the <b>Water Park</b>! Go back up to the Plaza and through the big gate on the right, between the Dance Club and the Restaurant. Follow the glowing circle.`},
+  {ch:"PLAY & EARN",btn:"Next",say:`Welcome to the Water Park! Swim in the <b>wave pool</b>, the splash pool and the lagoon, ride the two big <b>water slides</b> from the tower (press E on the pad in front of it), cool off in the splash zone, and grab a treat at the ice cream, snack and smoothie stands.`},
+  {ch:"PLAY & EARN",hl:"#phoneBtn",btn:"Next",say:`Want to earn lots of coins? Open the <b>Jobs</b> app on your phone. Work as a <b>Waiter</b>, a <b>Police Officer</b> (find lost kids and get stolen bags back) or a <b>Pizza Delivery</b> rider on a scooter. Every job has 10 levels, and the top level gives you its uniform to keep!`},
+  {ch:"PLAY & EARN",btn:"Next",say:`Pets! In the <b>Pet Center</b> at the end of the Park you can adopt a puppy, a kitten, a hamster or even a baby dragon. Your pet follows you around and lives in your home, where it plays, eats and naps.`},
+  // ---- friends & safety ----
+  {ch:"FRIENDS & SAFETY",btn:"Next",say:`Jumpi is more fun with friends! <b>Click on another player</b> to open their card: add them as a <b>friend</b>, <b>trade</b> items, visit their <b>home</b>, or play <b>Tic-Tac-Toe</b> and <b>4 in a Row</b> together.`},
+  {ch:"FRIENDS & SAFETY",hl:"#settingsBtn",btn:"Next",say:`In <b>Settings</b> (the gear) you can turn the music and the sound effects up or down.`},
+  {ch:"FRIENDS & SAFETY",btn:"Finish!",say:`Last and most important: <b>stay safe</b>! Never share your password, your address, your school or your phone number, not even with friends. If someone is mean, tell a grown-up and write to us on the Contact page. Be kind to everyone, and have fun!`},
 ];
-const tlCard=document.getElementById("tlCard");
-function startLiveTutorial(){
-  if(TL.on)return;closeTutorial();TL.on=true;TL.i=0;body.classList.add("tutorial");
-  document.getElementById("tlFace").src=emoteImage("happy",PIP_SKIN);
-  startGameTransition();
-  setTimeout(()=>{if(TL.on&&inGame)tlPaint(true);},1700);
+const tlCard=document.getElementById("tlCard"),tlSpot=document.getElementById("tlSpot"),tlAsk=document.getElementById("tlAsk"),tlEdge=document.getElementById("tlEdge");
+const tlKey=()=>"jumpi-tour-"+(me?me.id:"");
+const tlSave=i=>{try{let c=i;while(c>0&&TL_STEPS[c-1].ch===TL_STEPS[i].ch)c--;localStorage.setItem(tlKey(),String(c));}catch(e){}};   // resume at the start of the chapter
+// start (fresh = from the beginning; otherwise where it was left)
+function tlStart(fresh){
+  if(TL.on||!me||!inGame)return;TL.on=true;TL.busy=false;body.classList.add("tutorial");
+  let i=0;if(!fresh){try{i=Math.max(0,Math.min(TL_STEPS.length-1,+localStorage.getItem(tlKey())||0));}catch(e){}}
+  TL.i=i;TL.t0=now();document.getElementById("tlFace").src=emoteImage("happy",PIP_SKIN);
+  closeDaily();closeBirthday();
+  api("/api/tutorial/start",{});
+  setTimeout(()=>{if(TL.on&&inGame)tlPaint(true);},900);
 }
 function tlPaint(pop){
-  const S=TL_STEPS[TL.i];TL.v=0;TL.need={};TL.yaw0=G.camYaw||0;TL.lastPos=G.pos.clone();
+  const S=TL_STEPS[TL.i];TL.v=0;TL.need={};TL.yaw0=G.camYaw||0;TL.lastPos=G.pos.clone();TL.shownAt=now();
   tlCard.hidden=false;tlCard.classList.remove("win");if(pop){tlCard.classList.remove("pop");void tlCard.offsetWidth;tlCard.classList.add("pop");}
-  document.getElementById("tlStep").textContent=TL.i?I18N.T("STEP {n} OF {m}",{n:TL.i,m:TL_STEPS.length-1}):I18N.T("WELCOME");
-  document.getElementById("tlSay").innerHTML=I18N.lang==="he"&&S.sayHe?S.sayHe:S.say;
-  document.getElementById("tlDots").innerHTML=TL_STEPS.slice(1).map((x,k)=>`<i class="${k+1<TL.i?"done":k+1===TL.i?"now":""}"></i>`).join("");
-  const go=document.getElementById("tlGo");go.hidden=!S.btn;if(S.btn){go.textContent=I18N.T(S.btn);setTimeout(()=>go.focus({preventScroll:true}),80);}
+  document.getElementById("tlStep").textContent=S.ch;
+  document.getElementById("tlCount").textContent=`${TL.i+1} / ${TL_STEPS.length}`;
+  document.getElementById("tlSay").innerHTML=S.say;
+  document.getElementById("tlProg").style.width=(TL.i/(TL_STEPS.length-1)*100)+"%";
+  const go=document.getElementById("tlGo");go.hidden=!S.btn;if(S.btn)go.textContent=S.btn;
+  document.getElementById("tlNudge").hidden=true;
   document.getElementById("tlBar").hidden=!S.goal;document.getElementById("tlBarFill").style.width="0%";
-  tlRing(S.kind==="reach");
-  if(G.npc){G.npc.waveT=now();}
+  tlSave(TL.i);
 }
-function tlRing(on){
-  if(on&&!TL.ring){const g=new THREE.Group();
-    const ring=new THREE.Mesh(new THREE.TorusGeometry(1.5,.14,10,48),new THREE.MeshBasicMaterial({color:"#ffd23a"}));ring.rotation.x=Math.PI/2;ring.position.y=.12;g.add(ring);
-    const beam=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,7,32,1,true),new THREE.MeshBasicMaterial({color:"#fff3a0",transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=3.5;g.add(beam);
-    const arrow=new THREE.Mesh(new THREE.ConeGeometry(.55,1.1,20),new THREE.MeshBasicMaterial({color:"#ff8a1c"}));arrow.rotation.x=Math.PI;arrow.position.y=4.2;g.add(arrow);g.userData.arrow=arrow;
-    g.position.set(TL_TARGET[0],groundY(TL_TARGET[0],TL_TARGET[1]),TL_TARGET[1]);world.add(g);TL.ring=g;}
-  if(!on&&TL.ring){TL.ring.removeFromParent();TL.ring=null;}
+// a glowing circle on the ground (outside, or in a room) with a bouncing arrow over it
+function tlRing(at){
+  const key=at?`${at.x},${at.z},${at.room||""}`:"";
+  if(key===TL.ringKey)return;TL.ringKey=key;
+  if(TL.ring){TL.ring.removeFromParent();TL.ring=null;}
+  if(!at)return;
+  const g=new THREE.Group(),r=at.r||1.6;
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.14,10,48),new THREE.MeshBasicMaterial({color:"#ffd23a"}));ring.rotation.x=Math.PI/2;ring.position.y=.12;g.add(ring);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(r*.94,r*.94,7,32,1,true),new THREE.MeshBasicMaterial({color:"#fff3a0",transparent:true,opacity:.26,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=3.5;g.add(beam);
+  const arrow=new THREE.Mesh(new THREE.ConeGeometry(.55,1.1,20),new THREE.MeshBasicMaterial({color:"#ff8a1c"}));arrow.rotation.x=Math.PI;arrow.position.y=4.2;g.add(arrow);g.userData.arrow=arrow;
+  g.position.set(at.x,at.room?0:groundY(at.x,at.z),at.z);(at.room?HOME.group:world).add(g);TL.ring=g;g.userData.at=at;
+}
+// the ring on the screen around the button to press
+function tlSpotOn(sel){
+  const el=sel?document.querySelector(sel):null;
+  const vis=el&&(el.checkVisibility?el.checkVisibility({checkVisibilityCSS:true}):getComputedStyle(el).display!=="none");
+  const r=vis?el.getBoundingClientRect():null;
+  if(!r||r.width<2||r.height<2){tlSpot.hidden=true;tlCard.classList.remove("low");return;}
+  const pad=12,w=r.width+pad*2,h=r.height+pad*2;
+  tlSpot.hidden=false;tlSpot.style.cssText=`left:${r.left-pad}px;top:${r.top-pad}px;width:${w}px;height:${h}px;border-radius:${Math.min(w,h)/2}px`;
+  tlSpot.classList.toggle("below",r.top+r.height/2<innerHeight*.45);   // the arrow points up at things near the top
+  // keep the card out of the way of what it points at
+  const c=tlCard.getBoundingClientRect(),low=tlCard.classList.contains("low");
+  const hitsTop=r.top<(low?c.height+30:c.bottom+16)&&r.right>innerWidth/2-c.width/2-20&&r.left<innerWidth/2+c.width/2+20;
+  if(hitsTop!==low)tlCard.classList.toggle("low",hitsTop);
+}
+// when the glowing circle is off the screen, an arrow at the edge of the screen points the way
+const _tlv=new THREE.Vector3();
+function tlEdgeTick(at){
+  if(!at||TL.busy){tlEdge.hidden=true;return;}
+  _tlv.set(at.x,(at.room?0:groundY(at.x,at.z))+1,at.z).project(cam);
+  const behind=_tlv.z>1,inside=!behind&&Math.abs(_tlv.x)<.92&&Math.abs(_tlv.y)<.9;
+  if(inside){tlEdge.hidden=true;return;}
+  let x=_tlv.x,y=_tlv.y;if(behind){x=-x;y=-y;if(Math.abs(y)<.3)y=-1;}   // behind the camera: point the other way
+  const a=Math.atan2(-y,x),m=Math.max(Math.abs(Math.cos(a))/.9,Math.abs(Math.sin(a))/.84);
+  const px=innerWidth/2+Math.cos(a)/m*innerWidth/2,py=innerHeight/2+Math.sin(a)/m*innerHeight/2;
+  tlEdge.hidden=false;tlEdge.style.left=px+"px";tlEdge.style.top=py+"px";tlEdge.style.transform=`rotate(${a}rad) translateX(${Math.sin(now()*6)*6}px)`;
 }
 function tlEvent(name){if(!TL.on||TL.busy)return;const S=TL_STEPS[TL.i];if(!S)return;
   if(S.needs&&name===S.needs){TL.need[name]=true;return;}
   if(S.ev===name&&(!S.needs||TL.need[S.needs]))tlComplete();}
 function tlTick(dt,moving,keyMove){
-  if(!TL.on||TL.busy)return;const S=TL_STEPS[TL.i];if(!S)return;
+  if(!TL.on)return;const S=TL_STEPS[TL.i];if(!S||tlCard.hidden){tlSpot.hidden=true;tlEdge.hidden=true;return;}
+  // where to look / walk (outside things while inside a shop: point at Leave first)
+  let at=S.at?S.at():null,hl=typeof S.hl==="function"?S.hl():S.hl;
+  if(at&&!at.room&&G.home){at=null;hl="#homeLeave";}
+  if(at&&at.room&&HOME.place!==at.room)at=null;
+  tlRing(at);tlSpotOn(TL.busy?null:hl);
   if(TL.ring){const a=TL.ring.userData.arrow;a.position.y=4.2+Math.sin(now()*4)*.35;a.rotation.y+=dt*2;}
-  if(!S.kind)return;let p=0;
+  tlEdgeTick(at);
+  if(TL.busy)return;
+  // stuck? after a while a small "next step" link shows up
+  if(!S.btn&&now()-TL.shownAt>35)document.getElementById("tlNudge").hidden=false;
+  let p=0;
   if(S.kind==="walk"){if(keyMove&&moving)TL.v+=G.pos.distanceTo(TL.lastPos);p=TL.v/S.goal;}
   else if(S.kind==="run"){if(G.running&&moving)TL.v+=dt;p=TL.v/S.goal;}
   else if(S.kind==="yaw"){let d=(G.camYaw||0)-TL.yaw0;p=Math.abs(Math.atan2(Math.sin(d),Math.cos(d)))/S.goal;}
-  else if(S.kind==="reach"){if(Math.hypot(G.pos.x-TL_TARGET[0],G.pos.z-TL_TARGET[1])<1.9)p=1;}
+  if(S.cond&&S.cond())p=1;
+  else if(at&&!S.ev&&!S.cond&&Math.hypot(G.pos.x-at.x,G.pos.z-at.z)<at.r+.4)p=1;
   TL.lastPos.copy(G.pos);
   if(S.goal)document.getElementById("tlBarFill").style.width=Math.min(100,p*100)+"%";
   if(p>=1)tlComplete();
 }
 function tlComplete(){
-  TL.busy=true;sfx.success();tlCard.classList.add("win");
-  const cheers=["Great job!","Awesome!","You got it!","Super!","Nice one!","Perfect!"];
-  document.getElementById("tlSay").innerHTML=`<b style="color:#17a24a">${cheers[TL.i%cheers.length]}</b>`;
-  if(G.npc)G.npc.waveT=now();
-  setTimeout(()=>{TL.busy=false;if(!TL.on)return;TL.i++;if(TL.i>=TL_STEPS.length){tlFinish();return;}tlPaint(true);},1200);
+  if(TL.busy)return;TL.busy=true;sfx.success();tlCard.classList.add("win");tlSpot.hidden=true;
+  const cheers=["Great job!","Awesome!","You got it!","Super!","Nice one!","Perfect!","Woohoo!","You're a natural!"];
+  if(TL.i>0)document.getElementById("tlSay").innerHTML=`<b style="color:#17a24a">${cheers[TL.i%cheers.length]}</b>`;
+  document.getElementById("tlGo").hidden=true;document.getElementById("tlNudge").hidden=true;
+  setTimeout(()=>{TL.busy=false;if(!TL.on)return;TL.i++;if(TL.i>=TL_STEPS.length){tlFinish();return;}tlPaint(true);},TL.i>0?1100:200);
 }
-function tlFinish(){
-  tlRing(false);tlCard.hidden=true;coinRain(24);doAction("wave",null,true);
+async function tlFinish(){
+  tlStop();try{localStorage.removeItem(tlKey());}catch(e){}
+  const r=await api("/api/tutorial/done",{});
+  if(me)me.tutorialDone=true;
+  const coins=r.ok?r.data.coins||0:0;if(r.ok&&r.data.user)setMyCoins(r.data.user.coins);
+  coinRain(coins?30:16);confettiRain();doAction("wave",null,true);sfx.success();
   document.getElementById("tlDoneFace").src=emoteImage("party",PIP_SKIN);
-  const acts=document.getElementById("tlDoneActs");
-  acts.innerHTML=me?`<button class="idle-back" type="button" data-a="play">Play for real!</button><button class="idle-exit" type="button" data-a="menu">Back to the menu</button>`
-    :`<button class="idle-back" type="button" data-a="signup">Create my Jumpi!</button><button class="idle-exit" type="button" data-a="login">I have an account</button><button class="idle-exit" type="button" data-a="menu">Back to the menu</button>`;
-  document.getElementById("tlDone").hidden=false;setTimeout(()=>acts.querySelector("button").focus(),100);
+  document.getElementById("tlDoneCoins").hidden=!coins;
+  document.getElementById("tlDone").hidden=false;setTimeout(()=>document.getElementById("tlDoneOk").focus(),100);
 }
-document.getElementById("tlDoneActs").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
-  document.getElementById("tlDone").hidden=true;endLiveTutorial();
-  if(a==="play")setTimeout(()=>startGameTransition(),350);
-  else if(a==="signup")setTimeout(()=>openPanel("signup"),400);
-  else if(a==="login")setTimeout(()=>openPanel("login"),400);});
-// leave the tutorial (and the offline game) and go back to the main page
-function endLiveTutorial(){if(!TL.on)return;TL.on=false;TL.busy=false;tlRing(false);tlCard.hidden=true;body.classList.remove("tutorial");if(inGame)exitGame();}
+// stop the guide (the game keeps going)
+function tlStop(){TL.on=false;TL.busy=false;tlRing(null);tlCard.hidden=true;tlSpot.hidden=true;tlEdge.hidden=true;tlCard.classList.remove("low");body.classList.remove("tutorial");}
+// skipping asks first
+function tlAskSkip(){if(!TL.on)return;document.getElementById("tlAskFace").src=emoteImage("sad",PIP_SKIN);tlAsk.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("tlAskStay").focus(),60);}
+document.getElementById("tlAskStay").onclick=()=>{tlAsk.hidden=true;sfx.close();};
+document.getElementById("tlAskSkip").onclick=async()=>{tlAsk.hidden=true;sfx.close();tlStop();try{localStorage.removeItem(tlKey());}catch(e){}
+  toast("No problem! You can take the tour any time with the TUTORIAL button on the main screen.");
+  const r=await api("/api/tutorial/done",{skipped:true});if(me)me.tutorialDone=true;};
+tlAsk.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){tlAsk.hidden=true;sfx.close();}});
+document.getElementById("tlDoneOk").onclick=()=>{document.getElementById("tlDone").hidden=true;sfx.close();};
 document.getElementById("tlGo").onclick=()=>{sfx.tick(true);tlComplete();};
-document.getElementById("tlSkip").onclick=()=>{sfx.close();endLiveTutorial();};
+document.getElementById("tlNudge").onclick=()=>{sfx.tick(true);tlComplete();};
+document.getElementById("tlSkip").onclick=()=>tlAskSkip();
+// the TUTORIAL card's "live" button and the menu button: the real game, from the beginning
+function startLiveTutorial(){closeTutorial();if(!me){setTimeout(()=>openPanel("signup"),250);return;}
+  if(inGame){tlStart(true);return;}TL.pending=true;startGameTransition();}
 document.getElementById("tutLive").onclick=()=>{sfx.open();startLiveTutorial();};
+if(new URLSearchParams(location.search).has("tltest"))window.__tl={go:i=>{TL.i=i;TL.busy=false;tlPaint(true);},TL,steps:TL_STEPS.length};
 
 /* =====================================================================
    AWAY TOO LONG: after 20 minutes without any activity, disconnect nicely
@@ -10577,6 +11035,29 @@ document.getElementById("idleOk").onclick=()=>{if(!idleOut)return;idleOut=false;
 // while the message is up, the game doesn't react to the keyboard (Tab/Enter still work on the OK button)
 addEventListener("keydown",e=>{if(!idleOut)return;if(e.target.closest&&e.target.closest("#idleOverlay"))return;e.stopImmediatePropagation();
   if(e.key==="Tab"){e.preventDefault();document.getElementById("idleOk").focus();}},true);
+
+/* ---------- phone numbers, addresses and emails: never sent, and a friendly window explains why ---------- */
+const piOv=document.getElementById("piOv");
+const PI_TEXT={
+  phone:{t:"KEEP YOUR NUMBER SECRET!",p:"Phone numbers can't be sent in Jumpi. Never share your phone number (or anyone else's), not even with friends you made here."},
+  address:{t:"KEEP YOUR HOME SECRET!",p:"Addresses and where you live can't be sent in Jumpi. Never tell anyone online where you live, your street, your city or your school."},
+  email:{t:"KEEP YOUR EMAIL SECRET!",p:"Email addresses can't be sent in Jumpi. Never share your email (or your password) with anyone online."},
+};
+function privatePop(kind){const T=PI_TEXT[kind]||PI_TEXT.phone;
+  document.getElementById("piTitle").textContent=T.t;document.getElementById("piText").textContent=T.p;
+  document.getElementById("piFace").src=emoteImage("wow",skinOf({color:lk("color")}));
+  piOv.hidden=false;G.keys={};sfx.error();setTimeout(()=>document.getElementById("piOk").focus(),60);}
+document.getElementById("piOk").onclick=()=>{piOv.hidden=true;sfx.close();};
+piOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"||e.key==="Enter"){e.preventDefault();piOv.hidden=true;sfx.close();}});
+// one check for every chat box: personal info gets the window, bad words the usual warning
+function textBlocked(text,input){const r=checkText(text);if(r.ok)return false;
+  if(r.kind==="private"){privatePop(r.info);if(input){input.classList.remove("shake");void input.offsetWidth;input.classList.add("shake");}}else blockedText(input);return true;}
+// while typing: the box turns red and says why, before anything is sent
+function piWatch(input){if(!input||input.dataset.piw)return;input.dataset.piw="1";
+  const tip=document.createElement("span");tip.className="pi-tip";tip.hidden=true;input.parentElement.classList.add("pi-host");input.parentElement.appendChild(tip);
+  input.addEventListener("input",()=>{const k=privateInfo(input.value);input.classList.toggle("pi-warn",!!k);tip.hidden=!k;
+    if(k)tip.textContent=k==="phone"?"Phone numbers can't be sent":k==="email"?"Emails can't be sent":"Addresses can't be sent";});}
+piWatch(chatInput);document.querySelectorAll(".win-chat input").forEach(piWatch);
 
 /* ---------- bad words never leave the page (and the server checks again) ---------- */
 let blockedCount=0;
