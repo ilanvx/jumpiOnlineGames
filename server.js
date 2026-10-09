@@ -98,6 +98,7 @@ app.get(["/play", "/play/"], gameGate);
 app.get(["/studio", "/studio/"], gameGate);   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
+app.get("/delete-account", page("site/delete-account.html"));   // Google Play: how to delete a JUMPI account
 app.get("/contact", page("site/contact.html"));
 app.get("/trailer", page("site/trailer.html"));
 // the Android app: the APK built on GitHub (branch android-build), copied to public/download/jumpi-games.apk
