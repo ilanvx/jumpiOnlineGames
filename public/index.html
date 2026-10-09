@@ -5800,11 +5800,15 @@ function updateRemotes(t,dt){
   }
 }
 function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
+let NET_RETRY=0;
 function netJoin(){
   if(typeof io==="undefined"){updateOnline();return;}   // page opened without our server: play alone
   if(!socket){
     socket=io({withCredentials:true,auth:cb=>cb({tab:TAB.get()})});
-    socket.on("connect",()=>{updateOnline();if(inGame)socket.emit("join",netState());loadFoodBag();});
+    socket._uid=me&&me.id;
+    // the server says who this connection is: not the account on screen (logged in as someone else on this tab) = connect again as the right one
+    socket.on("whoami",d=>{if(!me||!d||!d.id||String(d.id)===String(me.id))return;console.warn("[socket] connected as another account, reconnecting");
+      const s0=socket;socket=null;try{s0.disconnect();}catch(e){}clearRemotes();if(NET_RETRY++<2)setTimeout(netJoin,300);else toast("Couldn't connect as "+me.username+". Please reload the game.");});    socket.on("connect",()=>{updateOnline();if(inGame)socket.emit("join",netState());loadFoodBag();});
     socket.on("disconnect",()=>{clearRemotes();updateOnline();});
     socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}});
     socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
@@ -6579,6 +6583,10 @@ const toastEl=document.getElementById("toast");
 let me=null,toastT;
 function toast(text){toastEl.textContent=text;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("show"),2600);}
 function setAccount(user,quiet){
+  // another account now (logged in / out / switched): the old connection belongs to the old account, drop it and join again as the new one
+  if(typeof socket!=="undefined"&&socket&&String(socket._uid||"")!==String(user&&user.id||"")){const s0=socket;socket=null;try{s0.disconnect();}catch(e){}if(typeof clearRemotes==="function")clearRemotes();
+    if(user&&typeof inGame!=="undefined"&&inGame)setTimeout(netJoin,0);}
+  if(user&&me&&String(user.id)!==String(me.id))NET_RETRY=0;
   me=user;accountLook=user?user.look:null;if(typeof setMyInvisible==="function"&&!(user&&user.role==="admin"))setMyInvisible(false);
   if(!quiet)accRefresh();
   document.body.classList.toggle("logged",!!user);

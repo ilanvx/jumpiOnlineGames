@@ -287,6 +287,7 @@ export function attachPlaza(io) {
 
   io.on("connection", (socket) => {
     const me = socket.data.user;
+    socket.emit("whoami", { id: String(me.id || me._id || "") });   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
     const canChat = limiter(5, 5000);
     const canMove = limiter(25, 1000);
     const canAdmin = limiter(20, 10000);
