@@ -1697,7 +1697,7 @@ body.decorating .hb-btn.deco{outline:3px solid #fff}
 .deco-swatch[aria-pressed="true"]{border-color:#fff;box-shadow:0 4px 0 #1b2c47,0 0 0 3px var(--orange)}
 .deco-swatch span{padding:2px 8px;border-radius:999px;background:rgb(0 0 0 / .45);color:#fff;font:600 .72rem "Fredoka",system-ui,sans-serif;white-space:nowrap}
 .deco-empty{margin:auto;color:#dbe7f7;font-weight:500;text-align:center}
-.deco-tool{position:fixed;z-index:6;left:50%;translate:-50% 0;bottom:calc(env(safe-area-inset-bottom,0px) + 196px);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:16px;
+.deco-tool{position:fixed;z-index:6;left:50%;translate:-50% 0;bottom:calc(env(safe-area-inset-bottom,0px) + 244px);display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:16px;
   background:#16264f;color:#fff;font:600 .95rem "Fredoka",system-ui,sans-serif;box-shadow:0 10px 24px rgb(0 0 0 / .35);animation:pcIn .3s cubic-bezier(.2,1.6,.4,1)}
 .deco-tool button{display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;border:0;border-radius:10px;cursor:pointer;background:#1f9bff;color:#fff;font:600 .9rem "Fredoka",system-ui,sans-serif;box-shadow:0 3px 0 #06488a}
 .deco-tool button.red{background:#ff5a5a;box-shadow:0 3px 0 #8a1c1c}
@@ -1922,7 +1922,7 @@ body.phone-open .phone-btn{outline:3px solid #fff;outline-offset:2px}
 @keyframes phOut{to{transform:translateY(65%) rotate(8deg) scale(.55);opacity:0}}
 @media (prefers-reduced-motion:reduce){.phone.in,.phone.out{animation-duration:.01s}}
 .ph-frame{height:100%;padding:10px;border-radius:50px;background:linear-gradient(145deg,#3a3a58,#16162a);box-shadow:0 0 0 3px #2a2a44,inset 0 0 0 2px #54547a,0 24px 50px rgb(0 0 0 / .45)}
-.ph-screen{position:relative;height:100%;border-radius:40px;overflow:hidden;display:flex;flex-direction:column;color:#fff;
+.ph-screen{position:relative;height:100%;border-radius:40px;overflow:hidden;overflow:clip;display:flex;flex-direction:column;color:#fff;
   background:radial-gradient(circle at 18% 22%,rgb(255 255 255 / .22) 0 34px,transparent 35px),radial-gradient(circle at 86% 64%,rgb(255 255 255 / .16) 0 54px,transparent 55px),radial-gradient(circle at 30% 88%,rgb(255 255 255 / .12) 0 24px,transparent 25px),linear-gradient(165deg,#4fc8ff 0%,#6b8cff 48%,#b06bff 100%)}
 .ph-status{position:relative;z-index:3;flex:none;height:44px;padding:14px 24px 0;display:flex;justify-content:space-between;align-items:flex-start;font:600 .86rem "Fredoka",system-ui,sans-serif;transition:background .3s}
 .ph-island{position:absolute;left:50%;top:10px;translate:-50% 0;width:92px;height:26px;border-radius:14px;background:#0c0c18}
@@ -2198,6 +2198,26 @@ body.land .gift-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 52px)}
 body.land .home-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 104px)}
 body.land .phone-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 156px)}
 body.land .season-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 208px)}
+/* the side menu (RAIL): sits under MENU, the buttons inside are laid out by it instead of their own fixed spots */
+.side-rail{position:fixed;z-index:4;left:18px;top:calc(env(safe-area-inset-top,0px) + 90px);display:none;flex-direction:column;align-items:center;gap:14px}
+body.in-game.logged .side-rail{display:flex}
+body.land .side-rail{left:calc(var(--lg) + env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + var(--lg) + 52px);gap:8px}
+.rail-items{display:flex;flex-direction:column;align-items:center;gap:14px;transform-origin:50% 0;transition:transform .32s cubic-bezier(.2,1.3,.4,1),opacity .22s,visibility 0s}
+body.land .rail-items{gap:8px}
+.rail-items>.btn{position:relative!important;top:auto!important;left:auto!important;flex:none}
+.side-rail.shut .rail-items{transform:translateY(-40px) scale(.4);opacity:0;visibility:hidden;pointer-events:none;transition:transform .25s ease-in,opacity .2s,visibility 0s .25s}
+.rail-tog{--c:#8a4dff;--hi:#c3a2ff;--lo:#6a2fe0;--edge:#3a1192;width:58px;height:46px;border-radius:16px;padding:0}
+body.land .rail-tog{width:var(--lb);height:34px;border-radius:12px}
+.btn .rt-bars{position:relative;width:26px;height:20px;display:block}
+.rt-bars i{position:absolute;left:0;width:100%;height:4px;border-radius:2px;background:#fff;box-shadow:0 2px 0 #3a1192;transition:transform .3s cubic-bezier(.2,1.4,.4,1),opacity .2s,top .3s}
+.rt-bars i:nth-child(1){top:0}.rt-bars i:nth-child(2){top:8px}.rt-bars i:nth-child(3){top:16px}
+.side-rail:not(.shut) .rt-bars i:nth-child(1){top:8px;transform:rotate(45deg)}
+.side-rail:not(.shut) .rt-bars i:nth-child(2){opacity:0;transform:scaleX(.2)}
+.side-rail:not(.shut) .rt-bars i:nth-child(3){top:8px;transform:rotate(-45deg)}
+body.land .btn .rt-bars{width:20px;height:16px}body.land .rt-bars i{height:3px}body.land .rt-bars i:nth-child(2){top:6px}body.land .rt-bars i:nth-child(3){top:12px}
+body.land .side-rail:not(.shut) .rt-bars i:nth-child(1),body.land .side-rail:not(.shut) .rt-bars i:nth-child(3){top:6px}
+.btn .rail-dot{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 0 3px #fff;display:none;animation:phPop .4s cubic-bezier(.2,1.8,.4,1)}
+.side-rail.shut.alert .btn .rail-dot{display:block}
 /* the food bar goes up, next to MENU */
 body.land .fbar-wrap{top:calc(env(safe-area-inset-top,0px) + var(--lg));bottom:auto;left:calc(env(safe-area-inset-left,0px) + 118px)}
 body.land .fbar{gap:5px;padding:4px;border-radius:15px}
@@ -2301,6 +2321,29 @@ body.land .idle-card.menu-card{width:min(720px,100%);padding:12px 16px 14px;disp
 body.land .menu-grid{grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;overflow-y:auto;min-height:0}
 body.land .menu-dish img{width:64px;height:64px}
 body.land .phone{right:14px;bottom:12px;height:calc(100dvh - 44px);aspect-ratio:10/16}
+/* short screens: the app pages scroll instead of squeezing (the job cards and their buttons were cut off) */
+body.land .ph-body>*{flex-shrink:0}
+body.land .ph-body{-webkit-overflow-scrolling:touch;touch-action:pan-y}
+body.land .ph-frame{padding:7px;border-radius:34px}
+body.land .ph-screen{border-radius:28px}
+body.land .ph-status{height:28px;padding:7px 20px 0;font-size:.72rem}
+body.land .ph-island{top:6px;width:70px;height:18px}
+body.land .ph-app{padding-top:28px}
+body.land .ph-app::before{height:28px}
+body.land .ph-head{min-height:42px;padding:2px 10px 6px}
+body.land .ph-back{width:32px;height:32px}
+body.land .ph-title{font-size:1.15rem}
+body.land .ph-jobs-intro{font-size:.85rem;margin:8px 12px}
+body.land .ph-home{padding:4px 12px 22px}
+body.land .ph-clock{margin-top:2px;flex-direction:row;align-items:baseline;gap:8px}
+body.land .ph-clock b{font-size:1.8rem;white-space:nowrap}
+body.land .ph-clock span{font-size:.78rem}
+body.land .ph-hello{display:none}
+body.land .ph-grid{grid-template-columns:repeat(4,1fr);gap:10px 6px}
+body.land .ph-icon{font-size:.66rem;gap:3px}
+body.land .ph-icon .tile{width:44px;height:44px;border-radius:14px;box-shadow:0 4px 0 var(--edge),0 6px 10px rgb(0 0 0 / .2)}
+body.land .ph-icon .tile svg{width:26px;height:26px}
+body.land .btn .rail-dot{width:12px;height:12px;top:-4px;right:-4px;box-shadow:0 0 0 2px #fff}
 
 /* "GET THE JUMPI APP!" (phones in a browser, PHONES_NEED_APP) */
 .app-gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:16px;overflow:auto;background:radial-gradient(circle at 50% 35%,#7fd8ff,#1f8fff 55%,#0a4fc0)}
@@ -2356,7 +2399,21 @@ body.land.in-home .work-hud{top:calc(env(safe-area-inset-top,0px) + 54px);transf
 /* sideways phones: the rest of the windows */
 body.land .deco-panel{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);padding:8px;gap:6px;width:min(760px,calc(100% - 16px))}
 body.land .deco-tray{min-height:84px;gap:6px;padding-bottom:4px}
-body.land .deco-tool{bottom:calc(env(safe-area-inset-bottom,0px) + 140px)}
+body.land .deco-tool{bottom:calc(env(safe-area-inset-bottom,0px) + 226px)}
+/* the decorate tray drops down while placing / moving something (so the floor is free), the tab on top brings it back up */
+.deco-tray{max-height:220px;transition:max-height .32s cubic-bezier(.3,.9,.3,1),opacity .2s,min-height .32s,padding .32s}
+.deco-panel.low .deco-tray{max-height:0;min-height:0;opacity:0;padding-top:0;padding-bottom:0;overflow:hidden}
+.deco-panel.low{gap:0}
+.deco-grip{position:absolute;left:50%;top:-30px;translate:-50% 0;width:78px;height:32px;border:2px solid #1f3355;border-bottom:0;border-radius:16px 16px 0 0;background:#3e5b86;cursor:pointer;display:grid;place-items:center;padding:0}
+.deco-grip svg{width:24px;height:24px;transition:transform .3s cubic-bezier(.2,1.4,.4,1);filter:drop-shadow(0 2px 0 #1f3355)}
+.deco-panel.low .deco-grip svg{transform:rotate(180deg)}
+.deco-panel.low .deco-grip{animation:gripHi 1.6s ease-in-out 3}
+@keyframes gripHi{50%{translate:-50% -4px}}
+.deco-grip:hover{background:#4a6a99}
+.deco-grip:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+body.deco-low .deco-tool{bottom:calc(env(safe-area-inset-bottom,0px) + 114px);transition:bottom .3s}
+body.land .deco-grip{top:-26px;height:28px;width:66px}
+body.land.deco-low .deco-tool{bottom:calc(env(safe-area-inset-bottom,0px) + 92px)}
 body.land .trade-card,body.land .duel-card,body.land .admin-card,body.land .map-card{max-height:calc(100dvh - 16px)}
 body.land .idle-card.hup-card,body.land .idle-card.adopt-card{padding:12px 14px}
 body.land .need-pop{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 100px);right:calc(var(--lg) + 58px);padding:10px 12px}
@@ -2380,6 +2437,10 @@ body.land.chat-open .chat-bar{top:0;bottom:auto;flex-direction:column-reverse;ga
 body.land .chat-bar input{height:40px}
 body.land .emote-tray{grid-template-columns:repeat(auto-fit,minmax(34px,1fr));gap:4px}
 body.land.chat-open .wx-clock,body.land.chat-open .fbar-wrap{visibility:hidden}
+body.tl-chat .tl-card,body.tl-chat .tl-spot,body.tl-chat .tl-edge{visibility:hidden}
+body.tl-chat .chat-send{animation:tlSend 1s ease-in-out infinite}
+body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
+@keyframes tlSend{50%{transform:scale(1.14);box-shadow:0 0 0 6px rgb(255 178 31 / .6)}}
 </style>
 </head>
 <body>
@@ -2655,6 +2716,8 @@ body.land.chat-open .wx-clock,body.land.chat-open .fbar-wrap{visibility:hidden}
   <svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)" fill="#06488a"><path d="M16 5 L3 16 H7 V27 H13 V20 H19 V27 H25 V16 H29 Z"/></g><path d="M16 5 L3 16 H7 V27 H13 V20 H19 V27 H25 V16 H29 Z" fill="#fff"/></svg>
   <span>MENU</span>
 </button>
+<!-- the side buttons (gift, home, phone, season) fold into this menu: the top button opens / closes it (the RAIL block) -->
+<div class="side-rail" id="sideRail"><button class="btn rail-tog" id="railTog" type="button" aria-label="Close the menu" aria-expanded="true" aria-controls="railItems"><span class="rt-bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="rail-dot" aria-hidden="true"></span></button><div class="rail-items" id="railItems"></div></div>
 <button class="btn gift-btn" id="giftBtn" type="button" aria-label="Daily gift" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)" fill="#8a1c5a"><rect x="5" y="12" width="22" height="15" rx="2"/><rect x="3" y="8" width="26" height="6" rx="2"/></g><rect x="5" y="12" width="22" height="15" rx="2" fill="#fff"/><rect x="3" y="8" width="26" height="6" rx="2" fill="#fff"/><rect x="14" y="8" width="4" height="19" fill="#ff5fb4"/><path d="M16 8 C12 2 6 4 9 8 Z M16 8 C20 2 26 4 23 8 Z" fill="#ffd23a" stroke="#c98a00" stroke-width="1.2"/></svg><i class="gift-dot" id="giftDot" hidden></i></button>
 <button class="mg-prompt" id="mgPrompt" type="button" hidden><span class="play"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 3.5 L16.5 10 L6 16.5 Z" fill="#ff8a1c"/></svg></span>PLAY&nbsp;<span id="mgPromptName">GAME</span><kbd>E</kbd></button>
 <div class="coin-rain" id="coinRain" aria-hidden="true"></div>
@@ -2899,6 +2962,7 @@ body.land.chat-open .wx-clock,body.land.chat-open .fbar-wrap{visibility:hidden}
   </div>
 </div>
 <div class="deco-panel" id="decoPanel" hidden>
+  <button class="deco-grip" id="decoGrip" type="button" aria-label="Hide the furniture" aria-expanded="true" aria-controls="decoTray"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9 L12 15 L18 9" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div class="deco-head">
     <div class="deco-tabs" role="tablist"><button type="button" role="tab" data-tab="furniture">Furniture</button><button type="button" role="tab" data-tab="walls">Walls</button><button type="button" role="tab" data-tab="floor">Floor</button></div>
     <span class="deco-saved" id="decoSaved"></span>
@@ -6430,6 +6494,16 @@ const discordBtn=document.getElementById("discordBtn"),dcOv=document.getElementB
 function openDiscord(){dcOv.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("dcJoin").focus(),60);}
 function closeDiscord(){if(dcOv.hidden)return;dcOv.hidden=true;sfx.close();discordBtn.focus();}
 discordBtn.onclick=openDiscord;
+/* ---------- RAIL: the side menu (gift, home, phone, season) opens and closes with the button on top; remembered per device ---------- */
+const sideRail=document.getElementById("sideRail"),railTog=document.getElementById("railTog");
+["giftBtn","homeBtn","phoneBtn","seasonBtn"].forEach(id=>document.getElementById("railItems").appendChild(document.getElementById(id)));
+function railSet(open,save){sideRail.classList.toggle("shut",!open);railTog.setAttribute("aria-expanded",open);railTog.setAttribute("aria-label",open?"Close the menu":"Open the menu");
+  if(save)try{localStorage.setItem("jumpi-rail",open?"open":"shut");}catch(e){}}
+{let saved=null;try{saved=localStorage.getItem("jumpi-rail");}catch(e){}railSet(saved!=="shut",false);}
+railTog.onclick=e=>{const open=sideRail.classList.contains("shut");sfx.tick(true);railSet(open,true);};
+// a red dot on the closed menu when something inside wants attention (gift ready, new messages, a season prize)
+setInterval(()=>{const alert=document.getElementById("giftBtn").classList.contains("ready")||!document.getElementById("phBadge").hidden||document.getElementById("seasonBtn").classList.contains("ready");
+  sideRail.classList.toggle("alert",alert);},800);
 // in the Android app: no Discord (13+) and no paid store links (Google Play rules for kids' apps; buying stays on the website)
 const IN_APP=/JumpiApp\//.test(navigator.userAgent);
 if(IN_APP)discordBtn.hidden=true;
@@ -10569,11 +10643,15 @@ const deco=document.getElementById("decoPanel"),decoTray=document.getElementById
 let decoTab="furniture",ghost=null,ghostF=-1,ghostR=0,selK=-1;
 const furnOwned=f=>((me&&me.inventory)||[]).filter(x=>x==="furniture:"+f).length;
 const furnPlaced=f=>HOME.layout.items.filter(it=>it.f===f).length;
-function openDecorate(){if(!HOME.mine)return;standUp();seatPrompt.hidden=true;furnThumbs();deco.hidden=false;showArrows(true);body.classList.add("decorating");renderDeco();sfx.open();}
-function closeDecorate(){if(deco.hidden)return;cancelGhost();selectPiece(-1);deco.hidden=true;showArrows(false);body.classList.remove("decorating");}
+function openDecorate(){if(!HOME.mine)return;standUp();seatPrompt.hidden=true;furnThumbs();deco.hidden=false;decoLow(false);showArrows(true);body.classList.add("decorating");renderDeco();sfx.open();}
+function closeDecorate(){if(deco.hidden)return;cancelGhost();selectPiece(-1);deco.hidden=true;decoLow(false);showArrows(false);body.classList.remove("decorating");}
 document.getElementById("homeDecorate").onclick=()=>deco.hidden?openDecorate():closeDecorate();
 document.getElementById("decoDone").onclick=()=>{closeDecorate();sfx.close();};
-deco.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{decoTab=b.dataset.tab;sfx.hover();renderDeco();});
+// the tray goes down while something is being placed or moved; the tab on top (or a tab button) brings it back
+const decoGrip=document.getElementById("decoGrip");
+function decoLow(on){deco.classList.toggle("low",on);body.classList.toggle("deco-low",on&&!deco.hidden);decoGrip.setAttribute("aria-expanded",!on);decoGrip.setAttribute("aria-label",on?"Show the furniture":"Hide the furniture");}
+decoGrip.onclick=()=>{decoLow(!deco.classList.contains("low"));sfx.tick(true);};
+deco.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{decoTab=b.dataset.tab;sfx.hover();decoLow(false);renderDeco();});
 function renderDeco(){
   deco.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===decoTab));
   decoTray.innerHTML="";
@@ -10592,7 +10670,7 @@ function renderDeco(){
 }
 function ghostify(g){g.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.transparent=true;o.material.opacity=.6;o.castShadow=false;}});return g;}
 function startGhost(f,r=0){cancelGhost();selectPiece(-1);ghostF=f;ghostR=r;ghost=ghostify(buildFurniture(f));{const ar=seatArrow(f);if(ar)ghost.add(ar);}ghost.rotation.y=r*Math.PI/2;HOME.group.add(ghost);moveGhost(clampInside({f,r,x:snap(G.pos.x),z:snap(G.pos.z-2)}));
-  decoTool.hidden=false;decoTool.dataset.mode="place";sfx.tick(true);}
+  decoTool.hidden=false;decoTool.dataset.mode="place";decoLow(true);sfx.tick(true);}
 function cancelGhost(){if(ghost){HOME.group.remove(ghost);ghost=null;ghostF=-1;}if(selK<0)decoTool.hidden=true;}
 const snap=v=>Math.round(v*2)/2;
 function floorPoint(e){_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);if(!_ray.ray.intersectPlane(_ground,_hit))return null;
@@ -10615,7 +10693,7 @@ let selRing=null;
 function selectPiece(k){selK=k;if(selRing){HOME.group.remove(selRing);selRing=null;}
   if(k<0){if(!ghost)decoTool.hidden=true;return;}
   const it=HOME.layout.items[k],fp=footprint(it),rr=Math.max(.5,Math.hypot(fp[2]-fp[0],fp[3]-fp[1])/2);selRing=new THREE.Mesh(new THREE.RingGeometry(rr,rr+.14,40),new THREE.MeshBasicMaterial({color:"#ffd23a",transparent:true,opacity:.9}));
-  selRing.rotation.x=-Math.PI/2;selRing.position.set((fp[0]+fp[2])/2,.04,(fp[1]+fp[3])/2);HOME.group.add(selRing);decoTool.hidden=false;decoTool.dataset.mode="edit";sfx.tick(true);}
+  selRing.rotation.x=-Math.PI/2;selRing.position.set((fp[0]+fp[2])/2,.04,(fp[1]+fp[3])/2);HOME.group.add(selRing);decoTool.hidden=false;decoTool.dataset.mode="edit";decoLow(true);sfx.tick(true);}
 document.getElementById("decoRotate").onclick=()=>{if(ghost){ghostR=(ghostR+1)%4;ghost.rotation.y=ghostR*Math.PI/2;if(ghostAt)moveGhost(clampInside({...ghostAt,f:ghostF,r:ghostR}));sfx.tick(true);return;}
   if(selK>=0){const it=HOME.layout.items[selK],next=clampInside({...it,r:(it.r+1)%4}),others=HOME.layout.items.filter((_,k)=>k!==selK),why=placeProblem(next,others);
     if(why){toast("No room to turn it here.");sfx.error();return;}Object.assign(it,next);placePieces();selectPiece(selK);queueSave();}};
@@ -11420,6 +11498,7 @@ function tlRing(at){
 // the ring on the screen around the button to press
 function tlSpotOn(sel){
   const el=sel?document.querySelector(sel):null;
+  if(el&&sideRail.classList.contains("shut")&&sideRail.contains(el))railSet(true,false);   // the button is in the closed side menu: open it
   const vis=el&&(el.checkVisibility?el.checkVisibility({checkVisibilityCSS:true}):getComputedStyle(el).display!=="none");
   const r=vis?el.getBoundingClientRect():null;
   if(!r||r.width<2||r.height<2){tlSpot.hidden=true;tlCard.classList.remove("low");return;}
@@ -11431,6 +11510,10 @@ function tlSpotOn(sel){
   const hitsTop=r.top<(low?c.height+30:c.bottom+16)&&r.right>innerWidth/2-c.width/2-20&&r.left<innerWidth/2+c.width/2+20;
   if(hitsTop!==low)tlCard.classList.toggle("low",hitsTop);
 }
+// phones sideways, "say hi" step with the chat open: the chat box is at the top where Pip's card is, so the card steps
+// aside and the box itself says what to do (and the send button pulses)
+function tlChatHint(on){TL.chatHint=on;body.classList.toggle("tl-chat",on);const inp=document.getElementById("chatInput");
+  if(on){TL.chatPh=inp.placeholder;inp.placeholder="Type hello, then tap the arrow to send!";}else if(TL.chatPh){inp.placeholder=TL.chatPh;TL.chatPh=null;}}
 // when the glowing circle is off the screen, an arrow at the edge of the screen points the way
 const _tlv=new THREE.Vector3();
 function tlEdgeTick(at){
@@ -11447,12 +11530,13 @@ function tlEvent(name){if(!TL.on||TL.busy)return;const S=TL_STEPS[TL.i];if(!S)re
   if(S.needs&&name===S.needs){TL.need[name]=true;return;}
   if(S.ev===name&&(!S.needs||TL.need[S.needs]))tlComplete();}
 function tlTick(dt,moving,keyMove){
-  if(!TL.on)return;const S=TL_STEPS[TL.i];if(!S||tlCard.hidden){tlSpot.hidden=true;tlEdge.hidden=true;return;}
+  if(!TL.on){if(TL.chatHint)tlChatHint(false);return;}const S=TL_STEPS[TL.i];if(!S||tlCard.hidden){tlSpot.hidden=true;tlEdge.hidden=true;if(TL.chatHint)tlChatHint(false);return;}
   // where to look / walk (outside things while inside a shop: point at Leave first)
   let at=S.at?S.at():null,hl=tlTouch()&&S.touchHl?S.touchHl:typeof S.hl==="function"?S.hl():S.hl;
   if(at&&!at.room&&G.home){at=null;hl="#homeLeave";}
   if(at&&at.room&&HOME.place!==at.room)at=null;
   tlRing(at);tlSpotOn(TL.busy?null:hl);
+  {const on=S.ev==="chat"&&body.classList.contains("land")&&body.classList.contains("chat-open");if(on!==!!TL.chatHint)tlChatHint(on);}
   if(TL.ring){const a=TL.ring.userData.arrow;a.position.y=4.2+Math.sin(now()*4)*.35;a.rotation.y+=dt*2;}
   tlEdgeTick(at);
   if(TL.busy)return;
@@ -11486,7 +11570,7 @@ async function tlFinish(){
   document.getElementById("tlDone").hidden=false;setTimeout(()=>document.getElementById("tlDoneOk").focus(),100);
 }
 // stop the guide (the game keeps going)
-function tlStop(){TL.on=false;TL.busy=false;tlRing(null);tlCard.hidden=true;tlSpot.hidden=true;tlEdge.hidden=true;tlCard.classList.remove("low");body.classList.remove("tutorial");}
+function tlStop(){TL.on=false;TL.busy=false;tlRing(null);tlCard.hidden=true;tlSpot.hidden=true;tlEdge.hidden=true;tlCard.classList.remove("low");body.classList.remove("tutorial");if(TL.chatHint)tlChatHint(false);}
 // skipping asks first
 function tlAskSkip(){if(!TL.on)return;document.getElementById("tlAskFace").src=emoteImage("sad",PIP_SKIN);tlAsk.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("tlAskStay").focus(),60);}
 document.getElementById("tlAskStay").onclick=()=>{tlAsk.hidden=true;sfx.close();};
