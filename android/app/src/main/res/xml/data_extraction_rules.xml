@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- the login stays on this phone: nothing is copied to backups or to a new phone -->
+<data-extraction-rules>
+    <cloud-backup><exclude domain="root" path="." /></cloud-backup>
+    <device-transfer><exclude domain="root" path="." /></device-transfer>
+</data-extraction-rules>

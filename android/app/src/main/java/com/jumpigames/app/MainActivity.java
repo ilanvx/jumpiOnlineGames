@@ -18,9 +18,11 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 /**
@@ -51,7 +53,18 @@ public class MainActivity extends Activity {
 
         web = new WebView(this);
         web.setBackgroundColor(Color.parseColor("#1f8fff"));
-        setContentView(web);
+        // the keyboard: the game shrinks above it (so the chat box stays visible), even with the bars hidden
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#1f8fff"));
+        root.addView(web, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        setContentView(root);
+        root.setOnApplyWindowInsetsListener((v, in) -> {
+            int b;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) b = in.getInsets(WindowInsets.Type.ime()).bottom;
+            else { @SuppressWarnings("deprecation") int sb = in.getSystemWindowInsetBottom(); b = sb; }
+            v.setPadding(0, 0, 0, b);
+            return in;
+        });
         hideBars();
 
         WebSettings s = web.getSettings();
@@ -85,10 +98,16 @@ public class MainActivity extends Activity {
                 // only when the game page itself can't load (not a picture or a sound)
                 if (req.isForMainFrame()) view.loadUrl(OFFLINE);
             }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest req, WebResourceResponse res) {
+                // the server is restarting (a new version going up): same friendly page instead of a raw error
+                if (req.isForMainFrame() && res.getStatusCode() >= 500) view.loadUrl(OFFLINE);
+            }
         });
 
-        if (state != null) web.restoreState(state);
-        else web.loadUrl(START);
+        // always open the game fresh (an old saved page could be stale or come back empty)
+        web.loadUrl(START);
     }
 
     /** true = handled here (opened outside the app); false = load it in the game. */
@@ -127,7 +146,14 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void openOutside(String url) {
-            runOnUiThread(() -> MainActivity.this.openOutside(Uri.parse(url)));
+            runOnUiThread(() -> {
+                // only from our own game page, and only normal web links (no market:, tel:, sms: ...)
+                String cur = web.getUrl();
+                Uri u = Uri.parse(url == null ? "" : url);
+                String sc = u.getScheme() == null ? "" : u.getScheme();
+                if (cur != null && cur.startsWith("https://" + HOST + "/") && (sc.equals("https") || sc.equals("http")))
+                    MainActivity.this.openOutside(u);
+            });
         }
     }
 
@@ -183,12 +209,6 @@ public class MainActivity extends Activity {
         super.onResume();
         web.onResume();
         hideBars();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle out) {
-        super.onSaveInstanceState(out);
-        web.saveState(out);
     }
 
     @Override
