@@ -7,6 +7,7 @@
   - postGiftCode(code)  → #updates      (from the admin panel: "Post in Discord")
   - modLog(...)         → #mod-log      (kick / ban / mute / unban / unmute / coins by moderators and admins)
   - staffAlert(msg)     → #staff-chat   (a new Contact message or bug report; no email address, private info hidden)
+  - teamAlert(app)      → #staff-chat   (a new application from the /team page; first name + role only)
   - startDiscordStats() → renames the "🎮 Playing now: N" and "👥 Members: N" channels every 10 minutes
   - agreeToRules()      → the ✅ button in #rules (discord/interactions.js): gives the "Jumpi Friend" role, which
                           opens the server, and posts a welcome card with their avatar and name in #welcome
@@ -123,6 +124,21 @@ export function modLog({ by, byRole, action, target, details = "", via = "game" 
 
 /* ---------- Contact page → #staff-chat ---------- */
 const TOPIC = { general: "💬 Question", safety: "🛡️ Safety", privacy: "🔒 Privacy", account: "👤 Account", bug: "🐞 Bug report", idea: "💡 Idea" };
+// a new application from the /team page (routes/team.js): role and first name only, never the email
+const TEAM_ROLE = { manager: "📣 Community Manager", guide: "🛡️ Guide (moderator)", beta: "🧪 Beta Tester" };
+export function teamAlert({ role, name, age, account }) {
+  return send("staff-chat", { embeds: [{
+    color: hex(role === "manager" ? "#e0262f" : role === "guide" ? "#1f5fe0" : "#8a4dff"),
+    title: `🙋 New team application · ${TEAM_ROLE[role] || role}`,
+    fields: [
+      { name: "From", value: cut(String(name || "—").split(/\s+/)[0], 40) || "—", inline: true },
+      { name: "Age", value: age >= 18 ? "18+" : "under 18", inline: true },
+      { name: "Player", value: account || "not logged in", inline: true },
+    ],
+    footer: { text: "Read it in the admin panel → Team applications" },
+    url: `${PUBLIC_URL()}/admin#team`, timestamp: new Date().toISOString(),
+  }] });
+}
 export function staffAlert({ topic, name, username, message, lang }) {
   return send("staff-chat", { embeds: [{
     color: hex(topic === "safety" ? "#ff4545" : topic === "bug" ? "#ff8a1c" : "#1fb6ff"),

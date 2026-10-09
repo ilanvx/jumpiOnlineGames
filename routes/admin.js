@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
+import { TeamApplication, TEAM_ROLES, TEAM_STATUS } from "../models/TeamApplication.js";
 import { Order } from "../models/Order.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
@@ -165,14 +166,15 @@ router.get("/overview", async (req, res, next) => {
     const online = onlinePlayers();
     const rooms = {};
     for (const p of online) { const r = p.where.startsWith("home:") ? "homes" : p.where; rooms[r] = (rooms[r] || 0) + 1; }
-    const [users, new24, new7, banned, muted, chat24, blocked24, trades24, duels24, contactOpen, recent, rich] = await Promise.all([
+    const [users, new24, new7, banned, muted, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew] = await Promise.all([
       User.estimatedDocumentCount(), User.countDocuments({ createdAt: { $gte: day } }), User.countDocuments({ createdAt: { $gte: week } }),
       User.countDocuments({ bannedUntil: { $gt: now } }), User.countDocuments({ mutedUntil: { $gt: now } }),
       ChatLog.countDocuments({ at: { $gte: day }, blocked: false }), ChatLog.countDocuments({ at: { $gte: day }, blocked: true }),
       TradeLog.countDocuments({ at: { $gte: day } }), DuelLog.countDocuments({ at: { $gte: day } }), ContactMessage.countDocuments({ handled: false }),
       AdminLog.find().sort({ at: -1 }).limit(8).lean(), User.find().sort({ coins: -1 }).limit(5).select("username coins").lean(),
+      TeamApplication.countDocuments({ status: "new" }),
     ]);
-    res.json({ users, new24, new7, banned, muted, online: online.length, rooms, chat24, blocked24, trades24, duels24, contactOpen, recent, rich });
+    res.json({ users, new24, new7, banned, muted, online: online.length, rooms, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew });
   } catch (err) {
     next(err);
   }
@@ -627,6 +629,55 @@ router.post("/contact/:id", async (req, res, next) => {
     if (!m) return fail(res, 404, "Not found.");
     audit(req, m.handled ? "contact-done" : "contact-reopen", null, `${m.email} · ${m.topic}`);
     res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- team applications (the /team page, routes/team.js) ---------- */
+router.get("/team/count", async (req, res, next) => {
+  try { res.json({ new: await TeamApplication.countDocuments({ status: "new" }) }); } catch (err) { next(err); }
+});
+router.get("/team", async (req, res, next) => {
+  try {
+    const st = String(req.query.status || "open"), role = String(req.query.role || "");
+    const q = st === "all" ? {} : st === "open" ? { status: { $in: ["new", "reviewing"] } } : TEAM_STATUS.includes(st) ? { status: st } : {};
+    if (TEAM_ROLES.includes(role)) q.role = role;
+    const words = clean(req.query.q, 60);
+    if (words) { const rx = new RegExp(esc(words), "i"); q.$or = [{ name: rx }, { email: rx }, { username: rx }, { discord: rx }, { account: rx }]; }
+    const [list, counts] = await Promise.all([
+      TeamApplication.find(q).sort({ createdAt: -1 }).limit(200).lean(),
+      TeamApplication.aggregate([{ $group: { _id: { role: "$role", status: "$status" }, n: { $sum: 1 } } }]),
+    ]);
+    res.json({ list, counts: counts.map((c) => ({ role: c._id.role, status: c._id.status, n: c.n })) });
+  } catch (err) {
+    next(err);
+  }
+});
+router.post("/team/:id", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const a = await TeamApplication.findById(req.params.id);
+    if (!a) return fail(res, 404, "Not found.");
+    const who = `${a.name} · ${a.role}`;
+    if (req.body.delete === true) {
+      await a.deleteOne();
+      audit(req, "team-delete", null, who);
+      return res.json({ ok: true, message: "Application deleted." });
+    }
+    if (req.body.note !== undefined) {
+      const text = clean(req.body.note, 1000);
+      if (text.length < 1) return fail(res, 400, "Write a note first.");
+      a.notes.push({ text, admin: req.admin.username });
+      await a.save();
+      audit(req, "team-note", null, `${who} · ${text.slice(0, 120)}`);
+      return res.json({ ok: true, message: "Note saved.", app: a.toObject() });
+    }
+    if (!TEAM_STATUS.includes(req.body.status)) return fail(res, 400, "Unknown status.");
+    a.status = req.body.status; a.statusBy = req.admin.username;
+    await a.save();
+    audit(req, "team-status", null, `${who} → ${a.status}`);
+    res.json({ ok: true, message: `Marked as ${a.status}.`, app: a.toObject() });
   } catch (err) {
     next(err);
   }

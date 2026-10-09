@@ -1,0 +1,72 @@
+JUMPI - Google Play store listing (copy into Play Console → Grow → Store presence → Main store listing)
+=====================================================================================================
+
+App name (max 30):
+JUMPI
+
+----- ENGLISH (en-US) -----
+
+Short description (max 80):
+Make your Jumpi, explore a bright 3D world, play mini-games and make friends!
+
+Full description (max 4000):
+Welcome to JUMPI! Create your own little Jumpi and jump into a colourful 3D world full of things to do.
+
+★ MAKE IT YOURS
+Pick your colour and eyes, then dress up with hundreds of clothes: hairstyles, shirts, hats, glasses, necklaces and even legendary auras.
+
+★ EXPLORE
+Walk around the Plaza, splash in the Water Park and ride the giant slides, relax on the Beach, visit the Park, dance in the Dance Club and eat at the Restaurant.
+
+★ PLAY & EARN COINS
+Fruit Catch, Shell Snap, Treasure Dig and Jumpi Flap mini-games, a daily gift, a free Lucky Wheel spin every day and a Season Pass full of prizes.
+
+★ GET A JOB
+Work as a Waiter, a Police Officer who finds lost kids and returns stolen bags, or a Pizza Delivery rider with your own scooter and GPS. Level up and win the full uniform!
+
+★ YOUR OWN HOME
+Decorate your house with furniture, add a garden, a swimming pool and a second floor, and adopt a pet that lives at home with you.
+
+★ FRIENDS & SAFE CHAT
+Make friends, trade items and challenge them to Tic-Tac-Toe and 4 in a Row. Private messages are for friends only, bad words and personal details (like phone numbers and addresses) are blocked automatically, and our team watches over the game.
+
+No ads. Every update reaches you automatically.
+
+----- HEBREW (iw-IL) -----
+
+Short description (max 80):
+צרו ג'אמפי משלכם, טיילו בעולם תלת־ממדי צבעוני, שחקו במשחקונים והכירו חברים!
+
+Full description:
+ברוכים הבאים ל־JUMPI! צרו ג'אמפי קטן משלכם וקפצו לעולם תלת־ממדי צבעוני ומלא דברים לעשות.
+
+★ שלכם לגמרי
+בחרו צבע ועיניים, והלבישו את הג'אמפי במאות בגדים: תסרוקות, חולצות, כובעים, משקפיים, שרשראות ואפילו הילות אגדיות.
+
+★ טיילו
+הפלאזה, פארק המים עם המגלשות הענקיות, החוף, הפארק, מועדון הריקודים והמסעדה.
+
+★ שחקו והרוויחו מטבעות
+משחקונים: Fruit Catch, Shell Snap, Treasure Dig ו־Jumpi Flap, מתנה יומית, סיבוב חינם בגלגל המזל כל יום וכרטיס עונה מלא בפרסים.
+
+★ עבודות
+מלצרים, שוטרים שמוצאים ילדים אבודים ומחזירים תיקים, או שליחי פיצה עם קטנוע ו־GPS. עלו רמות וזכו במדים המלאים!
+
+★ בית משלכם
+עצבו את הבית ברהיטים, הוסיפו גינה, בריכה וקומה שנייה, ואמצו חיית מחמד שגרה איתכם.
+
+★ חברים וצ'אט בטוח
+הכירו חברים, החליפו פריטים ושחקו נגדם באיקס עיגול וב־4 בשורה. הודעות פרטיות רק בין חברים, מילים גסות ופרטים אישיים (כמו מספרי טלפון וכתובות) נחסמים אוטומטית, והצוות שלנו שומר על המשחק.
+
+בלי פרסומות. כל עדכון מגיע אליכם אוטומטית.
+
+----- LINKS -----
+Website: https://jumpigames.com
+Privacy policy: https://jumpigames.com/privacy
+Delete account (Data safety → "Delete account URL"): https://jumpigames.com/delete-account
+Support email: support@jumpigames.com
+
+----- PICTURES (in this folder) -----
+App icon 512x512: icon-512.png
+Feature graphic 1024x500: feature-graphic-1024x500.png
+Phone screenshots 1920x1080: screenshot-1..4 (you can add your own from the phone too, landscape)

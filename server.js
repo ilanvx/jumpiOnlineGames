@@ -2,7 +2,7 @@ import "dotenv/config";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import express from "express";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
@@ -13,6 +13,7 @@ import rewardRoutes from "./routes/rewards.js";
 import homeRoutes from "./routes/home.js";
 import socialRoutes from "./routes/social.js";
 import contactRoutes from "./routes/contact.js";
+import teamRoutes from "./routes/team.js";
 import adminRoutes from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
 import petRoutes from "./routes/pets.js";
@@ -63,6 +64,7 @@ app.use("/api", rewardRoutes);
 app.use("/api", homeRoutes);
 app.use("/api", socialRoutes);
 app.use("/api", contactRoutes);
+app.use("/api", teamRoutes);
 app.use("/api", needsRoutes);
 app.use("/api", petRoutes);
 app.use("/api", storeRoutes);
@@ -92,14 +94,31 @@ const gameGate = async (req, res, next) => {
     if ((!admin && !("staff" in req.query)) || "soon" in req.query) return res.sendFile(path.join(PUBLIC_DIR, "site", "game-soon.html"));
   }
   res.set("Cache-Control", "no-cache");   // the Android app opens this page: always check for the newest version
-  page("index.html")(req, res, next);
+  sendGame(res, next);
 };
+// the game page with a version on its own scripts (/shared/*.js?v=…): phones and the app (and Cloudflare's browser cache
+// time) may keep old copies of those files for hours, which made new items "not exist" after an update. A new version
+// number on every deploy (the page's file time) makes every device fetch the new files right away.
+let gameHtml = { at: 0, html: "" };
+function sendGame(res, next) {
+  try {
+    const file = path.join(PUBLIC_DIR, "index.html"), at = statSync(file).mtimeMs;
+    if (at !== gameHtml.at) {
+      const v = Math.round(at).toString(36);
+      gameHtml = { at, html: readFileSync(file, "utf8").replace(/(["'])\/shared\/([\w.-]+\.js)\1/g, `$1/shared/$2?v=${v}$1`) };
+    }
+    res.type("html").send(gameHtml.html);
+  } catch (err) {
+    next(err);
+  }
+}
 app.get(["/play", "/play/"], gameGate);
 app.get(["/studio", "/studio/"], gameGate);   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/delete-account", page("site/delete-account.html"));   // Google Play: how to delete a JUMPI account
 app.get("/contact", page("site/contact.html"));
+app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
 app.get("/trailer", page("site/trailer.html"));
 // the Android app: the APK built on GitHub (branch android-build), copied to public/download/jumpi-games.apk
 app.get("/download/android", (req, res, next) => {
@@ -129,7 +148,8 @@ app.get(["/admin", "/admin/"], async (req, res, next) => {
 // old addresses still work
 const moved = { "/admin/index.html": "/admin", "/site": "/", "/site/": "/", "/site/index.html": "/", "/index.html": "/play", "/site/terms.html": "/terms", "/site/privacy.html": "/privacy", "/site/contact.html": "/contact", "/site/trailer.html": "/trailer" };
 app.get(Object.keys(moved), (req, res) => res.redirect(301, moved[req.path] + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "")));
-app.use(express.static(PUBLIC_DIR, { index: false }));
+// scripts, styles and pages: the browser may keep them but must check for a newer one each time (cheap: 304 when unchanged)
+app.use(express.static(PUBLIC_DIR, { index: false, setHeaders: (res, file) => { if (/\.(js|mjs|css|html|json)$/i.test(file)) res.set("Cache-Control", "no-cache"); } }));
 
 // anything else: the "Jumpi got lost" page for people, a short text for files and scripts
 const notFound = (req, res) => {

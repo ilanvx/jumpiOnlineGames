@@ -172,7 +172,8 @@
         tile(d.banned, "banned", "#ff5a5a", "#8a1c1c", "#players/banned"), tile(d.muted, "muted", "#ff9a1f", "#a3410a", "#players/muted"),
         tile(d.chat24, "chat messages today", "#3e5b86", "#1f3355", "#chat"), tile(d.blocked24, "blocked by the filter today", "#c8263c", "#7a1020", "#chat/blocked"),
         tile(d.trades24, "trades today", "#12b8a0", "#0a8a77", "#trades"), tile(d.duels24, "games today", "#ffb21f", "#c98a00", "#duels"),
-        tile(d.contactOpen, "contact messages to answer", "#ff5fb4", "#a3226a", "#contact")));
+        tile(d.contactOpen, "contact messages to answer", "#ff5fb4", "#a3226a", "#contact"),
+        tile(d.teamNew || 0, "new team applications", "#ff9a1f", "#a3410a", "#team")));
       const rooms = Object.entries(d.rooms || {}).map(([k, v]) => h("span", { class: "tag blue" }, `${k}: ${v}`));
       main.append(h("div", { class: "split" },
         panel("Recent admin actions", logTable(d.recent)),
@@ -442,6 +443,63 @@
       main.append(h("div", { class: "tools" }, sel), box);
       await load();
     },
+    /* ---------- applications from the /team page (routes/team.js) ---------- */
+    async team(arg) {
+      const ROLE = { manager: ["Community Manager", "#e0262f", "#8f1218"], guide: ["Guide (moderator)", "#1f5fe0", "#123a99"], beta: ["Beta Tester", "#8a4dff", "#3a1192"] };
+      const STATUS = { new: ["New", "orange"], reviewing: ["Reviewing", "blue"], accepted: ["Accepted", "green"], declined: ["Declined", ""] };
+      const LANGS = { he: "Hebrew", en: "English", ar: "Arabic", ru: "Russian", fr: "French", es: "Spanish", other: "Other" };
+      const DEV = { android: "Android", iphone: "iPhone", pc: "Windows", mac: "Mac", tablet: "Tablet" };
+      page("Team applications", h("a", { class: "b b-sm b-ghost", href: "/team", target: "_blank", rel: "noopener" }, "Open the page"), h("button", { class: "b b-sm b-ghost", onclick: () => load().catch(oops) }, "Refresh"));
+      const status = h("select", { class: "inp" }, [["open", "Waiting (new + reviewing)"], ["new", "New"], ["reviewing", "Reviewing"], ["accepted", "Accepted"], ["declined", "Declined"], ["all", "All"]].map(([v, t]) => h("option", { value: v }, t)));
+      const role = h("select", { class: "inp" }, [["", "Every role"], ...Object.entries(ROLE).map(([k, v]) => [k, v[0]])].map(([v, t]) => h("option", { value: v }, t)));
+      if (ROLE[arg]) role.value = arg;
+      const q = h("input", { class: "inp", type: "search", placeholder: "Name, email, username…", maxlength: 60 });
+      const tiles = h("div", { class: "tiles" }), box = h("div");
+      const qa = (title, text) => (text ? h("div", { class: "tm-qa" }, h("b", null, title), h("p", { dir: "auto" }, text)) : null);
+      function card(a) {
+        const [rn, rc, re] = ROLE[a.role] || [a.role, "#3e5b86", "#1f3355"], [sn, sc] = STATUS[a.status] || [a.status, ""];
+        const set = async (st) => { try { toast((await api("/team/" + a._id, { status: st })).message); load(); refreshCounts(); } catch (e) { oops(e); } };
+        const note = h("input", { class: "inp", maxlength: 1000, placeholder: "Add a note for the team (only admins see it)…" });
+        const facts = [["Age", h("span", null, String(a.age), a.age < 18 ? h("span", { class: "tag red", style: "margin-inline-start:6px" }, a.parentOk ? "under 18 · parent approved" : "under 18") : null)],
+          ["Email", h("a", { href: "mailto:" + a.email }, a.email)], ["Country", a.country || "—"], ["Languages", (a.languages || []).map((l) => LANGS[l] || l).join(", ") || "—"],
+          ["Time a week", a.hours ? a.hours + " hours" : "—"], a.role === "beta" ? ["Devices", (a.devices || []).map((d) => DEV[d] || d).join(", ") || "—"] : null,
+          ["Jumpi username", a.username || "—"], ["Signed in as", a.account || "not signed in"], ["Discord", a.discord || "—"],
+          ["Link", a.link && /^https?:\/\//i.test(a.link) ? h("a", { href: a.link, target: "_blank", rel: "noopener noreferrer nofollow" }, a.link) : "—"],
+          ["Page language", a.lang === "he" ? "Hebrew" : "English"]].filter(Boolean);
+        return h("section", { class: "panel tm-app", style: `--c:${rc};--e:${re}` },
+          h("div", { class: "tm-app-head" },
+            h("span", { class: "tm-role" }, rn), h("h2", null, a.name), h("span", { class: "tag " + sc }, sn),
+            h("span", { class: "muted small" }, fmtDate(a.createdAt) + (a.statusBy ? ` · last change by ${a.statusBy}` : "")), h("span", { style: "flex:1" }),
+            h("div", { class: "acts" },
+              a.status !== "reviewing" ? h("button", { class: "b b-sm", onclick: () => set("reviewing") }, "Reviewing") : null,
+              a.status !== "accepted" ? h("button", { class: "b b-sm b-green", onclick: () => set("accepted") }, "Accept") : null,
+              a.status !== "declined" ? h("button", { class: "b b-sm b-ghost", onclick: () => set("declined") }, "Decline") : null,
+              a.status !== "new" ? h("button", { class: "b b-sm b-ghost", onclick: () => set("new") }, "Back to new") : null,
+              h("button", { class: "b b-sm b-red", onclick: async () => {
+                if (!confirm(`Delete ${a.name}'s application for good? This can't be undone.`)) return;
+                try { toast((await api("/team/" + a._id, { delete: true })).message); load(); refreshCounts(); } catch (e) { oops(e); }
+              } }, "Delete"))),
+          h("dl", { class: "facts" }, facts.map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, v)))),
+          h("div", { class: "tm-qas" }, qa("Why they want to join", a.why), qa(a.role === "beta" ? "Testing before" : "Experience", a.about), qa("A player keeps being mean to a younger kid. What do you do?", a.scenario)),
+          h("div", { class: "tm-notes" },
+            (a.notes || []).map((n) => h("div", { class: "reply-done" }, h("small", null, `${n.admin} · ${fmtDate(n.at)}`), h("p", { dir: "auto" }, n.text))),
+            h("form", { class: "tools", style: "margin:10px 0 0", onsubmit: async (e) => {
+              e.preventDefault(); if (!note.value.trim()) return;
+              try { toast((await api("/team/" + a._id, { note: note.value })).message); load(); } catch (err) { oops(err); }
+            } }, note, h("button", { class: "b b-sm b-ghost", type: "submit" }, "Save note"))));
+      }
+      async function load() {
+        const d = await api(`/team?status=${status.value}&role=${role.value}&q=${encodeURIComponent(q.value.trim())}`);
+        const n = (r, st) => d.counts.filter((c) => c.role === r && (!st || st.includes(c.status))).reduce((s, c) => s + c.n, 0);
+        tiles.replaceChildren(...Object.entries(ROLE).map(([k, [name, c, e]]) => h("a", { class: "tile", style: `--c:${c};--e:${e};cursor:pointer`, href: "#team/" + k, onclick: (ev) => { ev.preventDefault(); role.value = role.value === k ? "" : k; load().catch(oops); } },
+          h("b", null, fmtNum(n(k, ["new"]))), h("span", null, `new · ${name}`), h("span", { class: "small", style: "opacity:.8" }, `${fmtNum(n(k, ["reviewing"]))} reviewing · ${fmtNum(n(k, ["accepted"]))} accepted · ${fmtNum(n(k))} in total`))));
+        box.replaceChildren(...(d.list.length ? d.list.map(card) : [h("p", { class: "empty" }, "No applications here yet.")]));
+      }
+      status.onchange = role.onchange = () => load().catch(oops);
+      q.addEventListener("input", () => { clearTimeout(q.t); q.t = setTimeout(() => load().catch(oops), 300); });
+      main.append(tiles, h("div", { class: "tools" }, status, role, q), box);
+      await load();
+    },
     async orders() {
       page("Store orders");
       const sel = h("select", { class: "inp" }, [["", "All orders"], ["paid", "Paid"], ["pending", "Waiting for payment"], ["failed", "Failed"], ["duplicate", "Paid twice (refund by hand)"], ["refunded", "Refunded"]].map(([v, t]) => h("option", { value: v }, t)));
@@ -517,7 +575,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", event: "Holiday event", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code", "team-status": "Team application", "team-note": "Note on a team application", "team-delete": "Deleted a team application" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],
@@ -586,9 +644,10 @@
   addEventListener("hashchange", () => { if (!$("#app").hidden) route(); });
   async function refreshCounts() {
     try {
-      const [o, c] = await Promise.all([api("/online"), api("/contact")]);
+      const [o, c, tm] = await Promise.all([api("/online"), api("/contact"), api("/team/count").catch(() => ({ new: 0 }))]);
       $("#navOnline").textContent = o.players.length || "";
       $("#navContact").textContent = c.list.length || "";
+      $("#navTeam").textContent = tm.new || "";
     } catch {}
   }
   setInterval(() => { if (!$("#app").hidden) refreshCounts(); }, 20000);

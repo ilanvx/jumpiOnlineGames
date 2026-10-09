@@ -9,7 +9,7 @@
 .ct-bubble.pop{transform:scale(1.06)}
 
 /* the form: same look as a window in the game */
-.ct-card{margin:0;padding:28px 26px 24px;border-radius:24px;background:#3e5b86;border:3px solid #1f3355;color:#fff;
+.ct-card{position:relative;margin:0;padding:28px 26px 24px;border-radius:24px;background:#3e5b86;border:3px solid #1f3355;color:#fff;
   box-shadow:0 12px 0 #1f3355,0 30px 50px rgb(16 40 90 / .3);display:grid;gap:16px}
 .ct-card h2{margin:0;font:400 clamp(1.8rem,3.2vw,2.3rem)/1.1 var(--display);letter-spacing:.03em;text-shadow:0 4px 0 #1f3355}
 [lang="he"] .ct-card h2{font-family:"Secular One",var(--display);letter-spacing:0}
@@ -33,7 +33,7 @@
 .field input:focus,.field textarea:focus{outline:3px solid #ffb547;outline-offset:1px}
 .field.bad input,.field.bad textarea{outline:3px solid #ff6b6b}
 .count{position:absolute;bottom:8px;inset-inline-end:12px;color:#8a97b8;font-weight:500;font-size:.8rem}
-.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.hp{position:absolute;inset-inline-start:0;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);opacity:0;pointer-events:none}
 .kid-note{margin:0;font-size:.92rem;color:#d6e3f7}
 .send-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .send{display:inline-flex;align-items:center;gap:10px;border:0;border-radius:18px;padding:15px 28px;font:400 1.3rem/1 var(--display);letter-spacing:.04em;color:#fff;cursor:pointer;

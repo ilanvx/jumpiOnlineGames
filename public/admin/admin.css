@@ -167,3 +167,15 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .ev-card .ev-state{margin-top:auto;display:flex;align-items:center;gap:8px;font:400 1.15rem var(--display);color:#c8ffd9}
 .ev-card .ev-state i{width:26px;height:26px;border-radius:50%;background:var(--green);box-shadow:0 3px 0 var(--green-edge);display:grid;place-items:center}
 .ev-how{margin:0;color:var(--ink-2);font-size:.95rem;max-width:70ch}
+
+/* ---------- Team applications (the /team page) ---------- */
+.ic-team{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='7' r='3.6'/%3E%3Ccircle cx='4.8' cy='9.5' r='2.6'/%3E%3Ccircle cx='19.2' cy='9.5' r='2.6'/%3E%3Cpath d='M5.5 21c0-4.3 2.9-7.2 6.5-7.2s6.5 2.9 6.5 7.2zM0 20c0-3.3 1.8-5.7 4.6-5.9-1 1.6-1.5 3.6-1.5 5.9zM24 20c0-3.3-1.8-5.7-4.6-5.9 1 1.6 1.5 3.6 1.5 5.9z'/%3E%3C/svg%3E")}
+.tm-app{border-top:6px solid var(--c)}
+.tm-app-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.tm-app-head h2{margin:0;font-size:1.45rem}
+.tm-role{padding:4px 10px;border-radius:10px;background:var(--c);box-shadow:0 3px 0 var(--e);color:#fff;font:400 .95rem var(--display);letter-spacing:.03em}
+.tm-qas{display:grid;gap:10px;margin-top:14px}
+.tm-qa{padding:12px 14px;border-radius:14px;background:#f5f8fd}
+.tm-qa b{display:block;font-size:.85rem;color:var(--ink-2)}
+.tm-qa p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.tm-notes .tools .inp{max-width:none}
