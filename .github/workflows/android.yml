@@ -31,9 +31,7 @@ jobs:
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          APP_VERSION_CODE: ${{ github.run_number }}
+          RUN: ${{ github.run_number }}
         run: |
           set -o pipefail
           (
@@ -44,25 +42,39 @@ jobs:
             SDKM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | sort | tail -1)
             echo "sdkmanager: $SDKM"
             yes | "$SDKM" --licenses > /dev/null || true
-            "$SDKM" "platforms;android-35" "build-tools;35.0.0" > /dev/null
-            echo "== Gradle 8.9"
-            curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
+            "$SDKM" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+            echo "== Gradle 8.11.1"
+            curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
             unzip -q /tmp/gradle.zip -d /tmp
-            export PATH=/tmp/gradle-8.9/bin:$PATH
+            export PATH=/tmp/gradle-8.11.1/bin:$PATH
             gradle --version
-            if [ -n "$KS" ]; then echo "$KS" | base64 -d > android/release.jks; echo "== Signing with the release key"; else echo "== No release key yet: debug signing"; fi
+            # every build gets a higher version number (Google Play needs that for each upload)
+            export APP_VERSION_CODE=$((RUN + 100)) APP_VERSION_NAME="1.0.$RUN"
+            echo "== Version $APP_VERSION_NAME ($APP_VERSION_CODE)"
+            if [ -n "$KS" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ]; then
+              echo "$KS" | tr -d ' \r\n' | base64 -d > android/release.keystore
+              # a .p12 from tools/make-upload-key.ps1 (or an old .jks): find its type and the key's name by itself
+              export ANDROID_STORE_TYPE=pkcs12
+              keytool -list -keystore android/release.keystore -storetype pkcs12 -storepass "$ANDROID_KEYSTORE_PASSWORD" > /tmp/ks.txt 2>&1 || { export ANDROID_STORE_TYPE=jks; keytool -list -keystore android/release.keystore -storetype jks -storepass "$ANDROID_KEYSTORE_PASSWORD" > /tmp/ks.txt 2>&1; }
+              export ANDROID_KEY_ALIAS=$(grep -i "PrivateKeyEntry" /tmp/ks.txt | head -1 | cut -d, -f1)
+              echo "== Signing with the upload key (type $ANDROID_STORE_TYPE, key \"$ANDROID_KEY_ALIAS\")"
+              [ -n "$ANDROID_KEY_ALIAS" ] || { echo "!! the key file or its password is wrong"; cat /tmp/ks.txt | grep -v -i password; exit 1; }
+            else echo "== No upload key yet: debug signing (fine for installing the APK, NOT for Google Play)"; fi
             cd android
             gradle assembleRelease bundleRelease --no-daemon --stacktrace
           ) 2>&1 | tee build-log.txt
 
       - name: Publish to the android-build branch
         if: always()
+        env:
+          HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' }}
         run: |
           mkdir -p out
           cp build-log.txt out/ 2>/dev/null || echo "no build log" > out/build-log.txt
           cp android/app/build/outputs/apk/release/*.apk out/jumpi-games.apk 2>/dev/null || true
           cp android/app/build/outputs/bundle/release/*.aab out/jumpi-games.aab 2>/dev/null || true
-          printf "status: %s\nrun: %s\ncommit: %s\ndate: %s\n" "${{ steps.build.outcome }}" "${{ github.run_number }}" "${{ github.sha }}" "$(date -u)" > out/BUILD_INFO.txt
+          SIGNED=$([ "$HAS_KEY" = "true" ] && echo "upload key (ready for Google Play)" || echo "debug key (not for Google Play)")
+          printf "status: %s\nrun: %s\nversion: 1.0.%s (%s)\nsigned with: %s\ncommit: %s\ndate: %s\n" "${{ steps.build.outcome }}" "${{ github.run_number }}" "${{ github.run_number }}" "$((${{ github.run_number }} + 100))" "$SIGNED" "${{ github.sha }}" "$(date -u)" > out/BUILD_INFO.txt
           cd out
           git init -q -b android-build
           git add -A

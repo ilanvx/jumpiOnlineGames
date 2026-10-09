@@ -7,17 +7,19 @@ plugins {
 
 // signing: the release key comes from GitHub secrets (see .github/workflows/android.yml); without it the APK is
 // signed with a throw-away debug key, which installs fine but can't be updated in place by a later build
-def ksFile = file("../release.jks")
-def hasKey = ksFile.exists() && System.getenv("ANDROID_KEY_PASSWORD")
+// the upload key: a PKCS12 (.p12) file made with tools/make-upload-key.ps1 (or a .jks), decoded from the secret by the workflow
+def ksFile = file("../release.keystore")
+def ksPass = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+def hasKey = ksFile.exists() && ksPass
 
 android {
     namespace "com.jumpigames.app"
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
-        applicationId "com.jumpigames.app"
+        applicationId "com.jumpigames.jumpi"   // the Google Play package name (can never change once uploaded)
         minSdk 24
-        targetSdk 35
+        targetSdk 36   // Google Play: new apps and updates must target Android 16 (API 36) from 31 Aug 2026
         versionCode = Integer.parseInt(System.getenv("APP_VERSION_CODE") ?: "1")
         versionName = System.getenv("APP_VERSION_NAME") ?: "1.0.0"
     }
@@ -26,9 +28,10 @@ android {
         if (hasKey) {
             release {
                 storeFile ksFile
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "jumpi"
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                storeType = System.getenv("ANDROID_STORE_TYPE") ?: "pkcs12"
+                storePassword ksPass
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "upload"
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD") ?: ksPass   // in a .p12 the key has the same password
             }
         }
     }

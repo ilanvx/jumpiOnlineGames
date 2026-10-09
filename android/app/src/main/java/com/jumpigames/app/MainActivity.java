@@ -24,6 +24,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 /**
  * Jumpi Games: the whole game is the website (https://jumpigames.com/play) in a full-screen WebView.
@@ -108,6 +109,11 @@ public class MainActivity extends Activity {
 
         // always open the game fresh (an old saved page could be stale or come back empty)
         web.loadUrl(START);
+
+        // Android 13+ (and always from Android 16): the back gesture comes here, onBackPressed is not called any more
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+        }
     }
 
     /** true = handled here (opened outside the app); false = load it in the game. */
@@ -183,6 +189,10 @@ public class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     @Override
     public void onBackPressed() {
+        handleBack();
+    }
+
+    private void handleBack() {
         String url = web.getUrl();
         if (url != null && url.startsWith(OFFLINE)) { finish(); return; }
         // the page answers true when the back button closed something (a window, the chat, the phone…)

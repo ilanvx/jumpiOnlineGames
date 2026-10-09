@@ -11,6 +11,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
+        android:enableOnBackInvokedCallback="true"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.Jumpi">
