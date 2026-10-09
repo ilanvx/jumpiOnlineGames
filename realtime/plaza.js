@@ -248,7 +248,8 @@ export function attachPlaza(io) {
       if (needsVerify(user)) return next(new Error("verify-email"));   // the email code comes first
       // before the grand opening only admins can play on jumpigames.com (see public/shared/launch.js)
       const host = String(socket.handshake.headers["x-forwarded-host"] || socket.handshake.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase();
-      if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT && user.role !== "admin") return next(new Error("not-open"));
+      const inApp = /JumpiApp\//.test(String(socket.handshake.headers["user-agent"] || ""));   // players in the Android app can play now
+      if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT && user.role !== "admin" && !inApp) return next(new Error("not-open"));
       socket.data.user = user.toPublic();
       if (user.mutedUntil && user.mutedUntil.getTime() > Date.now()) mutedUntil.set(user._id.toString(), user.mutedUntil.getTime());
       next();

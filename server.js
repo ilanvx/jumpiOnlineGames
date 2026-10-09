@@ -2,6 +2,7 @@ import "dotenv/config";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import express from "express";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
@@ -78,7 +79,8 @@ app.get("/", page("site/index.html"));
 // localhost / other hosts always get the game, and admins who are already logged in can play
 const gameGate = async (req, res, next) => {
   const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase();
-  if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT) {
+  const inApp = /JumpiApp\//.test(String(req.headers["user-agent"] || ""));   // the Android app always gets the game itself
+  if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT && !inApp) {
     let admin = false;
     try { admin = (await currentUser(req))?.role === "admin"; } catch {}
     res.set("Cache-Control", "no-store");
@@ -86,6 +88,7 @@ const gameGate = async (req, res, next) => {
     // "?soon" shows the countdown page to anyone (so an admin can see it too)
     if ((!admin && !("staff" in req.query)) || "soon" in req.query) return res.sendFile(path.join(PUBLIC_DIR, "site", "game-soon.html"));
   }
+  res.set("Cache-Control", "no-cache");   // the Android app opens this page: always check for the newest version
   page("index.html")(req, res, next);
 };
 app.get(["/play", "/play/"], gameGate);
@@ -94,6 +97,13 @@ app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
 app.get("/contact", page("site/contact.html"));
 app.get("/trailer", page("site/trailer.html"));
+// the Android app: the APK built on GitHub (branch android-build), copied to public/download/jumpi-games.apk
+app.get("/download/android", (req, res, next) => {
+  const f = path.join(PUBLIC_DIR, "download", "jumpi-games.apk");
+  if (!existsSync(f)) return next();
+  res.set({ "Content-Type": "application/vnd.android.package-archive", "Content-Disposition": 'attachment; filename="Jumpi Games.apk"', "Cache-Control": "no-cache" });
+  res.sendFile(f);
+});
 app.get(["/forgot-password", "/reset-password"], (req, res) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/reset.html")(req, res); });   // forgot password (routes/auth.js /forgot, /reset)   // the trailer video (public/site/trailer/)
 // while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
 app.get("/store", (req, res, next) => page(STORE_OPEN ? "site/store.html" : "site/store-soon.html")(req, res, next));

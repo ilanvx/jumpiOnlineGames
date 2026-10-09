@@ -38,7 +38,10 @@ export default {
   // server settings (kids' safety): members need a verified email + 5 minutes on Discord, every image is scanned,
   // and only @mentions notify by default
   guild: { verification_level: 2, explicit_content_filter: 2, default_message_notifications: 1 },
-  icon: "icon.png",   // the server picture (the Wink Icon from the studio); set again only when the file changes
+  icon: "icon.png",
+  // the game's emojis: every PNG in tools/discord/emojis (128×128, made in the studio: __studio.emoji(name)) is added
+  // as :name:. A server without boosts has room for 50. In messages, {:jumpi_hi} shows that emoji.
+  emojis: "emojis",   // the server picture (the Wink Icon from the studio); set again only when the file changes
   // what everyone may do by default (no @everyone pings, no nickname changes, no files except in #media)
   everyone: ["VIEW_CHANNEL", "SEND_MESSAGES", "READ_MESSAGE_HISTORY", "ADD_REACTIONS", "USE_EXTERNAL_EMOJIS",
     "CREATE_INSTANT_INVITE", "USE_APPLICATION_COMMANDS", "CONNECT", "SPEAK"],
@@ -88,17 +91,17 @@ export default {
     { key: "welcome", channel: "welcome", embeds: [
       { color: "#2fd36b", image: pic("welcome") },
       { color: "#2fd36b", title: "👋 Hi! I'm Pip, welcome to Jumpi!", thumbnail: PIP,
-        description: "Jumpi is a big 3D world where you make your own Jumpi and play with friends!\n\n" +
+        description: "{:pip_hi} Jumpi is a big 3D world where you make your own Jumpi and play with friends! {:jumpi_heart}\n\n" +
           "🏝️ Explore the **Plaza**, the **Beach** and the **Water Park**\n🎮 Play **mini-games** and win coins\n🏠 Decorate **your own home**\n🐶 Adopt a **pet**\n👮 Work fun **jobs**: waiter, police, pizza delivery\n🎁 Spin the **Lucky Wheel** and fill your **Season Pass**\n\n" +
-          "**👉 First, read {#rules} and press ✅ at the bottom to open all the channels!**" },
+          "**👉 First, read {#rules} and press ✅ at the bottom to open all the channels!** {:jumpi_wink}" },
       { color: "#1fb6ff", title: "👋 היי! אני פיפ, ברוכים הבאים לג'אמפי!",
-        description: "ג'אמפי הוא עולם תלת־ממדי גדול שבו יוצרים ג'אמפי משלכם ומשחקים עם חברים!\n\n🏝️ פלאזה, חוף ופארק מים · 🎮 משחקונים · 🏠 בית משלכם · 🐶 חיות · 👮 עבודות · 🎁 גלגל המזל\n\n**👉 קודם קוראים את {#rules} ולוחצים ✅ למטה, וכל החדרים נפתחים!**" },
+        description: "{:jumpi_hi} ג'אמפי הוא עולם תלת־ממדי גדול שבו יוצרים ג'אמפי משלכם ומשחקים עם חברים!\n\n🏝️ פלאזה, חוף ופארק מים · 🎮 משחקונים · 🏠 בית משלכם · 🐶 חיות · 👮 עבודות · 🎁 גלגל המזל\n\n**👉 קודם קוראים את {#rules} ולוחצים ✅ למטה, וכל החדרים נפתחים!**" },
     ], buttons: [[link("Play Jumpi", PLAY, "🎮"), link("Website", SITE, "🌐"), link("Watch the trailer", `${SITE}/trailer`, "🎬")]] },
 
     { key: "rules", channel: "rules", embeds: [
       { color: "#7b5cff", image: pic("rules") },
       { color: "#ff8a1c", title: "📜 The Jumpi Discord rules",
-        description: "Jumpi is a friendly place for everyone. Read these, then press **✅ I agree** at the bottom to open the whole server! 💛",
+        description: "{:jumpi_heart} Jumpi is a friendly place for everyone. Read these, then press **✅ I agree** at the bottom to open the whole server! {:jumpi_party}",
         fields: [
           { name: "💛 1 · Be kind", value: "No bullying, mean jokes, threats or hate. Treat everyone the way you want to be treated." },
           { name: "🧼 2 · Keep it clean", value: "No bad words, scary or grown-up stuff, rude names or pictures." },
@@ -133,13 +136,13 @@ export default {
       { color: "#1f8fff", title: "🛟 Stay safe online · בטיחות ברשת",
         description: "The internet is awesome, and a few simple habits keep it that way. Read these four, they really matter! 💙\nהאינטרנט מדהים, וכמה הרגלים פשוטים שומרים שהוא יישאר ככה. ארבעה דברים חשובים:" },
       { color: "#7b5cff", title: "🔒 1 · Keep it secret!", image: pic("tip-secret"),
-        description: "Your **password, phone number, address, school and real name** stay with you. Not even best friends online need them. The Jumpi team will **never** ask for your password.\n🇮🇱 סיסמה, טלפון, כתובת ובית ספר נשארים אצלכם. אף אחד מהצוות לא יבקש את הסיסמה." },
+        description: "{:jumpi_lock} Your **password, phone number, address, school and real name** stay with you. Not even best friends online need them. The Jumpi team will **never** ask for your password.\n🇮🇱 סיסמה, טלפון, כתובת ובית ספר נשארים אצלכם. אף אחד מהצוות לא יבקש את הסיסמה." },
       { color: "#1fb6ff", title: "🤔 2 · Not everyone is who they say", image: pic("tip-stranger"),
-        description: "Someone online can say they're 10 and be a grown-up. **Never meet someone you only know from the internet**, and never send photos of yourself.\n🇮🇱 לא כל מי שכותב לכם הוא מי שהוא אומר. לא נפגשים עם אנשים מהאינטרנט ולא שולחים תמונות." },
+        description: "{:jumpi_think} Someone online can say they're 10 and be a grown-up. **Never meet someone you only know from the internet**, and never send photos of yourself.\n🇮🇱 לא כל מי שכותב לכם הוא מי שהוא אומר. לא נפגשים עם אנשים מהאינטרנט ולא שולחים תמונות." },
       { color: "#ff9a1c", title: "🗣️ 3 · Tell a grown-up", image: pic("tip-grownup"),
-        description: "If something makes you feel weird, scared or uncomfortable, **stop and tell a parent or a grown-up you trust**. You're never in trouble for telling!\n🇮🇱 משהו מרגיש לא בסדר? עוצרים ומספרים להורים או למבוגר שסומכים עליו. אף פעם לא מסתבכים כשמספרים!" },
+        description: "{:jumpi_wow} If something makes you feel weird, scared or uncomfortable, **stop and tell a parent or a grown-up you trust**. You're never in trouble for telling!\n🇮🇱 משהו מרגיש לא בסדר? עוצרים ומספרים להורים או למבוגר שסומכים עליו. אף פעם לא מסתבכים כשמספרים!" },
       { color: "#ff4f8b", title: "💛 4 · Be kind online", image: pic("tip-kind"),
-        description: "Behind every Jumpi is a real kid with real feelings. Talk the way you'd want others to talk to you.\n🇮🇱 מאחורי כל ג'אמפי יש ילד אמיתי. מדברים יפה, כמו שהיינו רוצים שידברו אלינו." },
+        description: "{:jumpi_heart} Behind every Jumpi is a real kid with real feelings. Talk the way you'd want others to talk to you.\n🇮🇱 מאחורי כל ג'אמפי יש ילד אמיתי. מדברים יפה, כמו שהיינו רוצים שידברו אלינו." },
       { color: "#2fd36b", title: "🆘 Need help right now?",
         description: "• Tell a parent, a teacher, or a **@Moderator** here\n• Write to the Jumpi team: {#contact}\n• 🇮🇱 In Israel: call **105**, the national hotline for kids' safety online (free call)\n🇮🇱 בישראל: חייגו **105**, המוקד הלאומי להגנה על ילדים ברשת (שיחה חינם)" },
     ], buttons: [[link("Contact the Jumpi team", `${SITE}/contact`, "📬"), link("Privacy", `${SITE}/privacy`, "🔒")]] },
@@ -147,20 +150,20 @@ export default {
     { key: "updates", channel: "updates", embeds: [
       { color: "#ff8a1c", image: pic("updates") },
       { color: "#ff8a1c", title: "📣 News & updates", thumbnail: PIP,
-        description: "Everything new in Jumpi shows up here first: **new places, events, seasons** and **free gift codes** 🎁\n\n" +
-          "**How to use a gift code:** open Jumpi → on the start screen press **Codes** → type the code on my sign → **REDEEM**!\n\n" +
+        description: "{:jumpi_party} Everything new in Jumpi shows up here first: **new places, events, seasons** and **free gift codes** 🎁\n\n" +
+          "{:jumpi_gift} **How to use a gift code:** open Jumpi → on the start screen press **Codes** → type the code on my sign → **REDEEM**!\n\n" +
           "🇮🇱 כאן מתפרסם כל מה שחדש בג'אמפי: מקומות חדשים, אירועים, עונות וקודים למטבעות חינם! במסך הפתיחה לוחצים **Codes**, מקלידים ולוחצים **REDEEM**." },
     ], buttons: [[link("Play Jumpi", PLAY, "🎮")]] },
     { key: "opening", channel: "updates", embeds: [
       { color: "#ffb21f", title: "🎉 Jumpi opens on Sunday!", thumbnail: PIP,
-        description: `The doors open on <t:${T}:F>, that's **<t:${T}:R>**!\n\nCome jump into the Plaza, the Beach and the Water Park on day one. New players get a full tour with me, Pip, and **250 coins** for finishing it!\n\n🇮🇱 ג'אמפי נפתח ביום ראשון ב־17:00! 🎉`,
+        description: `{:jumpi_party} The doors open on <t:${T}:F>, that's **<t:${T}:R>**!\n\nCome jump into the Plaza, the Beach and the Water Park on day one. New players get a full tour with me, Pip, and **250 coins** for finishing it!\n\n🇮🇱 ג'אמפי נפתח ביום ראשון ב־17:00! 🎉`,
         footer: "See you in the Plaza!" },
     ], buttons: [[link("Play Jumpi", PLAY, "🎮"), link("Watch the trailer", `${SITE}/trailer`, "🎬")]] },
 
     { key: "contact", channel: "contact", embeds: [
       { color: "#ff4f8b", image: pic("contact") },
       { color: "#ff4f8b", title: "📬 Need help? We're here!",
-        description: "Problem with your account? Found a bug? Something bothering you? Write to the Jumpi team and we'll answer by email 💌\n\n" +
+        description: "{:jumpi_hi} Problem with your account? Found a bug? Something bothering you? Write to the Jumpi team and we'll answer by email 💌\n\n" +
           "🔑 **Forgot your password?** Use the button below.\n🛡️ **Someone being mean in the game or here?** Tell a **@Moderator** or write to us.\n\n" +
           "🇮🇱 בעיה בחשבון, באג או משהו שמפריע? כתבו לנו ונענה במייל. שכחתם סיסמה? יש כפתור למטה." },
     ], buttons: [[link("Contact us", `${SITE}/contact`, "📬"), link("Forgot password", `${SITE}/forgot-password`, "🔑"), link("Terms of Use", `${SITE}/terms`, "📄")]] },
@@ -169,9 +172,11 @@ export default {
   // AutoMod: Discord blocks these messages before anyone sees them (same idea as the game's chat filter)
   automod: [
     { name: "Jumpi: personal info", type: "keyword", regex: [
-      "(?:\\+?972|0)[\\s\\-.]?(?:5\\d|[2-9])[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{3,4}",      // Israeli phone numbers
-      "\\d{3}[\\s\\-.]\\d{3}[\\s\\-.]\\d{4}",                                          // 555-123-4567
-      "(?:\\d[\\s\\-.]?){9,}",                                                       // any 9+ digits, even with spaces
+      // A number must not touch other digits or : @ # & before it and > after it, so Discord's own codes pass:
+      // custom emojis <:jumpi_hi:1234…>, mentions <@1234…>, channels <#1234…>, roles <@&1234…> (long id numbers).
+      "(?:^|[^\\d:@#&!])(?:\\+?972|0)[\\s\\-.]?(?:5\\d|[2-9])[\\s\\-.]?\\d{3}[\\s\\-.]?\\d{3,4}(?:$|[^\\d>])",   // Israeli phone numbers
+      "(?:^|[^\\d:@#&!])\\d{3}[\\s\\-.]\\d{3}[\\s\\-.]\\d{4}(?:$|[^\\d>])",                                  // 555-123-4567
+      "(?:^|[^\\d:@#&!])(?:\\d[\\s\\-.]?){8,13}\\d(?:$|[^\\d>])",                                               // 9 to 14 digits, even with spaces
       "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}",                                       // emails
       "(?:רחוב|רח'|שדרות|שד')\\s*\\S+\\s+\\d{1,4}",                                     // רחוב הרצל 12
       "\\d{1,5}\\s+\\w+\\s+(?:street|st|road|rd|avenue|ave|lane|blvd)\\b",             // 12 Main Street

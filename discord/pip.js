@@ -55,6 +55,15 @@ export async function roleId(name) {
   return roles.list.find((r) => r.name === name)?.id || null;
 }
 export const channelId = async (name) => (await channel(name))?.id || null;
+// the server's own emoji by name, as text for a message ("" if it isn't there)
+let emojis = { at: 0, list: [] };
+export async function emojiTag(name) {
+  try {
+    if (Date.now() - emojis.at > 30 * 60_000) emojis = { at: Date.now(), list: await api("GET", `/guilds/${env().guild}/emojis`) };
+    const e = emojis.list.find((x) => x.name === name);
+    return e ? `<${e.animated ? "a" : ""}:${e.name}:${e.id}>` : "";
+  } catch { return ""; }
+}
 
 // one message at a time, in order
 let queue = Promise.resolve();
@@ -77,15 +86,16 @@ const hidePrivate = (t) => String(t || "").replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, 
 const cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
 
 /* ---------- gift codes → #gift-codes ---------- */
-export function postGiftCode(c) {
+export async function postGiftCode(c) {
+  const [coin, gift] = await Promise.all([emojiTag("jumpi_coin"), emojiTag("jumpi_gift")]);
   const fields = [
-    { name: "🪙 Coins", value: `**${Number(c.coins).toLocaleString("en-US")}**`, inline: true },
+    { name: "🪙 Coins", value: `${coin} **${Number(c.coins).toLocaleString("en-US")}**`, inline: true },
     { name: "👥 Players", value: c.maxUses ? `First **${Number(c.maxUses).toLocaleString("en-US")}**` : "Everyone!", inline: true },
     { name: "⏰ Ends", value: c.expiresAt ? ts(c.expiresAt) : "Never", inline: true },
   ];
   return send("updates", { embeds: [{
     color: hex("#2fd36b"), title: "🎁 New gift code!", thumbnail: { url: PIP() },
-    description: `\`\`\`\n${c.code}\n\`\`\`Open Jumpi → on the start screen press **Codes** → type the code on my sign → **REDEEM**!\nבמסך הפתיחה לוחצים **Codes**, מקלידים את הקוד ולוחצים **REDEEM**.\n\n🎮 ${PUBLIC_URL()}/play`,
+    description: `${gift} \`\`\`\n${c.code}\n\`\`\`Open Jumpi → on the start screen press **Codes** → type the code on my sign → **REDEEM**!\nבמסך הפתיחה לוחצים **Codes**, מקלידים את הקוד ולוחצים **REDEEM**.\n\n🎮 ${PUBLIC_URL()}/play`,
     fields, footer: { text: "Every player can use a code once · Pip" }, timestamp: new Date().toISOString(),
   }] });
 }
@@ -150,13 +160,13 @@ async function postWelcomeCard(user) {
   if (Date.now() - (cardMade.get(user.id) || 0) < 24 * 3600_000) return;
   cardMade.set(user.id, Date.now());
   if (cardMade.size > 5000) cardMade.clear();
-  const [avatar, g, chatId] = await Promise.all([avatarPng(user), api("GET", `/guilds/${env().guild}?with_counts=true`).catch(() => null), channelId("chat").catch(() => null)]);
+  const [avatar, g, chatId, wave] = await Promise.all([avatarPng(user), api("GET", `/guilds/${env().guild}?with_counts=true`).catch(() => null), channelId("chat").catch(() => null), emojiTag("pip_hi")]);
   const png = await makeCard({ displayName: user.global_name || "", username: user.username, avatar, number: g?.approximate_member_count || 0 });
   const c = await channel("welcome");
   if (!c) return;
   const form = new FormData();
   form.append("payload_json", JSON.stringify({
-    content: `👋 Welcome to Jumpi, <@${user.id}>! ${chatId ? `Come say hi in <#${chatId}> 💬` : ""}`,
+    content: `${wave || "👋"} Welcome to Jumpi, <@${user.id}>! ${chatId ? `Come say hi in <#${chatId}> 💬` : ""}`,
     embeds: [{ color: hex("#7b5cff"), image: { url: "attachment://welcome.png" } }],
     attachments: [{ id: 0, filename: "welcome.png" }],
     allowed_mentions: { users: [user.id] },

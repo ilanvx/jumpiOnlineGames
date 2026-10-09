@@ -1,6 +1,6 @@
 // Jumpi Discord tool. `npm run discord` = look only (writes last-report.txt), `npm run discord:apply` = make the server
 // match server.config.js. Deletes only what config.remove lists. Needs DISCORD_BOT_TOKEN and DISCORD_GUILD_ID in .env.
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -263,9 +263,32 @@ async function main() {
     }
   }
 
+  // ---------- emojis (tools/discord/emojis/*.png → :name:), only added, never deleted ----------
+  log(`Emojis:`);
+  const emoji = {};
+  if (config.emojis) {
+    let have = [];
+    try { have = await api("GET", `/guilds/${GUILD}/emojis`); } catch (e) { warn(`can't read emojis: ${e.message}`); }
+    have.forEach((e) => { emoji[e.name] = e; });
+    const dir = join(HERE, config.emojis);
+    const files = existsSync(dir) ? readdirSync(dir).filter((f) => /^[a-z0-9_]{2,32}\.png$/.test(f)).sort() : [];
+    const slots = (config.emojiSlots || 50) - have.filter((e) => !e.animated).length;
+    const todo = files.filter((f) => !emoji[f.slice(0, -4)]);
+    if (todo.length > slots) warn(`only room for ${Math.max(0, slots)} more emojis (${todo.length} new): the first ${Math.max(0, slots)} are added. Boosting the server gives more room.`);
+    for (const f of todo.slice(0, Math.max(0, slots))) {
+      const name = f.slice(0, -4), img = readFileSync(join(dir, f));
+      if (img.length > 256 * 1024) { warn(`${f} is over 256 KB`); continue; }
+      const made = await write(`add emoji :${name}:`, "POST", `/guilds/${GUILD}/emojis`, { name, image: `data:image/png;base64,${img.toString("base64")}` });
+      if (made) emoji[name] = made;
+    }
+    if (!todo.length) log(`  (all ${files.length} emojis are there)`);
+  }
+
   // ---------- Pip's messages ----------
   log(`Messages:`);
-  const links = (t) => (t == null ? t : String(t).replace(/\{#([^}]+)\}/g, (m, n) => (chanId[key(n)] ? `<#${chanId[key(n)]}>` : `#${n}`)));
+  // {#chat} → a link to the channel, {:jumpi_hi} → the server's own emoji (left out until it's uploaded)
+  const links = (t) => (t == null ? t : String(t).replace(/\{#([^}]+)\}/g, (m, n) => (chanId[key(n)] ? `<#${chanId[key(n)]}>` : `#${n}`))
+    .replace(/\{:([a-z0-9_]+)\}/g, (m, n) => (emoji[n] ? `<${emoji[n].animated ? "a" : ""}:${n}:${emoji[n].id}>` : "")));
   const button = (b) => ({ type: 2, label: b.label, ...(b.emoji ? { emoji: { name: b.emoji } } : {}),
     ...(b.url ? { style: 5, url: b.url } : { style: b.style || 1, custom_id: b.id }) });
   for (const m of config.messages || []) {

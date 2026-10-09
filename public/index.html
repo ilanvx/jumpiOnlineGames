@@ -401,6 +401,30 @@ body.login-mode .acc-layer,body.in-game .acc-layer{display:none}
 .site-btn svg{width:30px;height:30px}
 body.login-mode .site-btn{display:none}
 @media (max-width:640px){.site-btn{right:18px!important;top:calc(env(safe-area-inset-top,0px) + 86px)}}
+/* Discord: a button on the start screen (left of the website button) that opens "JOIN OUR COMMUNITY!" (#dcOv) */
+.disc-btn{--c:#5865f2;--hi:#8f97ff;--lo:#4250d8;--edge:#2a2f9e;position:fixed;z-index:6;top:calc(env(safe-area-inset-top,0px) + 18px);right:248px;width:auto;height:58px;padding:0 16px 0 12px;border-radius:16px;flex-direction:row;gap:8px;font-size:1.15rem;color:#fff;text-shadow:0 2px 0 #2a2f9e}
+.disc-btn svg{width:32px;height:32px;flex:none}
+.disc-btn:hover svg{animation:dcWiggle .5s ease}
+@keyframes dcWiggle{30%{rotate:-10deg}60%{rotate:8deg}}
+body.in-game .disc-btn,body.login-mode .disc-btn{display:none}
+body.app .disc-btn{display:none!important}   /* the Android app: no Discord link */
+@media (max-width:640px){.disc-btn{right:86px!important;top:calc(env(safe-area-inset-top,0px) + 86px);width:58px;padding:0}.disc-btn span{display:none}}
+#dcOv{z-index:60}
+.dc-card{padding-top:92px}
+.dc-face{border-radius:50%;width:140px;height:140px;top:-66px;border:6px solid #fff;box-shadow:0 8px 0 #b9c9e6;background:#7b5cff;filter:none}
+.dc-card h2{color:#5865f2!important;text-shadow:0 4px 0 #d9dcff!important}
+.dc-x{position:absolute;top:14px;right:14px;width:40px;height:40px;border:0;border-radius:50%;cursor:pointer;background:#e8eef7;box-shadow:0 4px 0 #c3cfdf;display:grid;place-items:center}
+.dc-x svg{width:16px;height:16px}.dc-x:active{transform:translateY(3px);box-shadow:0 1px 0 #c3cfdf}
+.dc-perks{list-style:none;margin:0 0 16px;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dc-perks li{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 9px;border-radius:18px;background:#eef0ff;box-shadow:0 4px 0 #d3d7ff;font:600 .88rem/1.15 "Fredoka",system-ui,sans-serif;color:#3a3f9c}
+.dc-perks img{width:52px;height:52px;animation:idleBob 2.6s ease-in-out infinite}
+.dc-perks li:nth-child(2) img{animation-delay:.4s}.dc-perks li:nth-child(3) img{animation-delay:.8s}
+.dc-age{max-width:none!important;margin:0 0 16px!important;padding:9px 12px;border-radius:14px;background:#fff6e0;color:#9a5a00!important;font-size:.9rem!important;font-weight:600}
+.dc-join{height:58px;border-radius:29px;display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;font:400 1.35rem var(--font);letter-spacing:.05em;color:#fff;text-shadow:0 2px 0 #2a2f9e;
+  background:linear-gradient(180deg,#8f97ff,#5865f2 50%,#4250d8);box-shadow:inset 0 3px 0 rgb(255 255 255 / .4),0 6px 0 #2a2f9e}
+.dc-join svg{width:26px;height:26px}
+.dc-join:active{transform:translateY(4px);box-shadow:inset 0 3px 0 rgb(255 255 255 / .4),0 2px 0 #2a2f9e}
+.dc-join:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
 .idle-card.bye-card h2{color:#4f7cff;text-shadow:0 4px 0 #d5e1ff}
 .idle-chip.bye-chip{background:#ffe3e3;color:#c8263c}.idle-chip.bye-chip::before{background:#ff5a5a;box-shadow:0 0 0 3px rgb(255 90 90 / .25)}
 .idle-card.bye-card .idle-face{animation:byeSad 2.8s ease-in-out infinite}
@@ -979,6 +1003,15 @@ body.signup-in.no-swatches .swatches{opacity:0;visibility:hidden;pointer-events:
   .btn svg{width:44px;height:44px}
   .play{width:clamp(120px,36vw,170px);height:88px;font-size:1.7rem}
   .play svg{width:34px;height:34px}
+}
+/* phones: the small top-right buttons keep their size (the big-button rule above made them overlap) */
+@media (max-width:700px){
+  .sound,.site-btn,.disc-btn{width:58px;height:58px;border-radius:16px}
+  .sound svg,.site-btn svg,.disc-btn svg{width:30px;height:30px}
+  .lang-btn{width:auto;height:58px;border-radius:16px}.lang-btn svg.caret{width:14px;height:14px}
+  .exit-game{width:auto;height:58px;border-radius:16px}.exit-game svg{width:28px;height:28px}
+  body.in-game .site-btn{display:none}
+  body.in-game .wx-clock{top:calc(env(safe-area-inset-top,0px) + 84px)}
 }
 @media (max-width:700px){
   /* four buttons on the left: they get the bottom row, TUTORIAL + PLAY sit right above them */
@@ -2128,6 +2161,225 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
 .trl-end img{height:190px;margin-top:18px;filter:drop-shadow(0 6px 0 rgb(0 0 0 / .3))}
 .trl-end p{margin:0;font:600 32px "Fredoka",sans-serif;color:#cfe3ff;letter-spacing:.04em}
 .trl-play{margin-top:10px;padding:16px 46px;border-radius:22px;background:linear-gradient(180deg,#5ee08f,#25c36a);box-shadow:0 8px 0 #148a46;font:400 40px var(--font,"Lilita One"),sans-serif;color:#fff;letter-spacing:.05em;text-shadow:0 3px 0 rgb(0 0 0 / .2)}
+/* =====================================================================
+   PHONES HELD SIDEWAYS (and the Android app, which is always sideways): body.land = wide + short screen
+   (innerHeight <= 520), set by layoutMode(). Everything gets smaller and moves to the edges so the middle
+   is free for the world. body.touch = a touch screen: a joystick on the left and a JUMP button on the right
+   (TOUCH block in the script). Portrait phones and computers are not touched by any of this.
+   ===================================================================== */
+body.land{--lg:10px;--lb:44px}
+/* start screen */
+body.land .side{gap:8px;flex-direction:column;bottom:auto}
+body.land .side.left{right:auto;justify-content:flex-start}
+body.land .side.right{top:auto;flex-direction:column;align-items:flex-end}
+body.land .side.left{left:calc(var(--lg) + env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%)}
+body.land .side.left .btn{width:78px;height:70px;border-radius:18px;font-size:.78rem;gap:2px}
+body.land .side.left .btn svg{width:32px;height:32px}
+body.land .side.left .btn span{font-size:.74rem}body.land .side.left .inv span{font-size:.6rem;letter-spacing:.02em}
+body.land .side.left .btn .badge{transform:scale(.8);top:-8px;right:-10px}
+body.land .side.right{right:calc(var(--lg) + 4px + env(safe-area-inset-right,0px));bottom:calc(var(--lg) + 4px)}
+body.land .tut-btn{width:auto;height:48px;padding:0 16px;font-size:1.05rem;border-radius:16px}
+body.land .tut-btn svg{width:28px;height:28px}
+body.land .btn.play{width:190px;height:66px;font-size:1.6rem;border-radius:20px}
+body.land .btn.play svg{width:30px;height:30px}
+body.land .play-menu .btn{height:52px;font-size:1.2rem}
+body.land .sound,body.land .site-btn,body.land .disc-btn{width:var(--lb);height:var(--lb);border-radius:13px;top:calc(env(safe-area-inset-top,0px) + var(--lg))}
+body.land .sound{right:calc(var(--lg) + env(safe-area-inset-right,0px))}
+body.land .sound svg,body.land .site-btn svg,body.land .disc-btn svg{width:24px;height:24px}
+body.land .disc-btn{width:auto;padding:0 12px 0 9px;font-size:.92rem;gap:6px}
+body.land .lang-btn{height:var(--lb);border-radius:13px;top:calc(env(safe-area-inset-top,0px) + var(--lg));right:calc(var(--lg) + var(--lb) + 8px)}
+body.land .lang-btn .flag{transform:scale(.8)}
+/* in the game: left column */
+body.land .exit-game{top:calc(env(safe-area-inset-top,0px) + var(--lg));left:calc(var(--lg) + env(safe-area-inset-left,0px));height:var(--lb);border-radius:13px;padding:0 12px 0 9px;font-size:.92rem;gap:5px}
+body.land .exit-game svg{width:24px;height:24px}
+body.land .gift-btn,body.land .home-btn,body.land .phone-btn,body.land .season-btn{width:var(--lb);height:var(--lb);border-radius:13px;left:calc(var(--lg) + env(safe-area-inset-left,0px))}
+body.land .gift-btn svg,body.land .home-btn svg,body.land .phone-btn svg,body.land .season-btn svg{width:26px;height:26px}
+body.land .gift-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 52px)}
+body.land .home-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 104px)}
+body.land .phone-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 156px)}
+body.land .season-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 208px)}
+/* the food bar goes up, next to MENU */
+body.land .fbar-wrap{top:calc(env(safe-area-inset-top,0px) + var(--lg));bottom:auto;left:calc(env(safe-area-inset-left,0px) + 118px)}
+body.land .fbar{gap:5px;padding:4px;border-radius:15px}
+body.land .fb-slot{width:38px;height:38px;border-radius:11px}
+body.land .fb-slot img{inset:3px 3px 6px;width:calc(100% - 6px);height:calc(100% - 9px)}
+body.land.touch .fb-slot kbd{display:none}
+body.land .fb-slot.on{transform:translateY(3px)}
+/* top: clock, coins, settings, wheel, staff */
+body.land .wx-clock{top:calc(env(safe-area-inset-top,0px) + var(--lg));transform:scale(.78);transform-origin:50% 0}
+body.land .coins{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 3px);right:calc(var(--lg) + var(--lb) + 10px);transform:scale(.85);transform-origin:100% 0}
+body.land .admin-btn{width:var(--lb);height:var(--lb);border-radius:13px;top:calc(env(safe-area-inset-top,0px) + var(--lg) + 52px);right:calc(var(--lg) + env(safe-area-inset-right,0px))}
+body.land .admin-btn svg{width:26px;height:26px}
+body.land .wheel-btn{width:52px;height:52px;right:calc(var(--lg) - 4px + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + var(--lg) + 50px)}
+body.land.is-staff .wheel-btn{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 102px)}
+/* bottom right: minimap with the needs behind it */
+body.land .minimap{width:112px;height:112px;right:calc(var(--lg) + env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + var(--lg) + 6px)}
+body.land .mm-zone{font-size:.66rem;padding:3px 8px;bottom:-9px}
+body.land .mm-n{width:18px;height:18px;font-size:.66rem;line-height:18px;top:-4px}
+body.land .needs{--mm:112px;--mr:calc(var(--lg) + env(safe-area-inset-right,0px));--mb:calc(env(safe-area-inset-bottom,0px) + var(--lg) + 6px);gap:4px;padding:5px calc(var(--mm) / 2 + 10px) 5px 6px}
+body.land .need{width:32px;height:32px}
+body.land .need .ic{inset:7px}
+body.land.touch .needs{bottom:auto;top:calc(env(safe-area-inset-top,0px) + var(--lg) + 54px);right:calc(var(--lg) + 58px);translate:none;padding:5px 6px}
+/* bottom middle: chat and the "E" prompts */
+body.land .chat-dock{bottom:calc(env(safe-area-inset-bottom,0px) + 8px);height:50px;width:min(520px,calc(100% - 300px))}
+body.land .chat-fab{width:50px;height:50px;margin-left:-25px}
+body.land .chat-fab svg{width:26px;height:26px}
+body.land .mg-prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 66px);padding:6px 14px 6px 6px;font-size:1rem}
+body.land.touch .mg-prompt kbd{display:none}
+body.land.chat-open .mg-prompt{bottom:calc(env(safe-area-inset-bottom,0px) + 120px)}
+/* touch: joystick + jump (only in the game, only sideways) */
+.joy-zone,.jump-btn{display:none}
+body.wide.touch.in-game .joy-zone{display:block}
+body.wide.touch.in-game .jump-btn{display:flex}
+body.wide.touch.in-game #stage{touch-action:none}
+/* tablets sideways (taller screens keep the normal layout): the joystick sits above the food bar, JUMP left of the big minimap */
+body.wide.touch:not(.land) .joy-zone{left:calc(env(safe-area-inset-left,0px) + 92px);bottom:110px;height:52%}
+body.wide.touch:not(.land) .jump-btn{right:calc(env(safe-area-inset-right,0px) + 214px);bottom:calc(env(safe-area-inset-bottom,0px) + 40px);width:84px;height:84px}
+.joy-zone{position:fixed;z-index:3;left:calc(env(safe-area-inset-left,0px) + 62px);bottom:0;width:min(42vw,360px);height:62%;touch-action:none}
+.joy-base{position:absolute;left:var(--jx,80px);top:var(--jy,calc(100% - 78px));width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;
+  background:radial-gradient(circle,rgb(255 255 255 / .16) 0 55%,rgb(255 255 255 / .28) 56% 100%);box-shadow:inset 0 0 0 3px rgb(255 255 255 / .55),0 4px 14px rgb(0 0 0 / .18);opacity:.55;transition:opacity .2s}
+.joy-zone.on .joy-base{opacity:1;transition:none}
+.joy-knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;
+  background:linear-gradient(180deg,#ffffff,#d9ecff);box-shadow:inset 0 -5px 0 #a9c9ee,0 5px 0 #4a7fc0,0 8px 14px rgb(0 0 0 / .25);transform:translate(var(--kx,0px),var(--ky,0px))}
+.joy-knob::after{content:"";position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#7fd0ff,#1f9bff);opacity:.85}
+.joy-zone.run .joy-knob::after{background:radial-gradient(circle at 40% 35%,#ffd27a,#ff8a1c)}
+.jump-btn{--c:var(--orange);--hi:var(--orange-hi);--lo:var(--orange-lo);--edge:var(--orange-edge);position:fixed;z-index:4;right:calc(env(safe-area-inset-right,0px) + 136px);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+  width:68px;height:68px;border-radius:50%;padding:0;gap:0;font-size:.72rem;touch-action:none}
+.jump-btn svg{width:30px;height:30px}
+.jump-btn:active,.jump-btn.on{transform:translateY(4px)}
+body.chat-open .jump-btn,body.in-home.decorating .jump-btn,body.game-store .jump-btn{display:none!important}
+
+/* sideways phones: windows fit the short screen (generic; special windows below) */
+body.land .settings-overlay,body.land .idle-overlay,body.land .tut-overlay{padding:8px}
+body.land .settings-card{max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;padding:14px 16px}
+body.land .idle-card{max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;padding:12px 18px 14px;border-radius:24px}
+body.land .idle-card .idle-face{position:relative;left:auto;top:auto;translate:none;display:block;margin:0 auto;width:76px;height:76px}
+body.land .idle-card h2{font-size:1.6rem;margin:2px 0 4px}
+body.land .idle-card p{margin-bottom:10px;font-size:.92rem}
+body.land .idle-acts{flex-direction:row;gap:8px}
+body.land .idle-acts>*{flex:1;height:46px!important}
+body.land .idle-zzz,body.land .pi-shield{display:none}
+body.land .tut-card{max-height:calc(100dvh - 16px)}
+/* the Discord window: two columns */
+body.land .dc-card{width:min(640px,100%);padding:14px 16px;display:grid;grid-template-columns:1fr 1.15fr;column-gap:16px;align-items:center;text-align:left}
+body.land .dc-card .dc-face{grid-row:1/4;width:110px;height:110px;margin:0 auto 6px;border-width:5px}
+body.land .dc-card h2{grid-column:1;font-size:1.5rem;text-align:center}
+body.land .dc-card>p:not(.dc-age){grid-column:1;text-align:center;margin:0}
+body.land .dc-card .dc-perks,body.land .dc-card .dc-age,body.land .dc-card .idle-acts{grid-column:2}
+body.land .dc-card .dc-face{grid-column:1;grid-row:auto}
+body.land .dc-perks{margin-bottom:8px}
+body.land .dc-perks img{width:40px;height:40px}
+body.land .dc-age{margin-bottom:8px!important;font-size:.8rem!important}
+body.land .dc-card .idle-acts{flex-direction:column}
+body.land .dc-join{height:48px;font-size:1.15rem}
+body.land .dc-x{top:8px;right:8px;width:34px;height:34px}
+
+/* sideways phones: big windows */
+body.land .idle-card.sea-card{padding-bottom:10px;max-height:calc(100dvh - 16px)}
+body.land .sea-head{min-height:0;height:118px;padding:12px 16px}
+body.land .sea-badge{width:62px;height:62px;border-radius:18px}
+body.land .sea-badge b{font-size:2rem}
+body.land .idle-card.sea-card .sea-title h2{font-size:1.5rem}
+body.land .idle-card.sea-card .sea-title p{display:none}
+body.land .sea-crew{width:50%}
+body.land .sea-prog{padding:8px 16px 2px}
+body.land .sea-bar{height:14px}
+body.land .sea-prog-t{font-size:.8rem;margin-top:3px}
+body.land .sea-track{padding:8px 16px 8px;gap:8px}
+body.land .sea-tier{width:96px;padding:18px 6px 8px}
+body.land .sea-how{margin:0 16px;padding:6px 10px;font-size:.8rem}
+body.land .whl-overlay{padding:6px}
+body.land .whl-title{font-size:1.9rem;-webkit-text-stroke-width:2px}
+body.land .whl-timer{margin:4px 0 0;padding:3px 12px;font-size:.85rem}
+body.land .whl-stage{width:min(56vh,250px);margin-top:6px}
+body.land .whl-spin{margin-top:10px;min-height:46px;min-width:170px;font-size:1.3rem;border-radius:16px}
+body.land .whl-x{top:10px;right:10px;width:40px;height:40px;padding:8px}
+body.land .whl-wrap{display:grid;grid-template-columns:auto auto;grid-auto-rows:auto;column-gap:28px;align-items:center;align-content:center;justify-items:center}
+body.land .whl-wrap>.whl-stage{grid-column:1;grid-row:1/span 4}
+body.land .whl-wrap>:not(.whl-stage){grid-column:2}
+body.land .idle-card.menu-card{width:min(720px,100%);padding:12px 16px 14px;display:flex;flex-direction:column}
+body.land .menu-grid{grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;overflow-y:auto;min-height:0}
+body.land .menu-dish img{width:64px;height:64px}
+body.land .phone{right:14px;bottom:12px;height:calc(100dvh - 44px);aspect-ratio:10/16}
+
+/* "GET THE JUMPI APP!" (phones in a browser, PHONES_NEED_APP) */
+.app-gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:16px;overflow:auto;background:radial-gradient(circle at 50% 35%,#7fd8ff,#1f8fff 55%,#0a4fc0)}
+.app-gate[hidden]{display:none}
+.ag-card{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;gap:6px;padding:20px 22px 22px;border-radius:30px;text-align:center;color:#22324a;
+  background:linear-gradient(180deg,#fff,#f1f6ff);box-shadow:0 10px 0 #9fb8e6,0 30px 60px rgb(0 0 0 / .3)}
+.ag-face{width:120px;height:120px;animation:idleBob 2.6s ease-in-out infinite}
+.ag-card h2{margin:0;font:400 2rem/1.05 var(--font);letter-spacing:.03em;color:#ff5fb4;text-shadow:0 4px 0 #ffd3ea}
+.ag-card p{margin:6px auto;max-width:34ch;font:500 1rem/1.4 "Fredoka",system-ui,sans-serif;color:#4a5b75}
+.ag-btn{margin:8px 0 2px;height:60px;padding:0 26px;border-radius:30px;display:inline-flex;align-items:center;gap:10px;text-decoration:none;font:400 1.3rem var(--font);letter-spacing:.04em;color:#fff;
+  background:linear-gradient(180deg,#8ff0b0,#2fd36b 55%,#17a24a);box-shadow:inset 0 3px 0 rgb(255 255 255 / .4),0 6px 0 #0d6b2f}
+.ag-btn svg{width:28px;height:28px}
+@media (max-width:420px){.ag-btn{font-size:1.08rem;padding:0 18px;white-space:nowrap}}
+.ag-btn:active{transform:translateY(4px);box-shadow:inset 0 3px 0 rgb(255 255 255 / .4),0 2px 0 #0d6b2f}
+.ag-help{font-size:.88rem!important;padding:8px 12px;border-radius:14px;background:#fff6e0;color:#9a5a00!important}
+.ag-pc{font-size:.9rem!important;opacity:.85}
+.app-gate.ios .ag-android,.app-gate:not(.ios) .ag-ios{display:none}
+@media (orientation:landscape) and (max-height:520px){.ag-card{flex-direction:row;text-align:left;width:min(680px,100%);gap:18px;padding:16px 20px}.ag-face{width:110px;height:110px}.ag-card p{margin-left:0}.ag-card h2{font-size:1.7rem}}
+
+/* sideways phones: login / sign-up / shop cards on the start screen */
+body.land .login-card{max-height:calc(100dvh - 16px);overflow-y:auto;scrollbar-width:none;padding:14px 16px;gap:10px;right:calc(var(--lg) + 6px + env(safe-area-inset-right,0px));width:min(400px,52vw)}
+body.land .login-card h2{font-size:1.35rem}
+body.land .field{gap:4px}
+body.land .field input,body.land .signup-card .field input,body.land .field select{height:40px}
+body.land .login-card .cta,body.land .login-card button[type="submit"]{min-height:44px}
+body.land .swatches{left:calc(var(--lg) + 70px)!important;top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;translate:none;gap:6px;padding:6px 8px}
+body.land .swatch{width:30px;height:30px}
+body.land .dc-card #dcLater{display:none}
+body.land .dc-perks li{font-size:.76rem;padding:6px 3px}
+
+body.land .wk-pay{margin-bottom:8px;font-size:.88rem}
+body.land .wk-step{padding:8px 8px 8px}
+body.land .wk-art{height:44px}
+body.land .wk-art svg{max-height:44px}
+body.land .wk-step p{font-size:.8rem;margin:2px 0 0}
+body.land .wk-btns{margin-top:10px}
+body.land .wk-btn{min-height:46px;font-size:1.1rem}
+body.land .idle-card:has(.wk-steps){width:min(720px,100%)}
+
+/* sideways phones at work: the work bar at the top, a smaller GPS, no food bar */
+body.land .work-hud{top:calc(env(safe-area-inset-top,0px) + 8px);transform:scale(.8);transform-origin:50% 0;gap:6px;padding:5px}
+body.land.at-work .fbar-wrap{display:none}
+body.land .dlv-gps{right:calc(var(--lg) + env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 62px);width:150px;gap:4px}
+body.land .dlv-gps canvas{width:150px;height:150px;border-radius:20px;box-shadow:0 0 0 4px #fff,0 0 0 7px #1f3355,0 8px 16px rgb(0 0 0 / .3)}
+body.land .dlv-turn{margin-top:6px;padding:6px 10px;border-radius:14px;gap:6px}
+body.land .dlv-turn b{font-size:.9rem}
+body.land.at-work .jump-btn{right:calc(env(safe-area-inset-right,0px) + 176px)}
+
+body.land .home-bar{top:calc(env(safe-area-inset-top,0px) + 6px);transform:scale(.78);transform-origin:50% 0}
+body.land.in-home .fbar-wrap{display:none}
+body.land.in-home .work-hud{top:calc(env(safe-area-inset-top,0px) + 54px);transform:scale(.74)}
+
+/* sideways phones: the rest of the windows */
+body.land .deco-panel{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);padding:8px;gap:6px;width:min(760px,calc(100% - 16px))}
+body.land .deco-tray{min-height:84px;gap:6px;padding-bottom:4px}
+body.land .deco-tool{bottom:calc(env(safe-area-inset-bottom,0px) + 140px)}
+body.land .trade-card,body.land .duel-card,body.land .admin-card,body.land .map-card{max-height:calc(100dvh - 16px)}
+body.land .idle-card.hup-card,body.land .idle-card.adopt-card{padding:12px 14px}
+body.land .need-pop{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 100px);right:calc(var(--lg) + 58px);padding:10px 12px}
+body.land .store-card{max-height:calc(100dvh - 16px)}
+body.land .daily-card{width:min(640px,100%)}
+body.land.decorating .joy-zone,body.land.decorating .jump-btn{display:none!important}
+
+body.land .hup-body{grid-template-columns:200px 1fr;gap:12px}
+body.land .hup-list{gap:6px}
+body.land .hup-item{grid-template-columns:56px 1fr;padding:5px}
+body.land .hup-item canvas,body.land .hup-item img{width:56px;height:42px}
+body.land .hup-show canvas{width:auto;height:150px;max-width:100%}
+body.land .hup-show h3{margin:6px 0 2px;font-size:1.3rem}
+body.land .hup-show p{font-size:.85rem}
+body.land .hup-buy{margin-top:8px;min-height:44px;font-size:1.15rem}
+body.land .idle-card.hup-card h2{font-size:1.4rem;margin-bottom:6px}
+
+/* sideways phones: the open chat goes to the top (the phone keyboard covers the bottom half), typing row first */
+body.land.chat-open .chat-dock{top:calc(env(safe-area-inset-top,0px) + 6px);bottom:auto;z-index:7}
+body.land.chat-open .chat-bar{top:0;bottom:auto;flex-direction:column-reverse;gap:6px;padding:6px}
+body.land .chat-bar input{height:40px}
+body.land .emote-tray{grid-template-columns:repeat(auto-fit,minmax(34px,1fr));gap:4px}
+body.land.chat-open .wx-clock,body.land.chat-open .fbar-wrap{visibility:hidden}
 </style>
 </head>
 <body>
@@ -2344,6 +2596,33 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
   <svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)" fill="#3a1192"><circle cx="16" cy="16" r="11"/></g>
     <circle cx="16" cy="16" r="11" fill="none" stroke="#fff" stroke-width="2.8"/><path d="M5 16 H27 M16 5 Q9.5 16 16 27 M16 5 Q22.5 16 16 27" fill="none" stroke="#fff" stroke-width="2.4"/></svg>
 </a>
+<button class="btn disc-btn" id="discordBtn" type="button" aria-haspopup="dialog" aria-label="Join our Discord community">
+  <svg viewBox="0 0 40 40" aria-hidden="true"><g transform="translate(0 2.5)" fill="#2a2f9e"><path d="M6 8 H25 Q29 8 29 12 V21 Q29 25 25 25 H14 L8 30 V25 H6 Q2 25 2 21 V12 Q2 8 6 8 Z"/><path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z"/></g>
+    <path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z" fill="#ffd23a"/>
+    <path d="M6 8 H25 Q29 8 29 12 V21 Q29 25 25 25 H14 L8 30 V25 H6 Q2 25 2 21 V12 Q2 8 6 8 Z" fill="#fff"/>
+    <circle cx="10" cy="16.5" r="2.3" fill="#5865f2"/><circle cx="15.5" cy="16.5" r="2.3" fill="#5865f2"/><circle cx="21" cy="16.5" r="2.3" fill="#5865f2"/></svg>
+  <span>DISCORD</span>
+</button>
+<div class="idle-overlay" id="dcOv" role="dialog" aria-modal="true" aria-labelledby="dcTitle" hidden>
+  <div class="idle-card dc-card">
+    <button class="dc-x" id="dcClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#4a5b75" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+    <img class="idle-face dc-face" src="/site/discord/pip.png" alt="">
+    <h2 id="dcTitle">JOIN OUR COMMUNITY!</h2>
+    <p>Hang out with other Jumpi players on our Discord server!</p>
+    <ul class="dc-perks">
+      <li><img src="/site/discord/emoji/jumpi_gift.png" alt="">Free gift codes</li>
+      <li><img src="/site/discord/emoji/jumpi_party.png" alt="">News &amp; events</li>
+      <li><img src="/site/discord/emoji/jumpi_hi.png" alt="">New friends</li>
+    </ul>
+    <p class="dc-age">Discord is for ages 13 and up. Younger? Ask a grown-up first!</p>
+    <div class="idle-acts">
+      <a class="dc-join" id="dcJoin" href="https://discord.gg/dgwsBJgzZS" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 8 H25 Q29 8 29 12 V21 Q29 25 25 25 H14 L8 30 V25 H6 Q2 25 2 21 V12 Q2 8 6 8 Z" fill="#fff"/><path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z" fill="#ffd23a"/></svg>
+        JOIN ON DISCORD</a>
+      <button class="idle-exit" id="dcLater" type="button">Maybe later</button>
+    </div>
+  </div>
+</div>
 <!-- saved accounts on the start screen: names under the characters, and "+" to add one (placed over the 3D scene) -->
 <div class="acc-layer" id="accLayer" aria-label="Saved accounts" role="group">
   <div class="acc-add-menu" id="accAddMenu" role="menu" aria-label="Add an account" hidden>
@@ -2353,6 +2632,25 @@ body.trl #dlvGps{top:13vh;right:4vw;transform:scale(1.15);transform-origin:top r
 </div>
 <div class="wipe" id="wipe" aria-hidden="true"></div>
 <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
+<!-- phones in a web browser, when PHONES_NEED_APP is on (public/shared/app.js): get the Android app -->
+<div class="app-gate" id="appGate" role="dialog" aria-modal="true" aria-labelledby="agTitle" hidden>
+  <div class="ag-card">
+    <img class="ag-face" src="/site/discord/emoji/jumpi_hi.png" alt="">
+    <div class="ag-body">
+      <h2 id="agTitle">GET THE JUMPI APP!</h2>
+      <p class="ag-android">Jumpi on a phone plays in our app. Download it, open it, and jump in!</p>
+      <a class="ag-btn ag-android" id="agDownload" href="/download/android">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 V20 M9 13 L16 20 L23 13" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 24 H26" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>
+        <span>DOWNLOAD FOR ANDROID</span></a>
+      <p class="ag-help ag-android" id="agHelp">If your phone asks, allow installing apps from your browser. Ask a grown-up to help!</p>
+      <p class="ag-ios">The iPhone app is coming soon! For now, play Jumpi on a computer at <b>jumpigames.com</b>.</p>
+      <p class="ag-pc ag-android">Or play on a computer at <b>jumpigames.com</b></p>
+    </div>
+  </div>
+</div>
+<!-- touch controls for phones held sideways (the TOUCH block): drag in the zone = walk, past the edge = run -->
+<div class="joy-zone" id="joyZone" aria-hidden="true"><div class="joy-base"><div class="joy-knob"></div></div></div>
+<button class="btn jump-btn" id="jumpBtn" type="button" aria-label="Jump"><svg viewBox="0 0 32 32" aria-hidden="true"><path transform="translate(0 2)" d="M16 5 L27 17 H20 V27 H12 V17 H5 Z" fill="#a3410a" stroke="#a3410a" stroke-width="2.5" stroke-linejoin="round"/><path d="M16 5 L27 17 H20 V27 H12 V17 H5 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
 <button class="btn exit-game" id="exitGame" type="button">
   <svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)" fill="#06488a"><path d="M16 5 L3 16 H7 V27 H13 V20 H19 V27 H25 V16 H29 Z"/></g><path d="M16 5 L3 16 H7 V27 H13 V20 H19 V27 H25 V16 H29 Z" fill="#fff"/></svg>
   <span>MENU</span>
@@ -3037,6 +3335,7 @@ import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf} from "/shared/food.js";
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN} from "/shared/store.js";
+import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
 import {WHEEL} from "/shared/season.js";
 import {gameHour,skyHour,weatherNow,spellWeather,SPELL_MS,WEATHERS,clockText,isNightHour} from "/shared/weather.js";
@@ -5454,7 +5753,7 @@ function bigJump(){
   if(G.seat||PH.open||GS.open)return;
   if(NEEDS.v&&NEEDS.v.stamina<6){noRunWarn();return;}
   if(wadeK(G.pos.z)>.25||homePool(G.pos.x,G.pos.z)){doAction("hop");if(socket&&socket.connected)socket.emit("hop",{small:true});return;}   // in the water: just a little hop
-  G.jumpDir=(G.keys.ArrowUp||G.keys.KeyW||G.keys.ArrowDown||G.keys.KeyS||G.keys.ArrowLeft||G.keys.KeyA||G.keys.ArrowRight||G.keys.KeyD||G.target)?1:-1;
+  G.jumpDir=(G.keys.ArrowUp||G.keys.KeyW||G.keys.ArrowDown||G.keys.KeyS||G.keys.ArrowLeft||G.keys.KeyA||G.keys.ArrowRight||G.keys.KeyD||G.target||(G.stick&&G.stick.on&&Math.hypot(G.stick.x,G.stick.y)>.2))?1:-1;
   G.jumpLanded=false;doAction("jump",null,true);tlEvent("jump");sfx.hop();setTimeout(()=>sfx.whoosh(),160);
   if(socket&&socket.connected)socket.emit("hop",{dir:G.jumpDir});
 }
@@ -5776,6 +6075,7 @@ function gameTick(dt,t,hy){
   // input: arrow keys / WASD move relative to the camera (up = towards the sea)
   let ix=0,iz=0;const K=G.keys;
   if(K.ArrowUp||K.KeyW)iz-=1;if(K.ArrowDown||K.KeyS)iz+=1;if(K.ArrowLeft||K.KeyA)ix-=1;if(K.ArrowRight||K.KeyD)ix+=1;
+  if(!ix&&!iz&&G.stick&&G.stick.on&&Math.hypot(G.stick.x,G.stick.y)>.2){ix=G.stick.x;iz=G.stick.y;}   // the touch joystick (TOUCH block)
   let mx=0,mz=0;
   if(G.seat&&(ix||iz||G.target))standUp();
   if(PH.open&&(ix||iz))closePhone();
@@ -5788,7 +6088,7 @@ function gameTick(dt,t,hy){
     if(d<.12){G.target=null;G.marker.visible=false;}else{mx=dx/d;mz=dz/d;}}
   const moving=!!(mx||mz);if(!moving)G.running=false;
   if(moving){
-    G.running=!G.seat&&(!!(G.keys.ShiftLeft||G.keys.ShiftRight)||!!(G.target&&G.runTarget));
+    G.running=!G.seat&&(!!(G.keys.ShiftLeft||G.keys.ShiftRight)||!!(G.target&&G.runTarget)||!!(G.stick&&G.stick.run));
     if(G.running&&!canRun()){G.running=false;noRunWarn();}   // out of stamina: no running
     const before=G.pos.clone(),sp=SPEED*needSpeed()*(1-.38*wadeK(G.pos.z))*(homePool(G.pos.x,G.pos.z)?.65:1)*(G.running&&!deepWater(G.pos.x,G.pos.z)&&!homePool(G.pos.x,G.pos.z)?RUN:1)*dt;
     // try the full step, then slide along x or z if it would leave the walkable areas
@@ -5916,7 +6216,7 @@ function paintAccount(){
   document.getElementById("setCoins").textContent=(me.coins||0).toLocaleString("en-US");
 }
 let lastFocus=null;
-function openSettings(){lastFocus=document.activeElement;document.getElementById("zoomRow").hidden=!inGame;paintSound();paintAccount();setOverlay.hidden=false;sfx.open();G.keys={};setTimeout(()=>soundSwitch.focus(),50);}
+function openSettings(){lastFocus=document.activeElement;document.getElementById("zoomRow").hidden=!inGame;paintSound();paintAccount();setOverlay.hidden=false;sfx.open();G.keys={};setTimeout(()=>setOverlay.querySelector(".vol-mute")?.focus(),50);}
 function closeSettings(){if(setOverlay.hidden)return;setOverlay.hidden=true;sfx.close();(lastFocus||settingsBtn).focus({preventScroll:true});}
 settingsBtn.onclick=e=>{press(e.currentTarget);openSettings();};
 const zoomRange=document.getElementById("zoomRange");
@@ -5941,6 +6241,66 @@ stage.addEventListener("pointerup",e=>{if(e.button===2||e.button===1||orbitPt)en
 stage.addEventListener("dblclick",e=>{if(!inGame||PH.open||G.seat)return;if(G.target){G.runTarget=true;}});
 stage.addEventListener("wheel",e=>{if(!inGame)return;e.preventDefault();setZoom(zoomLevel-Math.sign(e.deltaY)*5);tlEvent("zoom");},{passive:false});
 setZoom(zoomLevel);
+/* =====================================================================
+   TOUCH + PHONES HELD SIDEWAYS: layoutMode() sets body.land (wide and short: phones sideways, the Android app)
+   and body.touch (a touch screen) for the CSS. In the game on a sideways touch screen:
+   - the joystick zone on the left: put a thumb down anywhere in it and drag (past ~90% of the ring = run)
+   - the JUMP button on the right
+   - one finger dragged on the world turns the camera, two fingers pinch to zoom; a tap still walks there
+   The app adds "JumpiApp" to its user agent → body.app.
+   ===================================================================== */
+const TOUCH={coarse:matchMedia("(pointer:coarse)").matches||((navigator.maxTouchPoints||0)>0&&!matchMedia("(pointer:fine)").matches),pts:new Map(),pinch:0,dragT:0,drag:null};
+function layoutMode(){const wide=innerWidth>innerHeight,land=wide&&innerHeight<=520,B=document.body;B.classList.toggle("land",land);B.classList.toggle("wide",wide);B.classList.toggle("touch",TOUCH.coarse);
+  B.classList.toggle("app",/JumpiApp/.test(navigator.userAgent));}
+addEventListener("resize",layoutMode);addEventListener("orientationchange",()=>setTimeout(layoutMode,200));layoutMode();
+// phones in a web browser: "GET THE JUMPI APP!" when PHONES_NEED_APP is on (never in the app, never on computers / iPads)
+{const ua=navigator.userAgent,inApp=/JumpiApp/.test(ua),android=/Android/i.test(ua)&&/Mobile/i.test(ua),ios=/iPhone|iPod/i.test(ua);
+  const QS=new URLSearchParams(location.search);
+  if((PHONES_NEED_APP||QS.has("appgate"))&&!inApp&&(android||ios)&&!QS.has("web")){const g=document.getElementById("appGate");g.classList.toggle("ios",ios);
+    document.getElementById("agDownload").href=GOOGLE_PLAY_URL||ANDROID_DOWNLOAD;if(GOOGLE_PLAY_URL)document.getElementById("agHelp").hidden=true;g.hidden=false;document.body.classList.add("app-gated");}}
+{const zone=document.getElementById("joyZone"),base=zone.querySelector(".joy-base"),R=46;let id=null,ox=0,oy=0;
+  G.stick={x:0,y:0,on:false,run:false};
+  const rest=()=>{zone.style.removeProperty("--jx");zone.style.removeProperty("--jy");base.style.setProperty("--kx","0px");base.style.setProperty("--ky","0px");zone.classList.remove("on","run");};
+  zone.addEventListener("pointerdown",e=>{if(id!==null||!inGame)return;e.preventDefault();id=e.pointerId;try{zone.setPointerCapture(id);}catch(err){}
+    const r=zone.getBoundingClientRect();ox=e.clientX;oy=e.clientY;zone.style.setProperty("--jx",(ox-r.left)+"px");zone.style.setProperty("--jy",(oy-r.top)+"px");zone.classList.add("on");
+    G.stick.on=true;G.stick.x=G.stick.y=0;G.stick.run=false;});
+  zone.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;let dx=e.clientX-ox,dy=e.clientY-oy;const d=Math.hypot(dx,dy);
+    if(d>R){dx=dx/d*R;dy=dy/d*R;}base.style.setProperty("--kx",dx+"px");base.style.setProperty("--ky",dy+"px");
+    G.stick.x=dx/R;G.stick.y=dy/R;const run=d>R*.92;if(run!==G.stick.run){G.stick.run=run;zone.classList.toggle("run",run);}
+    if(d>R*.4)tlEvent("walk");});
+  const up=e=>{if(e.pointerId!==id)return;id=null;G.stick.on=false;G.stick.x=G.stick.y=0;G.stick.run=false;rest();};
+  zone.addEventListener("pointerup",up);zone.addEventListener("pointercancel",up);addEventListener("blur",()=>{id=null;G.stick.on=false;rest();});
+  const jb=document.getElementById("jumpBtn");
+  jb.addEventListener("pointerdown",e=>{e.preventDefault();jb.classList.add("on");if(inGame)bigJump();});
+  ["pointerup","pointercancel","pointerleave"].forEach(ev=>jb.addEventListener(ev,()=>jb.classList.remove("on")));
+  jb.addEventListener("click",e=>e.preventDefault());}
+// one finger on the world: turn the camera (after a few pixels, so a tap still walks); two fingers: pinch zoom
+stage.addEventListener("pointerdown",e=>{if(!inGame||e.pointerType!=="touch")return;TOUCH.pts.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});
+  if(TOUCH.pts.size===2){const [a,b]=[...TOUCH.pts.values()];TOUCH.pinch=Math.hypot(a.x-b.x,a.y-b.y);TOUCH.zoom0=zoomLevel;TOUCH.drag=null;}
+  else if(TOUCH.pts.size===1)TOUCH.drag={moved:false};});
+stage.addEventListener("pointermove",e=>{const p=TOUCH.pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(TOUCH.pts.size>=2){const [a,b]=[...TOUCH.pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(TOUCH.pinch>0){setZoom(TOUCH.zoom0+(d-TOUCH.pinch)*.35);tlEvent("zoom");}TOUCH.dragT=performance.now();return;}
+  if(!TOUCH.drag)return;if(!TOUCH.drag.moved&&Math.hypot(e.clientX-p.sx,e.clientY-p.sy)<9)return;TOUCH.drag.moved=true;TOUCH.dragT=performance.now();
+  G.camYaw=((G.camYaw||0)-dx*.009)%(Math.PI*2);G.camDragT=now();G.camAuto=false;G.camPitch=Math.max(.3,Math.min(1.9,(G.camPitch||1)+dy*.006));});
+const touchEnd=e=>{if(!TOUCH.pts.delete(e.pointerId))return;if(TOUCH.drag&&TOUCH.drag.moved)TOUCH.dragT=performance.now();if(TOUCH.pts.size<2)TOUCH.pinch=0;if(!TOUCH.pts.size)TOUCH.drag=null;};
+stage.addEventListener("pointerup",touchEnd);stage.addEventListener("pointercancel",touchEnd);
+// the Android back button (MainActivity asks the page first): close the top window / the phone / the chat / a start
+// screen panel and answer true; nothing open = false (the app then wants a second press to leave)
+window.jumpiAppBack=function(){
+  const open=[...document.querySelectorAll('[role="dialog"],[role="alertdialog"],.mgx,.idle-overlay,.settings-overlay,.whl-overlay,.tut-overlay')]
+    .filter(el=>!el.hidden&&!el.closest("[hidden]")&&el.getClientRects().length>0&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden");
+  const esc=el=>{const ev=new KeyboardEvent("keydown",{key:"Escape",code:"Escape",bubbles:true,cancelable:true});(el||document.body).dispatchEvent(ev);};
+  if(open.length){const top=open.sort((a,b)=>(+getComputedStyle(b).zIndex||0)-(+getComputedStyle(a).zIndex||0))[0];esc(top.querySelector("input,button")||top);
+    // windows without an Escape key: press their close button
+    if(!top.hidden&&top.getClientRects().length>0){const b=top.querySelector('[aria-label^="Close"],[aria-label^="close"],.whl-x,.mgx-exit,[class*="-close"],[class*="close-"],[id$="Close"],[id$="close"]');if(b)b.click();}
+    return true;}
+  if(typeof PH!=="undefined"&&PH.open){closePhone();return true;}
+  if(chatDock.classList.contains("open")){closeChat();return true;}
+  if(typeof GS!=="undefined"&&GS.open){closeGameStore();return true;}
+  if(document.body.classList.contains("panel-in")){closePanel();return true;}
+  return false;};
+if(new URLSearchParams(location.search).has("touchtest")){window.__touch={G,zoom:()=>zoomLevel,fn:{}};   // tests: the windows, to look at them on a phone-sized screen
+  setTimeout(()=>{"openAdmin openAdopt openApp openChat openDaily openDecorate openGameStore openHouseUp openMap openMenu openMinigame openNeedPop openPetCard openPhone openPlayerCard openSeason openSettings openTrade openTutorial openVerify openWheel openDuel openOffers showShiftIntro showShiftResult privatePop openDiscord closePhone closeChat enterHome goDelivery goToWork goPatrol enterPlace tlStart tlStop closeMinigame".split(" ").forEach(n=>{try{window.__touch.fn[n]=eval(n);}catch(e){}});},0);}
 document.getElementById("setClose").onclick=closeSettings;
 setOverlay.addEventListener("pointerdown",e=>{if(e.target===setOverlay)closeSettings();});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!setOverlay.hidden){e.stopImmediatePropagation();closeSettings();}},true);
@@ -6063,7 +6423,21 @@ byeOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape
 // the website button sits just left of the language button
 const siteBtn=document.getElementById("siteBtn");
 function placeSiteBtn(){const a=[document.getElementById("langBtn"),document.getElementById("coins")].find(el=>el&&el.offsetWidth);
-  siteBtn.style.right=a?(parseFloat(getComputedStyle(a).right)+a.offsetWidth+10)+"px":"88px";}
+  siteBtn.style.right=a?(parseFloat(getComputedStyle(a).right)+a.offsetWidth+10)+"px":"88px";
+  discordBtn.style.right=(parseFloat(siteBtn.style.right)+siteBtn.offsetWidth+10)+"px";}   // the Discord button: left of it (phones: CSS puts it on the 2nd row)
+// "JOIN OUR COMMUNITY!": the Discord button on the start screen
+const discordBtn=document.getElementById("discordBtn"),dcOv=document.getElementById("dcOv");
+function openDiscord(){dcOv.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("dcJoin").focus(),60);}
+function closeDiscord(){if(dcOv.hidden)return;dcOv.hidden=true;sfx.close();discordBtn.focus();}
+discordBtn.onclick=openDiscord;
+// in the Android app: no Discord (13+) and no paid store links (Google Play rules for kids' apps; buying stays on the website)
+const IN_APP=/JumpiApp\//.test(navigator.userAgent);
+if(IN_APP)discordBtn.hidden=true;
+document.getElementById("dcClose").onclick=closeDiscord;document.getElementById("dcLater").onclick=closeDiscord;
+document.getElementById("dcJoin").addEventListener("click",()=>{sfx.success();setTimeout(()=>{dcOv.hidden=true;},300);});
+dcOv.addEventListener("click",e=>{if(e.target===dcOv)closeDiscord();});
+dcOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeDiscord();}
+  if(e.key==="Tab"){const f=[...dcOv.querySelectorAll("a,button")],i=f.indexOf(document.activeElement);e.preventDefault();f[(i+(e.shiftKey?-1:1)+f.length)%f.length].focus();}});
 addEventListener("resize",placeSiteBtn);addEventListener("langchange",placeSiteBtn);{const ro=new ResizeObserver(placeSiteBtn);ro.observe(document.getElementById("langBtn"));ro.observe(document.getElementById("coins"));}setTimeout(placeSiteBtn,0);document.fonts&&document.fonts.ready.then(placeSiteBtn);
 /* =====================================================================
    INVISIBLE ADMINS: an invisible admin sees themselves (and their pet) half see-through,
@@ -6664,7 +7038,8 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!gateOverlay.hidden){e.stopI
 document.getElementById("shop").onclick=e=>{press(e.currentTarget);openStore("shop");};
 document.getElementById("tags").onclick=e=>{press(e.currentTarget);openStore("tags");};
 document.getElementById("inventory").onclick=e=>{press(e.currentTarget);openStore("inventory");};
-stage.addEventListener("click",e=>{if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
+stage.addEventListener("click",e=>{if(performance.now()-TOUCH.dragT<350)return;   // that was a camera drag / pinch, not a tap
+  if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
 document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoosh();exitGame();};
 
 /* =====================================================================
@@ -7273,6 +7648,10 @@ async function endShift(leaving){if(!WORK.active)return;WORK.active=false;docume
   showShiftResult(r.ok?r.data:{error:r.data.error||"Couldn't get paid for that shift."},leaving);}
 
 /* ---------- the start card and the results card ---------- */
+// sideways touch screens: keyboard words → taps and the joystick
+function touchWords(t){if(!(document.body.classList.contains("touch")&&document.body.classList.contains("wide")))return t;
+  return t.replace(/Hop on the scooter \(E\)\. W\/S or ↑\/↓ for gas and brake, A\/D or ←\/→ to steer\./,"Tap the button to hop on the scooter, then drive with the joystick.")
+    .replace(/\(hold Shift to run\)/,"(drag the joystick to the edge to run)").replace(/(and )?press E\b/g,(m,a)=>(a||"")+"tap the button").replace(/\(E\)/g,"").replace(/\bclick\b/g,"tap").replace(/\bClick\b/g,"Tap");}
 function showShiftIntro(){const job=WORK.job||"waiter",J=JOBS[job],v=WORK.view&&WORK.view.jobs.find(j=>j.id===job);
   document.getElementById("wkIntroTitle").textContent=job==="police"?"ON PATROL!":job==="delivery"?"PIZZA TIME!":"TIME TO WORK!";
   document.getElementById("wkStart").textContent=job==="police"?"START PATROL":"START SHIFT";
@@ -7281,19 +7660,19 @@ function showShiftIntro(){const job=WORK.job||"waiter",J=JOBS[job],v=WORK.view&&
     ["1","Grab a pizza",`<span class="wk-demo dlv">${DLV_PIZZA_SVG}</span>`,"Go to the PICK UP window at Jumpi Pizza and press E."],
     ["2","Ride!",`<span class="wk-demo dlv">${DLV_SCOOTER_SVG}</span>`,"Hop on the scooter (E). W/S or ↑/↓ for gas and brake, A/D or ←/→ to steer. Follow the GPS and the blue line."],
     ["3","Deliver it",`<span class="wk-demo dlv">${DLV_HOUSE_SVG}</span>`,"Stop at the house with the light beam and press E. Then ride back for the next pizza. Fast = tips!"]]
-    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${p}</p></div>`).join("");
+    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${touchWords(p)}</p></div>`).join("");
     document.getElementById("wkIntro").hidden=false;sfx.open();return;}
   if(job==="police"){document.getElementById("wkSteps").innerHTML=[
     ["1","Catch pickpockets",`<span class="wk-demo bag">${POL_ICON.bag}</span>`,"Someone shouts \"Hey!\"? Run after the sneaky one with the bag (hold Shift to run) and tag him."],
     ["2","Give it back",`<span class="wk-demo bang"><b>!</b></span>`,"He says sorry and hands over the bag. Bring it back to its owner."],
     ["3","Help lost kids",`<span class="wk-demo tear">${POL_ICON.tear}</span>`,"Find the crying little Jumpi; they follow you to their mom or dad with the ? bubble."]]
-    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${p}</p></div>`).join("");
+    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${touchWords(p)}</p></div>`).join("");
     document.getElementById("wkIntro").hidden=false;sfx.open();return;}
   document.getElementById("wkSteps").innerHTML=[
     ["1","Take the order",`<span class="wk-demo bang"><b>!</b></span>`,"Walk to a customer who waves and press E."],
     ["2","Pick it up",`<img alt="" src="${foodThumb("diner",0)}">`,"When the kitchen rings the bell, grab the plate with the right table number."],
     ["3","Serve it",`<img alt="" src="${foodThumb("diner",1)}">`,"Bring it to that table. Quick service = tips!"]]
-    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${p}</p></div>`).join("");
+    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${touchWords(p)}</p></div>`).join("");
   document.getElementById("wkIntro").hidden=false;sfx.open();}
 function showShiftResult(d,leaving){const el=document.getElementById("wkEnd");
   if(d.error){document.getElementById("wkEndBody").innerHTML=`<p class="wk-err">${esc(d.error)}</p>`;el.hidden=false;return;}
@@ -9414,7 +9793,7 @@ const OFFERS={me:null,shots:{}};
 const GSTAR='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 L39.6 21.6 L57.7 23.6 L44.2 35.9 L48 53.7 L32 44.6 L16 53.7 L19.8 35.9 L6.3 23.6 L24.4 21.6 Z" fill="#ffc21a" stroke="#c98a00" stroke-width="3" stroke-linejoin="round"/></svg>';
 const spxOverlay=document.getElementById("spxOverlay");
 const storeLink=id=>"/store"+(id?"#"+id:"");
-function openStorePage(id){const w=window.open(storeLink(id),"_blank","noopener");if(!w)location.href=storeLink(id);}
+function openStorePage(id){if(IN_APP){toast("Ask a grown-up to visit jumpigames.com on a computer.");return;}const w=window.open(storeLink(id),"_blank","noopener");if(!w)location.href=storeLink(id);}
 // a picture of MY Jumpi wearing a bundle (with its aura)
 let shotR=null;
 function bundleShot(P){const key=P.id+":"+JSON.stringify(me&&me.look||{});if(OFFERS.shots[key])return OFFERS.shots[key];
@@ -9551,7 +9930,7 @@ function stBanner(o){
     const x0=58,y0=54,x1=w-58,y1=h-66;c.fillStyle="#fffaf0";c.beginPath();c.roundRect(x0,y0,x1-x0,y1-y0,70);c.fill();
     c.strokeStyle=o.frame[3]||"#e4dcff";c.lineWidth=10;c.setLineDash([2,26]);c.lineCap="round";c.beginPath();c.roundRect(x0+26,y0+26,x1-x0-52,y1-y0-52,50);c.stroke();c.setLineDash([]);
     stTitle(c,o.title,w/2,y0+215,o.titleSize||290,o.tc);
-    stTitle(c,o.sub,w/2,y0+480,175,o.sc,"rtl");
+    stTitle(c,o.sub,w/2,y0+480,175,o.sc,o.subDir||"rtl");
     o.icons.forEach(([col,kind],i)=>stIcon(c,kind,w/2+(i-(o.icons.length-1)/2)*330,y1-148,col));
     const star=(x,y,s,col)=>{c.fillStyle=col;c.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r2=k%2?s*.42:s;c.lineTo(x+Math.cos(a)*r2,y+Math.sin(a)*r2);}c.fill();};
     star(x0+120,y0+120,46,"#ffd23a");star(x1-120,y0+120,46,"#ffd23a");star(x0+200,y0+80,20,"#ff8fc0");star(x1-210,y0+84,20,"#1fb6ff");star(x0+120,y1-110,26,"#2fd36b");star(x1-120,y1-110,26,"#ff8fc0");});
@@ -9953,6 +10332,10 @@ const STUDIO_SCENES={
       build(sc){const J=stJumpi({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0});J.root.position.set(-1.95,0,0);J.root.rotation.y=.28;sc.add(J.root);stShadow(sc,-1.95,0,1.4);
         J.armL.rotation.set(-1.15,0,-.5);J.armR.rotation.set(-1.15,0,.5);J.head.rotation.z=.1;
         const H=stHeart();H.position.set(-1.72,.62,1.0);H.rotation.y=.28;H.rotation.z=.1;H.scale.setScalar(.62);sc.add(H);}});}},
+  playFeature:{name:"Google Play feature graphic",about:"The 1024×500 picture at the top of the Jumpi Games page in Google Play: Pip and a friend next to a big JUMPI GAMES sign.",round:false,aspect:2.048,
+    build(){const r=stBanner({title:"JUMPI GAMES",titleSize:300,sub:"Play with friends!",subDir:"ltr",frame:["#ffc25a","#ff8a1c","#c25e00","#ffe4c4"],tc:["#b49bff","#7b5cff","#4a2fc0"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
+      icons:[["#2fd36b","play"],["#ff5f8f","heart"],["#ffb21f","star"],["#1fb6ff","gift"]],
+      left:{color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},right:{color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19}});r.camera.fov=27;return r;}},
   welcomeCard:{name:"Welcome card (Discord, background)",about:"The background of the picture Pip posts in #welcome for every new member: the server writes their avatar into the ring and their name on the plate (discord/card.js).",round:false,aspect:2.4,
     build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(25,2.4,.1,200);
       const bg=new THREE.Mesh(new THREE.PlaneGeometry(60,26),new THREE.MeshBasicMaterial({map:stGlowBg(["#a8e8ff","#5fbfff","#3d7cf0","#3a3bc8","#24186e"],.5,.45),toneMapped:false}));bg.position.set(0,1.4,-12);sc.add(bg);
@@ -10015,6 +10398,111 @@ function studioPaint(){const S=STUDIO_SCENES[STUDIO.cur];document.querySelectorA
   const busy=document.getElementById("stBusy");busy.hidden=false;setTimeout(()=>{document.getElementById("stPrev").src=studioRender(STUDIO.cur,1024).toDataURL("image/jpeg",.92);busy.hidden=true;},40);}
 const studioFont=STUDIO_ON?new FontFace("RubikStudio","url(/fonts/Rubik.ttf)",{weight:"300 900"}).load().then(f=>document.fonts.add(f)).catch(()=>{}):null;   // Hebrew titles
 if(STUDIO_ON){const wait=setInterval(()=>{if(!P)return;clearInterval(wait);studioFont.then(()=>setTimeout(studioOpen,300));},100);}
+/* ---------- Discord emojis: little stickers of the game (tools/discord/emojis, uploaded by npm run discord:apply) ----------
+   Each one is a tiny 3D scene with a see-through background, framed automatically on `frame` (or on the whole
+   thing), then outlined like a sticker (white edge + thin navy line) so it reads on Discord's dark and light themes.
+   `text` ones are game-style words. `__studio.emoji(name)` renders one; `__studio.emojiList` lists the names. */
+function stCloseEye(sc,J,eye,down){J.root.updateMatrixWorld(true);const hc=new THREE.Box3().setFromObject(J.head).getCenter(new THREE.Vector3());
+  const eb=new THREE.Box3().setFromObject(eye),ec=eb.getCenter(new THREE.Vector3()),es=eb.getSize(new THREE.Vector3());eye.visible=false;
+  const out=ec.clone().sub(hc).normalize(),r=Math.max(es.x,es.y)*.42;
+  const arc=new THREE.Mesh(new THREE.TorusGeometry(r,r*.2,12,40,Math.PI*.78),new THREE.MeshStandardMaterial({color:"#3a1a08",roughness:.4}));
+  arc.rotation.z=Math.PI*.11+(down?Math.PI:0);const g=new THREE.Group();g.add(arc);arc.position.y=down?r*.35:-r*.35;
+  g.position.copy(ec).addScaledVector(out,es.z*.15);g.lookAt(g.position.clone().add(out));sc.add(g);return {ec,es,out,r};}
+function stTear(sc,at,out,r,len=1){const m=new THREE.MeshStandardMaterial({color:"#3fb4ff",emissive:"#1a6fd0",emissiveIntensity:.35,roughness:.15});
+  const d=new THREE.Mesh(new THREE.SphereGeometry(r*.45,16,12),m);d.scale.set(1,1.5*len,1);d.position.copy(at).addScaledVector(out,r*1.4);d.position.y-=r*1.25*len;sc.add(d);return d;}
+const stEyeInfo=(J,eye)=>{J.root.updateMatrixWorld(true);const hc=new THREE.Box3().setFromObject(J.head).getCenter(new THREE.Vector3());const eb=new THREE.Box3().setFromObject(eye);
+  const ec=eb.getCenter(new THREE.Vector3()),es=eb.getSize(new THREE.Vector3());return {ec,es,out:ec.clone().sub(hc).normalize(),r:Math.max(es.x,es.y)*.42};};
+function stCoin(){const g=new THREE.Group();const face=stCanvasTex(256,256,(c,w,h)=>{const gr=c.createRadialGradient(100,90,10,128,128,128);gr.addColorStop(0,"#fff3a8");gr.addColorStop(.6,"#ffc21a");gr.addColorStop(1,"#e09000");c.fillStyle=gr;c.fillRect(0,0,w,h);
+    c.strokeStyle="#c27a00";c.lineWidth=12;c.beginPath();c.arc(128,128,100,0,7);c.stroke();c.font='900 150px "RubikStudio", sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillStyle="#c27a00";c.fillText("J",132,140);c.fillStyle="#fff6c0";c.fillText("J",128,134);});
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.14,48),new THREE.MeshStandardMaterial({color:"#e8a400",metalness:.6,roughness:.3}));m.rotation.x=Math.PI/2;g.add(m);
+  const f=new THREE.Mesh(new THREE.CircleGeometry(.6,48),new THREE.MeshStandardMaterial({map:face,metalness:.4,roughness:.3}));f.position.z=.071;g.add(f);
+  g.rotation.y=-.35;g.rotation.z=.12;return g;}
+function stGift(body="#9b5cff",rib="#ffd23a"){const g=new THREE.Group(),M=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:.45});
+  const b=new THREE.Mesh(new THREE.BoxGeometry(1,.8,1),M(body));b.position.y=.4;g.add(b);const lid=new THREE.Mesh(new THREE.BoxGeometry(1.12,.24,1.12),M(body));lid.position.y=.9;g.add(lid);
+  [[.2,1.04,1.16],[1.16,1.04,.2]].forEach(([x,y,z])=>{const r=new THREE.Mesh(new THREE.BoxGeometry(x,y,z),M(rib));r.position.y=.52;g.add(r);});
+  [-1,1].forEach(s=>{const l=new THREE.Mesh(new THREE.TorusGeometry(.2,.07,12,24),M(rib));l.position.set(s*.2,1.12,0);l.rotation.set(0,0,s*.6);l.scale.set(1,.7,1);g.add(l);});
+  g.rotation.y=-.6;g.rotation.x=.18;return g;}
+function stStar3(col="#ffd23a"){const s=new THREE.Shape();for(let k=0;k<10;k++){const a=Math.PI/2+k*Math.PI/5,r=k%2?.26:.62;const x=Math.cos(a)*r,y=Math.sin(a)*r;k?s.lineTo(x,y):s.moveTo(x,y);}
+  const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:.16,bevelEnabled:true,bevelThickness:.08,bevelSize:.06,bevelSegments:6}),new THREE.MeshStandardMaterial({color:col,roughness:.3,metalness:.25}));m.geometry.center();m.rotation.y=-.25;return m;}
+function stMiniWheel(){const t=stCanvasTex(512,512,(c,w,h)=>{const C=256,cols=["#ff4f6b","#ffd23a","#1fb6ff","#2fd36b","#9b5cff","#ff8a1c","#ff8fc0","#4ad6c8"];
+    for(let i=0;i<8;i++){c.fillStyle=cols[i];c.beginPath();c.moveTo(C,C);c.arc(C,C,236,i*Math.PI/4,(i+1)*Math.PI/4);c.fill();}
+    c.lineWidth=26;c.strokeStyle="#ffc21a";c.beginPath();c.arc(C,C,236,0,7);c.stroke();for(let i=0;i<16;i++){const a=i*Math.PI/8;c.fillStyle=i%2?"#ffffff":"#fff2a0";c.beginPath();c.arc(C+Math.cos(a)*236,C+Math.sin(a)*236,11,0,7);c.fill();}
+    c.fillStyle="#ffffff";c.beginPath();c.arc(C,C,46,0,7);c.fill();c.fillStyle="#ffc21a";c.beginPath();c.arc(C,C,30,0,7);c.fill();});
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(.75,.75,.12,64),[new THREE.MeshStandardMaterial({color:"#e8a400",metalness:.5,roughness:.3}),new THREE.MeshStandardMaterial({map:t,roughness:.4}),new THREE.MeshStandardMaterial({color:"#e8a400"})]);
+  m.rotation.x=Math.PI/2;const g=new THREE.Group();g.add(m);const p=new THREE.Mesh(new THREE.ConeGeometry(.12,.26,16),new THREE.MeshStandardMaterial({color:"#ff4f6b",roughness:.4}));p.rotation.z=Math.PI;p.position.set(0,.82,.08);g.add(p);g.rotation.y=-.2;return g;}
+const EM_BASE={color:0,eyes:1};
+// a Jumpi for an emoji; `head` = frame only the head (faces), else the whole body
+const emJ=(sc,look)=>{const J=stJumpi({...EM_BASE,...look});sc.add(J.root);J.root.rotation.y=-.12;J.head.rotation.z=.06;return J;};
+const ST_EMOJI={
+  jumpi_hi:(sc)=>{const J=emJ(sc,{});J.armR.rotation.set(.35,0,2.2);return {frame:[J.root]};},
+  pip_hi:(sc)=>{const J=emJ(sc,{color:2,hair:1,shirt:2,pants:0,glasses:0});J.armR.rotation.set(.35,0,2.2);return {frame:[J.root]};},
+  jumpi_wink:(sc)=>{const J=emJ(sc,{});stCloseEye(sc,J,J.eyeL);return {frame:[J.head]};},
+  jumpi_love:(sc)=>{const J=emJ(sc,{glasses:4});return {frame:[J.head]};},
+  jumpi_cool:(sc)=>{const J=emJ(sc,{glasses:3,hat:0});J.head.rotation.z=.12;return {frame:[J.head]};},
+  jumpi_party:(sc)=>{const J=emJ(sc,{hat:17,glasses:2});return {frame:[J.head]};},
+  jumpi_king:(sc)=>{const J=emJ(sc,{hat:20});return {frame:[J.head]};},
+  jumpi_kitty:(sc)=>{const J=emJ(sc,{color:3,hat:31,eyes:5});return {frame:[J.head]};},
+  jumpi_bunny:(sc)=>{const J=emJ(sc,{color:4,hat:33,eyes:6});return {frame:[J.head]};},
+  jumpi_fancy:(sc)=>{const J=emJ(sc,{hat:11,glasses:7});return {frame:[J.head]};},
+  jumpi_lol:(sc)=>{const J=emJ(sc,{});const a=stCloseEye(sc,J,J.eyeL),b=stCloseEye(sc,J,J.eyeR);J.head.rotation.z=.16;stTear(sc,a.ec,a.out,a.r,.8);stTear(sc,b.ec,b.out,b.r,.8);return {frame:[J.head]};},
+  jumpi_cry:(sc)=>{const J=emJ(sc,{});J.head.rotation.x=.1;const a=stCloseEye(sc,J,J.eyeL,true),b=stCloseEye(sc,J,J.eyeR,true);
+    return {frame:[J.head],overlay:(c,S,proj)=>{[a,b].forEach(e=>{const [x,y]=proj(e.ec),w=S*.05;   // two tear streams running down the cheeks
+      const g=c.createLinearGradient(0,y,0,y+S*.3);g.addColorStop(0,"rgba(120,210,255,.95)");g.addColorStop(1,"rgba(60,170,255,.9)");c.fillStyle=g;c.strokeStyle="#1d6fd0";c.lineWidth=S*.012;
+      c.beginPath();c.roundRect(x-w/2,y+S*.03,w,S*.26,w/2);c.fill();c.stroke();c.beginPath();c.arc(x,y+S*.3,w*.9,0,7);c.fill();c.stroke();});}};},
+  jumpi_sleep:(sc)=>{const J=emJ(sc,{color:4,eyes:6,hat:1});stCloseEye(sc,J,J.eyeL,true);stCloseEye(sc,J,J.eyeR,true);J.head.rotation.z=.2;
+    return {frame:[J.head],overlay:(c,S)=>{stTitle(c,"z",S*.84,S*.3,S*.17,["#bfe6ff","#5fb0ff","#1f5fb8"]);stTitle(c,"Z",S*.72,S*.15,S*.24,["#bfe6ff","#5fb0ff","#1f5fb8"]);}};},
+  jumpi_wow:(sc)=>{const J=emJ(sc,{color:3,eyes:5});const B=stBubble("!","#ffffff","#ff4f6b");J.root.updateMatrixWorld(true);const hb=new THREE.Box3().setFromObject(J.head);
+    B.position.set(hb.max.x+.15,hb.max.y-.05,.3);B.scale.setScalar(.75);B.rotation.z=-.1;sc.add(B);return {frame:[J.head,B]};},
+  jumpi_think:(sc)=>{const J=emJ(sc,{color:1,eyes:2,glasses:0});J.head.rotation.z=-.18;const B=stBubble("?","#ffffff","#1f8fff");J.root.updateMatrixWorld(true);const hb=new THREE.Box3().setFromObject(J.head);
+    B.position.set(hb.max.x+.12,hb.max.y-.05,.3);B.scale.setScalar(.75);sc.add(B);return {frame:[J.head,B]};},
+  jumpi_pink:(sc)=>{const J=emJ(sc,{color:3,eyes:5,hair:24});return {frame:[J.head]};},
+  jumpi_blue:(sc)=>{const J=emJ(sc,{color:1,eyes:2,hair:8});return {frame:[J.head]};},
+  jumpi_purple:(sc)=>{const J=emJ(sc,{color:4,eyes:6,hair:6});return {frame:[J.head]};},
+  jumpi_police:(sc)=>{const J=emJ(sc,uniformLook({},"police"));J.armR.rotation.set(-.2,0,1.6);return {frame:[J.root]};},
+  jumpi_waiter:(sc)=>{const J=emJ(sc,uniformLook({hair:8},"waiter"));J.armR.rotation.set(.3,0,2.1);return {frame:[J.root]};},
+  jumpi_pizza:(sc)=>{const J=emJ(sc,uniformLook({color:3,eyes:5},"delivery"));const P=makeFood("park",7);P.scale.setScalar(1.6);P.position.set(.75,1.0,.4);P.rotation.set(1.1,0,.3);sc.add(P);J.armR.rotation.set(-.6,0,1.2);return {frame:[J.root,P]};},
+  jumpi_mod:(sc)=>{const J=emJ(sc,{shirt:68,pants:56,hat:40});J.armR.rotation.set(.35,0,2.2);return {frame:[J.root]};},
+  pet_puppy:(sc)=>{const P=buildPet("puppy",0);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  pet_kitten:(sc)=>{const P=buildPet("kitten",0);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  pet_bunny:(sc)=>{const P=buildPet("bunny",2);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  pet_hamster:(sc)=>{const P=buildPet("hamster",0);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  pet_panda:(sc)=>{const P=buildPet("panda",0);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  pet_dragon:(sc)=>{const P=buildPet("dragon",1);sc.add(P.g);P.g.rotation.y=.5;return {frame:[P.g]};},
+  food_pizza:(sc)=>{const F=makeFood("diner",0);F.rotation.x=.75;sc.add(F);return {frame:[F]};},
+  food_burger:(sc)=>{const F=makeFood("diner",1);F.rotation.x=.35;sc.add(F);return {frame:[F]};},
+  food_icecream:(sc)=>{const F=makeFood("park",1);F.rotation.z=-.15;sc.add(F);return {frame:[F]};},
+  food_hotdog:(sc)=>{const F=makeFood("park",4);F.rotation.set(.5,.4,0);sc.add(F);return {frame:[F]};},
+  food_slushie:(sc)=>{const F=makeFood("park",11);sc.add(F);return {frame:[F]};},
+  food_bubbletea:(sc)=>{const F=makeFood("park",13);sc.add(F);return {frame:[F]};},
+  food_cottoncandy:(sc)=>{const F=makeFood("park",3);F.rotation.z=-.2;sc.add(F);return {frame:[F]};},
+  jumpi_coin:(sc)=>{const C=stCoin();sc.add(C);return {frame:[C]};},
+  jumpi_gift:(sc)=>{const G=stGift();sc.add(G);return {frame:[G]};},
+  jumpi_heart:(sc)=>{const H=stHeart();H.rotation.y=-.3;sc.add(H);return {frame:[H]};},
+  jumpi_star:(sc)=>{const S=stStar3();sc.add(S);return {frame:[S]};},
+  jumpi_lock:(sc)=>{const L=stPadlock();L.rotation.y=-.3;sc.add(L);return {frame:[L]};},
+  lucky_wheel:(sc)=>{const W=stMiniWheel();sc.add(W);return {frame:[W]};},
+  surfboard:(sc)=>{const B=stSurfboard();B.rotation.set(0,-.5,-.35);sc.add(B);return {frame:[B]};},
+  jumpi_gg:"GG", jumpi_lol_text:"LOL", jumpi_wow_text:"WOW", jumpi_hi_text:"HI!", jumpi_omg:"OMG",
+};
+const ST_EMOJI_TEXT_COLS={GG:["#7dff9a","#1fb35a","#0f6a30"],LOL:["#ffe27a","#ff9a1c","#b85a00"],WOW:["#c9b8ff","#7b5cff","#3a24a8"],"HI!":["#9fe2ff","#1f8fff","#0f4a98"],OMG:["#ffb3d1","#ff4f8b","#9a1a4a"]};
+function studioEmoji(name,S=256){const def=ST_EMOJI[name],out=document.createElement("canvas");out.width=out.height=S;const c=out.getContext("2d");
+  const art=document.createElement("canvas");art.width=art.height=S;const a=art.getContext("2d");
+  if(typeof def==="string"){a.save();a.translate(S/2,S/2);a.rotate(-.1);a.translate(-S/2,-S/2);a.font=`900 100px "RubikStudio", sans-serif`;
+    const sz=Math.min(S*.62,S*.86/a.measureText(def).width*100);stTitle(a,def,S/2,S*.52,sz,ST_EMOJI_TEXT_COLS[def]||["#ffffff","#dddddd","#333"]);a.restore();}
+  else{const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(22,1,.05,200),r=def(sc)||{};stLights(sc,[0xbfe6ff,0xffe0f4]);
+    sc.updateMatrixWorld(true);const box=new THREE.Box3();(r.frame||[sc]).forEach(o=>box.expandByObject(o));const ctr=box.getCenter(new THREE.Vector3()),sz=box.getSize(new THREE.Vector3());
+    const fit=Math.max(sz.x,sz.y,sz.z*.6)/2/Math.tan(THREE.MathUtils.degToRad(11))*1.12;const dir=new THREE.Vector3(.12,.16,1).normalize();
+    cam.position.copy(ctr).addScaledVector(dir,fit+sz.z/2);cam.lookAt(ctr);cam.updateProjectionMatrix();
+    if(!STUDIO.RA){STUDIO.RA=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});STUDIO.RA.outputColorSpace=THREE.SRGBColorSpace;STUDIO.RA.toneMapping=THREE.ACESFilmicToneMapping;STUDIO.RA.toneMappingExposure=1.08;STUDIO.RA.setPixelRatio(1);STUDIO.RA.setClearColor(0x000000,0);}
+    STUDIO.RA.setSize(S,S,false);STUDIO.RA.render(sc,cam);a.drawImage(STUDIO.RA.domElement,0,0);
+    if(r.overlay)r.overlay(a,S,(v)=>{const q=v.clone().project(cam);return [(q.x+1)/2*S,(1-q.y)/2*S];});
+    sc.traverse(o=>{if(o.geometry)o.geometry.dispose();});}
+  // sticker edge: navy line, then white edge, then the picture
+  const sil=(col)=>{const s=document.createElement("canvas");s.width=s.height=S;const x=s.getContext("2d");x.drawImage(art,0,0);x.globalCompositeOperation="source-in";x.fillStyle=col;x.fillRect(0,0,S,S);return s;};
+  const ring=(img,rad)=>{for(let k=0;k<24;k++){const t=k/24*Math.PI*2;c.drawImage(img,Math.cos(t)*rad,Math.sin(t)*rad);}};
+  const pad=S*.035;c.save();c.translate(S/2,S/2);c.scale(1-pad*2/S*2.2,1-pad*2/S*2.2);c.translate(-S/2,-S/2);
+  ring(sil("rgba(29,43,79,.9)"),S*.042);ring(sil("#ffffff"),S*.03);c.drawImage(art,0,0);c.restore();
+  return out;}
 // letters for the welcome card's name (discord/card.js draws names from these, the server has no fonts):
 // "name" = the big game-style title letters, "small" = plain purple letters for the member number
 const ST_ATLAS_CHARS=" !#&'-._?0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzאבגדהוזחטיכךלמםנןסעפףצץקרשת";
@@ -10032,7 +10520,7 @@ function studioAtlas(style){const name=style==="name",size=name?104:40,font=`${n
   const glyphs={};cells.forEach(g=>{glyphs[g.ch]={x:g.x,y:g.y,w:g.w,h:g.h,adv:Math.round(g.adv*100)/100};});
   return {png:out.toDataURL("image/png"),meta:{size,pad,base,height:CH,glyphs}};}
 if(STUDIO_ON)window.__studio={render:(id,size,type="image/jpeg",q=.9)=>studioRender(id||STUDIO.cur,size||1024).toDataURL(type,q),scenes:STUDIO_SCENES,
-  atlas:(style)=>studioAtlas(style),layout:WELCOME_LAYOUT};
+  atlas:(style)=>studioAtlas(style),layout:WELCOME_LAYOUT,emoji:(name,size)=>studioEmoji(name,size).toDataURL("image/png"),emojiList:Object.keys(ST_EMOJI)};
 function giveChips(P){const g=P.give,out=[];
   (g.items||[]).forEach(id=>{const [slot,i]=id.split(":");out.push(`<span class="of-it${slot==="aura"?" aura":""}" title="${esc(itemName(slot,+i))}"><span class="pic">${itemPic(slot,+i)}</span><b>${esc(itemName(slot,+i))}</b></span>`);});
   if(g.coins)out.push(`<span class="of-it cn"><span class="pic">${COIN_SVG}</span><b>${g.coins.toLocaleString("en-US")} coins</b></span>`);
@@ -10068,8 +10556,8 @@ spxOverlay.addEventListener("click",e=>{if(e.target===spxOverlay)closeOffers();}
 spxOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeOffers();}});
 setInterval(()=>{if(spxOverlay.hidden)return;spxOverlay.querySelectorAll("[data-ends]").forEach(el=>el.textContent=endsText(+el.dataset.ends));},30000);
 document.getElementById("spxBtn").onclick=e=>{press(e.currentTarget);openOffers();};
-if(!STORE_OPEN)document.getElementById("spxBtn").remove();else document.body.classList.add("has-offers");   // the real-money store is closed for now
-if(STORE_OPEN){const c=document.getElementById("coins");c.setAttribute("role","button");c.tabIndex=0;c.title="Get more coins";
+if(!STORE_OPEN||IN_APP)document.getElementById("spxBtn").remove();else document.body.classList.add("has-offers");   // the real-money store is closed for now
+if(STORE_OPEN&&!IN_APP){const c=document.getElementById("coins");c.setAttribute("role","button");c.tabIndex=0;c.title="Get more coins";
   c.addEventListener("click",()=>{if(inGame&&me)openOffers();});c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&inGame&&me){e.preventDefault();openOffers();}});}
 // something was bought in the store (in another tab): show it right away
 function storeGranted(d){const P=PRODUCT_BY_ID[d.product];if(d.user&&me){me.coins=d.user.coins;me.inventory=d.user.inventory;me.subscriber=d.user.subscriber;me.memberUntil=d.user.memberUntil;}
@@ -10839,16 +11327,23 @@ const TL={on:false,i:0,v:0,need:{},busy:false,ring:null,ringKey:"",yaw0:0,lastPo
 const PIP_SKIN="#4cc35a";
 const K=k=>`<span class="k">${k}</span>`;
 const DOOR=id=>{const V=VENUES[id],[x,z]=venueLocal(V,0,V.door||3.4);return {x,z,r:1.6};};
+// touch screens: the step's own touch text, or the keyboard words swapped for taps
+const tlTouch=()=>document.body.classList.contains("touch")&&document.body.classList.contains("wide");
+function tlText(S){if(!tlTouch())return S.say;if(S.touch)return S.touch;
+  return S.say.replace(/Press <span class="k">E<\/span> \(or click it\)/g,"Tap it").replace(/[Pp]ress <span class="k">E<\/span> at /g,"tap ")
+    .replace(/(and )?[Pp]ress <span class="k">E<\/span>( again)?/g,(m,a,b)=>(a||"")+(b?"tap the button again":"tap the button"))
+    .replace(/Press <span class="k">P<\/span> or click it/g,"Tap it").replace(/Press <span class="k">1<\/span>-<span class="k">4<\/span> or click a slot/g,"Tap a slot")
+    .replace(/<b>click anywhere on the screen<\/b>/g,"<b>tap anywhere on the screen</b>").replace(/press E again/g,"tap again").replace(/\bclick\b/g,"tap").replace(/\bClick\b/g,"Tap").replace(/\bclicking\b/g,"tapping");}
 const TL_STEPS=[
   // ---- welcome ----
   {ch:"WELCOME",btn:"Let's go!",say:`Hi, I'm <b>Pip</b>! Welcome to <b>Jumpi</b>, a big world full of friends, games and surprises. I'll show you <b>everything</b>: how to move, what every button does, the shops, the Beach, the Water Park, jobs, pets and more. It takes about 10 minutes, and at the end you get <b>250 coins</b>! Ready?`},
   // ---- moving ----
-  {ch:"MOVING AROUND",kind:"walk",goal:8,say:`Let's start with walking. Use ${K("W")}${K("A")}${K("S")}${K("D")} or the ${K("arrow keys")}: <b>W</b> goes forward, <b>S</b> goes back, <b>A</b> and <b>D</b> go to the sides. Walk around until the bar is full!`},
-  {ch:"MOVING AROUND",ev:"click",say:`You can also <b>click on the ground</b> and your Jumpi walks there by itself. A little marker shows where you're going. Try it: click somewhere on the floor!`},
-  {ch:"MOVING AROUND",kind:"run",goal:1.5,say:`In a hurry? Hold ${K("Shift")} while you walk to <b>run</b>. (You can also <b>double-click</b> the ground to run there.) Running uses up your stamina faster, so take a break now and then!`},
-  {ch:"MOVING AROUND",ev:"jump",say:`Press ${K("Space")} to <b>jump</b>! Every jump comes with a cool flip, and you can jump up onto low things too.`},
-  {ch:"MOVING AROUND",kind:"yaw",goal:1.1,say:`Hold the <b>right mouse button</b> and drag left or right to <b>turn the camera</b> around you. (Pressing down the mouse wheel and dragging works too.)`},
-  {ch:"MOVING AROUND",ev:"zoom",say:`Now roll the <b>mouse wheel</b> to <b>zoom</b>: in close to your Jumpi, or far out to see more of the world.`},
+  {ch:"MOVING AROUND",kind:"walk",goal:8,touch:`Let's start with walking. Put your <b>thumb on the left side</b> of the screen and drag it: that's your <b>joystick</b>. Drag up to go forward, down to go back. Walk around until the bar is full!`,touchHl:"#joyZone .joy-base",say:`Let's start with walking. Use ${K("W")}${K("A")}${K("S")}${K("D")} or the ${K("arrow keys")}: <b>W</b> goes forward, <b>S</b> goes back, <b>A</b> and <b>D</b> go to the sides. Walk around until the bar is full!`},
+  {ch:"MOVING AROUND",ev:"click",touch:`You can also <b>tap on the ground</b> and your Jumpi walks there by itself. A little marker shows where you're going. Try it!`,say:`You can also <b>click on the ground</b> and your Jumpi walks there by itself. A little marker shows where you're going. Try it: click somewhere on the floor!`},
+  {ch:"MOVING AROUND",kind:"run",goal:1.5,touch:`In a hurry? Drag the joystick <b>all the way to the edge</b> to <b>run</b> (the middle turns orange). Running uses up your stamina faster, so take a break now and then!`,touchHl:"#joyZone .joy-base",say:`In a hurry? Hold ${K("Shift")} while you walk to <b>run</b>. (You can also <b>double-click</b> the ground to run there.) Running uses up your stamina faster, so take a break now and then!`},
+  {ch:"MOVING AROUND",ev:"jump",touch:`Tap the orange <b>jump button</b> on the right! Every jump comes with a cool flip, and you can jump up onto low things too.`,touchHl:"#jumpBtn",say:`Press ${K("Space")} to <b>jump</b>! Every jump comes with a cool flip, and you can jump up onto low things too.`},
+  {ch:"MOVING AROUND",kind:"yaw",goal:1.1,touch:`<b>Drag one finger</b> on the world (not on the joystick) to <b>turn the camera</b> around your Jumpi. Look all the way around!`,say:`Hold the <b>right mouse button</b> and drag left or right to <b>turn the camera</b> around you. (Pressing down the mouse wheel and dragging works too.)`},
+  {ch:"MOVING AROUND",ev:"zoom",touch:`Now <b>pinch with two fingers</b> to <b>zoom</b>: in close to your Jumpi, or far out to see more of the world.`,say:`Now roll the <b>mouse wheel</b> to <b>zoom</b>: in close to your Jumpi, or far out to see more of the world.`},
   // ---- the screen ----
   {ch:"YOUR SCREEN",hl:"#coins",btn:"Next",say:`These are your <b>coins</b>, the money of Jumpi. You win them in mini-games, jobs, the daily gift and the Lucky Wheel, and spend them on clothes, furniture, pets, food and house upgrades.`},
   {ch:"YOUR SCREEN",hl:"#needsBar",btn:"Next",say:`These four circles are your Jumpi's <b>needs</b>: <b>Hunger</b>, <b>Energy</b>, <b>Stamina</b> and <b>Fun</b>. They go down slowly while you play, and your Jumpi shows it (sleepy eyes, slumping...). <b>Eat</b> for Hunger, <b>sleep</b> in a bed for Energy, <b>sit down</b> for Stamina, and <b>dance or play</b> for Fun. Click a circle any time for tips.`},
@@ -10859,7 +11354,7 @@ const TL_STEPS=[
   {ch:"YOUR SCREEN",hl:"#wheelBtn",btn:"Next",say:`The golden wheel is the <b>Lucky Wheel</b>. You get <b>one free spin every 24 hours</b>: coins, Season XP, or if you're really lucky, the rare Lucky Hat!`},
   {ch:"YOUR SCREEN",hl:"#homeBtn",btn:"Next",say:`This button takes you to <b>your own home</b>. There you can <b>Decorate</b> with furniture, sit on the sofa, sleep in your bed to get energy back, and buy upgrades: a bigger room, a garden, a swimming pool and even a second floor!`},
   // ---- chat & phone ----
-  {ch:"CHAT & PHONE",hl:"#chatFab",ev:"chat",say:`Time to say hi! Press ${K("Enter")} or click the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`},
+  {ch:"CHAT & PHONE",hl:"#chatFab",ev:"chat",touch:`Time to say hi! Tap the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`,say:`Time to say hi! Press ${K("Enter")} or click the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`},
   {ch:"CHAT & PHONE",hl:()=>chatDock.classList.contains("open")?"#emoteTray":"#chatFab",ev:"emote",say:`Now send an <b>emote</b>! Open the chat bar and click one of the faces: a big emoji jumps above your head. Some are free, and you can unlock more in the shop.`},
   {ch:"CHAT & PHONE",hl:"#phoneBtn",needs:"phoneOpen",ev:"phoneClose",say:`This is your <b>phone</b>! Press ${K("P")} or click it. Inside: <b>Friends</b>, <b>JumpiChat</b> (private chat with friends), who's <b>Online</b>, your <b>Home</b>, <b>Pets</b>, <b>Music</b>, <b>Jobs</b>, <b>My Look</b> and the <b>Shop</b>. Have a look, then put it away.`},
   // ---- eating ----
@@ -10903,7 +11398,7 @@ function tlPaint(pop){
   tlCard.hidden=false;tlCard.classList.remove("win");if(pop){tlCard.classList.remove("pop");void tlCard.offsetWidth;tlCard.classList.add("pop");}
   document.getElementById("tlStep").textContent=S.ch;
   document.getElementById("tlCount").textContent=`${TL.i+1} / ${TL_STEPS.length}`;
-  document.getElementById("tlSay").innerHTML=S.say;
+  document.getElementById("tlSay").innerHTML=tlText(S);
   document.getElementById("tlProg").style.width=(TL.i/(TL_STEPS.length-1)*100)+"%";
   const go=document.getElementById("tlGo");go.hidden=!S.btn;if(S.btn)go.textContent=S.btn;
   document.getElementById("tlNudge").hidden=true;
@@ -10954,7 +11449,7 @@ function tlEvent(name){if(!TL.on||TL.busy)return;const S=TL_STEPS[TL.i];if(!S)re
 function tlTick(dt,moving,keyMove){
   if(!TL.on)return;const S=TL_STEPS[TL.i];if(!S||tlCard.hidden){tlSpot.hidden=true;tlEdge.hidden=true;return;}
   // where to look / walk (outside things while inside a shop: point at Leave first)
-  let at=S.at?S.at():null,hl=typeof S.hl==="function"?S.hl():S.hl;
+  let at=S.at?S.at():null,hl=tlTouch()&&S.touchHl?S.touchHl:typeof S.hl==="function"?S.hl():S.hl;
   if(at&&!at.room&&G.home){at=null;hl="#homeLeave";}
   if(at&&at.room&&HOME.place!==at.room)at=null;
   tlRing(at);tlSpotOn(TL.busy?null:hl);

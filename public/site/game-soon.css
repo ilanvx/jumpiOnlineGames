@@ -46,3 +46,17 @@ body.gs{background:#0e1838;display:flex;flex-direction:column;min-height:100vh}
   .gs-stage{order:-1;height:clamp(240px,66vw,360px)}
 }
 @media (prefers-reduced-motion:reduce){.gs-sky i,.gs-unit b.tick{animation:none!important}}
+/* phones held sideways (and the Android app): two columns, everything smaller, the countdown fits on the screen */
+@media (orientation:landscape) and (max-height:520px){
+  .gs-hero{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);text-align:left;padding:12px 18px 18px;min-height:calc(100vh - 20px)}
+  .gs-text{margin:0}.gs-count,.gs-btns{justify-content:flex-start}
+  .gs-text h1{font-size:1.45rem;margin-bottom:10px}
+  .gs-unit b{min-width:54px;height:62px;border-radius:16px;font-size:2.1rem;box-shadow:0 5px 0 #9fb3d9,0 10px 18px rgb(20 20 70 / .3)}
+  .gs-unit.sec b{box-shadow:0 5px 0 #c98a00,0 10px 18px rgb(120 60 0 / .3)}
+  .gs-unit span{font-size:.7rem}.gs-dot{margin-top:20px;height:24px}
+  .gs-lead{margin:14px 0 12px;font-size:.92rem}
+  .gs-btn{min-height:44px;font-size:1rem;padding:0 16px;border-radius:14px}
+  .gs-stage{order:0;height:calc(100vh - 60px)}
+}
+/* inside the Android app: just the countdown (the app opens the website's other pages in the browser) */
+.in-app .gs-top,.in-app .lg-foot,.in-app .gs-btn.home{display:none}
