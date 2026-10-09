@@ -190,4 +190,36 @@ add("shirt", { id: "mod", name: "Moderator shirt", price: 0, gift: "mod", fill: 
 add("pants", { id: "black", name: "Moderator pants", price: 0, gift: "mod", base: "#173f9e", waist: "#0d2766" });
 add("hat", { id: "cap", name: "Moderator cap", price: 0, gift: "mod", col: "#1f5fe0", col2: "#ffffff" });
 
+/* ---------- HALLOWEEN (public/shared/events.js): sold only while the Halloween event is on (the Spooky Shop).
+   Players keep them all year; they can wear and trade them. ---------- */
+const H = (slot, o) => add(slot, { ...o, event: "halloween" });
+H("hair", { id: "spiky", name: "Pumpkin spikes", price: 900, col: ["#ff7a12", "#ffb347"] });
+H("hair", { id: "longbow", name: "Witchy waves", price: 1000, col: ["#2fbf62", "#7b3fe4"] });
+H("hair", { id: "mohawk", name: "Bat mohawk", price: 1100, col: ["#2a1640", "#9b5cff"] });
+H("shirt", { id: "skeleton", name: "Skeleton tee", price: 1300, fill: "#1b1b24", hem: "#0d0d14" });
+H("shirt", { id: "pumpkin", name: "Pumpkin tee", price: 900, fill: "#ff8a1c", hem: "#c75e00" });
+H("shirt", { id: "vampire", name: "Vampire suit", price: 1700, fill: "#15121c", hem: "#0a0810" });
+H("shirt", { id: "mummy", name: "Mummy wraps", price: 1300, fill: "#efe6cf", hem: "#cbbd99" });
+H("shirt", { id: "ghost", name: "Ghost party tee", price: 900, fill: "#6a3fd0", hem: "#3f1f8f" });
+H("shirt", { id: "web", name: "Spider web tee", price: 1000, fill: "#24202c", hem: "#ff8a1c" });
+H("shirt", { id: "stripes", name: "Candy corn stripes", price: 800, fill: "#ffffff", hem: "#ff8a1c", stripes: ["#ffffff", "#ffd23a", "#ff8a1c", "#ffd23a"] });
+H("pants", { id: "skeleton", name: "Skeleton pants", price: 1100, base: "#1b1b24", waist: "#0d0d14" });
+H("pants", { id: "mummy", name: "Mummy pants", price: 1100, base: "#efe6cf", waist: "#cbbd99" });
+H("pants", { id: "hstripes", name: "Witch stripes", price: 900, base: "#2a1640", waist: "#1a0d2a", acc: "#9b5cff" });
+H("pants", { id: "khaki", name: "Pumpkin shorts", price: 600, base: "#ff8a1c", waist: "#2a1640" });
+H("pants", { id: "black", name: "Slime joggers", price: 700, base: "#6bdc2a", waist: "#3a8a12" });
+H("glasses", { id: "batmask", name: "Bat mask", price: 1000, frame: "#1d1d24" });
+H("glasses", { id: "batmask", name: "Midnight bat mask", price: 1200, frame: "#7b3fe4", glow: "#b48cff" });
+H("glasses", { id: "pumpkin", name: "Pumpkin glasses", price: 800, frame: "#ff8a1c" });
+H("hat", { id: "witch", name: "Witch hat", price: 1400, col: "#1d1d24", col2: "#7b3fe4" });
+H("hat", { id: "witch", name: "Purple witch hat", price: 1400, col: "#5a22d6", col2: "#6bdc2a" });
+H("hat", { id: "pumpkinhead", name: "Pumpkin head", price: 3500, col: "#ff8a1c", col2: "#ffd23a" });
+H("hat", { id: "horns", name: "Devil horns", price: 900, col: "#e8172f", col2: "#ff6a5a", keepHair: true });
+H("hat", { id: "horns", name: "Glow horns", price: 1600, col: "#9b5cff", col2: "#e0ccff", glow: true, keepHair: true });
+H("hat", { id: "batband", name: "Bat headband", price: 1100, col: "#1d1d24", col2: "#7b3fe4", keepHair: true });
+H("neck", { id: "cape", name: "Vampire cape", price: 2500, col: "#141018", col2: "#c8102e" });
+H("neck", { id: "cape", name: "Witch cape", price: 2500, col: "#2a1640", col2: "#6bdc2a" });
+H("neck", { id: "beads", name: "Candy corn beads", price: 600, col: "#ff8a1c", cols: ["#ff8a1c", "#ffd23a", "#ffffff"] });
+H("neck", { id: "spider", name: "Spider necklace", price: 1000, col: "#d9e0ea", col2: "#1d1d24", metal: true });
+
 export const OUTFIT_SLOTS = Object.keys(out);

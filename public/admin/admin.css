@@ -151,3 +151,19 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .code-discord[hidden]{display:none}
 .code-discord input{width:20px;height:20px;accent-color:#5865f2;margin:0}
 .code-discord small{font-weight:400;opacity:.75}
+
+/* ---------- Events: one switch for a holiday look + its shop ---------- */
+.ic-event{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5c-1-2 0-3 1.5-3.5C13 3 13.5 4 13 5c4 0 8 3 8 8s-4 9-9 9-9-4-9-9 4-8 9-8zm-4 7l2 2 2-2zm6 0l2 2 2-2zm-6 5c2 1.6 6 1.6 8 0l-1.5-.4L13 17l-1-.8-1 .8-1.5-.4z'/%3E%3C/svg%3E")}
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.ev-card{position:relative;display:flex;flex-direction:column;gap:10px;min-height:250px;padding:18px;border-radius:22px;color:#fff;overflow:hidden;
+  background:linear-gradient(160deg,#4fc8ff,#1f9bff 60%,#0b6fd6);box-shadow:0 6px 0 #06488a,0 14px 30px rgb(16 40 90 / .18);border:4px solid transparent}
+.ev-card.halloween{background:radial-gradient(circle at 80% 20%,#ffcf4d 0 7%,transparent 8%),linear-gradient(170deg,#3b1a6b,#1d1033 70%);box-shadow:0 6px 0 #0d0620,0 14px 30px rgb(30 10 60 / .3)}
+.ev-card.on{border-color:#7dffaa;box-shadow:0 6px 0 #17a24a,0 0 0 4px rgb(47 211 107 / .35),0 14px 30px rgb(16 40 90 / .2)}
+.ev-card h3{font-size:1.7rem;text-shadow:0 3px 0 rgb(0 0 0 / .25)}
+.ev-card p{margin:0;opacity:.92;font-size:.95rem;max-width:30ch}
+.ev-card .ev-art{position:absolute;right:-10px;bottom:52px;width:120px;height:120px;opacity:.95;pointer-events:none}
+.ev-card .ev-meta{font-size:.85rem;opacity:.85}
+.ev-card .ev-go{margin-top:auto;align-self:flex-start}
+.ev-card .ev-state{margin-top:auto;display:flex;align-items:center;gap:8px;font:400 1.15rem var(--display);color:#c8ffd9}
+.ev-card .ev-state i{width:26px;height:26px;border-radius:50%;background:var(--green);box-shadow:0 3px 0 var(--green-edge);display:grid;place-items:center}
+.ev-how{margin:0;color:var(--ink-2);font-size:.95rem;max-width:70ch}

@@ -16,6 +16,8 @@ import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
 import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MOD_BUDGET } from "../realtime/plaza.js";
 import { MOD_ITEMS } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
+import { eventInfo, setEvent } from "../realtime/events.js";
+import { EVENTS, isEvent } from "../public/shared/events.js";
 
 /*
   The /admin website. Security, in layers:
@@ -468,6 +470,23 @@ router.post("/announce", (req, res) => {
   if (!msg) return fail(res, 400, "Write a message first.");
   audit(req, "announce", null, msg);
   res.json({ ok: true, message: `Sent to ${onlinePlayers().length} player(s) online.` });
+});
+/* ---------- holiday events (public/shared/events.js): one switch decorates the whole game and opens its shop ---------- */
+router.get("/event", (req, res) => {
+  const info = eventInfo();
+  const count = (id) => CATALOG.filter((it) => it.event === id).length;
+  res.json({ ...info, list: info.list.map((e) => ({ ...e, items: count(e.id) })) });
+});
+router.post("/event", async (req, res, next) => {
+  try {
+    const id = String(req.body.event || "");
+    if (id && !isEvent(id)) return fail(res, 400, "There's no such event.");
+    const info = await setEvent(id, req.admin.username);
+    audit(req, "event", null, id ? `Switched on ${EVENTS[id].name}` : "Back to the normal game");
+    res.json({ ...info, message: id ? `${EVENTS[id].name} is on! Every game is decorating itself now.` : "Back to normal. The decorations and the event shop are gone." });
+  } catch (err) {
+    next(err);
+  }
 });
 router.get("/announcements", async (req, res, next) => {
   try { res.json({ list: await AdminLog.find({ action: "announce" }).sort({ at: -1 }).limit(50).lean() }); } catch (err) { next(err); }

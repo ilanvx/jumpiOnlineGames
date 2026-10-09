@@ -353,6 +353,38 @@
       await load();
     },
 
+    async events() {
+      page("Events");
+      const box = h("div", { class: "ev-grid" });
+      const ART = {
+        "": '<svg viewBox="0 0 120 120"><circle cx="60" cy="58" r="30" fill="#ffd23a"/><g stroke="#ffd23a" stroke-width="7" stroke-linecap="round">' +
+          [0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<path transform="rotate(${a} 60 58)" d="M60 14v10"/>`).join("") + "</g></svg>",
+        halloween: '<svg viewBox="0 0 120 120"><path d="M60 30c-2-8 2-14 8-16-2 5-1 10 2 14" fill="#3f8a2a"/><ellipse cx="42" cy="70" rx="24" ry="30" fill="#e8700f"/><ellipse cx="78" cy="70" rx="24" ry="30" fill="#e8700f"/>' +
+          '<ellipse cx="60" cy="70" rx="26" ry="32" fill="#ff8a1c"/><path d="M42 60l8 8h-16zM78 60l8 8h-16z" fill="#ffd23a"/><path d="M38 82q22 16 44 0l-6 2-4 5-5-5-6 6-6-6-5 5-4-5z" fill="#ffd23a"/></svg>',
+      };
+      const load = async () => {
+        const d = await api("/event");
+        const cards = [{ id: "", name: "Normal game", about: "Jumpi as usual: no holiday decorations and no event shop." }, ...d.list];
+        box.replaceChildren(...cards.map((e) => {
+          const on = (d.event || "") === e.id, card = h("div", { class: `ev-card ${e.id}${on ? " on" : ""}` });
+          card.innerHTML = ART[e.id] || "";
+          card.firstChild && card.firstChild.setAttribute("class", "ev-art");
+          card.append(h("h3", null, e.name), h("p", null, e.about),
+            e.items ? h("span", { class: "ev-meta" }, `${fmtNum(e.items)} items in its shop`) : null,
+            on ? h("span", { class: "ev-state" }, h("i", null, "✓"), e.id ? "On now" + (d.since ? ` · since ${fmtDate(d.since)}` : "") : "On now")
+              : h("button", { class: "b ev-go " + (e.id ? "b-orange" : "b-ghost"), type: "button", onclick: async (ev) => {
+                  if (!confirm(e.id ? `Switch on ${e.name}? Every game will decorate itself right away and its shop opens.` : "Go back to the normal game? The decorations go away and the event shop closes (players keep what they bought).")) return;
+                  ev.currentTarget.disabled = true;
+                  try { toast((await api("/event", { event: e.id })).message); } catch (err) { oops(err); }
+                  load();
+                } }, e.id ? `Switch on ${e.name}` : "Back to normal"));
+          return card;
+        }));
+      };
+      main.append(panel("Holiday events", h("p", { class: "ev-how" }, "Switch on an event and every game changes at once: the world gets its decorations and its shop opens in the Plaza. Back to normal takes it all away, and the server stops selling the event items. Players keep everything they already bought."), h("div", { style: "height:14px" }), box));
+      await load();
+    },
+
     async announce() {
       page("Announcements");
       const ta = h("textarea", { class: "inp", maxlength: 160, placeholder: "Write a message everyone in the game will see on their screen…" });
@@ -484,7 +516,7 @@
     ["Result", (r) => (r.winner ? h("span", null, h("b", null, r.winner), " won 200 coins") : "Draw")], ["Why", (r) => h("span", { class: "small muted" }, r.reason)],
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
-    "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
+    "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", event: "Holiday event", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
     "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],

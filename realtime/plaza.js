@@ -1,3 +1,4 @@
+import { activeEvent } from "./events.js";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
 import { banMessage, needsVerify } from "../routes/auth.js";
@@ -287,7 +288,8 @@ export function attachPlaza(io) {
 
   io.on("connection", (socket) => {
     const me = socket.data.user;
-    socket.emit("whoami", { id: String(me.id || me._id || "") });   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
+    socket.emit("whoami", { id: String(me.id || me._id || "") });
+    socket.emit("event", { event: activeEvent() });   // the holiday event that is on (public/shared/events.js)   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
     const canChat = limiter(5, 5000);
     const canMove = limiter(25, 1000);
     const canAdmin = limiter(20, 10000);
@@ -693,6 +695,10 @@ export function attachPlaza(io) {
 }
 
 // called by the shop when someone changes clothes: everyone in the Plaza sees it
+// to every open game (the holiday event switch, realtime/events.js)
+export function broadcastAll(event, data) {
+  ioRef?.emit(event, data);
+}
 export function notifyLook(userId, look) {
   if (!ioRef) return;
   for (const p of players.values()) {

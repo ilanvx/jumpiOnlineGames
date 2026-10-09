@@ -3,6 +3,8 @@ import { User } from "../models/User.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
 import { currentUser, requireJson, needsVerify } from "./auth.js";
 import { notifyLook, notifyCoins } from "../realtime/plaza.js";
+import { eventShopOpen } from "../realtime/events.js";
+import { EVENTS } from "../public/shared/events.js";
 
 const router = express.Router();
 
@@ -50,6 +52,7 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
     if (item.free) return res.status(409).json({ error: "Everyone already has this one!" });
     if (item.exclusive) return res.status(409).json({ error: "This one is only in the Jumpi Store bundles." });
     if (item.gift) return res.status(409).json({ error: "You get this one by reaching the top level of a job!" });
+    if (!eventShopOpen(item)) return res.status(409).json({ error: `The ${EVENTS[item.event]?.shop || "event shop"} is closed. These come back next ${EVENTS[item.event]?.name || "event"}!`, code: "event-closed" });
     const isFurniture = item.category === "furniture";
     if (!isFurniture && req.user.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });
     if (isFurniture && (req.user.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX_FURNITURE)

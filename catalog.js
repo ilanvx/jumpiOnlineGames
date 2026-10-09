@@ -36,6 +36,7 @@ for (const slot of OUTFIT_SLOTS)
   OUTFITS[slot].forEach((o, i) => {
     add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter);
     if (o.gift) Object.assign(items[items.length - 1], { gift: true, rarity: "legendary" });   // work uniforms: only as a job prize
+    if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
   });
 
 // name tags (an icon next to the name)
@@ -48,9 +49,11 @@ add("tag", 5, "Flame", 400);
 add("tag", 6, "Diamond", 600);
 add("tag", 7, "Skull", 700);
 add("tag", 8, "Crown", 1000);
+// Halloween tags (sold only during the Halloween event)
+[["Pumpkin", 800], ["Bat", 800], ["Ghost", 1000]].forEach(([n, p], k) => { add("tag", 9 + k, n, p); items[items.length - 1].event = "halloween"; });
 
 // furniture for the player's home (can be bought more than once)
-export const PET_FURNITURE_FROM = 16;
+export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25;
 [
   ["Cozy Sofa", 300], ["Armchair", 180], ["Round Table", 150], ["Wooden Chair", 80],
   ["Comfy Bed", 400], ["Floor Lamp", 120], ["Potted Plant", 90], ["Bookshelf", 250],
@@ -59,8 +62,14 @@ export const PET_FURNITURE_FROM = 16;
   // 16+: pet things, sold at the Pet Center (pets at home really use them: sleep, eat, drink, play)
   ["Pet Bed", 180], ["Food Bowl", 60], ["Water Bowl", 60], ["Bouncy Ball", 40], ["Chew Bone", 50],
   ["Yarn Ball", 45], ["Squeaky Duck", 55], ["Cat Tree", 350], ["Dog House", 450],
-].forEach(([n, p], i) => { add("furniture", i, n, p); if (i >= PET_FURNITURE_FROM) items[items.length - 1].pet = true; });
-export const FURNITURE_COUNT = 25;
+  // 25+: Halloween furniture (sold only during the Halloween event)
+  ["Jack-o'-lantern", 450], ["Witch's Cauldron", 1200], ["Spooky Tombstone", 350], ["Haunted Tree", 900], ["Candy Bowl", 300], ["Ghost Lamp", 700],
+].forEach(([n, p], i) => {
+  add("furniture", i, n, p);
+  if (i >= PET_FURNITURE_FROM && i < HALLOWEEN_FURNITURE_FROM) items[items.length - 1].pet = true;
+  if (i >= HALLOWEEN_FURNITURE_FROM) items[items.length - 1].event = "halloween";
+});
+export const FURNITURE_COUNT = 31;
 
 // emotes (the big faces above your head). Same order as EMOTES in public/index.html.
 // Free ones belong to everybody; the rest are bought once in the shop or from the chat bar.
@@ -109,7 +118,7 @@ export const LOOK_SLOTS = {
   glasses: { max: OUTFITS.glasses.length - 1, optional: true },
   hat: { max: OUTFITS.hat.length - 1, optional: true },
   neck: { max: OUTFITS.neck.length - 1, optional: true },
-  tag: { max: 8, optional: true },
+  tag: { max: 11, optional: true },
   aura: { max: 9, optional: true },
 };
 // what sign-up may choose for free
@@ -127,7 +136,8 @@ export function lookItems(look = {}) {
 
 // floor space of each furniture piece: [width, depth, depth offset] when not turned. Piece 9 (the rug) lies flat: things can stand on it.
 export const FURN_FOOTPRINT = [[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0],
-  [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0]];
+  [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0],
+  [.8,.8,0],[1.2,1.2,0],[.9,.4,0],[1.4,1.4,0],[.6,.6,0],[.6,.6,0]];
 export const FLAT_FURNITURE = new Set([9]);
 // the rectangle a placed piece covers on the floor
 export function footprint({ f, x, z, r }) {

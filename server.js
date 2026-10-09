@@ -29,6 +29,7 @@ import "./models/Logs.js";
 import { attachPlaza, onlinePlayers } from "./realtime/plaza.js";
 import { startDiscordStats } from "./discord/pip.js";
 import { discordInteractions } from "./discord/interactions.js";
+import { loadEvent, eventInfo } from "./realtime/events.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { MONGODB_URI, MONGODB_DB = "jumpi", JWT_SECRET, PORT = 3000 } = process.env;
@@ -69,6 +70,8 @@ app.use("/api", jobRoutes);
 app.use("/api", seasonRoutes);
 app.use("/api", codeRoutes);
 app.use("/api", tutorialRoutes);
+// which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
+app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -150,6 +153,7 @@ try {
   for (const m of ["ChatLog", "TradeLog", "DuelLog", "AdminLog", "ContactMessage", "Order"]) await mongoose.model(m).syncIndexes();
   await mongoose.model("Message").syncIndexes(); // makes sure username/email are unique in the database
   console.log(`✓ Connected to MongoDB (database "${MONGODB_DB}")`);
+  await loadEvent();
 } catch (err) {
   console.error("✗ Could not connect to MongoDB:", err.message);
   console.error("  Check the connection string and password in .env, and that Atlas → Network Access allows your IP address.");
