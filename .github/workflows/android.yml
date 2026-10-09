@@ -26,34 +26,34 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
-
-      - name: Android SDK parts
-        run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" > /dev/null
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.9"
-
-      - name: Release signing key (optional, from secrets)
+      - name: Build APK + AAB (everything in one step, so the whole log lands in build-log.txt)
+        id: build
         env:
           KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$KS" ]; then echo "$KS" | base64 -d > android/release.jks; echo "Signing with the release key"; else echo "No release key yet: the APK is signed with a debug key"; fi
-
-      - name: Build APK + AAB
-        id: build
-        working-directory: android
-        env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           APP_VERSION_CODE: ${{ github.run_number }}
         run: |
           set -o pipefail
-          gradle assembleRelease bundleRelease --no-daemon --stacktrace --warning-mode all 2>&1 | tee ../build-log.txt
+          (
+            set -e
+            echo "== Java"; java -version
+            echo "== Android SDK: ${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+            SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+            SDKM=$(ls "$SDK"/cmdline-tools/*/bin/sdkmanager 2>/dev/null | sort | tail -1)
+            echo "sdkmanager: $SDKM"
+            yes | "$SDKM" --licenses > /dev/null || true
+            "$SDKM" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+            echo "== Gradle 8.9"
+            curl -sSL -o /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.9-bin.zip
+            unzip -q /tmp/gradle.zip -d /tmp
+            export PATH=/tmp/gradle-8.9/bin:$PATH
+            gradle --version
+            if [ -n "$KS" ]; then echo "$KS" | base64 -d > android/release.jks; echo "== Signing with the release key"; else echo "== No release key yet: debug signing"; fi
+            cd android
+            gradle assembleRelease bundleRelease --no-daemon --stacktrace
+          ) 2>&1 | tee build-log.txt
 
       - name: Publish to the android-build branch
         if: always()
