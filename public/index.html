@@ -2345,6 +2345,117 @@ body.land .ph-icon .tile{width:44px;height:44px;border-radius:14px;box-shadow:0 
 body.land .ph-icon .tile svg{width:26px;height:26px}
 body.land .btn .rail-dot{width:12px;height:12px;top:-4px;right:-4px;box-shadow:0 0 0 2px #fff}
 
+/* ---------- the trade window: the whole screen, nothing to scroll ----------
+   left: the two players, the table (my 6 slots | READY / CANCEL | their 6 slots), the chat; right: my items with the kinds down the side */
+.trade-ov{--tile:clamp(46px,min(11.5vh,7.4vw),104px);padding:0;place-items:stretch;background:
+  radial-gradient(ellipse 70% 45% at 34% 22%,rgb(255 255 255 / .28),transparent 70%),
+  repeating-linear-gradient(115deg,rgb(255 255 255 / .05) 0 2px,transparent 2px 90px),
+  linear-gradient(180deg,#4fc8ff 0%,#1f9bff 52%,#0b6fd6 100%);backdrop-filter:none}
+.trade-card.tx{position:relative;width:100%;height:100dvh;max-height:none;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) clamp(250px,30vw,440px);gap:0;
+  padding:0;border-radius:0;background:none;box-shadow:none;color:#fff;font-family:"Fredoka",system-ui,sans-serif;animation:fadeIn .25s}
+.tx .set-close{top:calc(env(safe-area-inset-top,0px) + 14px);left:calc(env(safe-area-inset-left,0px) + 14px);right:auto}
+.tx-main{min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:clamp(6px,1.6vh,16px);
+  padding:calc(env(safe-area-inset-top,0px) + clamp(8px,2.5vh,26px)) clamp(10px,2.5vw,36px) calc(env(safe-area-inset-bottom,0px) + clamp(8px,2vh,20px)) calc(env(safe-area-inset-left,0px) + clamp(10px,2.5vw,36px))}
+/* the two players */
+.tx-stage{flex:1;min-height:0;width:100%;display:flex;justify-content:space-around;align-items:flex-end;gap:16px}
+.tx .pp{flex-direction:column;justify-content:flex-end;height:100%;min-height:0;gap:6px}
+.tx .pp-pic{height:100%;max-height:clamp(90px,34vh,300px);width:auto;aspect-ratio:200/240;border-radius:26px;border:4px solid #fff;
+  box-shadow:0 7px 0 #06488a,0 16px 30px rgb(0 40 110 / .35)}
+.tx .pp>b{display:flex;align-items:center;gap:6px;font:400 clamp(1rem,2.6vh,1.6rem)/1 var(--font);letter-spacing:.03em;color:#fff;text-shadow:0 3px 0 #06488a;white-space:nowrap;max-width:44vw;overflow:hidden;text-overflow:ellipsis}
+.tx .pp-bubble{bottom:auto;top:8px;max-width:min(240px,40vw);transform-origin:50% 0}
+.tx .pp-bubble::after{display:none}
+/* the table */
+.tx-table{flex:none;display:flex;align-items:center;justify-content:center;gap:clamp(8px,1.6vw,22px)}
+.tx .offer{position:relative;padding:clamp(6px,1.2vh,12px);border-radius:24px;background:rgb(255 255 255 / .22);border:3px solid rgb(255 255 255 / .35);box-shadow:inset 0 -5px 0 rgb(0 50 120 / .18)}
+.tx .offer.is-ready{border-color:#7dffaa;background:rgb(70 230 130 / .32);box-shadow:inset 0 -5px 0 rgb(0 90 40 / .2),0 0 0 4px rgb(47 211 107 / .35)}
+.tx .offer .rdy{position:absolute;z-index:2;top:-14px;right:-14px;width:40px;height:40px;border-radius:50%;background:#2fd36b;box-shadow:0 4px 0 #17a24a,0 0 0 3px #fff;display:grid;place-items:center;padding:0;
+  transform:scale(0);transition:transform .3s cubic-bezier(.2,1.8,.4,1)}
+.tx .offer .rdy svg{width:24px;height:24px}
+.tx .offer.is-ready .rdy{transform:scale(1)}
+.tx .slots{grid-template-columns:repeat(3,var(--tile));gap:clamp(5px,1vh,10px)}
+.tx .slot{width:var(--tile);border-radius:clamp(12px,1.8vh,18px);background:#fff;color:#22324f;box-shadow:inset 0 -5px 0 #cfe0f5,0 4px 0 rgb(0 50 120 / .25)}
+.tx .slot.empty{background:linear-gradient(180deg,#fff,#eef5ff);box-shadow:inset 0 -5px 0 #cfe0f5,0 4px 0 rgb(0 50 120 / .2)}
+.tx .slot small{color:#22324f;text-shadow:none;font-size:clamp(.5rem,1.4vh,.66rem)}
+.tx .offer.mine .slot.full:hover::after{color:#ff4b4b}
+.tx-mid{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,12px)}
+.tx .swap-ico{rotate:none;width:clamp(34px,6vh,52px);height:clamp(34px,6vh,52px);background:#fff;box-shadow:0 4px 0 #06488a}
+.tx .swap-ico svg path{stroke:#1f9bff}
+.tx-mid .cta{margin:0;min-width:clamp(96px,13vw,150px);height:clamp(40px,8vh,58px);padding:0 14px;border-radius:16px;font:400 clamp(1rem,2.6vh,1.35rem)/1 var(--font);letter-spacing:.04em}
+.tx-mid .cta.ghost{background:#e8eef7;color:#4a5b75;box-shadow:0 4px 0 #9fb3d1;text-shadow:none}
+.tx-cancel{background:linear-gradient(180deg,#ffb04d,#ff8a1c);color:#fff;box-shadow:0 4px 0 #b8560a;text-shadow:0 2px 0 #b8560a}
+.tx-cancel:active,.tx-mid .cta:active{transform:translateY(3px);box-shadow:0 1px 0 rgb(0 0 0 / .3)}
+.tx-msg{margin:0;min-height:1.2em;text-align:center;font-size:clamp(.8rem,2vh,1rem);color:#fff;text-shadow:0 2px 0 rgb(0 50 120 / .5)}
+.tx-msg.err{color:#ffe0e0}.tx-msg.ok{color:#c8ffd9}
+.tx .win-chat{flex:none;width:min(640px,100%);background:rgb(255 255 255 / .2);border-radius:999px;padding:5px}
+.tx .win-chat input{height:clamp(36px,7vh,46px);border-radius:999px}
+.tx .win-chat button{height:clamp(36px,7vh,46px);border-radius:999px}
+/* my items */
+.tx-side{min-height:0;display:flex;flex-direction:column;gap:8px;margin:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 10px) calc(env(safe-area-inset-bottom,0px) + 10px) 0;
+  padding:12px 10px 10px 12px;border-radius:26px;background:#3e5b86;border:3px solid #1f3355;box-shadow:0 6px 0 #1f3355,0 16px 32px rgb(0 0 0 / .3)}
+.tx-side-h{margin:0;font:400 clamp(1rem,2.6vh,1.4rem)/1 var(--font);letter-spacing:.04em;color:#fff;text-shadow:0 3px 0 #1f3355}
+.tx-invwrap{flex:1;min-height:0;display:flex;gap:8px}
+.tx .trade-inv{flex:1;min-width:0;max-height:none;align-content:start;grid-template-columns:repeat(auto-fill,minmax(clamp(70px,9vw,96px),1fr))}
+.tx .trade-inv .item .nm{font-size:.74rem;min-height:2.2em}
+.tx .tx-tabs{flex:none;flex-direction:column;flex-wrap:nowrap;align-items:center;overflow-y:auto;overflow-x:hidden;padding:4px 4px 8px!important;gap:10px;scrollbar-width:none}
+.tx .tx-tabs button.cat-tab{width:clamp(38px,7vh,54px);height:clamp(38px,7vh,54px);flex:none}
+.tx .tx-tabs button.cat-tab[aria-selected="true"]{transform:scale(1.1)}
+.tx .tx-tabs .cat-name{display:none}
+.tx .trade-done{border-radius:0}
+/* sideways phones */
+body.land .tx-side{padding:8px;border-radius:20px}
+body.land .tx .trade-inv{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+body.land .tx .trade-inv .item{padding:5px 4px}
+body.land .tx .trade-inv .item .pic,body.land .tx .trade-inv .item .pic img{width:38px;height:38px}
+body.land .tx .trade-inv .item .nm{display:none}
+body.land .tx .trade-inv .item .pr{font-size:.62rem}
+body.land .tx .set-close{width:36px;height:36px;top:calc(env(safe-area-inset-top,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 8px)}
+/* tall screens (phones held upright): items under the table */
+@media (max-aspect-ratio:1/1){
+  .trade-card.tx{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 34vh}
+  .trade-ov{--tile:clamp(36px,12.6vw,84px)}
+  .tx-side{margin:0 10px calc(env(safe-area-inset-bottom,0px) + 10px)}
+  .tx-main{padding-top:calc(env(safe-area-inset-top,0px) + 56px)}
+  .tx .pp-pic{max-height:20vh}
+  .tx-table{gap:8px;flex-wrap:wrap}.tx-mid{order:3;width:100%;flex-direction:row;justify-content:center}.tx .swap-ico{display:none}.tx-mid .cta{min-width:120px;font-size:1.05rem}
+  .tx .offer{padding:5px;border-radius:18px}.tx .slots{gap:4px}
+}
+/* ---------- a player's card: the whole screen like the trade window ---------- */
+.pcard.pc-full{position:fixed;inset:0;z-index:12;width:auto;min-width:0;padding:0;gap:0;border:0;border-radius:0;translate:none;display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,34vw,460px);
+  background:radial-gradient(ellipse 60% 50% at 34% 40%,rgb(255 255 255 / .3),transparent 70%),repeating-linear-gradient(115deg,rgb(255 255 255 / .05) 0 2px,transparent 2px 90px),linear-gradient(180deg,#4fc8ff 0%,#1f9bff 52%,#0b6fd6 100%);
+  box-shadow:none;animation:fadeIn .25s}
+.pcard.pc-full[hidden]{display:none}
+.pc-full .pc-x{top:calc(env(safe-area-inset-top,0px) + 14px);left:calc(env(safe-area-inset-left,0px) + 14px);right:auto;width:46px;height:46px;border-radius:14px;background:#ff5a5a;box-shadow:0 4px 0 #8a1c1c,0 0 0 3px #fff;z-index:3}
+.pc-full .pc-x svg{width:18px;height:18px}
+.pc-full .pc-stage{min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1.4vh,14px);padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 14px) calc(env(safe-area-inset-left,0px) + 16px)}
+.pc-full .pc-portrait{position:relative;flex:1;min-height:0;max-height:min(74vh,620px);width:auto;aspect-ratio:300/420;border-radius:0;overflow:visible;background:none;box-shadow:none}
+.pc-full .pc-portrait canvas{position:relative;width:100%;height:100%;display:block;animation:pcBob 3s ease-in-out infinite}
+@keyframes pcBob{50%{transform:translateY(-1.5%)}}
+.pc-floor{display:none}
+.pc-full .pc-floor{display:block;position:absolute;left:8%;right:8%;bottom:2%;height:16%;border-radius:50%;background:radial-gradient(closest-side,rgb(255 255 255 / .75),rgb(255 255 255 / .25) 60%,transparent);filter:blur(1px)}
+.pc-full .pc-name{position:static;padding:6px 20px 4px;border-radius:999px;background:rgb(6 72 138 / .55);font:400 clamp(1.2rem,3.6vh,2rem)/1.1 var(--font);letter-spacing:.03em;color:#fff;text-shadow:0 3px 0 #06488a;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-full .pc-name.admin{color:#ff9b9b}.pc-full .pc-name.mod{color:#a8d4ff}
+.pc-full .pc-side{align-self:center;max-height:calc(100dvh - 24px);min-height:0;display:flex;flex-direction:column;justify-content:center;margin:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 12px) 0;
+  padding:clamp(12px,2.4vh,22px);border-radius:26px;background:#3e5b86;border:3px solid #1f3355;box-shadow:0 6px 0 #1f3355,0 16px 32px rgb(0 0 0 / .3);overflow-y:auto}
+.pc-full .pc-acts{gap:clamp(8px,1.6vh,14px)}
+.pc-full .pc-btn{height:clamp(44px,9vh,64px);border-radius:16px;font:400 clamp(1rem,2.6vh,1.3rem)/1 var(--font);letter-spacing:.03em;padding:0 16px}
+.pc-full .pc-btn svg{width:clamp(24px,4.6vh,34px);height:clamp(24px,4.6vh,34px)}
+.pc-full .pc-label{margin:4px 0 0;font-size:clamp(.72rem,1.9vh,.9rem)}
+body.land .pc-full .pc-side{padding:10px}
+body.land .pc-full .pc-x{width:38px;height:38px;top:calc(env(safe-area-inset-top,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 8px)}
+@media (max-aspect-ratio:1/1){
+  .pcard.pc-full{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+  .pc-full .pc-side{margin:0 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+  .pc-full .pc-stage{padding-top:calc(env(safe-area-inset-top,0px) + 60px)}
+}
+/* the small card on computers: the player (no background) on a sky square, the name under it */
+.pcard:not(.pc-full) .pc-stage{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pcard:not(.pc-full) .pc-portrait canvas{object-fit:cover;object-position:50% 30%}
+.pcard:not(.pc-full) .pc-name{padding:0 26px;font:400 1.35rem var(--font);letter-spacing:.03em;color:#fff;text-align:center}
+.pcard:not(.pc-full) .pc-name.admin{color:#ff8a8a}.pcard:not(.pc-full) .pc-name.mod{color:#8fc4ff}
+/* the trade window's players stand on the background too (no picture box) */
+.tx .pp-pic{border:0;border-radius:0;background:none;box-shadow:none;position:relative;overflow:visible}
+.tx .pp-pic::before{content:"";position:absolute;left:6%;right:6%;bottom:1%;height:15%;border-radius:50%;background:radial-gradient(closest-side,rgb(255 255 255 / .7),rgb(255 255 255 / .2) 60%,transparent)}
+.tx .pp-pic canvas{position:relative}
 /* "GET THE JUMPI APP!" (phones in a browser, PHONES_NEED_APP) */
 .app-gate{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:16px;overflow:auto;background:radial-gradient(circle at 50% 35%,#7fd8ff,#1f8fff 55%,#0a4fc0)}
 .app-gate[hidden]{display:none}
@@ -2437,6 +2548,7 @@ body.land.chat-open .chat-bar{top:0;bottom:auto;flex-direction:column-reverse;ga
 body.land .chat-bar input{height:40px}
 body.land .emote-tray{grid-template-columns:repeat(auto-fit,minmax(34px,1fr));gap:4px}
 body.land.chat-open .wx-clock,body.land.chat-open .fbar-wrap{visibility:hidden}
+body.land.chat-open .emote-buy{bottom:auto;top:calc(100% + 10px)}   /* the chat is at the top: "buy this emote?" opens under it */
 body.tl-chat .tl-card,body.tl-chat .tl-spot,body.tl-chat .tl-edge{visibility:hidden}
 body.tl-chat .chat-send{animation:tlSend 1s ease-in-out infinite}
 body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
@@ -2790,16 +2902,19 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
     <p class="pa-msg" id="adoptMsg" role="alert"></p>
   </form>
 </div>
-<div class="pcard" id="pcard" role="dialog" aria-labelledby="pcName" hidden>
-  <div class="pc-portrait"><canvas id="pcPortrait" width="240" height="240" aria-hidden="true"></canvas><b id="pcName">Player</b></div>
+<!-- a player's card: the whole screen (the player standing on the left, what you can do on the right) -->
+<div class="pcard" id="pcard" role="dialog" aria-modal="true" aria-labelledby="pcName" hidden>
   <button class="pc-x" id="pcClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+  <div class="pc-stage"><div class="pc-portrait"><span class="pc-floor" aria-hidden="true"></span><canvas id="pcPortrait" width="300" height="420" aria-hidden="true"></canvas></div><b id="pcName" class="pc-name">Player</b></div>
+  <div class="pc-side">
   <div class="pc-acts">
-    <button class="pc-btn friend" id="pcFriend" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4.5" fill="#fff"/><path d="M1.5 20 Q2 13.5 9 13.5 Q16 13.5 16.5 20 Z" fill="#fff"/><path d="M19.5 7 V15 M15.5 11 H23.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span>Add friend</span></button>
-    <button class="pc-btn trade" id="pcTrade" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8 H18 L14.5 4.5 M20 16 H6 L9.5 19.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Trade items</span></button>
-    <button class="pc-btn home" id="pcHome" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 L12 3.5 L21 11 V20 H14.5 V14.5 H9.5 V20 H3 Z" fill="#fff"/></svg><span>Visit home</span></button>
-    <p class="pc-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/></svg>PLAY · 100 COINS EACH · WINNER TAKES 200</p>
-    <button class="pc-btn ttt" id="pcTTT" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4 L10 10 M10 4 L4 10" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="17" cy="17" r="3.6" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M12 2 V22 M2 12 H22" stroke="rgb(255 255 255 / .45)" stroke-width="1.6"/></svg><span>Tic-Tac-Toe</span></button>
-    <button class="pc-btn c4" id="pcC4" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="18" r="3.4" fill="#fff"/><circle cx="18" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="11" r="3.4" fill="#ffd23a"/><circle cx="18" cy="11" r="3.4" fill="#fff"/><circle cx="18" cy="4" r="3.4" fill="#fff"/></svg><span>4 in a Row</span></button>
+      <button class="pc-btn friend" id="pcFriend" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4.5" fill="#fff"/><path d="M1.5 20 Q2 13.5 9 13.5 Q16 13.5 16.5 20 Z" fill="#fff"/><path d="M19.5 7 V15 M15.5 11 H23.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span>Add friend</span></button>
+      <button class="pc-btn trade" id="pcTrade" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8 H18 L14.5 4.5 M20 16 H6 L9.5 19.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Trade items</span></button>
+      <button class="pc-btn home" id="pcHome" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 L12 3.5 L21 11 V20 H14.5 V14.5 H9.5 V20 H3 Z" fill="#fff"/></svg><span>Visit home</span></button>
+      <p class="pc-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/></svg>PLAY · 100 COINS EACH · WINNER TAKES 200</p>
+      <button class="pc-btn ttt" id="pcTTT" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4 L10 10 M10 4 L4 10" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="17" cy="17" r="3.6" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M12 2 V22 M2 12 H22" stroke="rgb(255 255 255 / .45)" stroke-width="1.6"/></svg><span>Tic-Tac-Toe</span></button>
+      <button class="pc-btn c4" id="pcC4" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="18" r="3.4" fill="#fff"/><circle cx="18" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="11" r="3.4" fill="#ffd23a"/><circle cx="18" cy="11" r="3.4" fill="#fff"/><circle cx="18" cy="4" r="3.4" fill="#fff"/></svg><span>4 in a Row</span></button>
+    </div>
   </div>
 </div>
 <div class="trade-invite duel-invite" id="duelInvite" role="alertdialog" aria-labelledby="diText" hidden>
@@ -2827,26 +2942,33 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
   <div class="ti-row"><button class="ti-btn yes" id="tiYes" type="button">Trade!</button><button class="ti-btn no" id="tiNo" type="button">No thanks</button></div>
   <div class="ti-timer" id="tiTimer"></div>
 </div>
-<div class="settings-overlay" id="tradeOverlay" hidden>
- <div class="duo">
-  <div class="pp mine" id="ppTradeMe"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>You</b></div>
-  <div class="settings-card trade-card" id="tradeCard" role="dialog" aria-modal="true" aria-labelledby="tradeTitle">
+<!-- the trade window: the whole screen (players + the table on the left, my items on the right, chat at the bottom) -->
+<div class="settings-overlay trade-ov" id="tradeOverlay" hidden>
+  <div class="trade-card tx" id="tradeCard" role="dialog" aria-modal="true" aria-labelledby="tradeTitle">
+    <h2 id="tradeTitle" class="sr-only">Trade</h2>
     <button class="set-close" id="tradeX" type="button" aria-label="Cancel the trade"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
-    <h2 id="tradeTitle">TRADE</h2>
-    <div class="trade-table">
-      <section class="offer mine" id="offerMine"><h3><span class="who">YOUR OFFER</span><span class="rdy">READY</span></h3><div class="slots" id="slotsMine"></div></section>
-      <div class="swap-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8 H18 L14.5 4.5 M20 16 H6 L9.5 19.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <section class="offer theirs" id="offerTheirs"><h3><span class="who" id="tradeWho">THEIR OFFER</span><span class="rdy">READY</span></h3><div class="slots" id="slotsTheirs"></div></section>
+    <div class="tx-main">
+      <div class="tx-stage">
+        <div class="pp mine" id="ppTradeMe"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>You</b></div>
+        <div class="pp" id="ppTradeThem"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>Player</b></div>
+      </div>
+      <div class="tx-table">
+        <section class="offer mine" id="offerMine" aria-label="Your offer"><h3 class="sr-only"><span class="who">YOUR OFFER</span></h3><span class="rdy" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5 L10 17.5 L19 7" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="slots" id="slotsMine"></div></section>
+        <div class="tx-mid">
+          <div class="swap-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8 H18 L14.5 4.5 M20 16 H6 L9.5 19.5" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <button class="cta ready" id="tradeReady" type="button">Ready</button>
+          <button class="cta tx-cancel" id="tradeCancel" type="button">Cancel</button>
+        </div>
+        <section class="offer theirs" id="offerTheirs" aria-label="Their offer"><h3 class="sr-only"><span class="who" id="tradeWho">THEIR OFFER</span></h3><span class="rdy" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5 L10 17.5 L19 7" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="slots" id="slotsTheirs"></div></section>
+      </div>
+      <p class="form-msg tx-msg" id="tradeMsg" role="status"></p>
+      <form class="win-chat" data-win="trade" autocomplete="off"><label class="sr-only" for="tradeChat">Message</label><input id="tradeChat" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 4 L14 20 L11.5 13 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></button></form>
     </div>
-    <h3>YOUR ITEMS · tap to offer</h3>
-    <div class="store-tabs" id="tradeTabs" role="tablist"></div>
-    <div class="trade-inv" id="tradeInv"></div>
-    <p class="form-msg" id="tradeMsg" role="status"></p>
-    <form class="win-chat" data-win="trade" autocomplete="off"><label class="sr-only" for="tradeChat">Message</label><input id="tradeChat" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 4 L14 20 L11.5 13 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></button></form>
-    <div class="trade-foot"><button class="cta ghost" id="tradeCancel" type="button">Cancel</button><button class="cta ready" id="tradeReady" type="button">Ready</button></div>
+    <aside class="tx-side" aria-label="Your items">
+      <h3 class="tx-side-h">YOUR ITEMS</h3>
+      <div class="tx-invwrap"><div class="trade-inv" id="tradeInv"></div><div class="store-tabs tx-tabs" id="tradeTabs" role="tablist" aria-orientation="vertical"></div></div>
+    </aside>
   </div>
-  <div class="pp" id="ppTradeThem"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>Player</b></div>
- </div>
 </div>
 <div class="needs" id="needsBar" role="group" aria-label="How your Jumpi feels" hidden></div>
 <div class="fbar-wrap"><p class="fb-hint" id="foodHint" hidden></p><div class="fbar" id="foodBar" role="group" aria-label="Your food bar (keys 1 to 4)"></div></div>
@@ -6325,14 +6447,18 @@ addEventListener("resize",layoutMode);addEventListener("orientationchange",()=>s
 {const zone=document.getElementById("joyZone"),base=zone.querySelector(".joy-base"),R=46;let id=null,ox=0,oy=0;
   G.stick={x:0,y:0,on:false,run:false};
   const rest=()=>{zone.style.removeProperty("--jx");zone.style.removeProperty("--jy");base.style.setProperty("--kx","0px");base.style.setProperty("--ky","0px");zone.classList.remove("on","run");};
-  zone.addEventListener("pointerdown",e=>{if(id!==null||!inGame)return;e.preventDefault();id=e.pointerId;try{zone.setPointerCapture(id);}catch(err){}
+  zone.addEventListener("pointerdown",e=>{if(id!==null||!inGame)return;e.preventDefault();
+    id=e.pointerId;try{zone.setPointerCapture(id);}catch(err){}
     const r=zone.getBoundingClientRect();ox=e.clientX;oy=e.clientY;zone.style.setProperty("--jx",(ox-r.left)+"px");zone.style.setProperty("--jy",(oy-r.top)+"px");zone.classList.add("on");
     G.stick.on=true;G.stick.x=G.stick.y=0;G.stick.run=false;});
   zone.addEventListener("pointermove",e=>{if(e.pointerId!==id)return;let dx=e.clientX-ox,dy=e.clientY-oy;const d=Math.hypot(dx,dy);
     if(d>R){dx=dx/d*R;dy=dy/d*R;}base.style.setProperty("--kx",dx+"px");base.style.setProperty("--ky",dy+"px");
     G.stick.x=dx/R;G.stick.y=dy/R;const run=d>R*.92;if(run!==G.stick.run){G.stick.run=run;zone.classList.toggle("run",run);}
     if(d>R*.4)tlEvent("walk");});
-  const up=e=>{if(e.pointerId!==id)return;id=null;G.stick.on=false;G.stick.x=G.stick.y=0;G.stick.run=false;rest();};
+  let downT=0,downX=0,downY=0;zone.addEventListener("pointerdown",e=>{downT=performance.now();downX=e.clientX;downY=e.clientY;});
+  const up=e=>{if(e.pointerId!==id)return;id=null;G.stick.on=false;G.stick.x=G.stick.y=0;G.stick.run=false;rest();
+    // a quick tap in the joystick area (not a drag) = a tap on the world under it (players there can still be opened)
+    if(e.type==="pointerup"&&performance.now()-downT<300&&Math.hypot(e.clientX-downX,e.clientY-downY)<10)stage.dispatchEvent(new MouseEvent("click",{clientX:e.clientX,clientY:e.clientY,bubbles:true}));};
   zone.addEventListener("pointerup",up);zone.addEventListener("pointercancel",up);addEventListener("blur",()=>{id=null;G.stick.on=false;rest();});
   const jb=document.getElementById("jumpBtn");
   jb.addEventListener("pointerdown",e=>{e.preventDefault();jb.classList.add("on");if(inGame)bigJump();});
@@ -6363,7 +6489,7 @@ window.jumpiAppBack=function(){
   if(typeof GS!=="undefined"&&GS.open){closeGameStore();return true;}
   if(document.body.classList.contains("panel-in")){closePanel();return true;}
   return false;};
-if(new URLSearchParams(location.search).has("touchtest")){window.__touch={G,zoom:()=>zoomLevel,fn:{}};   // tests: the windows, to look at them on a phone-sized screen
+if(new URLSearchParams(location.search).has("touchtest")){window.__touch={G,zoom:()=>zoomLevel,rem:()=>remotes,fn:{}};   // tests: the windows, to look at them on a phone-sized screen
   setTimeout(()=>{"openAdmin openAdopt openApp openChat openDaily openDecorate openGameStore openHouseUp openMap openMenu openMinigame openNeedPop openPetCard openPhone openPlayerCard openSeason openSettings openTrade openTutorial openVerify openWheel openDuel openOffers showShiftIntro showShiftResult privatePop openDiscord closePhone closeChat enterHome goDelivery goToWork goPatrol enterPlace tlStart tlStop closeMinigame".split(" ").forEach(n=>{try{window.__touch.fn[n]=eval(n);}catch(e){}});},0);}
 document.getElementById("setClose").onclick=closeSettings;
 setOverlay.addEventListener("pointerdown",e=>{if(e.target===setOverlay)closeSettings();});
@@ -10721,7 +10847,14 @@ function slotHTML(id,extra=""){if(!id)return '<div class="slot empty" aria-hidde
 
 /* click another player -> their card */
 function remoteAt(e){_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);
-  let best=null,bd=Infinity;for(const [id,c] of remotes){const h=_ray.intersectObject(c.root,true)[0];if(h&&h.distance<bd){bd=h.distance;best={id,c};}}return best;}
+  let best=null,bd=Infinity;for(const [id,c] of remotes){if(c.invisible&&!c.root.visible)continue;const h=_ray.intersectObject(c.root,true)[0];if(h&&h.distance<bd){bd=h.distance;best={id,c};}}
+  if(best||!TOUCH.coarse)return best;
+  // a finger is bigger than a mouse: on touch screens a tap near a player (on screen) also counts
+  let near=null,nd=Infinity;for(const [id,c] of remotes){if(!c.root.visible)continue;_tapV.copy(c.root.position);_tapV.y+=.9;_tapV.project(cam);if(_tapV.z>1)continue;
+    const sx=(_tapV.x+1)/2*innerWidth,sy=(1-_tapV.y)/2*innerHeight,d=Math.hypot(sx-e.clientX,sy-e.clientY);
+    const r=Math.max(34,Math.min(90,1400/Math.max(1,cam.position.distanceTo(c.root.position))));if(d<r&&d<nd){nd=d;near={id,c};}}
+  return near;}
+const _tapV=new THREE.Vector3();
 document.getElementById("pcClose").onclick=closePlayerCard;
 document.getElementById("pcTrade").onclick=()=>{if(pcTarget&&socket&&socket.connected){socket.emit("trade:request",pcTarget);}closePlayerCard();};
 addEventListener("pointerdown",e=>{if(!pcard.hidden&&!e.target.closest("#pcard"))closePlayerCard();},true);
@@ -10796,24 +10929,36 @@ function tradeDone(d){
 /* =====================================================================
    PLAYER CARD (portrait + actions) and 1-on-1 GAMES for coins
    ===================================================================== */
-const PR=240,portraitRT=new THREE.WebGLRenderTarget(PR,PR);portraitRT.texture.colorSpace=THREE.SRGBColorSpace;
-const portraitCam=new THREE.PerspectiveCamera(32,1,.1,300),portraitBuf=new Uint8Array(PR*PR*4);
+// a character picture with NO background (only the character and the scene's lights, on a see-through canvas):
+// the character and the lights go on layer SOLO for a moment and the camera only sees that layer
+const SOLO=7,_soloCC=new THREE.Color();let soloLights=[],soloLightsT=-1e9;
+function soloRender(root,camera,rt){
+  if(performance.now()-soloLightsT>2000){soloLights=[];scene.traverse(o=>{if(o.isLight)soloLights.push(o);});soloLightsT=performance.now();}
+  root.traverse(o=>o.layers.enable(SOLO));soloLights.forEach(l=>l.layers.enable(SOLO));camera.layers.set(SOLO);
+  const bg=scene.background,fog=scene.fog,ca=renderer.getClearAlpha();renderer.getClearColor(_soloCC);scene.background=null;scene.fog=null;renderer.setClearColor(0x000000,0);
+  renderer.setRenderTarget(rt);renderer.clear();renderer.render(scene,camera);renderer.setRenderTarget(null);
+  scene.background=bg;scene.fog=fog;renderer.setClearColor(_soloCC,ca);
+}
+const PR=300,PRH=420,portraitRT=new THREE.WebGLRenderTarget(PR,PRH);portraitRT.texture.colorSpace=THREE.SRGBColorSpace;
+const portraitCam=new THREE.PerspectiveCamera(30,PR/PRH,.1,300),portraitBuf=new Uint8Array(PR*PRH*4);
 let pcChar=null,pcImg=null;
 function drawPortrait(){
   if(!pcChar||pcard.hidden)return;const c=pcChar,p=c.root.position,f=c.cur||0,canvas=document.getElementById("pcPortrait");
-  portraitCam.position.set(p.x+Math.sin(f)*4.4,p.y+1.9,p.z+Math.cos(f)*4.4);portraitCam.lookAt(p.x,p.y+1.2,p.z);
+  portraitCam.position.set(p.x+Math.sin(f)*5.6,p.y+1.5,p.z+Math.cos(f)*5.6);portraitCam.lookAt(p.x,p.y+1.08,p.z);
   const tagVis=c.tag.visible;c.tag.visible=false;
-  const pxWas=AURA_PX.value;AURA_PX.value=PR*.5/Math.tan(THREE.MathUtils.degToRad(portraitCam.fov)/2);
-  renderer.setRenderTarget(portraitRT);renderer.render(scene,portraitCam);renderer.setRenderTarget(null);AURA_PX.value=pxWas;c.tag.visible=tagVis;
-  renderer.readRenderTargetPixels(portraitRT,0,0,PR,PR,portraitBuf);
-  const x=canvas.getContext("2d");pcImg=pcImg||x.createImageData(PR,PR);
-  for(let y=0;y<PR;y++)pcImg.data.set(portraitBuf.subarray((PR-1-y)*PR*4,(PR-y)*PR*4),y*PR*4);x.putImageData(pcImg,0,0);
+  const pxWas=AURA_PX.value;AURA_PX.value=PRH*.5/Math.tan(THREE.MathUtils.degToRad(portraitCam.fov)/2);
+  soloRender(c.root,portraitCam,portraitRT);AURA_PX.value=pxWas;c.tag.visible=tagVis;
+  renderer.readRenderTargetPixels(portraitRT,0,0,PR,PRH,portraitBuf);
+  const x=canvas.getContext("2d");pcImg=pcImg||x.createImageData(PR,PRH);
+  for(let y=0;y<PRH;y++)pcImg.data.set(portraitBuf.subarray((PRH-1-y)*PR*4,(PRH-y)*PR*4),y*PR*4);x.putImageData(pcImg,0,0);
 }
 function openPlayerCard(hit,e){
   pcTarget=hit.id;pcChar=hit.c;const n=document.getElementById("pcName");n.textContent=hit.c.username||"Player";n.classList.toggle("admin",hit.c.role==="admin");n.classList.toggle("mod",hit.c.role==="mod");
   pcard.hidden=false;pcImg=null;drawPortrait();
-  const w=pcard.offsetWidth,h=pcard.offsetHeight,x=e.clientX+(e.clientX>innerWidth/2?-w-24:24);
-  pcard.style.left=Math.max(12,Math.min(innerWidth-w-12,x))+"px";pcard.style.top=Math.max(12,Math.min(innerHeight-h-12,e.clientY-h/2))+"px";
+  const full=body.classList.contains("land")||body.classList.contains("app");pcard.classList.toggle("pc-full",full);
+  if(full){pcard.style.left=pcard.style.top="";G.keys={};}
+  else{const w=pcard.offsetWidth,h=pcard.offsetHeight,x=e.clientX+(e.clientX>innerWidth/2?-w-24:24);
+    pcard.style.left=Math.max(12,Math.min(innerWidth-w-12,x))+"px";pcard.style.top=Math.max(12,Math.min(innerHeight-h-12,e.clientY-h/2))+"px";}
   const poor=!me||(me.coins||0)<100;["pcTTT","pcC4"].forEach(id=>{const b=document.getElementById(id);b.disabled=poor;b.title=poor?"You need 100 coins to play":"";});
   // nobody can ask an admin to trade or play (an admin can still ask a player)
   const noAsk=hit.c.role==="admin"&&!(me&&me.role==="admin");["pcTrade","pcTTT","pcC4"].forEach(id=>document.getElementById(id).hidden=noAsk);pcard.querySelector(".pc-label").hidden=noAsk;
@@ -10913,10 +11058,10 @@ const SPW=200,SPH=240,sideRT=new THREE.WebGLRenderTarget(SPW,SPH);sideRT.texture
 const sideCam=new THREE.PerspectiveCamera(30,SPW/SPH,.1,300),sideBuf=new Uint8Array(SPW*SPH*4);
 let sideFrame=0;
 function renderCharInto(root,face,hide,canvas){
-  const p=root.position;sideCam.position.set(p.x+Math.sin(face)*5.2,p.y+1.7,p.z+Math.cos(face)*5.2);sideCam.lookAt(p.x,p.y+1.25,p.z);
+  const p=root.position;sideCam.position.set(p.x+Math.sin(face)*6,p.y+1.5,p.z+Math.cos(face)*6);sideCam.lookAt(p.x,p.y+1.1,p.z);
   const vis=hide.map(o=>o&&o.visible);hide.forEach(o=>{if(o)o.visible=false;});
   const pxWas=AURA_PX.value;AURA_PX.value=SPH*.5/Math.tan(THREE.MathUtils.degToRad(sideCam.fov)/2);
-  renderer.setRenderTarget(sideRT);renderer.render(scene,sideCam);renderer.setRenderTarget(null);AURA_PX.value=pxWas;hide.forEach((o,i)=>{if(o)o.visible=vis[i];});
+  soloRender(root,sideCam,sideRT);AURA_PX.value=pxWas;hide.forEach((o,i)=>{if(o)o.visible=vis[i];});
   renderer.readRenderTargetPixels(sideRT,0,0,SPW,SPH,sideBuf);
   const x=canvas.getContext("2d");canvas._img=canvas._img||x.createImageData(SPW,SPH);
   for(let y=0;y<SPH;y++)canvas._img.data.set(sideBuf.subarray((SPH-1-y)*SPW*4,(SPH-y)*SPW*4),y*SPW*4);x.putImageData(canvas._img,0,0);
