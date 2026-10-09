@@ -1,0 +1,47 @@
+// Jumpi Games for Android: a full-screen WebView that opens https://jumpigames.com/play (see MainActivity.java).
+// The game itself lives on the website, so every website update reaches the app at once; a new APK / AAB is only
+// needed for changes here (icon, name, version, permissions).
+plugins {
+    id "com.android.application"
+}
+
+// signing: the release key comes from GitHub secrets (see .github/workflows/android.yml); without it the APK is
+// signed with a throw-away debug key, which installs fine but can't be updated in place by a later build
+def ksFile = file("../release.jks")
+def hasKey = ksFile.exists() && System.getenv("ANDROID_KEY_PASSWORD")
+
+android {
+    namespace "com.jumpigames.app"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.jumpigames.app"
+        minSdk 24
+        targetSdk 35
+        versionCode (System.getenv("APP_VERSION_CODE") ?: "1").toInteger()
+        versionName System.getenv("APP_VERSION_NAME") ?: "1.0.0"
+    }
+
+    signingConfigs {
+        if (hasKey) {
+            release {
+                storeFile ksFile
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS") ?: "jumpi"
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig hasKey ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
