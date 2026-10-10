@@ -38,9 +38,25 @@ jobs:
         run: npm version "1.0.${{ github.run_number }}" --no-git-tag-version --allow-same-version
 
       - name: Build the installer and publish the release
+        id: build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win --publish always
+        run: |
+          set -o pipefail
+          npx electron-builder --win --publish always 2>&1 | tee ../desktop-build-log.txt
+
+      - name: Publish the log to the desktop-build branch
+        if: always()
+        working-directory: .
+        run: |
+          mkdir -p out
+          cp desktop-build-log.txt out/build-log.txt 2>/dev/null || echo "no build log" > out/build-log.txt
+          printf "status: %s\nversion: 1.0.%s\ncommit: %s\ndate: %s\n" "${{ steps.build.outcome }}" "${{ github.run_number }}" "${{ github.sha }}" "$(date -u)" > out/BUILD_INFO.txt
+          cd out
+          git init -q -b desktop-build
+          git add -A
+          git -c user.name="Jumpi build" -c user.email="build@jumpigames.com" commit -qm "Windows build ${{ github.run_number }}: ${{ steps.build.outcome }}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" desktop-build
 
       - name: Keep the installer with the run too
         uses: actions/upload-artifact@v4
