@@ -21,6 +21,7 @@ import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
 import { WORLD_BOUNDS } from "../public/shared/city-layout.js";
 import { modLog } from "../discord/pip.js";
 import { loadBlocks, ghosts, hasGhosts } from "./blocks.js";
+import { levelOf, MAX_LEVEL } from "../public/shared/levels.js";
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
@@ -83,7 +84,7 @@ function limiter(max, windowMs) {
 
 // the food someone holds (only for show): { k, i, f } with f = how much is left (0..1)
 const cleanHold = (h) => (h && foodOf(h.k, Number(h.i)) ? { k: h.k, i: Number(h.i), f: Math.max(0.05, Math.min(1, Number(h.f) || 1)) } : null);
-const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform, bday, hold }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null, bday: !!bday, hold: hold || null });
+const publicView = ({ id, username, look, role, x, z, face, moving, status, pose, mood, pet, member, invisible, phone, uniform, bday, hold, lv }) => ({ id, username, look, role, x, z, face, moving, status: status || null, pose: pose || null, mood: mood || null, pet: pet || null, member: !!member, invisible: !!invisible, phone: !!phone, uniform: uniform || null, bday: !!bday, hold: hold || null, lv: lv || 1 });
 const UNIFORMS = new Set(Object.keys(JOBS));   // work uniforms other players can see
 
 /* ---------- invisible admins ----------
@@ -345,7 +346,8 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
-        me.bday = isBirthdayOn(fresh.birthDate);   // pink name with a cake all day
+        me.bday = isBirthdayOn(fresh.birthDate);
+        me.lv = fresh.role === "admin" ? MAX_LEVEL : levelOf(fresh.levelXp || 0);   // the level badge next to the name (admins: always the top level)   // pink name with a cake all day
         me.invisible = fresh.role === "admin" && fresh.adminInvisible !== false;   // admins come in invisible unless they switched it off
       } catch {}
       // the same account in a second window: the older window leaves
@@ -380,6 +382,7 @@ export function attachPlaza(io) {
         member: !!me.member,
         invisible: !!me.invisible,
         bday: !!me.bday,
+        lv: me.lv || 1,
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -769,6 +772,14 @@ export function onlinePlayers(seeHidden = true, selfId = "") {
     if (!seen.has(p.userId) && (seeHidden || ((!p.invisible || p.userId === selfId) && !(p.role !== "admin" && ghosts(selfId, p.userId)))))
       seen.set(p.userId, { userId: p.userId, username: p.username, look: p.look, role: p.role, where: p.room || ROOM, invisible: !!p.invisible });
   return [...seen.values()];
+}
+// a new level: the badge next to the name changes for everyone around
+export function notifyLevel(userId, lv) {
+  for (const p of players.values())
+    if (p.userId === userId && p.role !== "admin") {
+      p.lv = lv;
+      roomSend(p, "player:level", { id: p.id, lv });
+    }
 }
 // a block was added (on) or taken away: the two players vanish from / come back into each other's game right away
 export function ghostUpdate(a, b, on) {   // a, b: { id, username, role }

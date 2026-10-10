@@ -2895,6 +2895,68 @@ body.land .sx-profile{padding:8px 12px}
   body:not(.land) .sx-pane h3{margin-right:0}
   .sx-tile.wide{grid-column:1/-1}
 }
+/* ---------- LEVELS (the LV block): the chip under the coins, the card / settings rows, the Levels window ---------- */
+.lvchip{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 70px);right:90px;display:none;align-items:center;gap:6px;padding:3px 12px 3px 4px;border:0;border-radius:999px;cursor:pointer;
+  background:rgb(30 60 110 / .55);backdrop-filter:blur(4px);color:#fff;font:600 .85rem "Fredoka",system-ui,sans-serif}
+body.in-game.logged .lvchip{display:flex}
+body.game-store .lvchip{display:none!important}
+.lvchip img{width:34px;height:34px;filter:drop-shadow(0 2px 0 rgb(0 0 0 / .25))}
+.lvchip .lvc{display:flex;flex-direction:column;gap:3px;min-width:74px}
+.lvchip b{font:400 .95rem/1 var(--font);letter-spacing:.04em}
+.lvc-bar{display:block;height:7px;border-radius:999px;background:rgb(0 0 0 / .35);overflow:hidden}
+.lvc-bar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#7dffaa,#2fd36b);transition:width .6s cubic-bezier(.2,1,.3,1)}
+.lvchip:hover{background:rgb(30 60 110 / .72)}
+.lvchip:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.lvchip.bump img{animation:coinBump .6s cubic-bezier(.2,1.8,.4,1)}
+body.land .lvchip{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 44px);right:calc(var(--lg) + var(--lb) + 10px);transform:scale(.85);transform-origin:100% 0}
+.pc-lv{display:inline-flex;align-items:center;gap:6px;margin:2px auto 0;padding:3px 12px 3px 4px;border:0;border-radius:999px;cursor:pointer;background:rgb(0 0 0 / .22);color:#fff;font:600 .9rem "Fredoka",system-ui,sans-serif}
+.pc-lv img{width:30px;height:30px}
+.pc-lv:hover{background:rgb(0 0 0 / .32)}
+.pc-lv:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.pc-full .pc-lv{font-size:clamp(.9rem,2.2vh,1.1rem);background:rgb(6 72 138 / .55)}
+.pc-full .pc-lv img{width:clamp(28px,4.6vh,40px);height:clamp(28px,4.6vh,40px)}
+.sx-lv{border:0;cursor:pointer;color:#fff;text-align:start;font:inherit;transition:background .15s}
+.sx-lv:hover{background:rgb(255 255 255 / .26)}
+.sx-lv:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.sx-lvrow{display:flex;align-items:center;gap:10px;width:100%}
+.sx-lvrow>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sx-lvrow b{font-weight:600;font-size:1.1rem}
+.sx-lvrow em{font-style:normal;font-size:.85rem;opacity:.9}
+.sx-lvsee{align-self:flex-end;font-size:.85rem;font-weight:600;text-decoration:underline}
+.lv-ov{z-index:46}
+.lvx{position:relative;width:100%;height:100dvh;overflow-y:auto;color:#fff;font-family:"Fredoka",system-ui,sans-serif;animation:fadeIn .25s;
+  padding:calc(env(safe-area-inset-top,0px) + clamp(16px,3vh,30px)) clamp(16px,5vw,64px) calc(env(safe-area-inset-bottom,0px) + 28px)}
+body.rtl .lvx{direction:rtl}
+.lvx>*{max-width:900px;margin-left:auto;margin-right:auto}
+.lvx .set-close{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 14px);right:calc(env(safe-area-inset-right,0px) + 14px);left:auto;width:46px;height:46px;border-radius:14px;box-shadow:0 4px 0 #8a1c1c,0 0 0 3px #fff}
+.lvx-head{display:flex;align-items:center;gap:clamp(12px,3vw,28px);padding:16px 20px;border-radius:26px;background:rgb(255 255 255 / .2);box-shadow:inset 0 -5px 0 rgb(0 40 110 / .14)}
+.lvx-big{width:clamp(84px,16vh,130px);height:clamp(84px,16vh,130px);flex:none;filter:drop-shadow(0 6px 0 rgb(0 40 110 / .3));animation:idleBob 3s ease-in-out infinite}
+.lvx-me{flex:1;min-width:0}
+.lvx-me h2{margin:0;font:400 clamp(1.8rem,5vh,2.8rem)/1 var(--font);letter-spacing:.04em;text-shadow:0 4px 0 #06488a}
+.lvx-rank{margin:4px 0 10px;font-weight:600;font-size:1.15rem}
+.lvx-bar{height:16px;border-radius:999px;background:rgb(0 0 0 / .3);overflow:hidden;box-shadow:inset 0 2px 0 rgb(0 0 0 / .2)}
+.lvx-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7dffaa,#2fd36b);transition:width .6s}
+.lvx-next{margin:6px 0 0;font-size:.95rem;opacity:.95}
+.lvx-how{margin-top:12px!important;padding:12px 18px;border-radius:20px;background:rgb(255 255 255 / .14)}
+.lvx-how b{font:400 1.15rem var(--font);letter-spacing:.03em}
+.lvx-how ul{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;padding:0;list-style:none}
+.lvx-how li{padding:5px 12px;border-radius:999px;background:rgb(255 255 255 / .2);font-weight:600;font-size:.9rem}
+.lvx-how p{margin:0;font-size:.9rem;opacity:.92}
+.lvx h3{margin-top:20px!important;margin-bottom:4px!important;font:400 clamp(1.3rem,3.6vh,1.8rem)/1 var(--font);letter-spacing:.04em;text-shadow:0 3px 0 #06488a}
+.lvx-sub{margin-top:0!important;opacity:.92}
+.lvx-ranks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.lvx-rank-card{position:relative;display:grid;grid-template-columns:64px 1fr;grid-template-rows:auto auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:20px;background:rgb(255 255 255 / .16);box-shadow:inset 0 -4px 0 rgb(0 40 110 / .12)}
+.lvx-rank-card img{grid-row:1/3;width:64px;height:64px}
+.lvx-rc-txt{display:flex;flex-direction:column}
+.lvx-rc-txt b{font:400 1.2rem/1.1 var(--font);letter-spacing:.03em}
+.lvx-rc-txt small{font-size:.85rem;opacity:.9}
+.lvx-bubble{justify-self:start;max-width:100%;padding:6px 12px;border-radius:14px;background:var(--bb);border:3px solid var(--bl);color:var(--bt);font:600 .9rem "Fredoka",system-ui,sans-serif}
+.lvx-state{position:absolute;top:10px;right:12px;padding:2px 9px;border-radius:999px;font-size:.75rem;font-weight:600;background:rgb(0 0 0 / .22)}
+body.rtl .lvx-state{right:auto;left:12px}
+.lvx-rank-card.now{background:#fff;color:#0b5cb8;box-shadow:0 5px 0 #06488a,0 0 0 4px #ffd23a}
+.lvx-rank-card.now .lvx-state{background:#ffd23a;color:#6b3d00}
+.lvx-rank-card.done .lvx-state{background:#2fd36b}
+.lvx-rank-card.locked img{filter:saturate(.75)}
 </style>
 </head>
 <body>
@@ -3093,6 +3155,7 @@ body.land .sx-profile{padding:8px 12px}
           <div class="sx-tile"><small>Account age</small><b id="setAge"></b></div>
           <div class="sx-tile wide"><small>Membership</small><span class="badge-sub" id="setSub"></span><em id="sxSubLeft"></em></div>
           <div class="sx-tile"><small>Coins</small><b id="setCoins"></b></div>
+          <button class="sx-tile wide sx-lv" id="sxLv" type="button"><small>Level</small><span class="sx-lvrow"><img id="sxLvBadge" alt="" width="44" height="44"><span><b><span>LEVEL</span> <span id="sxLvNum" data-noi18n>1</span> · <span id="sxLvRank"></span></b><i class="lvc-bar" aria-hidden="true"><i id="sxLvFill"></i></i><em id="sxLvNext"></em></span></span><span class="sx-lvsee">See all levels</span></button>
         </div>
         <div class="sx-box">
           <h4><i aria-hidden="true"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="11" cy="16" r="6.5" fill="none" stroke="#fff" stroke-width="3.2"/><path d="M17 16 H29 M24 16 V21 M28 16 V20" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg></i>Change password</h4>
@@ -3313,7 +3376,7 @@ body.land .sx-profile{padding:8px 12px}
 <!-- a player's card: the whole screen (the player standing on the left, what you can do on the right) -->
 <div class="pcard" id="pcard" role="dialog" aria-modal="true" aria-labelledby="pcName" hidden>
   <button class="pc-x" id="pcClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
-  <div class="pc-stage"><div class="pc-portrait"><span class="pc-floor" aria-hidden="true"></span><canvas id="pcPortrait" width="300" height="420" aria-hidden="true"></canvas></div><b id="pcName" class="pc-name">Player</b></div>
+  <div class="pc-stage"><div class="pc-portrait"><span class="pc-floor" aria-hidden="true"></span><canvas id="pcPortrait" width="300" height="420" aria-hidden="true"></canvas></div><b id="pcName" class="pc-name">Player</b><button class="pc-lv" id="pcLv" type="button" aria-label="Levels"><img id="pcLvBadge" alt="" width="30" height="30"><span><span>LEVEL</span> <b id="pcLvNum" data-noi18n>1</b> · <span id="pcLvRank"></span></span></button></div>
   <div class="pc-side">
   <div class="pc-acts">
       <button class="pc-btn friend" id="pcFriend" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4.5" fill="#fff"/><path d="M1.5 20 Q2 13.5 9 13.5 Q16 13.5 16.5 20 Z" fill="#fff"/><path d="M19.5 7 V15 M15.5 11 H23.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span>Add friend</span></button>
@@ -3534,6 +3597,29 @@ body.land .sx-profile{padding:8px 12px}
   <button class="tl-skip" id="tlSkip" type="button">Skip</button>
   <div class="tl-prog" aria-hidden="true"><i id="tlProg"></i></div>
 </div>
+<!-- LEVELS: my level, how to earn XP, and every badge + chat bubble colour (the LV block in the script) -->
+<div class="settings-overlay sx-ov lv-ov" id="lvOv" hidden>
+  <div class="lvx" role="dialog" aria-modal="true" aria-labelledby="lvTitle">
+    <button class="set-close" id="lvClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+    <header class="lvx-head">
+      <img class="lvx-big" id="lvBig" alt="" width="120" height="120">
+      <div class="lvx-me">
+        <h2 id="lvTitle"><span>LEVEL</span> <span id="lvNum" data-noi18n>1</span></h2>
+        <p class="lvx-rank" id="lvRank"></p>
+        <div class="lvx-bar" aria-hidden="true"><i id="lvFill"></i></div>
+        <p class="lvx-next" id="lvNext"></p>
+      </div>
+    </header>
+    <div class="lvx-how">
+      <b>How to level up</b>
+      <ul><li>Quests from the people of Jumpi</li><li>Mini-games</li><li>Jobs</li><li>Tic-Tac-Toe and 4 in a Row</li><li>The daily gift</li></ul>
+      <p id="lvToday"></p>
+    </div>
+    <h3>BADGES AND CHAT BUBBLES</h3>
+    <p class="lvx-sub">Every 10 levels your badge and your chat bubble change. The higher you go, the cooler they get!</p>
+    <div class="lvx-ranks" id="lvRanks"></div>
+  </div>
+</div>
 <!-- report / block a player (the SAFE block in the script) -->
 <div class="idle-overlay" id="sfOv" role="dialog" aria-modal="true" aria-labelledby="sfTitle" hidden>
   <div class="idle-card sf-card">
@@ -3727,6 +3813,7 @@ body.land .sx-profile{padding:8px 12px}
 <div class="wx-card" id="wxCardBox" hidden><canvas id="wxcArc" width="240" height="120"></canvas><b class="wxc-name" id="wxcName">Sunny</b><p class="wxc-next" id="wxcNext"></p></div>
 <div class="wx-tint" id="wxTint" aria-hidden="true"></div><div class="wx-flash" id="wxFlash" aria-hidden="true"></div>
 <div class="coins" id="coins" title="Coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="coinsText">0</span></div>
+<button class="lvchip" id="lvChip" type="button" aria-haspopup="dialog" aria-label="My level"><img id="lvChipBadge" alt="" width="34" height="34"><span class="lvc"><b><span>LEVEL</span> <span id="lvChipNum" data-noi18n>1</span></b><i class="lvc-bar" aria-hidden="true"><i id="lvChipFill"></i></i></span></button>
 <button class="btn spx-btn" id="spxBtn" type="button" aria-label="Special offers" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19.2 6.6 L24.4 5.8 L24.9 11 L29.5 13.5 L27 18 L29 22.8 L24 24.4 L22.6 29.4 L17.6 27.6 L13.6 30.8 L11 26.2 L5.8 26 L6.6 20.8 L2.6 17.4 L6.4 13.8 L5.4 8.6 L10.6 8 L13 3.4 Z" fill="#fff"/><path d="M11.5 20.5 L20.5 11.5" stroke="#d63b8f" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12.5" r="2.2" fill="#d63b8f"/><circle cx="20" cy="19.5" r="2.2" fill="#d63b8f"/></svg></button>
 <div class="idle-overlay spx-overlay" id="spxOverlay" role="dialog" aria-modal="true" aria-labelledby="spxTitle" hidden>
   <div class="idle-card spx-card">
@@ -3972,6 +4059,7 @@ import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/
 import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} from "/shared/food.js";
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
+import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
 import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN} from "/shared/store.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
@@ -5594,13 +5682,45 @@ function drawCakeIcon(x,cx,cy,s){const k=s/86;x.save();x.translate(cx,cy);x.scal
   [-12,0,12].forEach((cx2,i)=>{x.lineWidth=5;x.strokeStyle="#000";x.strokeRect(cx2-3,-36,6,18);x.fillStyle=["#1fb6ff","#2fd36b","#ffd23a"][i];x.fillRect(cx2-3,-36,6,18);
     x.fillStyle="#ff8a1c";x.beginPath();x.moveTo(cx2,-38);x.quadraticCurveTo(cx2-6,-46,cx2,-54);x.quadraticCurveTo(cx2+6,-46,cx2,-38);x.fill();});
   x.restore();}
-function nameTag(text,fill="#fff",tag=-1){
-  const w=640,h=128,font='600 70px "Fredoka", "Arial Rounded MT Bold", sans-serif';
+/* ---------- LEVEL badges (public/shared/levels.js): a new shape and colour every 10 levels, the number inside ---------- */
+function badgePath(x,shape){x.beginPath();
+  const poly=(n,r,rot=0)=>{for(let i=0;i<n;i++){const a=rot+i/n*Math.PI*2;i?x.lineTo(Math.cos(a)*r,Math.sin(a)*r):x.moveTo(Math.cos(a)*r,Math.sin(a)*r);}x.closePath();};
+  if(shape==="rounded")x.roundRect(-42,-42,84,84,22);
+  else if(shape==="hexagon")poly(6,48,Math.PI/6);
+  else if(shape==="star"){for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?31:52;i?x.lineTo(Math.cos(a)*r,Math.sin(a)*r+4):x.moveTo(Math.cos(a)*r,Math.sin(a)*r+4);}x.closePath();}
+  else if(shape==="shield"||shape==="flame"){x.moveTo(-40,-40);x.quadraticCurveTo(0,-50,40,-40);x.lineTo(40,4);x.quadraticCurveTo(36,34,0,50);x.quadraticCurveTo(-36,34,-40,4);x.closePath();}
+  else if(shape==="diamond")poly(4,52,-Math.PI/2);
+  else if(shape==="gem")poly(8,48,Math.PI/8);
+  else x.arc(0,shape==="crown"?6:0,shape==="wings"||shape==="crown"?38:44,0,Math.PI*2);}
+function drawLevelBadge(x,lv,cx,cy,size){const R=RANKS[rankOf(lv)];x.save();x.translate(cx,cy);x.scale(size/112,size/112);x.lineJoin="round";x.lineCap="round";
+  x.strokeStyle="#000";x.lineWidth=7;
+  // decorations behind the badge
+  if(R.shape==="wings"){x.fillStyle="#fff";[-1,1].forEach(sd=>{x.beginPath();x.moveTo(sd*26,-14);x.quadraticCurveTo(sd*62,-36,sd*58,-4);x.quadraticCurveTo(sd*56,14,sd*30,18);x.closePath();x.fill();x.stroke();});}
+  if(R.shape==="flame"){x.fillStyle="#ffb21f";x.beginPath();x.moveTo(-30,-38);x.quadraticCurveTo(-34,-58,-18,-62);x.quadraticCurveTo(-14,-50,-6,-48);x.quadraticCurveTo(-4,-70,10,-72);x.quadraticCurveTo(6,-56,18,-50);x.quadraticCurveTo(28,-62,34,-54);x.quadraticCurveTo(30,-44,30,-38);x.closePath();x.fill();x.stroke();}
+  if(R.shape==="crown"){x.fillStyle="#ffd23a";x.beginPath();x.moveTo(-34,-22);x.lineTo(-40,-58);x.lineTo(-18,-40);x.lineTo(0,-64);x.lineTo(18,-40);x.lineTo(40,-58);x.lineTo(34,-22);x.closePath();x.fill();x.stroke();
+    x.fillStyle="#ff4f6b";[[-40,-58],[0,-64],[40,-58]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,6,0,7);x.fill();x.stroke();});}
+  let g;
+  if(R.rainbow){g=x.createLinearGradient(-50,-50,50,50);["#ff5a5a","#ffb21f","#ffe14d","#2fd36b","#1fb6ff","#9b5cff"].forEach((c,i)=>g.addColorStop(i/5,c));}
+  else{g=x.createLinearGradient(0,-50,0,50);g.addColorStop(0,"#fff");g.addColorStop(.18,R.c);g.addColorStop(1,R.e);}
+  badgePath(x,R.shape);x.fillStyle=g;x.fill();x.stroke();
+  // a shine and the number
+  x.save();badgePath(x,R.shape);x.clip();x.fillStyle="rgba(255,255,255,.28)";x.beginPath();x.ellipse(-12,-30,30,14,-.4,0,7);x.fill();x.restore();
+  const t=String(lv),fs=t.length>1?44:50;x.font=`400 ${fs}px "Lilita One","Fredoka",sans-serif`;x.textAlign="center";x.textBaseline="middle";
+  const ty=(R.shape==="star"?10:R.shape==="crown"?10:4);x.lineWidth=10;x.strokeStyle="#000";x.strokeText(t,0,ty);x.fillStyle="#fff";x.fillText(t,0,ty);
+  x.restore();}
+const _badgeURLs=new Map();
+function levelBadgeURL(lv,px=96){const k=lv+":"+px;if(_badgeURLs.has(k))return _badgeURLs.get(k);
+  const c=document.createElement("canvas");c.width=c.height=px;drawLevelBadge(c.getContext("2d"),lv,px/2,px/2+px*.06,px*.9);const u=c.toDataURL();_badgeURLs.set(k,u);return u;}
+const badgeImg=(lv,px=40,cls="lv-badge")=>`<img class="${cls}" src="${levelBadgeURL(lv,96)}" alt="" width="${px}" height="${px}">`;
+// name under a character: [tag icon] name [level badge]
+function nameTag(text,fill="#fff",tag=-1,lv=0){
+  const w=lv>0?760:640,h=128,font='600 70px "Fredoka", "Arial Rounded MT Bold", sans-serif';
   const tex=canvasTex(w,h,(x)=>{x.font=font;x.textBaseline="middle";x.lineJoin="round";
-    const tw=Math.min(x.measureText(text).width,w-130),icon=tag==="bday"||(tag>=0&&TAGS[tag])?86:0,gap=icon?12:0,start=(w-(icon+gap+tw))/2;
+    const icon=tag==="bday"||(tag>=0&&TAGS[tag])?86:0,gap=icon?12:0,bw=lv>0?96:0,bgap=bw?10:0,tw=Math.min(x.measureText(text).width,lv>0?w-40-icon-gap-bw-bgap:w-130),start=(w-(icon+gap+tw+bgap+bw))/2;
     if(tag==="bday")drawCakeIcon(x,start+icon/2,h/2,icon);else if(icon)drawTagIcon(x,tag,start+icon/2,h/2,icon);
-    x.textAlign="left";x.lineWidth=14;x.strokeStyle="#000";x.strokeText(text,start+icon+gap,h/2+4,w-130);x.fillStyle=fill;x.fillText(text,start+icon+gap,h/2+4,w-130);});
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:true,depthWrite:false,transparent:true}));s.scale.set(2.75,0.55,1);s.renderOrder=10;return s;}
+    x.textAlign="left";x.lineWidth=14;x.strokeStyle="#000";x.strokeText(text,start+icon+gap,h/2+4,tw);x.fillStyle=fill;x.fillText(text,start+icon+gap,h/2+4,tw);
+    if(bw)drawLevelBadge(x,lv,start+icon+gap+tw+bgap+bw/2,h/2+4,bw);});
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:true,depthWrite:false,transparent:true}));s.scale.set(2.75*w/640,0.55,1);s.renderOrder=10;return s;}
 // keep a name just in front of its owner's feet (towards the camera), so the owner's own body never covers it
 const _tg=new THREE.Vector3();
 function placeTag(tag,pos){_tg.set(cam.position.x-pos.x,0,cam.position.z-pos.z);const l=_tg.length()||1;
@@ -6713,7 +6833,7 @@ function buildPlaza(){
 /* ---------- the resident: a copy of the character with its own look ---------- */
 // copy the player's 3D character and dress it in someone else's look
 var wearUniform=null;   // at work: the job whose uniform I wear (JOB_LOOK in public/shared/jobs.js)
-function makeCharacter(look,label,tagColor){
+function makeCharacter(look,label,tagColor,lv=0){
   for(const k in OUTFIT_OBJ)OUTFIT_OBJ[k].forEach((o,i)=>[].concat(o).forEach(p=>p.userData.outfit=k+":"+i));
   const keep={pos:P.root.position.clone(),rot:P.root.rotation.clone()};P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);
   const off=[];   // clothes this character doesn't wear are left out of the copy
@@ -6735,7 +6855,7 @@ function makeCharacter(look,label,tagColor){
       else if(m.name==="Mouth"){m=m.clone();m.color.copy(mouth);}return m;});
       o.material=Array.isArray(o.material)?ms:ms[0];}
   });
-  const tag=nameTag(label,tagColor,Number.isInteger(look.tag)?look.tag:-1);   // added to the world by whoever creates the character
+  const tag=nameTag(label,tagColor,Number.isInteger(look.tag)?look.tag:-1,lv);   // added to the world by whoever creates the character
   const n={root,tag,head:root.getObjectByName("Head"),body:root.getObjectByName("Body"),armL:root.getObjectByName("ArmL"),armR:root.getObjectByName("ArmR"),
     eyeL:root.getObjectByName("EyeL"),eyeR:root.getObjectByName("EyeR"),lookL:root.getObjectByName("LookL"),lookR:root.getObjectByName("LookR"),headY:0,blinkT:0,blinkStart:-9};
   n.headY=n.head.position.y;
@@ -6821,10 +6941,10 @@ function remoteTyping(c,on){if(on===c.typing)return;c.typing=on;
 function addRemote(p){
   if(!world)return;
   if(remotes.has(p.id))return;
-  const c=makeCharacter(uniformLook(p.look||{},p.uniform),p.username||"Player",nameColor(p.role,p.member));c.uniform=p.uniform||null;c.member=!!p.member;c.invisible=!!p.invisible;
-  c.bday=!!p.bday;if(c.bday){c.tag.material.map&&c.tag.material.map.dispose();c.tag=nameTag(p.username||"Player",BIRTHDAY_PINK,"bday");}   // birthday today: pink name with a cake
+  const c=makeCharacter(uniformLook(p.look||{},p.uniform),p.username||"Player",nameColor(p.role,p.member),p.lv||1);c.uniform=p.uniform||null;c.member=!!p.member;c.invisible=!!p.invisible;c.lv=p.lv||1;
+  c.bday=!!p.bday;if(c.bday){c.tag.material.map&&c.tag.material.map.dispose();c.tag=nameTag(p.username||"Player",BIRTHDAY_PINK,"bday",c.lv);}   // birthday today: pink name with a cake
   c.root.position.set(p.x,0,p.z);Object.assign(c,{look:p.look||{},role:p.role,username:p.username,tx:p.x,tz:p.z,face:p.face||0,cur:p.face||0,moving:!!p.moving,phase:0,hopT:-9,typing:false,bubble:makeBubbleEl()});
-  if(p.role==="admin")c.bubble.classList.add("admin");else if(p.role==="mod")c.bubble.classList.add("mod");
+  if(p.role==="admin")c.bubble.classList.add("admin");else if(p.role==="mod")c.bubble.classList.add("mod");else paintBubbleRank(c.bubble,c.lv);
   c.pose=p.pose||null;c.mood=p.mood||"";c.phT=p.phone?1:0;c.hold=p.hold||null;setRemotePet(c,p.pet);(G.home&&HOME.group?HOME.group:world).add(c.root,c.tag);remotes.set(p.id,c);if(c.invisible)ghostRemote(c,true);setBadge(c,p.status);updateOnline();refreshAdminOnline();
 }
 function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();dropPetObj(c.petObj);c.petObj=null;c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
@@ -6868,8 +6988,9 @@ function netJoin(){
     socket.on("player:join",p=>{addRemote(p);});
     socket.on("needs",setNeeds);
     socket.on("store:granted",storeGranted);
-    socket.on("player:member",d=>{const c=remotes.get(d.id);if(!c||c.member===!!d.member)return;c.member=!!d.member;
-      const old=c.tag,t=c.bday?nameTag(c.username||"Player",BIRTHDAY_PINK,"bday"):nameTag(c.username||"Player",nameColor(c.role,c.member),Number.isInteger(c.look&&c.look.tag)?c.look.tag:-1);t.position.copy(old.position);(old.parent||world).add(t);old.removeFromParent();old.material.map&&old.material.map.dispose();c.tag=t;});
+    socket.on("player:member",d=>{const c=remotes.get(d.id);if(!c||c.member===!!d.member)return;c.member=!!d.member;rebuildRemoteTag(c);});
+    socket.on("player:level",d=>{const c=remotes.get(d.id);if(!c||c.lv===d.lv)return;c.lv=d.lv;rebuildRemoteTag(c);if(c.role!=="admin"&&c.role!=="mod")paintBubbleRank(c.bubble,c.lv);});
+    socket.on("level:xp",onLevelXp);
     socket.on("player:pet",d=>{const c=remotes.get(d.id);if(c)setRemotePet(c,d.pet);else if(d.id===socket.id)loadPets();});
     socket.on("pet:pat",d=>{if(d.by===socket.id)return;if(d.owner){const c=remotes.get(d.owner);if(c&&c.petObj)patPet(c.petObj,true);else if(d.owner===socket.id&&PETS.me)patPet(PETS.me,true);}
       else if(d.pid){const P=PETS.home.find(x=>x.info.id===d.pid);if(P)patPet(P,true);}});
@@ -6879,11 +7000,11 @@ function netJoin(){
     socket.on("home:gone",()=>{toast("That home isn't there any more.");leaveHome();});
     socket.on("player:leave",id=>removeRemote(id));
     socket.on("player:look",d=>{if(d.id===socket.id)return;const c=remotes.get(d.id);if(!c)return;
-      const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:d.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:c.uniform,phone:!!c.phT,bday:c.bday,hold:c.hold};
+      const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:d.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:c.uniform,phone:!!c.phT,bday:c.bday,hold:c.hold,lv:c.lv};
       removeRemote(d.id);addRemote(keep);});
     // someone put on (or took off) a work uniform: rebuild their character with it
     socket.on("player:uniform",d=>{const c=remotes.get(d&&d.id);if(!c||(c.uniform||null)===(d.job||null))return;
-      const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:c.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:d.job||null,phone:!!c.phT,bday:c.bday,hold:c.hold};
+      const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:c.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:d.job||null,phone:!!c.phT,bday:c.bday,hold:c.hold,lv:c.lv};
       removeRemote(d.id);addRemote(keep);sfx.hover();});
     socket.on("chat",d=>{if(d.id===socket.id)return;const c=remotes.get(d.id);if(c){remoteSay(c,d.text);sfx.hover();}windowChat(d);});
     socket.on("typing",d=>{const c=remotes.get(d.id);if(c)remoteTyping(c,d.on);});
@@ -7760,10 +7881,17 @@ function gameTick(dt,t,hy){
 /* ---------- entering and leaving ---------- */
 // admins have a red name, members a golden one
 const nameColor=(role,member)=>role==="admin"?"#ff4545":role==="mod"?"#3d9bff":member?"#ffd23a":"#fff";
+// a remote player's name tag again (membership, birthday or level changed)
+function rebuildRemoteTag(c){const old=c.tag,t=c.bday?nameTag(c.username||"Player",BIRTHDAY_PINK,"bday",c.lv||1):nameTag(c.username||"Player",nameColor(c.role,c.member),Number.isInteger(c.look&&c.look.tag)?c.look.tag:-1,c.lv||1);
+  t.position.copy(old.position);(old.parent||world).add(t);old.removeFromParent();old.material.map&&old.material.map.dispose();c.tag=t;}
+// admins are always the top level
+const myXp=()=>!me?0:me.role==="admin"?LV_TOTAL[MAX_LEVEL]:me.levelXp||0;
+const myLevel=()=>me?levelOf(myXp()):1;
 function refreshMyTag(){
-  if(!world)return;const key=me?me.username+me.role+lk("tag")+!!me.subscriber+!!me.birthdayToday:"";
+  if(!world)return;const key=me?me.username+me.role+lk("tag")+!!me.subscriber+!!me.birthdayToday+"L"+myLevel():"";
   if(G.tag&&G.tagFor!==key){world.remove(G.tag);G.tag.material.map.dispose();G.tag=null;}
-  if(!G.tag){const bd=!!(me&&me.birthdayToday);G.tag=nameTag(me?me.username:"You",bd?BIRTHDAY_PINK:nameColor(me&&me.role,me&&me.subscriber),bd?"bday":lk("tag")??-1);G.tagFor=key;world.add(G.tag);}
+  if(!G.tag){const bd=!!(me&&me.birthdayToday);G.tag=nameTag(me?me.username:"You",bd?BIRTHDAY_PINK:nameColor(me&&me.role,me&&me.subscriber),bd?"bday":lk("tag")??-1,me?myLevel():0);G.tagFor=key;world.add(G.tag);}
+  paintMyBubbleRank();paintLevelChip();
 }
 let VIEW_FAR=185,FOG_NEAR=70,FOG_FAR=178;   // how far you can see in the world (the city hides squares past this); "Fast" graphics see less
 /* ---------- graphics quality (settings): Auto lowers the resolution by itself when the game runs slowly ---------- */
@@ -7881,6 +8009,47 @@ volRows.forEach(r=>{const k=r.dataset.kind,inp=r.querySelector(".vol");
   r.querySelector(".vol-mute").onclick=()=>{Sound.unlock();const v=k==="music"?Sound.musicVol:Sound.sfxVol;
     if(v>0){volBack[k]=v;Sound.setVolume(k,0);}else{Sound.setVolume(k,volBack[k]||.8);if(k==="sfx")sfx.tick(true);}paintSound();};});
 const STAR='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 L39.6 21.6 L57.7 23.6 L44.2 35.9 L48 53.7 L32 44.6 L16 53.7 L19.8 35.9 L6.3 23.6 L24.4 21.6 Z" fill="#fff"/></svg>';
+/* ---------- LV: player levels 1-99 (public/shared/levels.js, the server: routes/levels.js) ----------
+   the badge next to every name, the chip under the coins, the chat bubble colour of your rank, the Levels window,
+   and the level on the player card. "level:xp" from the server: { xp, level, gained, up }. */
+const RANK_NAMES=RANKS.map(r=>r.name);
+function paintBubbleRank(el,lv){const R=RANKS[rankOf(lv||1)];
+  if(rankOf(lv||1)===0){["--bb","--bl","--bt"].forEach(k=>el.style.removeProperty(k));el.classList.remove("ranked");return;}
+  el.style.setProperty("--bb",R.bubble[0]);el.style.setProperty("--bl",R.bubble[1]);el.style.setProperty("--bt",R.bubble[2]);el.classList.add("ranked");}
+function paintMyBubbleRank(){if(!me||me.role==="admin"||me.role==="mod"){paintBubbleRank(myBubble,1);return;}paintBubbleRank(myBubble,myLevel());}
+function lvNextText(xp){const P=levelProgress(xp);return P.level>=MAX_LEVEL?I18N.T("Top level!"):I18N.T("{n} XP to level {l}",{n:(P.need-P.into).toLocaleString("en-US"),l:P.level+1});}
+function paintLevelChip(){if(!me)return;const xp=myXp(),P=levelProgress(xp);
+  document.getElementById("lvChipBadge").src=levelBadgeURL(P.level);document.getElementById("lvChipNum").textContent=P.level;
+  document.getElementById("lvChipFill").style.width=(P.pct*100).toFixed(1)+"%";
+  document.getElementById("lvChip").title=lvNextText(xp);}
+function onLevelXp(d){if(!me||!d)return;me.levelXp=d.xp;paintLevelChip();if(me.role==="admin")return;
+  if(d.gained){const chip=document.getElementById("lvChip");chip.classList.remove("bump");void chip.offsetWidth;chip.classList.add("bump");}
+  if(d.up){const newRank=rankOf(d.level)>rankOf(d.level-1);refreshMyTag();sfx.success();confettiRain();
+    toast(newRank?I18N.T("LEVEL {l}! New badge and chat bubble colour!",{l:d.level}):I18N.T("LEVEL UP! You're level {l}!",{l:d.level}));}
+  if(!lvOv.hidden)paintLevels();}
+// the Levels window
+const lvOv=document.getElementById("lvOv");
+function paintLevels(){const xp=myXp(),P=levelProgress(xp),my=rankOf(P.level);
+  document.getElementById("lvBig").src=levelBadgeURL(P.level,160);document.getElementById("lvNum").textContent=P.level;
+  document.getElementById("lvRank").textContent=RANK_NAMES[my];document.getElementById("lvFill").style.width=(P.pct*100).toFixed(1)+"%";
+  document.getElementById("lvNext").textContent=P.level>=MAX_LEVEL?I18N.T("Top level!"):I18N.T("{a} / {b} XP to level {l}",{a:P.into.toLocaleString("en-US"),b:P.need.toLocaleString("en-US"),l:P.level+1});
+  document.getElementById("lvToday").textContent=I18N.T("Playing gives up to {n} XP a day. Quests always count!",{n:LEVEL_DAY_XP});
+  document.getElementById("lvRanks").innerHTML=RANKS.map((R,i)=>{const to=i<RANKS.length-1?RANKS[i+1].from-1:MAX_LEVEL,state=i<my?"done":i===my?"now":"locked";
+    const range=R.from===to?I18N.T("Level {a}",{a:R.from}):I18N.T("Levels {a}-{b}",{a:R.from,b:to});
+    return `<div class="lvx-rank-card ${state}"><img src="${levelBadgeURL(R.from,120)}" alt="" width="64" height="64"><div class="lvx-rc-txt"><b>${esc(R.name)}</b><small>${esc(range)}</small></div>
+      <span class="lvx-bubble" style="--bb:${R.bubble[0]};--bl:${R.bubble[1]};--bt:${R.bubble[2]}">${esc(I18N.T("Hi friends!"))}</span>
+      <span class="lvx-state">${state==="now"?esc(I18N.T("You're here!")):state==="done"?"✓":esc(I18N.T("At level {l}",{l:R.from}))}</span></div>`;}).join("");}
+function openLevels(){if(!me)return;closePlayerCard();paintLevels();lvOv.hidden=false;sfx.open();G.keys={};setTimeout(()=>document.getElementById("lvClose").focus(),50);}
+function closeLevels(){if(lvOv.hidden)return;lvOv.hidden=true;sfx.close();}
+document.getElementById("lvClose").onclick=closeLevels;
+lvOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeLevels();}});
+document.getElementById("lvChip").onclick=e=>{press(e.currentTarget);openLevels();};
+document.getElementById("pcLv").onclick=()=>openLevels();
+document.getElementById("sxLv").onclick=()=>{closeSettings();openLevels();};
+function paintAccountLevel(){if(!me)return;const xp=myXp(),P=levelProgress(xp);
+  document.getElementById("sxLvBadge").src=levelBadgeURL(P.level);document.getElementById("sxLvNum").textContent=P.level;
+  document.getElementById("sxLvRank").textContent=RANK_NAMES[rankOf(P.level)];document.getElementById("sxLvFill").style.width=(P.pct*100).toFixed(1)+"%";
+  document.getElementById("sxLvNext").textContent=lvNextText(xp);}
 /* ---------- SX: the settings window (categories down the side: Account, Sound, Graphics, Game; EXIT at the bottom) ---------- */
 const sxTabs=[...setOverlay.querySelectorAll(".sx-tab")];
 function sxShow(tab,focus){
@@ -7918,6 +8087,7 @@ function paintAccount(){
     left.textContent=(d===1?I18N.T("1 day left"):I18N.T("{n} days left",{n:d}))+" · "+I18N.T("until {date}",{date:fmtDay(me.memberUntil)});}
   else left.textContent=me.subscriber?I18N.T("No end date"):"";
   document.getElementById("setCoins").textContent=(me.coins||0).toLocaleString("en-US");
+  paintAccountLevel();
 }
 // change password: the current one first, then the same email link as "Forgot password" (routes/auth.js /password/change)
 document.getElementById("sxPwForm").onsubmit=async e=>{e.preventDefault();
@@ -12908,6 +13078,7 @@ function drawPortrait(){
 }
 function openPlayerCard(hit,e){
   pcTarget=hit.id;pcChar=hit.c;const n=document.getElementById("pcName");n.textContent=hit.c.username||"Player";n.classList.toggle("admin",hit.c.role==="admin");n.classList.toggle("mod",hit.c.role==="mod");
+  {const lv=hit.c.lv||1;document.getElementById("pcLvBadge").src=levelBadgeURL(lv);document.getElementById("pcLvNum").textContent=lv;document.getElementById("pcLvRank").textContent=RANK_NAMES[rankOf(lv)];}
   pcard.hidden=false;pcImg=null;drawPortrait();
   const full=body.classList.contains("land")||body.classList.contains("app");pcard.classList.toggle("pc-full",full);
   if(full){pcard.style.left=pcard.style.top="";G.keys={};}

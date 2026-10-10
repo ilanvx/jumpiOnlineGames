@@ -7,6 +7,8 @@ import { notifyCoins } from "../realtime/plaza.js";
 import { bumpNeeds } from "../realtime/needs.js";
 import { addSeasonXp } from "./season.js";
 import { SEASON_XP } from "../public/shared/season.js";
+import { addLevelXp } from "./levels.js";
+import { LEVEL_XP } from "../public/shared/levels.js";
 
 /*
   Ways to earn coins:
@@ -56,6 +58,7 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
     if (!updated) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
     notifyCoins(updated._id.toString(), updated.coins);
     addSeasonXp(updated._id, SEASON_XP.daily);
+    addLevelXp(updated._id, LEVEL_XP.daily, { why: "daily" });
     res.json({ reward, streak: s.streak, day: s.day, coins: updated.coins });
   } catch (err) {
     next(err);
@@ -296,6 +299,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
       bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
       addSeasonXp(updated._id, SEASON_XP.minigame);
+      addLevelXp(updated._id, LEVEL_XP.minigame, { why: "minigame" });
       return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap, best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });

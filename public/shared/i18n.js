@@ -202,6 +202,16 @@
     "No chats yet": "עוד אין שיחות", "Only friends can message each other. Add friends in the Friends app to start chatting!": "רק חברים יכולים לשלוח הודעות. הוסיפו חברים באפליקציית החברים כדי להתחיל!",
     "Online now · say hi!": "מחובר עכשיו · תגידו היי!", "Say hi!": "תגידו היי!", "Today": "היום", "Yesterday": "אתמול", "You:": "אני:", "Show earlier messages": "הודעות קודמות",
     "🔒 Only friends can message you. Never share your password or where you live.": "🔒 רק חברים יכולים לשלוח לך הודעות. אף פעם אל תשתפו סיסמה או איפה אתם גרים.",
+    // levels (the LV block in index.html, public/shared/levels.js)
+    "LEVEL": "רמה", "Level": "רמה", "My level": "הרמה שלי", "Levels": "רמות", "See all levels": "לכל הרמות", "Top level!": "הרמה הכי גבוהה!",
+    "{n} XP to level {l}": "עוד {n} נקודות לרמה {l}", "{a} / {b} XP to level {l}": "{a} / {b} נקודות לרמה {l}",
+    "LEVEL {l}! New badge and chat bubble colour!": "רמה {l}! סמל חדש וצבע חדש לבועת הצ'אט!", "LEVEL UP! You're level {l}!": "עליתם רמה! אתם ברמה {l}!",
+    "How to level up": "איך עולים רמה", "Quests from the people of Jumpi": "משימות מהתושבים של ג'אמפי", "Mini-games": "מיני־משחקים", "Jobs": "עבודות",
+    "Tic-Tac-Toe and 4 in a Row": "איקס עיגול וארבע בשורה", "The daily gift": "המתנה היומית",
+    "Playing gives up to {n} XP a day. Quests always count!": "משחק נותן עד {n} נקודות ביום. משימות תמיד נחשבות!",
+    "BADGES AND CHAT BUBBLES": "סמלים ובועות צ'אט", "Every 10 levels your badge and your chat bubble change. The higher you go, the cooler they get!": "כל 10 רמות הסמל ובועת הצ'אט שלכם משתנים. ככל שעולים יותר, הם יותר מגניבים!",
+    "Level {a}": "רמה {a}", "Levels {a}-{b}": "רמות {a}–{b}", "Hi friends!": "היי חברים!", "You're here!": "אתם כאן!", "At level {l}": "ברמה {l}",
+    "Sprout": "נבט", "Explorer": "חוקר", "Adventurer": "הרפתקן", "Star": "כוכב", "Hero": "גיבור", "Champion": "אלוף", "Master": "מאסטר", "Legend": "אגדה", "Mythic": "מיתי", "Royal": "מלכותי", "Jumpi Icon": "אייקון ג'אמפי",
     // the settings window (the SX block in index.html)
     "Account": "חשבון", "Game": "משחק", "EXIT": "יציאה", "Yes, exit": "כן, לצאת", "Stay": "להישאר", "MY ACCOUNT": "החשבון שלי", "SOUND": "צלילים", "GRAPHICS": "גרפיקה",
     "Age": "גיל", "Birthday": "יום הולדת", "Admin": "מנהל", "Moderator": "משגיח", "1 year": "שנה אחת", "{n} years": "{n} שנים",

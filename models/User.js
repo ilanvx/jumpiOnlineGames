@@ -105,6 +105,10 @@ const userSchema = new mongoose.Schema(
     // friends (both players list each other) and friend requests waiting for this player's answer
     friends: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     friendReqIn: { type: [mongoose.Schema.Types.ObjectId], default: [] },
+    // player level (public/shared/levels.js, routes/levels.js): total XP, and today's capped XP
+    levelXp: { type: Number, default: 0, min: 0 },
+    levelDay: { type: String, default: "" },
+    levelDayXp: { type: Number, default: 0 },
     // players this player blocked (routes/social.js): no messages or friend requests, and both are "ghosts" to each other in the game
     blocked: { type: [mongoose.Schema.Types.ObjectId], default: [], index: true },
     // daily login bonus: the last day it was claimed ("2026-10-06", Israel time) and the current streak
@@ -188,6 +192,7 @@ userSchema.methods.toPublic = function () {
     createdAt: this.createdAt,
     verified: this.emailVerified === true,
     hasBirthday: !!this.birthDate,   // older accounts are asked once in the game
+    levelXp: this.levelXp || 0,
     birthDate: this.birthDate ? this.birthDate.toISOString().slice(0, 10) : null,   // shown only to the player (Settings → Account)
     birthdayToday: isBirthdayOn(this.birthDate),
     tutorialDone: !!this.tutorialAt,

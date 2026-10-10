@@ -159,6 +159,13 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
       }
     }
     console.log(`[duel] ${GAMES[m.game].name}: ${m.p[0].username} vs ${m.p[1].username} -> ${winner < 0 ? "draw" : m.p[winner].username + " wins"} (${reason})`);
+    // level XP: more for the winner; whoever quit or left gets none (routes/levels.js, loaded late: it imports plaza.js)
+    import("../routes/levels.js").then(({ addLevelXp }) => import("../public/shared/levels.js").then(({ LEVEL_XP }) => {
+      for (let i = 0; i < 2; i++) {
+        const xp = winner === i ? LEVEL_XP.duelWin : reason === "quit" || reason === "left" ? 0 : LEVEL_XP.duel;
+        if (xp) addLevelXp(m.p[i].userId, xp, { why: "duel" });
+      }
+    })).catch(() => {});
     logQuietly(DuelLog, { game: GAMES[m.game].name, winner: winner < 0 ? "" : m.p[winner].username, reason,
       players: m.p.map((p, i) => ({ userId: p.userId, username: p.username, paid: ENTRY, won: pay[i] })) });
     for (let i = 0; i < 2; i++)

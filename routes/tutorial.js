@@ -3,6 +3,8 @@ import { User } from "../models/User.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { notifyCoins } from "../realtime/plaza.js";
+import { addLevelXp } from "./levels.js";
+import { LEVEL_XP } from "../public/shared/levels.js";
 
 /*
   The live tutorial in the game (TL block in index.html). New players get it on their first visit
@@ -28,7 +30,7 @@ router.post("/tutorial/done", requireJson, requireUser, async (req, res, next) =
     const t0 = started.get(id);
     if (!skipped && t0 && Date.now() - t0 >= MIN_MS) {
       const r = await User.findOneAndUpdate({ _id: u._id, tutorialPaid: { $ne: true } }, { $set: { tutorialPaid: true }, $inc: { coins: TUTORIAL_COINS } }, { new: true });
-      if (r) { coins = TUTORIAL_COINS; notifyCoins(id, r.coins); }
+      if (r) { coins = TUTORIAL_COINS; notifyCoins(id, r.coins); await addLevelXp(u._id, LEVEL_XP.tutorial, { capped: false, why: "tutorial" }); }
     }
     started.delete(id);
     const fresh = await User.findById(u._id);
