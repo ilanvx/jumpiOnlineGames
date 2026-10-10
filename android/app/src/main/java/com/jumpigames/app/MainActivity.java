@@ -145,6 +145,12 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> web.loadUrl(START));
         }
 
+        /** Settings → EXIT in the game: close the app */
+        @JavascriptInterface
+        public void quit() {
+            runOnUiThread(() -> finishAndRemoveTask());
+        }
+
         @JavascriptInterface
         public String version() {
             return BuildConfigVersion.NAME;
