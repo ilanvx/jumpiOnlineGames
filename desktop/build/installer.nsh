@@ -9,25 +9,26 @@
   Var JumpiDesk
   Var JumpiDeskBox
 
+  ; the page and its functions are defined here (not at the top of this file) because MUI2 is only loaded by then
   !macro customPageAfterChangeDir
     Page custom JumpiOptionsShow JumpiOptionsLeave
+
+    Function JumpiOptionsShow
+      !insertmacro MUI_HEADER_TEXT "Almost ready!" "Choose how you want to open Jumpi Games."
+      nsDialogs::Create 1018
+      Pop $0
+      ${NSD_CreateLabel} 0 0 100% 24u "Jumpi Games will be in your Start menu. Do you also want a shortcut on your Desktop?"
+      Pop $0
+      ${NSD_CreateCheckbox} 0 34u 100% 14u "Create a Jumpi Games shortcut on my Desktop"
+      Pop $JumpiDeskBox
+      ${NSD_Check} $JumpiDeskBox
+      nsDialogs::Show
+    FunctionEnd
+
+    Function JumpiOptionsLeave
+      ${NSD_GetState} $JumpiDeskBox $JumpiDesk
+    FunctionEnd
   !macroend
-
-  Function JumpiOptionsShow
-    !insertmacro MUI_HEADER_TEXT "Almost ready!" "Choose how you want to open Jumpi Games."
-    nsDialogs::Create 1018
-    Pop $0
-    ${NSD_CreateLabel} 0 0 100% 24u "Jumpi Games will be in your Start menu. Do you also want a shortcut on your Desktop?"
-    Pop $0
-    ${NSD_CreateCheckbox} 0 34u 100% 14u "Create a Jumpi Games shortcut on my Desktop"
-    Pop $JumpiDeskBox
-    ${NSD_Check} $JumpiDeskBox
-    nsDialogs::Show
-  FunctionEnd
-
-  Function JumpiOptionsLeave
-    ${NSD_GetState} $JumpiDeskBox $JumpiDesk
-  FunctionEnd
 
   !macro customInstall
     ${IfNot} ${isUpdated}
