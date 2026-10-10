@@ -1,0 +1,34 @@
+  • electron-builder  version=25.1.8 os=10.0.26100
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=33.2.1 arch=x64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=33.2.1 appOutDir=dist\win-unpacked
+  • downloading     url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-win32-x64.zip size=115 MB parts=8
+  • downloaded      url=https://github.com/electron/electron/releases/download/v33.2.1/electron-v33.2.1-win32-x64.zip duration=550ms
+  • updating asar integrity executable resource  executablePath=dist\win-unpacked\Jumpi Games.exe
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=452ms
+  • signing with signtool.exe  path=dist\win-unpacked\Jumpi Games.exe
+  • no signing info identified, signing is skipped  signHook=false cscInfo=null
+  • building        target=AppX arch=x64 file=dist\Jumpi-Games-Store.appx
+  • AppX is not signed  reason=Windows Store only build
+  • signing with signtool.exe  path=dist\Jumpi-Games-Store.appx
+  • no signing info identified, signing is skipped  signHook=false cscInfo=null
+  • building        target=nsis file=dist\Jumpi-Games-Setup.exe archs=x64 oneClick=false perMachine=false
+  • publishing      publisher=Github (owner: ilanvx, project: jumpiOnlineGames, version: 1.0.5)
+  • uploading       file=Jumpi-Games-Store.appx provider=github
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=320ms
+  • creating GitHub release  reason=release doesn't exist tag=v1.0.5 version=1.0.5
+  • signing with signtool.exe  path=dist\win-unpacked\resources\elevate.exe
+  • no signing info identified, signing is skipped  signHook=false cscInfo=null
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=411ms
+  • signing with signtool.exe  path=dist\__uninstaller-nsis-jumpi-games.exe
+  • no signing info identified, signing is skipped  signHook=false cscInfo=null
+  • signing with signtool.exe  path=dist\Jumpi-Games-Setup.exe
+  • no signing info identified, signing is skipped  signHook=false cscInfo=null
+  • building block map  blockMapFile=dist\Jumpi-Games-Setup.exe.blockmap
+  • uploading       file=Jumpi-Games-Setup.exe.blockmap provider=github
+  • uploading       file=Jumpi-Games-Setup.exe provider=github
