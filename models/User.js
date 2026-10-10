@@ -188,6 +188,7 @@ userSchema.methods.toPublic = function () {
     createdAt: this.createdAt,
     verified: this.emailVerified === true,
     hasBirthday: !!this.birthDate,   // older accounts are asked once in the game
+    birthDate: this.birthDate ? this.birthDate.toISOString().slice(0, 10) : null,   // shown only to the player (Settings → Account)
     birthdayToday: isBirthdayOn(this.birthDate),
     tutorialDone: !!this.tutorialAt,
     secrets: Array.isArray(this.secrets) ? [...this.secrets] : [],

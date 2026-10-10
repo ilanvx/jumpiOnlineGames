@@ -464,6 +464,33 @@ router.post("/forgot", requireJson, forgotLimiter, async (req, res, next) => {
     next(err);
   }
 });
+/* ---------- change password from the game (Settings → Account): the current password first, then the same email link ----------
+   Wrong current password: a clear answer (the player is signed in, so nothing is given away), and few tries. */
+const changeLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 6 });
+router.post("/password/change", requireJson, changeLimiter, async (req, res, next) => {
+  try {
+    const user = await currentUser(req);
+    if (!user) return res.status(401).json({ error: "Please log in first." });
+    if (!EMAIL_ON()) return res.status(503).json({ code: "off", error: "Changing the password by email isn't switched on yet. Write to support@jumpigames.com and we'll help." });
+    const cur = req.body.current;
+    if (typeof cur !== "string" || !cur) return res.status(400).json({ code: "empty", error: "Type your current password." });
+    if (cur.length > MAX_PASSWORD || !(await bcrypt.compare(cur, user.passwordHash || DUMMY_HASH))) return res.status(400).json({ code: "wrong", error: "That isn't your current password." });
+    if (!user.email) return res.status(400).json({ code: "noemail", error: "Your account has no email. Write to support@jumpigames.com and we'll help." });
+    const now = Date.now(), old = user.reset || {};
+    const sends = (old.sends || []).filter((t) => now - t < 3600_000);
+    if (sends.length && now - sends[sends.length - 1] < RESET_GAP) return res.status(429).json({ code: "wait", error: "We just sent you an email. Wait a minute and try again." });
+    if (sends.length >= RESETS_PER_HOUR) return res.status(429).json({ code: "wait", error: "We sent you a few emails already. Try again in an hour." });
+    const token = crypto.randomBytes(32).toString("base64url");
+    user.reset = { hash: resetHash(token), expires: now + RESET_MIN * 60_000, sends: [...sends, now] };
+    user.markModified("reset");
+    await user.save();
+    const sent = await sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN }) });
+    if (!sent.ok) return res.status(502).json({ error: "We couldn't send the email right now. Try again in a few minutes." });
+    res.json({ ok: true, email: maskEmail(user.email), minutes: RESET_MIN });
+  } catch (err) {
+    next(err);
+  }
+});
 // is this link still good? (the page asks before showing the new-password form)
 router.post("/reset/check", requireJson, resetLimiter, async (req, res, next) => {
   try {
