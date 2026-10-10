@@ -1,0 +1,38 @@
+# XcodeGen spec: the GitHub workflow (.github/workflows/ios.yml) turns this into Jumpi.xcodeproj on a Mac.
+name: Jumpi
+options:
+  deploymentTarget:
+    iOS: "15.0"
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Jumpi:
+    type: application
+    platform: iOS
+    sources: [Jumpi]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jumpigames.jumpi
+        PRODUCT_NAME: JUMPI
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: Jumpi/Info.plist
+    info:
+      path: Jumpi/Info.plist
+      properties:
+        CFBundleDisplayName: JUMPI
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchStoryboardName: LaunchScreen
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: true
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        ITSAppUsesNonExemptEncryption: false
+        LSApplicationCategoryType: public.app-category.games

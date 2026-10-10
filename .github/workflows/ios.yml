@@ -1,0 +1,87 @@
+# Builds the Jumpi Games iPhone / iPad app (ios/) on a Mac at GitHub and sends it to TestFlight.
+# Runs on pushes to android-app that change ios/ (or by hand: Actions → "iOS app" → Run workflow).
+# Without the App Store Connect secrets it only checks that the app compiles (for the simulator).
+# The log and BUILD_INFO.txt are published to the branch "ios-build".
+name: iOS app
+
+on:
+  push:
+    branches: [android-app]
+    paths: ["ios/**", ".github/workflows/ios.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-app
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (and upload to TestFlight when the secrets are there)
+        id: build
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          KEY_P8: ${{ secrets.APPSTORE_KEY_P8 }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          RUN: ${{ github.run_number }}
+        run: |
+          set -o pipefail
+          (
+            set -e
+            echo "== Xcode"; xcodebuild -version
+            brew install xcodegen > /dev/null
+            cd ios
+            xcodegen generate
+            VER="1.0.$RUN"; BUILD="$RUN"
+            echo "== Version $VER ($BUILD)"
+            if [ -z "$KEY_ID" ] || [ -z "$ISSUER_ID" ] || [ -z "$KEY_P8" ] || [ -z "$TEAM_ID" ]; then
+              echo "== No App Store Connect secrets yet: only checking that it builds (simulator)"
+              xcodebuild -project Jumpi.xcodeproj -scheme Jumpi -configuration Debug -sdk iphonesimulator -destination "generic/platform=iOS Simulator" \
+                CODE_SIGNING_ALLOWED=NO MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="$BUILD" build | tail -40
+              echo "== Build OK (not uploaded)"
+              exit 0
+            fi
+            mkdir -p ~/.appstoreconnect/private_keys
+            KEY="$HOME/.appstoreconnect/private_keys/AuthKey_$KEY_ID.p8"
+            # the secret can be the .p8 text itself or its base64
+            if echo "$KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then printf "%s\n" "$KEY_P8" > "$KEY"; else echo "$KEY_P8" | tr -d ' \r\n' | base64 -D > "$KEY"; fi
+            AUTH="-allowProvisioningUpdates -authenticationKeyPath $KEY -authenticationKeyID $KEY_ID -authenticationKeyIssuerID $ISSUER_ID"
+            echo "== Archive (signed automatically with the API key, team $TEAM_ID)"
+            xcodebuild -project Jumpi.xcodeproj -scheme Jumpi -configuration Release -destination "generic/platform=iOS" \
+              -archivePath build/Jumpi.xcarchive DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+              MARKETING_VERSION="$VER" CURRENT_PROJECT_VERSION="$BUILD" $AUTH archive | tail -60
+            cat > build/ExportOptions.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>uploadSymbols</key><true/>
+          </dict></plist>
+          PLIST
+            echo "== Upload to App Store Connect (TestFlight)"
+            xcodebuild -exportArchive -archivePath build/Jumpi.xcarchive -exportOptionsPlist build/ExportOptions.plist -exportPath build/export $AUTH | tail -60
+            echo "== Uploaded $VER ($BUILD). It shows in TestFlight after Apple finishes processing (usually 5-30 minutes)."
+          ) 2>&1 | tee ios-build-log.txt
+
+      - name: Publish the log to the ios-build branch
+        if: always()
+        run: |
+          mkdir -p out
+          cp ios-build-log.txt out/build-log.txt 2>/dev/null || echo "no build log" > out/build-log.txt
+          printf "status: %s\nrun: %s\nversion: 1.0.%s (%s)\ncommit: %s\ndate: %s\n" "${{ steps.build.outcome }}" "${{ github.run_number }}" "${{ github.run_number }}" "${{ github.run_number }}" "${{ github.sha }}" "$(date -u)" > out/BUILD_INFO.txt
+          cd out
+          git init -q -b ios-build
+          git add -A
+          git -c user.name="Jumpi build" -c user.email="build@jumpigames.com" commit -qm "iOS build ${{ github.run_number }}: ${{ steps.build.outcome }}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ios-build
