@@ -4,6 +4,7 @@ import { User } from "../models/User.js";
 import { banMessage, needsVerify } from "../routes/auth.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
+import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
@@ -11,12 +12,13 @@ import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bum
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
 import { BAR_MENU } from "../public/shared/bar.js";
-import { foodOf, PARK_STANDS, PARK_MENU, STAND_REACH } from "../public/shared/food.js";
+import { foodOf, PARK_STANDS, PARK_MENU, STAND_REACH, standOf } from "../public/shared/food.js";
 import { foodBag, addFood, biteFood, dropFood } from "./food.js";
 import { createCode } from "../models/Code.js";
 import { JOBS } from "../public/shared/jobs.js";
 import { isBirthdayOn } from "../public/shared/birthday.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
+import { WORLD_BOUNDS } from "../public/shared/city-layout.js";
 import { modLog } from "../discord/pip.js";
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
@@ -28,8 +30,8 @@ const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the d
 */
 const ROOM = "plaza";
 const COOKIE = "jumpi_token";
-// the whole world: Plaza, Beach (and shallow sea), Park and Desert
-const BOUNDS = { x0: -64, x1: 100, z0: -64, z1: 60 };
+// the whole open world: the old heart (Plaza, Beach, Park, Water Park) and the city around it (public/shared/city-layout.js)
+const BOUNDS = WORLD_BOUNDS;
 const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
 // homes come in different sizes (bigger room, garden, second floor): the box players may move in, per home room
 const homeBounds = new Map();
@@ -263,6 +265,7 @@ export function attachPlaza(io) {
   function removePlayer(id, sock) {
     if (!players.has(id)) return;
     const { room = ROOM, userId } = players.get(id);
+    if (room === ROOM) vehiclePlayerLeft(io, id, players.get(id));   // riding: the vehicle stays parked where they were
     players.delete(id);
     sock?.leave(room);
     io.to(room).emit("player:leave", id);
@@ -304,6 +307,7 @@ export function attachPlaza(io) {
     };
     attachTrading(io, socket, { players, me, notifyLook, limiter, setStatus });
     attachDuels(io, socket, { players, limiter, notifyCoins, setStatus });
+    attachVehicles(io, socket, { players, limiter, emitToUser });
 
     socket.on("join", async (pos) => {
       // which room: the Plaza, or someone's home (that player has to exist)
@@ -379,6 +383,7 @@ export function attachPlaza(io) {
       socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room && sees(player, p)).map(publicView));
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0, invisible: !!player.invisible });
       if (!already) roomSend(player, "player:join", publicView(player), { self: false });
+      if (room === ROOM) { sendVehicles(io, socket, player); vehiclePlayerBack(io, player); }
       sendNeeds(me.id);
     });
 
@@ -415,7 +420,7 @@ export function attachPlaza(io) {
       if (!it || (k !== "diner" && k !== "park")) return r({ error: "That isn't on the menu." });
       if (k === "diner" && p.room !== "place:diner") return r({ error: "Get it at the Restaurant." });
       if (k === "park") {
-        const st = PARK_STANDS.find((q) => q.id === it.stand);
+        const st = standOf(it.stand);   // Water Park stands and the city's street food (public/shared/food.js)
         if (p.room !== ROOM || !st || Math.hypot(p.x - st.x, p.z - st.z) > STAND_REACH + 2) return r({ error: "Walk up to the stand to buy that." });
       }
       if (p.foodBusy || !canTake()) return r({ error: "One at a time! Try again in a moment." });
@@ -747,6 +752,12 @@ export function notifyHome(usernameLower, home) {
 export function onlineWhere(userId, seeHidden = true) {
   for (const p of players.values()) if (p.userId === userId && (seeHidden || !p.invisible)) return p.room || ROOM;
   return null;
+}
+// where this player stands in the open world right now (the newest window), or null (for routes that need a position: the secret cave)
+export function worldPos(userId) {
+  let out = null;
+  for (const p of players.values()) if (p.userId === userId && (p.room || ROOM) === ROOM) out = { x: p.x, z: p.z };
+  return out;
 }
 export function onlinePlayers(seeHidden = true, selfId = "") {
   const seen = new Map();

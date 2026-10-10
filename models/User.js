@@ -100,6 +100,8 @@ const userSchema = new mongoose.Schema(
     seasonDay: { type: String, default: "" },
     seasonDayXp: { type: Number, default: 0, min: 0 },
     wheelAt: { type: Date, default: null },
+    // hidden places in the world whose treasure this player already took (e.g. "cave", routes/secrets.js)
+    secrets: { type: [String], default: [] },
     // friends (both players list each other) and friend requests waiting for this player's answer
     friends: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     friendReqIn: { type: [mongoose.Schema.Types.ObjectId], default: [] },
@@ -186,6 +188,7 @@ userSchema.methods.toPublic = function () {
     hasBirthday: !!this.birthDate,   // older accounts are asked once in the game
     birthdayToday: isBirthdayOn(this.birthDate),
     tutorialDone: !!this.tutorialAt,
+    secrets: Array.isArray(this.secrets) ? [...this.secrets] : [],
     mustVerify: !!process.env.RESEND_API_KEY && this.emailVerified !== true,   // the game asks for the email code before playing
   };
 };

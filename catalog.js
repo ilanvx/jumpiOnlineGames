@@ -6,6 +6,7 @@
 */
 import { OUTFITS, OUTFIT_SLOTS } from "./public/shared/outfits.js";
 import { spotProblem } from "./public/shared/houses.js";
+import { VEHICLES } from "./public/shared/vehicles.js";
 
 const items = [];
 const add = (category, index, name, price, starter = false) => items.push({ id: `${category}:${index}`, category, index, name, price, starter });
@@ -20,6 +21,9 @@ add("color", 12, "Midnight", 500);
 add("color", 13, "Ruby Gloss", 600);
 add("color", 14, "Neon Glow", 900);
 add("color", 15, "Solid Gold", 1200);
+// the Big World collection (rarity shows in the Shop)
+[["Rose Gold", 1600, "epic"], ["Pearl", 800, "rare"], ["Lava Glow", 1800, "epic"], ["Frost Mint", 700, "rare"], ["Royal Velvet", 750, "rare"], ["Electric Blue", 1800, "epic"]]
+  .forEach(([n, p, r], k) => { add("color", 16 + k, n, p); items[items.length - 1].rarity = r; });
 
 // eyes (12+ have a different colour in each eye)
 ["Brown", "Blue", "Green", "Hazel", "Gray", "Purple", "Amber", "Pink"].forEach((n, i) => add("eyes", i, n, 80, true));
@@ -29,6 +33,7 @@ add("eyes", 10, "Candy & Mint", 450);
 add("eyes", 11, "Fire & Ice", 550);
 add("eyes", 12, "Royal & Gold", 600);
 add("eyes", 13, "Galaxy", 700);
+[["Sunset", 600, "rare"], ["Emerald & Gold", 600, "rare"], ["Ice", 900, "epic"], ["Lava", 900, "epic"]].forEach(([n, p, r], k) => { add("eyes", 14 + k, n, p); items[items.length - 1].rarity = r; });
 
 // hair, shirts, pants, glasses, hats, necklaces: the list lives in public/shared/outfits.js
 // (shared with the game, so the item numbers always match)
@@ -37,6 +42,7 @@ for (const slot of OUTFIT_SLOTS)
     add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter);
     if (o.gift) Object.assign(items[items.length - 1], { gift: true, rarity: "legendary" });   // work uniforms: only as a job prize
     if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
+    if (o.rarity) items[items.length - 1].rarity = o.rarity;
   });
 
 // name tags (an icon next to the name)
@@ -51,9 +57,12 @@ add("tag", 7, "Skull", 700);
 add("tag", 8, "Crown", 1000);
 // Halloween tags (sold only during the Halloween event)
 [["Pumpkin", 800], ["Bat", 800], ["Ghost", 1000]].forEach(([n, p], k) => { add("tag", 9 + k, n, p); items[items.length - 1].event = "halloween"; });
+// the Big World collection: 12+
+[["Rocket", 600, "rare"], ["Paw", 300, "common"], ["Rainbow", 700, "rare"], ["Planet", 800, "rare"], ["Moon", 400, "common"], ["Sun", 450, "common"]]
+  .forEach(([n, p, r], k) => { add("tag", 12 + k, n, p); items[items.length - 1].rarity = r; });
 
 // furniture for the player's home (can be bought more than once)
-export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25;
+export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25, HALLOWEEN_FURNITURE_END = 31;
 [
   ["Cozy Sofa", 300], ["Armchair", 180], ["Round Table", 150], ["Wooden Chair", 80],
   ["Comfy Bed", 400], ["Floor Lamp", 120], ["Potted Plant", 90], ["Bookshelf", 250],
@@ -64,12 +73,16 @@ export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25;
   ["Yarn Ball", 45], ["Squeaky Duck", 55], ["Cat Tree", 350], ["Dog House", 450],
   // 25+: Halloween furniture (sold only during the Halloween event)
   ["Jack-o'-lantern", 450], ["Witch's Cauldron", 1200], ["Spooky Tombstone", 350], ["Haunted Tree", 900], ["Candy Bowl", 300], ["Ghost Lamp", 700],
-].forEach(([n, p], i) => {
+  // 31+: the Big World collection (with a rarity)
+  ["Lava Lamp", 400, "common"], ["Disco Ball", 1200, "rare"], ["Gaming Chair", 900, "rare"], ["Bunk Bed", 1300, "rare"], ["Telescope", 1100, "rare"],
+  ["Jukebox", 2200, "epic"], ["Treasure Chest", 1000, "rare"], ["Royal Throne", 6000, "legendary"], ["Rocket Lamp", 700, "rare"], ["Bike Display", 3500, "epic"],
+].forEach(([n, p, r], i) => {
   add("furniture", i, n, p);
   if (i >= PET_FURNITURE_FROM && i < HALLOWEEN_FURNITURE_FROM) items[items.length - 1].pet = true;
-  if (i >= HALLOWEEN_FURNITURE_FROM) items[items.length - 1].event = "halloween";
+  if (i >= HALLOWEEN_FURNITURE_FROM && i < HALLOWEEN_FURNITURE_END) items[items.length - 1].event = "halloween";
+  if (r) items[items.length - 1].rarity = r;
 });
-export const FURNITURE_COUNT = 31;
+export const FURNITURE_COUNT = 41;
 
 // emotes (the big faces above your head). Same order as EMOTES in public/index.html.
 // Free ones belong to everybody; the rest are bought once in the shop or from the chat bar.
@@ -102,6 +115,14 @@ export const MAX_FURNITURE = 60;
   add("aura", 8 + k, n, 0);
   Object.assign(items[items.length - 1], { rarity: "legendary", exclusive: true });
 });
+// the Big World collection
+[["Butterfly Garden", 7000], ["Neon Beats", 8000]].forEach(([n, p], k) => { add("aura", 10 + k, n, p); items[items.length - 1].rarity = "legendary"; });
+
+// vehicles (public/shared/vehicles.js): bought once, summoned from the phone's Garage, ridden in the open world
+VEHICLES.forEach((v, i) => {
+  add("vehicle", i, v.name, v.price);
+  items[items.length - 1].rarity = v.rarity;
+});
 
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
@@ -110,16 +131,16 @@ export const MOD_ITEMS = OUTFIT_SLOTS.flatMap((slot) => OUTFITS[slot].map((o, i)
 
 // highest index in each look slot (and whether it can be empty)
 export const LOOK_SLOTS = {
-  color: { max: 15, optional: false },
-  eyes: { max: 13, optional: false },
+  color: { max: 21, optional: false },
+  eyes: { max: 17, optional: false },
   hair: { max: OUTFITS.hair.length - 1, optional: true },
   shirt: { max: OUTFITS.shirt.length - 1, optional: true },
   pants: { max: OUTFITS.pants.length - 1, optional: true },
   glasses: { max: OUTFITS.glasses.length - 1, optional: true },
   hat: { max: OUTFITS.hat.length - 1, optional: true },
   neck: { max: OUTFITS.neck.length - 1, optional: true },
-  tag: { max: 11, optional: true },
-  aura: { max: 9, optional: true },
+  tag: { max: 17, optional: true },
+  aura: { max: 11, optional: true },
 };
 // what sign-up may choose for free
 export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, hat: -1, neck: -1, tag: -1, aura: -1 };
@@ -137,7 +158,8 @@ export function lookItems(look = {}) {
 // floor space of each furniture piece: [width, depth, depth offset] when not turned. Piece 9 (the rug) lies flat: things can stand on it.
 export const FURN_FOOTPRINT = [[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0],
   [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0],
-  [.8,.8,0],[1.2,1.2,0],[.9,.4,0],[1.4,1.4,0],[.6,.6,0],[.6,.6,0]];
+  [.8,.8,0],[1.2,1.2,0],[.9,.4,0],[1.4,1.4,0],[.6,.6,0],[.6,.6,0],
+  [.5,.5,0],[1,1,0],[.95,.95,0],[2.1,3.1,-.05],[1,1,0],[1.2,.8,0],[1.2,.8,0],[1.5,1.3,0],[.7,.7,0],[1.6,2.8,0]];
 export const FLAT_FURNITURE = new Set([9]);
 // the rectangle a placed piece covers on the floor
 export function footprint({ f, x, z, r }) {

@@ -26,7 +26,15 @@ fetch(location.pathname, { method: "HEAD", cache: "no-store" }).then((r) => { co
 const el = { d: document.getElementById("gsD"), h: document.getElementById("gsH"), m: document.getElementById("gsM"), s: document.getElementById("gsS") };
 const pad = (n) => String(n).padStart(2, "0");
 let opened = false;
+const noDate = !Number.isFinite(LAUNCH_AT);   // no opening date yet: "Coming soon" and no numbers
+if (noDate) {
+  document.getElementById("gsCount").hidden = true;
+  const h = document.querySelector(".gs-text h1 span");
+  h.dataset.en = "Coming soon!"; h.dataset.he = "בקרוב!";
+  h.textContent = document.documentElement.lang === "he" ? h.dataset.he : h.dataset.en;
+}
 function tick() {
+  if (noDate) return;
   const left = Math.max(0, LAUNCH_AT - (Date.now() + off)), s = Math.floor(left / 1000);
   const v = { d: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60 };
   for (const k in v) { const t = pad(v[k]); if (el[k].textContent !== t) { el[k].textContent = t; el[k].classList.remove("tick"); void el[k].offsetWidth; el[k].classList.add("tick"); } }

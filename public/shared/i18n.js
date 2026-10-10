@@ -220,6 +220,21 @@
     "You can't do that to yourself.": "אי אפשר לעשות את זה לעצמכם.", "You can't do that to another admin.": "אי אפשר לעשות את זה למנהל אחר.",
     // ---------- a few that show up everywhere ----------
     "Cancel": "ביטול", "Done": "סיום", "Yes": "כן", "No": "לא", "OK": "אישור", "Back to game": "חזרה למשחק",
+    // ---------- the big world: districts, map, vehicles, new items ----------
+    "Graphics": "גרפיקה", "Auto": "אוטומטי", "Fast": "מהיר", "Best": "הכי יפה", "Show where I am": "איפה אני",
+    "Vehicles": "כלי רכב", "Vehicle": "כלי רכב", "Garage": "מוסך", "Call": "הזמנה", "Out": "בחוץ", "Find": "מצא", "Put away": "החזרה",
+    "RIDE": "לנסיעה", "GET OFF": "לרדת", "BUY A VEHICLE": "לקנות כלי רכב", "Call it here": "הזמנה לכאן", "Open the Shop": "פתיחת החנות",
+    "No vehicles yet": "עדיין אין כלי רכב", "Back in your garage!": "חזר למוסך!", "Get off your vehicle first.": "קודם רדו מכלי הרכב.",
+    "Vehicles only work outside, in the open world.": "כלי רכב עובדים רק בחוץ, בעולם הפתוח.", "There's no room for a vehicle in here!": "אין פה מקום לכלי רכב!",
+    "No room here! Walk to an open street and try again.": "אין פה מקום! לכו לרחוב פתוח ונסו שוב.", "Parked in the parking lot. It's safe here!": "חונה בחניון. כאן הוא בטוח!",
+    "Common": "רגיל", "Rare": "נדיר", "Epic": "אפי", "Legendary": "אגדי", "COMMON": "רגיל", "RARE": "נדיר", "EPIC": "אפי", "LEGENDARY": "אגדי",
+    "STAR ARCADE": "ארקייד הכוכבים", "Pick a game! Every round pays coins.": "בחרו משחק! כל סיבוב משלם מטבעות.", "Maybe later": "אולי אחר כך",
+    "TREASURE!": "אוצר!", "Awesome!": "מדהים!", "WEAR MY CROWN": "לחבוש את הכתר", "OPEN THE CHEST": "לפתוח את התיבה", "PLAY GAMES": "לשחק",
+    "You already found this treasure. The chest is empty now!": "כבר מצאתם את האוצר הזה. התיבה ריקה עכשיו!", "Walk up to the treasure chest first.": "קודם גשו לתיבת האוצר.",
+    "SECRET CAVE": "המערה הסודית", "HARBOR & MARINA": "הנמל והמרינה", "WAREHOUSE DISTRICT": "אזור המחסנים", "JUMPI STATION": "תחנת ג'אמפי", "SHOPPING STREET": "רחוב הקניות",
+    "MAPLE NEIGHBORHOOD": "שכונת האדר", "SUNNY HILLS SUBURBS": "פרברי הגבעות", "CENTRAL PARK": "הפארק המרכזי", "FOOD STREET": "רחוב האוכל", "FUN DISTRICT": "רובע הבילויים",
+    "POLICE STATION": "תחנת המשטרה", "JUMPI SCHOOL": "בית הספר", "JUMPI HOSPITAL": "בית החולים", "JUMPI AIRPORT": "שדה התעופה", "THE BOARDWALK": "הטיילת",
+    "WHISPER HILLS": "גבעות הלחישה", "PINE LAKE CAMP": "מחנה אגם האורנים",
   };
 
   const DICT = { he: HE };

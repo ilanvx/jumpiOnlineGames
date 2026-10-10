@@ -2,7 +2,7 @@ import "dotenv/config";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import express from "express";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
@@ -20,6 +20,7 @@ import petRoutes from "./routes/pets.js";
 import storeRoutes from "./routes/store.js";
 import jobRoutes from "./routes/jobs.js";
 import seasonRoutes from "./routes/season.js";
+import secretRoutes from "./routes/secrets.js";
 import codeRoutes from "./routes/codes.js";
 import tutorialRoutes from "./routes/tutorial.js";
 import { STORE_OPEN } from "./public/shared/store.js";
@@ -70,6 +71,7 @@ app.use("/api", petRoutes);
 app.use("/api", storeRoutes);
 app.use("/api", jobRoutes);
 app.use("/api", seasonRoutes);
+app.use("/api", secretRoutes);
 app.use("/api", codeRoutes);
 app.use("/api", tutorialRoutes);
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
@@ -100,12 +102,23 @@ const gameGate = async (req, res, next) => {
 // time) may keep old copies of those files for hours, which made new items "not exist" after an update. A new version
 // number on every deploy (the page's file time) makes every device fetch the new files right away.
 let gameHtml = { at: 0, html: "" };
+// the newest file time among the page and its own scripts (/shared and /world), checked at most every 5 s
+let newest = { t: 0, at: 0 };
+function gameFilesTime() {
+  if (Date.now() - newest.t < 5000) return newest.at;
+  let at = statSync(path.join(PUBLIC_DIR, "index.html")).mtimeMs;
+  for (const dir of ["shared", "world"]) {
+    try { for (const f of readdirSync(path.join(PUBLIC_DIR, dir))) if (f.endsWith(".js")) at = Math.max(at, statSync(path.join(PUBLIC_DIR, dir, f)).mtimeMs); } catch {}
+  }
+  newest = { t: Date.now(), at };
+  return at;
+}
 function sendGame(res, next) {
   try {
-    const file = path.join(PUBLIC_DIR, "index.html"), at = statSync(file).mtimeMs;
+    const at = gameFilesTime();
     if (at !== gameHtml.at) {
       const v = Math.round(at).toString(36);
-      gameHtml = { at, html: readFileSync(file, "utf8").replace(/(["'])\/shared\/([\w.-]+\.js)\1/g, `$1/shared/$2?v=${v}$1`) };
+      gameHtml = { at, html: readFileSync(path.join(PUBLIC_DIR, "index.html"), "utf8").replace(/(["'])\/(shared|world)\/([\w.-]+\.js)\1/g, `$1/$2/$3?v=${v}$1`) };
     }
     res.type("html").send(gameHtml.html);
   } catch (err) {

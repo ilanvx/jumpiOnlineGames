@@ -51,7 +51,7 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
     if (!item) return res.status(400).json({ error: "That item doesn't exist." });
     if (item.free) return res.status(409).json({ error: "Everyone already has this one!" });
     if (item.exclusive) return res.status(409).json({ error: "This one is only in the Jumpi Store bundles." });
-    if (item.gift) return res.status(409).json({ error: "You get this one by reaching the top level of a job!" });
+    if (item.gift) return res.status(409).json({ error: "This is a special prize, it isn't sold in the shop." });
     if (!eventShopOpen(item)) return res.status(409).json({ error: `The ${EVENTS[item.event]?.shop || "event shop"} is closed. These come back next ${EVENTS[item.event]?.name || "event"}!`, code: "event-closed" });
     const isFurniture = item.category === "furniture";
     if (!isFurniture && req.user.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });

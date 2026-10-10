@@ -222,4 +222,60 @@ H("neck", { id: "cape", name: "Witch cape", price: 2500, col: "#2a1640", col2: "
 H("neck", { id: "beads", name: "Candy corn beads", price: 600, col: "#ff8a1c", cols: ["#ff8a1c", "#ffd23a", "#ffffff"] });
 H("neck", { id: "spider", name: "Spider necklace", price: 1000, col: "#d9e0ea", col2: "#1d1d24", metal: true });
 
+/* ---------- secrets of the big world (public/shared/city-layout.js): found, never sold, never traded ---------- */
+add("hat", { id: "crystal", name: "Crystal crown", price: 0, gift: "cave", rarity: "legendary", col: "#bfe9ff", col2: "#b36bff" });   // the treasure chest in the secret cave
+
+/* ---------- THE BIG WORLD COLLECTION (autumn 2026): new looks for every slot, each with a rarity
+   (common / rare / epic / legendary: catalog.js shows it in the Shop). ---------- */
+const R = (slot, rarity, o) => add(slot, { ...o, rarity });
+// hair: four special colours for four styles
+const HAIR_FX = { Sunset: ["#ff5a3c", "#ffd23a"], Galaxy: ["#3b1f8a", "#5fe0ff"], Fire: ["#c8102e", "#ff8a1c"], Frost: ["#9fd8ff", "#ffffff"] };
+["spiky", "longbow", "afro", "bun"].forEach((id) => Object.entries(HAIR_FX).forEach(([c, col]) =>
+  R("hair", c === "Galaxy" || c === "Fire" ? "epic" : "rare", { id, name: `${c} ${SHAPE_NAME[id]}`, price: c === "Galaxy" || c === "Fire" ? 1400 : 900, col })));
+// shirts with new prints (painted in the game: EXTRA_SHIRT)
+R("shirt", "common", { id: "bolt", name: "Lightning tee", price: 350, fill: "#1d2b4f", hem: "#11192f", acc: "#ffd23a" });
+R("shirt", "common", { id: "bolt", name: "Pink lightning tee", price: 350, fill: "#ff7fbf", hem: "#d64f95", acc: "#ffffff" });
+R("shirt", "rare", { id: "planet", name: "Planet tee", price: 700, fill: "#2a2f72", hem: "#171a45", acc: "#ff8a1c" });
+R("shirt", "rare", { id: "planet", name: "Mint planet tee", price: 700, fill: "#5fe0c0", hem: "#2aa585", acc: "#9b5cff" });
+R("shirt", "common", { id: "checker", name: "Checker tee", price: 400, fill: "#ffffff", hem: "#1d1d24", acc: "#1d1d24" });
+R("shirt", "common", { id: "checker", name: "Candy checker tee", price: 400, fill: "#ffe3f0", hem: "#ff5fa8", acc: "#ff5fa8" });
+R("shirt", "rare", { id: "sunset", name: "Sunset tee", price: 800, fill: "#ff5a3c", hem: "#7a2a8a", stripes: ["#ffd23a", "#ff8a1c", "#ff5a3c", "#c8307a", "#5a2a8a"] });
+R("shirt", "rare", { id: "pixel", name: "Pixel heart tee", price: 750, fill: "#1d1d24", hem: "#0d0d14", acc: "#ff3b5c" });
+R("shirt", "rare", { id: "music", name: "Music notes tee", price: 700, fill: "#ffffff", hem: "#9b5cff", acc: "#9b5cff" });
+R("shirt", "epic", { id: "astro", name: "Astronaut suit", price: 2400, fill: "#f2f4f8", hem: "#c9d3e3", acc: "#ff6a1c" });
+R("shirt", "legendary", { id: "dragon", name: "Dragon scale armor", price: 6000, fill: "#14583a", hem: "#0b2e1f", acc: "#ffd23a" });
+// pants with new prints (EXTRA_PANTS)
+R("pants", "common", { id: "checker", name: "Checker pants", price: 400, base: "#ffffff", waist: "#1d1d24", acc: "#1d1d24" });
+R("pants", "rare", { id: "flames", name: "Flame pants", price: 900, base: "#1d1d24", waist: "#111", acc: "#ff6a1c" });
+R("pants", "rare", { id: "sunset", name: "Sunset pants", price: 800, base: "#ff8a1c", waist: "#5a2a8a", stripes: ["#ffd23a", "#ff8a1c", "#ff5a3c", "#c8307a", "#5a2a8a"] });
+R("pants", "common", { id: "bolt", name: "Lightning shorts", price: 350, base: "#2f6bff", waist: "#1d3d8f", acc: "#ffd23a" });
+R("pants", "epic", { id: "astro", name: "Astronaut pants", price: 1800, base: "#f2f4f8", waist: "#c9d3e3", acc: "#ff6a1c" });
+R("pants", "legendary", { id: "dragon", name: "Dragon scale legs", price: 4500, base: "#14583a", waist: "#0b2e1f", acc: "#ffd23a" });
+// glasses with new shapes
+R("glasses", "epic", { id: "visor", name: "Cyber visor", price: 1600, frame: "#2a2d36", glow: "#5fe0ff" });
+R("glasses", "epic", { id: "visor", name: "Pink cyber visor", price: 1600, frame: "#2a2d36", glow: "#ff5fa8" });
+R("glasses", "rare", { id: "goggles", name: "Racing goggles", price: 800, frame: "#ff6a1c" });
+R("glasses", "rare", { id: "goggles", name: "Snow goggles", price: 800, frame: "#1fb6ff" });
+R("glasses", "common", { id: "retro3d", name: "3D glasses", price: 350, frame: "#ffffff" });
+R("glasses", "rare", { id: "cateye", name: "Cat-eye glasses", price: 650, frame: "#ff5fa8" });
+// hats with new shapes
+R("hat", "common", { id: "chef", name: "Chef hat", price: 450, col: "#ffffff", col2: "#e9eef4" });
+R("hat", "rare", { id: "pirate", name: "Pirate hat", price: 950, col: "#1d1d24", col2: "#ffd23a" });
+R("hat", "rare", { id: "headphones", name: "Headphones", price: 800, col: "#1fb6ff", col2: "#1d1d24", keepHair: true });
+R("hat", "rare", { id: "headphones", name: "Pink headphones", price: 800, col: "#ff5fa8", col2: "#ffffff", keepHair: true });
+R("hat", "rare", { id: "propeller", name: "Propeller cap", price: 700, col: "#ff4f4f", col2: "#ffd23a" });
+R("hat", "rare", { id: "flowers", name: "Flower crown", price: 750, col: "#2fb04e", col2: "#ff9ccc", keepHair: true });
+R("hat", "epic", { id: "halo", name: "Angel halo", price: 2200, col: "#ffe27a", col2: "#ffffff", keepHair: true });
+R("hat", "epic", { id: "unicorn", name: "Unicorn horn", price: 2000, col: "#ffffff", col2: "#ff9ccc", keepHair: true });
+R("hat", "epic", { id: "viking", name: "Viking helmet", price: 1800, col: "#9aa5b8", col2: "#f2ead6" });
+R("hat", "legendary", { id: "wizard", name: "Star wizard hat", price: 4500, col: "#3b1f8a", col2: "#ffd23a" });
+// on the back / round the neck
+R("neck", "common", { id: "backpack", name: "School backpack", price: 450, col: "#2f6bff", col2: "#ffd23a" });
+R("neck", "common", { id: "backpack", name: "Pink backpack", price: 450, col: "#ff7fbf", col2: "#ffffff" });
+R("neck", "rare", { id: "guitar", name: "Guitar on the back", price: 1300, col: "#e8423b", col2: "#f2ead6" });
+R("neck", "epic", { id: "wings", name: "Butterfly wings", price: 2800, col: "#ff9ccc", col2: "#9b5cff", wing: "butterfly" });
+R("neck", "legendary", { id: "wings", name: "Angel wings", price: 4500, col: "#ffffff", col2: "#ffe27a", wing: "angel" });
+R("neck", "legendary", { id: "wings", name: "Dragon wings", price: 5500, col: "#c8102e", col2: "#ff8a1c", wing: "dragon" });
+R("neck", "legendary", { id: "jetpack", name: "Rocket jetpack", price: 6500, col: "#c9d3e3", col2: "#ff6a1c" });
+
 export const OUTFIT_SLOTS = Object.keys(out);
