@@ -19,7 +19,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   setLang(start);
 }
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const canvas = document.getElementById("rnCanvas");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));

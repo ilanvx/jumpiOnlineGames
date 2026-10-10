@@ -9,7 +9,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const TAU = Math.PI * 2;
 const ease = (k) => 1 - Math.pow(1 - k, 3);
 const clamp01 = (k) => Math.max(0, Math.min(1, k));

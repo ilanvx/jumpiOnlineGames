@@ -60,6 +60,13 @@ export const CONNECTORS = [
   [7.6, 59, 26, 74],            // behind the Pet Center, right
   [28, -26, 284, -19.6],        // the long boardwalk promenade along the east beach
   [99, -17, 101, 42],           // Water Park east gate → Coral Avenue
+  [26, 42.5, 29.6, 74],         // the grass strip along Park Lane, behind the Water Park
+  [112, 41.5, 176, 44.5],       // between the Police Station square and the Fun District
+  [100, -20, 284, -18],         // from the boardwalk straight onto Ocean Drive's sidewalk
+];
+// open land outside the named districts that you can still walk on (the far side of Whisper Hills, behind the airport)
+export const OPEN_LAND = [
+  [188, 150, 284, 244],
 ];
 
 // water you can't walk into: lakes and ponds (ellipses) — bridges cross some of them

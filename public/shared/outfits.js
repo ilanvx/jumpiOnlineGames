@@ -278,4 +278,30 @@ R("neck", "legendary", { id: "wings", name: "Angel wings", price: 4500, col: "#f
 R("neck", "legendary", { id: "wings", name: "Dragon wings", price: 5500, col: "#c8102e", col2: "#ff8a1c", wing: "dragon" });
 R("neck", "legendary", { id: "jetpack", name: "Rocket jetpack", price: 6500, col: "#c9d3e3", col2: "#ff6a1c" });
 
+// ---------- the Members Club collection: only members can buy these (member: true; checked in routes/shop.js) ----------
+// all made from shapes that already fit every Jumpi, in members-only colours (platinum, royal purple and gold, galaxy)
+const MEM = (slot, rarity, o) => R(slot, rarity, { ...o, member: true });
+MEM("hat", "legendary", { id: "crown", name: "Platinum members crown", price: 2500, col: "#dfe7f5", col2: "#1fb6ff" });
+MEM("hat", "legendary", { id: "wizard", name: "Royal wizard hat", price: 3500, col: "#6b1f8a", col2: "#ffd23a" });
+MEM("hat", "epic", { id: "halo", name: "Diamond halo", price: 1800, col: "#8fe6ff", col2: "#ffffff", keepHair: true });
+MEM("hat", "epic", { id: "headphones", name: "Gold headphones", price: 1200, col: "#ffc21a", col2: "#1d1d24", keepHair: true });
+MEM("hat", "epic", { id: "viking", name: "Galaxy viking helmet", price: 1800, col: "#3b1f8a", col2: "#5fe0ff" });
+MEM("hat", "epic", { id: "tophat", name: "Royal top hat", price: 1200, col: "#3b1f6b", col2: "#ffd23a" });
+MEM("hat", "epic", { id: "unicorn", name: "Galaxy unicorn horn", price: 1800, col: "#c9b6ff", col2: "#5fe0ff", keepHair: true });
+MEM("neck", "legendary", { id: "wings", name: "Galaxy wings", price: 4000, col: "#3b1f8a", col2: "#5fe0ff", wing: "angel" });
+MEM("neck", "legendary", { id: "jetpack", name: "Golden jetpack", price: 5000, col: "#ffc21a", col2: "#1fb6ff" });
+MEM("neck", "epic", { id: "cape", name: "Royal cape", price: 2200, col: "#4a1670", col2: "#ffd23a" });
+MEM("neck", "epic", { id: "gem", name: "Diamond necklace", price: 1500, col: "#dfe7f5", col2: "#7fe8ff", metal: true });
+MEM("neck", "rare", { id: "medal", name: "Members medal", price: 900, col: "#dfe7f5", col2: "#9b5cff" });
+MEM("glasses", "epic", { id: "visor", name: "Gold cyber visor", price: 1600, frame: "#b8860b", glow: "#ffd23a" });
+MEM("glasses", "epic", { id: "goggles", name: "Galaxy goggles", price: 1100, frame: "#5a2a9e" });
+MEM("shirt", "legendary", { id: "dragon", name: "Golden dragon armor", price: 5000, fill: "#c99a1a", hem: "#6b4a00", acc: "#ffffff" });
+MEM("shirt", "epic", { id: "astro", name: "Royal astronaut suit", price: 2200, fill: "#2a1f5c", hem: "#170f3a", acc: "#ffd23a" });
+MEM("shirt", "rare", { id: "jersey", name: "Members jersey", price: 900, fill: "#2a1f5c", hem: "#ffd23a", acc: "#ffd23a" });
+MEM("pants", "legendary", { id: "dragon", name: "Golden dragon legs", price: 4000, base: "#c99a1a", waist: "#6b4a00", acc: "#ffffff" });
+MEM("pants", "epic", { id: "astro", name: "Royal astronaut pants", price: 1700, base: "#2a1f5c", waist: "#170f3a", acc: "#ffd23a" });
+MEM("pants", "rare", { id: "stars", name: "Platinum starry pants", price: 900, base: "#c9d6ff", waist: "#8fa3c9", acc: "#1f6bff" });
+MEM("hair", "epic", { id: "spiky", name: "Diamond Spiky", price: 1400, col: ["#e8f4ff", "#5fe0ff"] });
+MEM("hair", "epic", { id: "longbow", name: "Royal long hair with bow", price: 1400, col: ["#6b1f8a", "#ffd23a"] });
+
 export const OUTFIT_SLOTS = Object.keys(out);

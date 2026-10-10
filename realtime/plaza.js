@@ -36,7 +36,8 @@ const HOME_BOUNDS = { x0: -7.4, x1: 7.4, z0: -5.6, z1: 5.6 };
 // homes come in different sizes (bigger room, garden, second floor): the box players may move in, per home room
 const homeBounds = new Map();
 const boundsOf = (room) => (room === ROOM ? BOUNDS : homeBounds.get(room) || HOME_BOUNDS);
-const POSES = new Set(["sit", "sleep", "play", "dance"]);
+const POSES = new Set(["sit", "sleep", "play", "dance", "lie"]);
+const OUTDOOR_POSES = new Set(["sit", "lie"]);   // benches, picnic tables and sun loungers in the open world
 // the shops on the Plaza you can walk into (each one is its own room, the same size as a home)
 const PLACES = new Set(["furniture", "clothes", "club", "diner", "pets"]);
 const MAX_CHAT = 80;
@@ -124,9 +125,9 @@ export function setInvisible(userId, on) {
 }
 const roomOf = (sid) => players.get(sid)?.room || ROOM;
 // a sitting / sleeping pose: what, how high (seat height) and which way
-function cleanPose(p) {
-  if (!p || !POSES.has(p.k)) return null;
-  return { k: p.k, y: clamp(num(p.y), 0, 2), f: num(p.f) };
+function cleanPose(p, outdoors = false) {
+  if (!p || !POSES.has(p.k) || (outdoors && !OUTDOOR_POSES.has(p.k))) return null;
+  return { k: p.k, y: clamp(num(p.y), 0, outdoors ? 60 : 3), f: num(p.f) };
 }
 
 // every open game window of one player
@@ -489,7 +490,7 @@ export function attachPlaza(io) {
       p.z = clamp(num(d?.z, p.z), B.z0, B.z1);
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
-      p.pose = p.room === ROOM ? null : cleanPose(d?.pose); // sitting, sleeping and dancing only happen indoors
+      p.pose = cleanPose(d?.pose, p.room === ROOM); // outside only sitting and lying down (benches, sun loungers)
       p.run = p.moving && d?.run === true;
       roomSend(p, "player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose }, { self: false, volatile: true });
     });

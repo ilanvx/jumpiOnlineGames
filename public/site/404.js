@@ -9,7 +9,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
   if (p && p !== "/") { const el = document.getElementById("nfPath"); el.querySelector("code").textContent = p.length > 80 ? p.slice(0, 77) + "…" : p; el.hidden = false; }
 }
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const canvas = document.getElementById("nfCanvas");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));

@@ -129,10 +129,13 @@ app.get(["/play", "/play/"], gameGate);
 app.get(["/studio", "/studio/"], gameGate);   // image studio (pictures made in code, see STUDIO_SCENES in index.html)
 app.get("/terms", page("site/terms.html"));
 app.get("/privacy", page("site/privacy.html"));
+app.get(["/accessibility", "/accessibility-statement", "/negishut"], page("site/accessibility.html"));   // accessibility statement (Israeli regulations 2013, IS 5568)
 app.get("/delete-account", page("site/delete-account.html"));   // Google Play: how to delete a JUMPI account
 app.get("/contact", page("site/contact.html"));
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
 app.get("/trailer", page("site/trailer.html"));
+// the Windows app: the newest installer from GitHub Releases (built by the "Windows app" workflow, branch android-app)
+app.get(["/download/windows", "/download/pc"], (req, res) => { res.set("Cache-Control", "no-store"); res.redirect(302, "https://github.com/ilanvx/jumpiOnlineGames/releases/latest/download/Jumpi-Games-Setup.exe"); });
 // the Android app: the APK built on GitHub (branch android-build), copied to public/download/jumpi-games.apk
 app.get("/download/android", (req, res, next) => {
   const f = path.join(PUBLIC_DIR, "download", "jumpi-games.apk");

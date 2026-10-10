@@ -118,7 +118,7 @@ $("rForm").addEventListener("submit", async (e) => {
 
 /* ---------- the 3D picture: a Jumpi, a big golden key and a padlock ---------- */
 const scene3d = (() => {
-  const canvas = $("rpCanvas"), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canvas = $("rpCanvas"), reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: document.body.classList.contains("hero-shot") });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;

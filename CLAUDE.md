@@ -7,6 +7,7 @@
 - Avoid generic "AI" layouts (rows of identical cards with emoji icons). Design something that feels like part of the game.
 
 ## Practical
+- Git: Claude may push to `main` only after Ilan says OK for that specific push (show him what goes in first). `android-app` stays free to push. Never force-push.
 - Website lives in `public/site/` and is the home page (`/`, plus `/terms`, `/privacy`, `/contact`); the game is `public/index.html` at `/play`. Old `/site/...` links redirect.
 - Hebrew is switched off in the game for now (`LOCKED` in `public/shared/i18n.js`); the default language is English.
 - Contact: support@jumpigames.com · Business: Jumpi Games, exempt dealer (עוסק פטור) 328170832 · no address on the site.
@@ -94,6 +95,9 @@
 - Tapping players on touch screens: `remoteAt` also accepts a tap near a player on screen (fingers miss small characters), and a quick tap inside the joystick area is passed on to the world as a click. The joystick still jumps to the finger on every touch; when the touch was a quick tap (under 300 ms, under 10 px) the tap goes on to the world, so a player there opens their card.
 - One connection = one account: the socket remembers whose it is (`socket._uid`); `setAccount` with a different account drops it and joins again, and the server sends `whoami` {id} on connect — if it is not the account on screen the game reconnects (twice at most, then asks to reload). This fixed "logged in as A on the phone but other players see/move B".
 
+## iPhone app (TestFlight)
+- On the `android-app` branch too: `ios/` (Swift WKWebView of /play, same rules as Android: "JumpiApp/" user agent, only /play inside, other links to Safari, offline.html, `window.JumpiAppBridge`), bundle id **com.jumpigames.jumpi**, project from `ios/project.yml` (XcodeGen). `.github/workflows/ios.yml` builds on GitHub's Mac when `ios/` changes; with the secrets `APPSTORE_KEY_ID`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_P8`, `APPLE_TEAM_ID` it signs automatically and uploads to TestFlight (version 1.0.<run>). Log on the branch `ios-build`. Setup steps: README-IOS.md.
+
 ## Join the team page (/team)
 - `/team` (also `/join-the-team`, `/careers`): "JUMPI is looking for its first Community Team" — Community Manager, Guides (= the moderation team, Hebrew "משגיחים"), Beta Testers. Files: `public/site/team.html` / `team.css` / `team.js` (language, role picker, form) / `team3d.js` (3D). Header/footer from legal.css. Linked from the home page footer ("Join the team"). `?role=guide` opens with that role picked.
 - Hebrew text never mixes in English role names: מנהל/ת קהילה, משגיח/ה (צוות המשגיחים), בודק/ת בטא (`NAME` in team.js, `ROLE_HE` in routes/team.js). The 3D name badges switch language too (`badgeTex`, event `tm:lang`).
@@ -111,3 +115,20 @@
 - Graphics setting (Auto / Fast / Best) in Settings; Auto lowers the pixel ratio when FPS drops.
 - Vehicles: list in `public/shared/vehicles.js` (append only; item id `vehicle:<i>`, sold in the Shop "Vehicles" tab and at JUMPI MOTORS in the Warehouse district). Models in `public/world/bikes.js`. Server: `realtime/vehicles.js` (summon/ride/park/away over the plaza socket; owner-only; one out per player; towed after `PARK_FREE_MS` outside a `PARKING` lot; put away 3 min after the owner leaves). Client: the VEH block in index.html + the phone's Garage app.
 - Rarity (common/rare/epic/legendary): `rarity` on outfits.js items, catalog.js entries and vehicles; the Shop shows a chip. New items of the Big World collection are at the END of every list (outfits, colours 16+, eyes 14+, tags 12+, furniture 31+, auras 10+). Halloween ranges are fixed (tags 9-11, furniture 25-30) — don't use ">=" for them.
+
+## Windows app, accessibility, SEO
+- Windows desktop app: `desktop/` on the `android-app` branch (Electron + NSIS installer + appx for the Microsoft Store, Store ID 9N4FZ4DJKMSD). Workflow `.github/workflows/desktop.yml`. The Store build skips its own updater (`process.windowsStore`). Server: `/download/windows` -> latest GitHub release (the site button still says "PC & Mac – Soon").
+- Accessibility: `public/shared/a11y.js` (loaded in the head of every site page: menu, Alt+A, settings in localStorage `jumpi-a11y`; "stop animations" holds requestAnimationFrame and sets `window.JUMPI_REDUCE_MOTION`, which every site 3D script must read). Statement: `public/site/accessibility.html` (`/accessibility`). New site pages need the a11y script tag, the favicon tags and the footer accessibility link.
+- SEO: `public/robots.txt`, `public/sitemap.xml` (add new pages), canonical + OG tags, JSON-LD on the home page.
+
+## Game systems added in the 24-fixes round
+- Graphics (GFX block): presets Auto/Low/Medium/High + "More graphics options" (sharpness = pixel ratio share, shadows off/low/high, view distance, frame-rate cap 30/60/max, effects, smooth edges = antialias on next start). Saved in localStorage `jumpi-gfx2`.
+- Board games (duel): full-screen "dx" window like the trade window (players walk apart, X/O or disc colour under each name, arrow over whose turn, chat bar). Outsiders see the duel badge + chat bubbles.
+- Sitting outside: `WORLD_SEATS` (plaza/park benches, water-park loungers = "lie") + `CITY.seats` (city.js `addSeat` in `bench()` and picnic tables). Server allows only "sit"/"lie" poses outdoors (`OUTDOOR_POSES` in realtime/plaza.js). New benches: call `addSeat`.
+- Home furniture actions in `SEATS` (gaming chair, throne, bunk bed with TOP BUNK, dancing at the jukebox/disco ball). A spot may carry its own height and label: `[x, z, y, "LABEL"]`.
+- Piano: sitting at it opens the sheet-music panel (PIANO block, public-domain songs, keys A..; and W E T Y U O P). `Sound.note(midi)`.
+- TV: JUMPI NEWS on one shared canvas (TVNEWS), "TURN OFF TV" button, off state per home spot in localStorage `jumpi-tv-off`.
+- Swimming: Shift / run button = swim fast (SWIM_FAST); legs kick through a small vertex bend (kickSet / kickBR; every character body mesh gets `onBeforeRender=kickBR`).
+- Map: clicking a place makes a route (ROUTE block: A* over a 1.5 m grid of walkable/drivable ground minus colliders; driving prefers roads) shown as a blue line on the ground and on both maps, with a distance chip.
+- Members Club: outfits/vehicles with `member: true` (outfits.js MEM(...), vehicles.js) can only be bought by members (routes/shop.js) and can't be traded (trade.js).
+- Walking: city trees never stand on roads/parking/driveways (`onTarmac`), house fences have driveway openings (DRIVES), extra walkable strips (CONNECTORS, OPEN_LAND, the beach slope in WALK).

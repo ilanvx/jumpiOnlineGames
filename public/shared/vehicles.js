@@ -36,6 +36,11 @@ export const VEHICLES = [
   { kind: "hover", name: "Phantom Hover", rarity: "legendary", price: 15000, col: "#2a2f4a", col2: "#5fe0ff", speed: 20, glow: "#5fe0ff", trail: "stars" },
   { kind: "sport", name: "Dragon Flame", rarity: "legendary", price: 18000, col: "#c8102e", col2: "#ff8a1c", speed: 21, glow: "#ff5a1c", trail: "fire" },
   { kind: "hover", name: "Rainbow Rocket", rarity: "legendary", price: 20000, col: "#ffffff", col2: "#ff5fa8", speed: 21, glow: "#ff9ccc", trail: "rainbow" },
+  // the Members Club garage: only members can buy these (member: true)
+  { kind: "vespa", name: "Royal Vespa", rarity: "epic", price: 4000, col: "#4a1670", col2: "#ffd23a", speed: 15, glow: "#ffd23a", member: true },
+  { kind: "cruiser", name: "Platinum Cruiser", rarity: "epic", price: 4500, col: "#dfe7f5", col2: "#1f6bff", speed: 16, metal: true, glow: "#7fd6ff", member: true },
+  { kind: "sport", name: "Galaxy Racer", rarity: "legendary", price: 10000, col: "#2a1f5c", col2: "#5fe0ff", speed: 20, glow: "#9b5cff", trail: "stars", member: true },
+  { kind: "hover", name: "Members Hover", rarity: "legendary", price: 12000, col: "#ffc21a", col2: "#4a1670", speed: 21, metal: true, glow: "#ffd23a", trail: "sparkle", member: true },
 ];
 
 export const VEH_SUMMON_GAP_MS = 5000;     // one summon every few seconds

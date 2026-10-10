@@ -62,3 +62,6 @@ body.gs{background:#0e1838;display:flex;flex-direction:column;min-height:100vh}
 .in-app .gs-top,.in-app .lg-foot,.in-app .gs-btn.home{display:none}
 
 .gs-count[hidden]{display:none}
+
+/* accessibility menu: "stop animations" also stops the seconds ticking (the countdown then changes once a minute) */
+html.jacc-noanim .gs-unit.sec,html.jacc-noanim .gs-count .gs-dot:nth-of-type(3){display:none}

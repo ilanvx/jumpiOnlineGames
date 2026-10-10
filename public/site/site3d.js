@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { PET_KINDS, PET_BY_ID } from "/shared/pets.js";
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const TAU = Math.PI * 2;
 const clock = new THREE.Clock();
 const stages = [];

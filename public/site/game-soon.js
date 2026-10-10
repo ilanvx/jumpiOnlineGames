@@ -43,7 +43,7 @@ function tick() {
 tick(); setInterval(tick, 250);
 
 /* ---------- the 3D building site ---------- */
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const canvas = document.getElementById("gsCanvas");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));

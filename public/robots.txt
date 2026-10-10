@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /studio
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://jumpigames.com/sitemap.xml

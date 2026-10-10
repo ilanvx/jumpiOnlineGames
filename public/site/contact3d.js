@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduce = (window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const TAU = Math.PI * 2;
 const canvas = document.getElementById("ctCanvas");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });

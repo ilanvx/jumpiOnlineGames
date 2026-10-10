@@ -221,7 +221,15 @@
     // ---------- a few that show up everywhere ----------
     "Cancel": "ביטול", "Done": "סיום", "Yes": "כן", "No": "לא", "OK": "אישור", "Back to game": "חזרה למשחק",
     // ---------- the big world: districts, map, vehicles, new items ----------
-    "Graphics": "גרפיקה", "Auto": "אוטומטי", "Fast": "מהיר", "Best": "הכי יפה", "Show where I am": "איפה אני",
+    "Tip: hold the run button to swim fast!": "טיפ: החזיקו את כפתור הריצה כדי לשחות מהר!", "Tip: hold Shift to swim fast!": "טיפ: החזיקו Shift כדי לשחות מהר!", "Members only": "למנויים בלבד", "★ MEMBERS": "★ מנויים", "Members Club": "מועדון המנויים", "Become a member in the Jumpi Store to get this": "הצטרפו למנוי בחנות ג'אמפי כדי לקבל את זה", "This one is for members only. Become a member in the Jumpi Store!": "זה רק למנויים. הצטרפו למנוי בחנות ג'אמפי!", "Follow the blue line!": "עקבו אחרי הקו הכחול!", "You've arrived!": "הגעתם!", "There's no way to walk there.": "אין דרך ללכת לשם.", "There's no way to drive there.": "אין דרך לנסוע לשם.", "Stop the route": "לעצור את המסלול", "Click a place to get a route there": "לחצו על מקום כדי לקבל מסלול", "PIANO": "פסנתר", "Piano": "פסנתר", "Stop playing": "להפסיק לנגן", "Listen": "להקשיב", "Start again": "מההתחלה", "Free play": "נגינה חופשית",
+    "Play anything you like!": "נגנו מה שבא לכם!", "Bravo! You played the whole song!": "בראבו! ניגנתם את כל השיר!", "Note {n} of {total}": "תו {n} מתוך {total}",
+    "Twinkle Twinkle Little Star": "נצנץ נצנץ כוכב קטן", "Ode to Joy": "האודה לשמחה", "Mary Had a Little Lamb": "למרי היה כבש קטן", "Jingle Bells": "ג'ינגל בלס",
+    "Row, Row, Row Your Boat": "שוטו שוטו סירה", "TOP BUNK": "מיטה עליונה", "LIE DOWN": "לשכב", "Time to relax! Move to get up.": "זמן לנוח! זוזו כדי לקום.",
+    "Graphics": "גרפיקה", "Auto": "אוטומטי", "Fast": "מהיר", "Best": "הכי יפה", "Low": "נמוכה", "Medium": "בינונית", "High": "גבוהה",
+    "More graphics options": "עוד אפשרויות גרפיקה", "Sharpness": "חדות", "Shadows": "צללים", "Off": "כבוי", "On": "פועל", "View distance": "מרחק ראייה",
+    "Short": "קצר", "Far": "רחוק", "Frame rate": "קצב תמונות", "Max": "מקסימום", "Effects": "אפקטים", "Smooth edges": "החלקת קצוות",
+    "Smooth edges changes the next time the game opens.": "החלקת קצוות תשתנה בפעם הבאה שהמשחק ייפתח.",
+    "Game slow? Pick Low, or turn Shadows off and Sharpness down.": "המשחק איטי? בחרו נמוכה, או כבו צללים והורידו חדות.", "Show where I am": "איפה אני",
     "Vehicles": "כלי רכב", "Vehicle": "כלי רכב", "Garage": "מוסך", "Call": "הזמנה", "Out": "בחוץ", "Find": "מצא", "Put away": "החזרה",
     "RIDE": "לנסיעה", "GET OFF": "לרדת", "BUY A VEHICLE": "לקנות כלי רכב", "Call it here": "הזמנה לכאן", "Open the Shop": "פתיחת החנות",
     "No vehicles yet": "עדיין אין כלי רכב", "Back in your garage!": "חזר למוסך!", "Get off your vehicle first.": "קודם רדו מכלי הרכב.",

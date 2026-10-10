@@ -43,6 +43,7 @@ for (const slot of OUTFIT_SLOTS)
     if (o.gift) Object.assign(items[items.length - 1], { gift: true, rarity: "legendary" });   // work uniforms: only as a job prize
     if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
     if (o.rarity) items[items.length - 1].rarity = o.rarity;
+    if (o.member) items[items.length - 1].member = true;   // the Members Club collection: only members can buy it
   });
 
 // name tags (an icon next to the name)
@@ -122,6 +123,7 @@ export const MAX_FURNITURE = 60;
 VEHICLES.forEach((v, i) => {
   add("vehicle", i, v.name, v.price);
   items[items.length - 1].rarity = v.rarity;
+  if (v.member) items[items.length - 1].member = true;
 });
 
 export const CATALOG = items;

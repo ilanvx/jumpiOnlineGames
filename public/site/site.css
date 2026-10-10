@@ -228,6 +228,7 @@ p{margin:0}
 .foot nav{display:flex;gap:18px;flex-wrap:wrap;margin-inline-start:auto}
 .foot a{text-decoration:none;font-weight:500}.foot a:hover{color:#fff}
 .foot p{width:100%;font-size:.9rem;opacity:.8}
+.foot .foot-he{text-align:right;line-height:1.6;max-width:900px;margin-left:auto;margin-right:0;font-family:"Rubik","Fredoka",sans-serif}
 
 /* ---------- post dialog + toast ---------- */
 .post-dlg{width:min(680px,calc(100% - 32px));max-height:calc(100vh - 48px);border:0;border-radius:28px;padding:0;color:var(--ink);background:#fff;box-shadow:0 30px 80px rgb(0 0 0 / .35)}

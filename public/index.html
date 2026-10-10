@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jumpi</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/jumpi-head-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preload" href="/jumpi-logo.png" as="image">
 <link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
@@ -297,6 +301,16 @@ body.in-game .lang-btn,body.login-mode .lang-btn,body.in-game .lang-menu,body.lo
 .set-lang button[aria-pressed="true"]{background:var(--orange);color:#fff;box-shadow:0 3px 0 var(--orange-edge)}
 .set-lang button:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
 .set-gfx button{padding:0 14px}
+.gfx-more-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:2px 0 0;padding:8px 12px;border:0;border-radius:12px;background:rgb(0 0 0 / .12);color:#dbe7f7;font:600 .9rem "Fredoka",system-ui,sans-serif;cursor:pointer}
+.gfx-more-btn svg{width:16px;height:16px;transition:transform .2s}
+.gfx-more-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.gfx-more{display:flex;flex-direction:column;gap:8px}
+.gfx-more[hidden]{display:none}
+.gfx-row{min-height:46px;padding:8px 12px}
+.gfx-row .set-gfx button{height:32px;padding:0 11px}
+.gfx-row .vol{flex:1;min-width:90px}
+.gfx-note{margin:0;padding:0 6px;font-size:.8rem;color:#b9c8de;line-height:1.35}
+.gfx-note[hidden]{display:none}
 /* Hebrew: text reads right to left inside cards and windows (the screen layout stays the same) */
 body.rtl .login-card,body.rtl .settings-card,body.rtl .tut-card,body.rtl .tl-card,body.rtl .idle-card,body.rtl .ld-tips,body.rtl .toast,body.rtl .play-menu,body.rtl .ld-tip{direction:rtl}
 body.rtl .login-card input[type=email],body.rtl .login-card input[type=password],body.rtl #username,body.rtl #su-user{direction:ltr;text-align:right}
@@ -1391,6 +1405,14 @@ body.mg-open .chat-dock,body.mg-open .mg-result{display:none!important}
 .qty{position:absolute;z-index:1;top:4px;left:4px;min-width:26px;padding:2px 6px;border-radius:999px;background:linear-gradient(180deg,#ffd75a,#ffb21f);color:#5a3400;
   font:700 .78rem "Fredoka",system-ui,sans-serif;text-align:center;box-shadow:0 2px 0 #b36b00;animation:qtyPop .4s cubic-bezier(.2,1.8,.4,1)}
 @keyframes qtyPop{from{transform:scale(0) rotate(-20deg)}}
+.slot.full{position:relative}
+.route-chip{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 72px);left:50%;translate:-50% 0;display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 10px;border-radius:19px;
+  background:#1d2b4f;color:#fff;box-shadow:0 4px 0 #0f1a33,0 8px 18px rgb(0 0 0 / .25);font:400 1.05rem var(--font);letter-spacing:.03em}
+.route-chip[hidden]{display:none}
+.route-chip svg{width:22px;height:22px}
+.route-chip button{width:28px;height:28px;border:0;border-radius:50%;background:#ff5a5a;color:#fff;font:700 .85rem "Fredoka",sans-serif;cursor:pointer;box-shadow:0 2px 0 #8a1c1c}
+body.game-store .route-chip,body.duel-in .route-chip,body:not(.in-game) .route-chip,body.in-home .route-chip{display:none!important}
+.mchip{position:absolute;z-index:1;top:4px;right:4px;padding:2px 7px 1px;border-radius:999px;background:linear-gradient(180deg,#b06bff,#6b2fd6);color:#fff;font:400 .6rem/1.3 var(--font);letter-spacing:.04em;box-shadow:0 2px 0 #3d1585,0 0 0 2px #ffd23a;pointer-events:none}
 .item[aria-selected="true"] .qty{box-shadow:0 2px 0 #b36b00,0 0 0 2px #fff}
 /* ---------- my home ---------- */
 .home-btn{--c:#ffb21f;--hi:#ffe27a;--lo:#e08a00;--edge:#7a3a00;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 162px);left:18px;width:58px;height:58px;border-radius:16px;padding:0;display:none}
@@ -2463,6 +2485,107 @@ body.land .tx .set-close{width:36px;height:36px;top:calc(env(safe-area-inset-top
   .tx-table{gap:8px;flex-wrap:wrap}.tx-mid{order:3;width:100%;flex-direction:row;justify-content:center}.tx .swap-ico{display:none}.tx-mid .cta{min-width:120px;font-size:1.05rem}
   .tx .offer{padding:5px;border-radius:18px}.tx .slots{gap:4px}
 }
+/* ---------- the piano with sheet music (sitting at a piano) ---------- */
+.pn{position:fixed;z-index:11;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);translate:-50% 0;width:min(900px,calc(100vw - 20px));display:flex;flex-direction:column;gap:8px;
+  padding:12px 14px 14px;border-radius:26px;background:#3e5b86;border:3px solid #1f3355;box-shadow:0 6px 0 #1f3355,0 16px 32px rgb(0 0 0 / .3);color:#fff;font-family:"Fredoka",system-ui,sans-serif;animation:pcIn .35s cubic-bezier(.2,1.5,.4,1)}
+.pn[hidden]{display:none}
+.pn-head{display:flex;align-items:center;gap:10px;min-width:0}
+.pn-head h3{margin:0;font:400 1.4rem/1 var(--font);letter-spacing:.04em;text-shadow:0 3px 0 #1f3355;flex:none}
+.pn-songs{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.pn-songs button{flex:none;height:34px;padding:0 12px;border:0;border-radius:17px;background:#2c4468;color:#dbe7f7;font:600 .85rem "Fredoka",system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 #1b2c47}
+.pn-songs button[aria-selected="true"]{background:var(--orange);color:#fff;box-shadow:0 3px 0 var(--orange-edge)}
+.pn-x{flex:none;width:40px;height:40px;border:0;border-radius:12px;background:#ff5a5a;box-shadow:0 4px 0 #8a1c1c;cursor:pointer;display:grid;place-items:center}
+.pn-x svg{width:16px;height:16px}
+.pn-sheet{position:relative;border-radius:18px;background:#fff;box-shadow:inset 0 -5px 0 #dbe6f5}
+.pn-sheet svg{display:block;width:100%;height:auto;max-height:24vh}
+.pn-cur{animation:pnBob .6s ease-in-out infinite alternate}
+@keyframes pnBob{to{transform:translateY(-3px)}}
+.pn-arrow{animation:pnBob .5s ease-in-out infinite alternate}
+.pn-msg{margin:0 0 0 auto;align-self:center;font-size:.85rem;font-weight:600;color:#dbe7f7}
+.pn.free .pn-row button{display:none}
+.pn-row{display:flex;gap:8px;align-items:center;min-height:34px}
+.pn-row button{height:34px;padding:0 16px;border:0;border-radius:17px;background:#2fd36b;color:#fff;box-shadow:0 3px 0 #17a24a;font:400 1rem var(--font);letter-spacing:.03em;cursor:pointer}
+.pn-row .pn-again{background:#2c4468;box-shadow:0 3px 0 #1b2c47}
+.pn-keys{position:relative;display:grid;grid-template-columns:repeat(10,1fr);gap:4px;height:clamp(110px,22vh,180px);touch-action:none}
+.pn-w{position:relative;border:0;border-radius:0 0 12px 12px;background:linear-gradient(180deg,#fff,#eef3fb);box-shadow:inset 0 -6px 0 #cfd9ea,0 3px 0 #1f3355;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:0 0 10px;color:#22324f}
+.pn-w i{width:16px;height:16px;border-radius:50%;margin-bottom:4px}
+.pn-w b{font:700 1rem "Fredoka",sans-serif}
+.pn kbd{font:600 .66rem "Fredoka",sans-serif;opacity:.55}
+.pn-b{position:absolute;top:0;left:calc(var(--at) * 10% - 3%);width:6%;height:58%;border:0;border-radius:0 0 8px 8px;background:linear-gradient(180deg,#2a2f3d,#11141c);box-shadow:0 3px 0 #000;cursor:pointer;z-index:2;color:#fff;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.pn-w.next{background:linear-gradient(180deg,#fff7c2,#ffe27a);box-shadow:inset 0 -6px 0 #f0b400,0 0 0 4px #ff8a1c}
+.pn-b.next{background:linear-gradient(180deg,#ffb04d,#ff8a1c)}
+.pn-w.hit,.pn-b.hit{animation:pnHit .25s}
+@keyframes pnHit{40%{transform:translateY(4px);filter:brightness(.9)}}
+.pn-w.miss{background:#ffd6d6}
+body.piano-in .chat-dock,body.piano-in .food-bar,body.piano-in .needs,body.piano-in .seat-prompt,body.piano-in .jump-btn{display:none!important}
+@media (max-width:600px){.pn-head h3{display:none}.pn kbd{display:none}.pn-w b{font-size:.8rem}}
+/* ---------- the board games (Tic-Tac-Toe, 4 in a Row): the whole screen like the trade window ----------
+   the two players walk apart from the middle to their sides, name + X/O (or disc colour) under each, an arrow over whoever's turn it is,
+   the board in the middle (a fixed size, so nothing moves when a mark goes in), the chat bar at the bottom */
+.dx{position:relative;width:100%;height:100dvh;max-height:none;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.4vh,14px);
+  padding:calc(env(safe-area-inset-top,0px) + clamp(10px,2.4vh,24px)) 16px calc(env(safe-area-inset-bottom,0px) + clamp(8px,2vh,18px));border-radius:0;background:none;box-shadow:none;color:#fff;font-family:"Fredoka",system-ui,sans-serif;animation:fadeIn .25s}
+.dx .set-close{top:calc(env(safe-area-inset-top,0px) + 14px);left:calc(env(safe-area-inset-left,0px) + 14px);right:auto}
+.dx-head{flex:none;display:flex;align-items:center;gap:12px;padding:0 60px}
+.dx-head h2{margin:0;font:400 clamp(1.4rem,4.4vh,2.4rem)/1 var(--font);letter-spacing:.04em;color:#fff;text-shadow:0 4px 0 #06488a}
+.dx-head .pot{background:rgb(6 72 138 / .55)}
+.dx-main{flex:1;min-height:0;width:min(1240px,100%);direction:ltr;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(8px,2vw,32px)}
+.dx .pp{position:relative;height:min(100%,560px);min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.dx .pp-pic{position:relative;flex:0 1 auto;height:clamp(110px,44vh,430px);min-height:0;width:auto;aspect-ratio:200/240;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible}
+.dx .pp-pic::before{content:"";position:absolute;left:6%;right:6%;bottom:1%;height:15%;border-radius:50%;background:radial-gradient(closest-side,rgb(255 255 255 / .7),rgb(255 255 255 / .2) 60%,transparent)}
+.dx .pp-pic canvas{position:relative;width:100%;height:100%;display:block}
+.dx .pp-bubble{bottom:auto;top:clamp(26px,6vh,54px);max-width:min(240px,40vw);transform-origin:50% 0;direction:auto}
+.dx .pp-bubble::after{display:none}
+/* walking apart: both start in the middle */
+.dx.walkin .pp.mine{animation:dxApartL 1.3s cubic-bezier(.3,.1,.3,1) both}
+.dx.walkin .pp:not(.mine){animation:dxApartR 1.3s cubic-bezier(.3,.1,.3,1) both}
+.dx.walkin .pp-pic canvas{animation:dxStep .26s ease-in-out 5 alternate}
+@keyframes dxApartL{from{transform:translateX(min(26vw,330px))}to{transform:none}}
+@keyframes dxApartR{from{transform:translateX(max(-26vw,-330px))}to{transform:none}}
+@keyframes dxStep{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-4%) rotate(2deg)}}
+/* name + mark, the timer under it, the arrow over the head */
+.dx-name{position:relative;display:flex;align-items:center;gap:8px;max-width:100%;padding:6px 16px 8px 8px;border-radius:999px;background:rgb(6 72 138 / .55);box-shadow:0 0 0 3px transparent;
+  font:400 clamp(1rem,2.8vh,1.5rem)/1 var(--font);letter-spacing:.03em;color:#fff;text-shadow:0 3px 0 #06488a;white-space:nowrap;overflow:hidden;transition:box-shadow .2s,background .2s}
+.dx-name .mk{flex:none;width:clamp(26px,4.4vh,38px);height:clamp(26px,4.4vh,38px);display:grid;place-items:center;border-radius:50%;background:#fff;padding:3px}
+.dx-name .mk svg{width:100%;height:100%}
+.dx-name .nm{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.dx-name .tbar{position:absolute;left:14px;right:14px;bottom:3px;height:4px;border-radius:2px;background:#ffd23a;transform-origin:left;transform:scaleX(0)}
+.dx .pp.turn .dx-name{background:rgb(255 210 58 / .3);box-shadow:0 0 0 3px #ffd23a}
+.dx .pp.turn .dx-name .tbar{animation:tbar var(--left,30s) linear forwards}
+.dx-turn{position:absolute;z-index:2;top:-1%;left:50%;width:clamp(30px,6vh,48px);height:clamp(30px,6vh,48px);translate:-50% 0;opacity:0;transform:scale(.4);transition:opacity .2s,transform .25s cubic-bezier(.2,1.8,.4,1);filter:drop-shadow(0 4px 0 rgb(6 72 138 / .6))}
+.dx-turn svg{width:100%;height:100%}
+.dx .pp.turn .dx-turn{opacity:1;transform:none;animation:dxPoint .7s ease-in-out infinite alternate}
+@keyframes dxPoint{to{translate:-50% 10px}}
+/* the middle: whose turn + the board (fixed sizes) */
+.dx-center{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,12px)}
+.dx .duel-status{margin:0;min-height:1.3em;font:400 clamp(1.1rem,3.2vh,1.6rem)/1.2 var(--font);text-shadow:0 3px 0 #06488a;white-space:nowrap}
+.dx .board.ttt{width:clamp(210px,min(50vh,32vw),380px);background:rgb(255 255 255 / .22);border:3px solid rgb(255 255 255 / .35);box-shadow:inset 0 -5px 0 rgb(0 50 120 / .18);border-radius:24px}
+.dx .board.c4{width:clamp(270px,min(64vh,44vw),560px)}
+.dx .board.ttt button{box-shadow:inset 0 -5px 0 #cfe0f5,0 4px 0 rgb(0 50 120 / .2);background:linear-gradient(180deg,#fff,#eef5ff)}
+.dx .board.ttt button:not(:disabled):hover{background:#fff8d6}
+.dx .board.ttt button.win{background:#c9ffd9}
+.dx-foot{flex:none;width:min(760px,100%);display:flex;align-items:center;gap:10px}
+.dx .win-chat{flex:1;min-width:0;background:rgb(255 255 255 / .2);border-radius:999px;padding:5px}
+.dx .win-chat input{height:clamp(36px,7vh,46px);border-radius:999px}
+.dx .win-chat button{height:clamp(36px,7vh,46px);border-radius:999px}
+.dx-quit{flex:none;margin:0;height:clamp(40px,7.4vh,52px);min-width:0;padding:0 18px;border-radius:999px;background:linear-gradient(180deg,#ffb04d,#ff8a1c);color:#fff;box-shadow:0 4px 0 #b8560a;text-shadow:0 2px 0 #b8560a;font:400 clamp(.95rem,2.4vh,1.2rem)/1 var(--font);letter-spacing:.03em}
+.dx-quit.ghost{background:linear-gradient(180deg,#ffb04d,#ff8a1c)}
+.dx-quit.armed{background:linear-gradient(180deg,#ff6b6b,#e83a3a);box-shadow:0 4px 0 #8a1c1c;text-shadow:0 2px 0 #8a1c1c}
+.dx .duel-end{border-radius:0}
+body.land .dx .set-close{width:36px;height:36px;top:calc(env(safe-area-inset-top,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 8px)}
+/* phones held upright: the two players side by side on top, the board under them */
+@media (max-aspect-ratio:1/1){
+  .dx-main{grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,auto) minmax(0,1fr);align-items:start}
+  .dx-center{grid-column:1/-1;grid-row:2;align-self:center}
+  .dx .pp{height:auto}
+  .dx .pp-pic{height:clamp(90px,19vh,200px)}
+  .dx .board.ttt{width:min(84vw,46vh,380px)}.dx .board.c4{width:min(94vw,52vh,520px)}
+  .dx-head{padding:0 54px}
+  .dx .pp-bubble{top:4px}
+  .dx .pp:has(.pp-bubble.show) .dx-turn{opacity:0}   /* a chat bubble and the arrow share the space over the head */
+  .dx-head h2{font-size:clamp(1.2rem,6vw,1.8rem);white-space:nowrap}
+  @keyframes dxApartL{from{transform:translateX(24vw)}to{transform:none}}
+  @keyframes dxApartR{from{transform:translateX(-24vw)}to{transform:none}}
+}
 /* ---------- a player's card: the whole screen like the trade window ---------- */
 .pcard.pc-full{position:fixed;inset:0;z-index:12;width:auto;min-width:0;padding:0;gap:0;border:0;border-radius:0;translate:none;display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,34vw,460px);
   background:radial-gradient(ellipse 60% 50% at 34% 40%,rgb(255 255 255 / .3),transparent 70%),repeating-linear-gradient(115deg,rgb(255 255 255 / .05) 0 2px,transparent 2px 90px),linear-gradient(180deg,#4fc8ff 0%,#1f9bff 52%,#0b6fd6 100%);
@@ -2799,7 +2922,18 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
     <div class="set-row">
       <span class="set-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 24 L12 13 L17 19 L21 14 L28 24Z" fill="#fff"/><circle cx="22" cy="8" r="3.4" fill="#fff"/></svg></span>
       <span class="set-label" id="gfxLabel">Graphics</span>
-      <div class="set-lang set-gfx" id="gfxSeg" role="group" aria-labelledby="gfxLabel"><button type="button" data-gfx="auto">Auto</button><button type="button" data-gfx="fast">Fast</button><button type="button" data-gfx="best">Best</button></div>
+      <div class="set-lang set-gfx" id="gfxSeg" role="group" aria-labelledby="gfxLabel"><button type="button" data-gfx="auto">Auto</button><button type="button" data-gfx="low">Low</button><button type="button" data-gfx="medium">Medium</button><button type="button" data-gfx="high">High</button></div>
+    </div>
+    <button class="gfx-more-btn" id="gfxMoreBtn" type="button" aria-expanded="false" aria-controls="gfxMore"><span>More graphics options</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 8 L10 13 L15 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="gfx-more" id="gfxMore" hidden>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxResL">Sharpness</span><input class="vol" id="gfxRes" type="range" min="40" max="100" step="5" aria-labelledby="gfxResL"><b class="vol-num" id="gfxResN">100%</b></div>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxShL">Shadows</span><div class="set-lang set-gfx" data-gk="shadows" role="group" aria-labelledby="gfxShL"><button type="button" data-v="off">Off</button><button type="button" data-v="low">Low</button><button type="button" data-v="high">High</button></div></div>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxViewL">View distance</span><div class="set-lang set-gfx" data-gk="view" role="group" aria-labelledby="gfxViewL"><button type="button" data-v="short">Short</button><button type="button" data-v="medium">Medium</button><button type="button" data-v="far">Far</button></div></div>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxFpsL">Frame rate</span><div class="set-lang set-gfx" data-gk="fps" role="group" aria-labelledby="gfxFpsL"><button type="button" data-v="30">30</button><button type="button" data-v="60">60</button><button type="button" data-v="0">Max</button></div></div>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxFxL">Effects</span><div class="set-lang set-gfx" data-gk="fx" role="group" aria-labelledby="gfxFxL"><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div></div>
+      <div class="set-row gfx-row"><span class="set-label" id="gfxAaL">Smooth edges</span><div class="set-lang set-gfx" data-gk="aa" role="group" aria-labelledby="gfxAaL"><button type="button" data-v="on">On</button><button type="button" data-v="off">Off</button></div></div>
+      <p class="gfx-note" id="gfxNote">Smooth edges changes the next time the game opens.</p>
+      <p class="gfx-note">Game slow? Pick Low, or turn Shadows off and Sharpness down.</p>
     </div>
     <div class="set-row set-zoom" id="zoomRow" hidden>
       <span class="set-icon" aria-hidden="true">
@@ -2979,20 +3113,17 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
   <div class="ti-row"><button class="ti-btn yes" id="diYes" type="button">Play!</button><button class="ti-btn no" id="diNo" type="button">No thanks</button></div>
   <div class="ti-timer" id="diTimer"></div>
 </div>
-<div class="settings-overlay" id="duelOverlay" hidden>
- <div class="duo">
-  <div class="pp mine" id="ppDuelMe"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>You</b></div>
-  <div class="settings-card duel-card" id="duelCard" role="dialog" aria-modal="true" aria-labelledby="duelTitle">
+<div class="settings-overlay trade-ov duel-ov" id="duelOverlay" hidden>
+  <div class="settings-card dx" id="duelCard" role="dialog" aria-modal="true" aria-labelledby="duelTitle">
     <button class="set-close" id="duelX" type="button" aria-label="Give up"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
-    <div class="duel-head"><h2 id="duelTitle">GAME</h2><span class="pot" id="duelPot"></span></div>
-    <div class="duel-players"><div class="dp" id="dpMe"></div><span class="vs">VS</span><div class="dp" id="dpThem"></div></div>
-    <p class="duel-status" id="duelStatus" role="status"></p>
-    <div class="board" id="duelBoard"></div>
-    <form class="win-chat" data-win="duel" autocomplete="off"><label class="sr-only" for="duelChat">Message</label><input id="duelChat" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 4 L14 20 L11.5 13 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></button></form>
-    <div class="duel-foot"><button class="cta ghost" id="duelQuit" type="button">Give up</button></div>
+    <div class="dx-head"><h2 id="duelTitle">GAME</h2><span class="pot" id="duelPot"></span></div>
+    <div class="dx-main">
+      <div class="pp mine" id="ppDuelMe"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><span class="dx-turn" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M8 10 H32 L20 30 Z" fill="#ffd23a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></span><canvas width="200" height="240" aria-hidden="true"></canvas></div><b class="dx-name" id="dpMe"></b></div>
+      <div class="dx-center"><p class="duel-status" id="duelStatus" role="status"></p><div class="board" id="duelBoard"></div></div>
+      <div class="pp" id="ppDuelThem"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><span class="dx-turn" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M8 10 H32 L20 30 Z" fill="#ffd23a" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg></span><canvas width="200" height="240" aria-hidden="true"></canvas></div><b class="dx-name" id="dpThem"></b></div>
+    </div>
+    <div class="dx-foot"><form class="win-chat" data-win="duel" autocomplete="off"><label class="sr-only" for="duelChat">Message</label><input id="duelChat" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 L20 4 L14 20 L11.5 13 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></button></form><button class="cta dx-quit" id="duelQuit" type="button">Give up</button></div>
   </div>
-  <div class="pp" id="ppDuelThem"><div class="pp-bubble" aria-live="polite"></div><div class="pp-pic"><canvas width="200" height="240" aria-hidden="true"></canvas></div><b>Player</b></div>
- </div>
 </div>
 <div class="trade-invite" id="tradeInvite" role="alertdialog" aria-labelledby="tiText" hidden>
   <p id="tiText"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgb(0 0 0 / .18)"/><path d="M5 9 H17 L14 6 M19 15 H7 L10 18" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="tiName"></span></p>
@@ -3343,7 +3474,7 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
     </button>
     <h2 id="mapTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 L9 3.5 L15 6 L21 3.5 V18 L15 20.5 L9 18 L3 20.5 Z" fill="#fff"/><path d="M9 3.5 V18 M15 6 V20.5" stroke="#1f6fb5" stroke-width="1.6"/></svg> MAP</h2>
-    <div class="map-host" id="mapHost" title="Click a spot to walk there"></div>
+    <div class="map-host" id="mapHost" title="Click a place to get a route there"></div>
     <div class="map-foot">
       <div class="map-legend"><span><i class="lg me"></i>You</span><span><i class="lg other"></i>Players</span><span><i class="lg admin"></i>Admins</span></div>
       <div class="map-travel" id="mapTravel" aria-label="Travel to"></div>
@@ -3820,7 +3951,9 @@ const Sound=(()=>{
     const m=muffle?.45:1;
     if(near&&!muffle){noise({dur:.35,vol:.5,type:"highpass",f:1200,bus:ambBus});noise({t:.02,dur:.5,vol:.4,type:"bandpass",f:900,f2:200,q:.6,bus:ambBus});}
     rumble(near?.05:.0,near?3.2:4.2,(near?.9:.55)*m,near?(muffle?300:900):(muffle?220:420));rumble(near?.5:.8,2.4,(near?.5:.35)*m,muffle?180:300);}
-  return {sfx,unlock,setMuted,setVolume,piano,ambient,thunder,music,venue,levels,set onClubSong(f){CLUB.onSong=f;},get clubSong(){return CLUB.cur>=0?CLUB_TRACKS[CLUB.cur].name:"";},
+  // one piano key (the playable piano with sheet music): on the sound-effects volume
+  function note(n,v=.42){if(!ctx)return;if(ctx.state==="suspended")ctx.resume();key(n,0,v,1.4,sfxBus);}
+  return {sfx,unlock,setMuted,setVolume,piano,note,ambient,thunder,music,venue,levels,set onClubSong(f){CLUB.onSong=f;},get clubSong(){return CLUB.cur>=0?CLUB_TRACKS[CLUB.cur].name:"";},
     clubBeat(){const a=CLUB.el;return a&&!a.paused&&CLUB.cur>=0?a.currentTime*CLUB_TRACKS[CLUB.cur].bpm/60:null;},get muted(){return !vol.music&&!vol.sfx;},get musicVol(){return vol.music;},get sfxVol(){return vol.sfx;}};
 })();
 // browsers only allow sound after the first tap or key press
@@ -3830,7 +3963,8 @@ const sfx=Sound.sfx;
 /* ---------- 3D stage ---------- */
 const stage=document.getElementById("stage");
 function IS_PHONE_EARLY(){try{return matchMedia("(pointer:coarse)").matches;}catch(e){return false;}}
-const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+const GFX_AA0=(()=>{try{const o=JSON.parse(localStorage.getItem("jumpi-gfx2")||"null");return !o||o.aa!=="off";}catch(e){return true;}})();
+const renderer=new THREE.WebGLRenderer({antialias:GFX_AA0,alpha:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,IS_PHONE_EARLY()?1.5:2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
 stage.appendChild(renderer.domElement);
 const scene=new THREE.Scene();
@@ -3928,6 +4062,7 @@ function lidScale(a,dur=.28){ // eye closes then opens
 const clock=new THREE.Clock();
 let lastT=0;
 renderer.setAnimationLoop(()=>{
+  if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
   if(typeof evMenuTick==="function")evMenuTick(t);
   if(P){
@@ -3978,9 +4113,10 @@ renderer.setAnimationLoop(()=>{
     if(!GS_STAGE)accTick(t);
     }
   }
-  tickAuras(t);gfxTick();vehPreviewTick(t);
-  if(window.__fly){const F=window.__fly;cam.position.set(F[0],F[1],F[2]);cam.lookAt(F[3],F[4],F[5]);}   // ?beachtest screenshots only
-  renderer.render(scene,cam);
+  tickAuras(t);gfxTick();vehPreviewTick(t);routeTick(t);
+  let flyFog=null;if(window.__fly){const F=window.__fly;cam.position.set(F[0],F[1],F[2]);cam.lookAt(F[3],F[4],F[5]);   // ?beachtest screenshots only
+    if(F[6]){cam.fov=F[6];cam.near=F[7];cam.far=F[8];cam.updateProjectionMatrix();flyFog=scene.fog;scene.fog=null;}}
+  renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
   if(inGame)renderMap();
 });
 
@@ -4221,7 +4357,12 @@ function setAura(owner,idx){
   dropAura(owner);if(idx<0)return;
   const a=makeAura(idx);owner.root.add(a.g);owner.aura=a;AURAS.add(a);
 }
-function tickAuras(t){if(AURAS.size)AURA_PX.value=renderer.domElement.height*.5/Math.tan(THREE.MathUtils.degToRad(cam.fov)/2);for(const a of AURAS)if(a.g.visible&&a.g.parent)a.tick(t);}
+function tickAuras(t){if(AURAS.size)AURA_PX.value=renderer.domElement.height*.5/Math.tan(THREE.MathUtils.degToRad(cam.fov)/2);
+  for(const a of AURAS){
+    // Effects off (graphics): auras are hidden and not animated
+    if(!GFX.fx){if(!a.fxOff){a.fxOff=[];a.g.children.forEach(c=>{a.fxOff.push([c,c.visible]);c.visible=false;});}continue;}
+    if(a.fxOff){a.fxOff.forEach(([c,v])=>c.visible=v);a.fxOff=null;}
+    if(a.g.visible&&a.g.parent)a.tick(t);}}
 // a small picture for the shop: the character with its aura
 function auraIcon(i){
   const A=AURA_LIST[i];if(!A)return "";
@@ -4940,11 +5081,15 @@ function buildOutfit(){
       g.add(m);[-1,1].forEach(s=>{const strap=new THREE.Mesh(new THREE.TorusGeometry(.66,.014,6,24,Math.PI*.55),solid("#1d1d24",.6));strap.rotation.set(Math.PI/2,0,s>0?-.12:Math.PI+.12);strap.position.set(0,Y+.04,-.04);g.add(strap);});
       g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
     if(id==="visor"){   // the Big World collection: one glowing band across both eyes, bent round the face
-      const sh=rrect(1.34,.3,.13),m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.04,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:2,curveSegments:16}),
-        new THREE.MeshStandardMaterial({color:it.glow,emissive:it.glow,emissiveIntensity:.9,roughness:.1,metalness:.3,transparent:true,opacity:.82}));
-      const f=new THREE.Mesh(new THREE.ExtrudeGeometry((()=>{const o=rrect(1.42,.38,.16);o.holes.push(rrect(1.3,.27,.12));return o;})(),{depth:.05,bevelEnabled:false,curveSegments:16}),solid(fcol,.35,{metalness:.4}));
-      [m,f].forEach(q=>{const b=q.geometry.attributes.position;for(let k=0;k<b.count;k++){const vx=b.getX(k);b.setZ(k,b.getZ(k)-vx*vx*.3);}b.needsUpdate=true;q.geometry.computeVertexNormals();q.position.set(0,Y+.01,Z-.02);g.add(q);});
-      [-1,1].forEach(sd=>g.add(rod([sd*.7,Y+.02,Z-.17],[sd*.63,Y+.05,0.02],0.02,frame)));
+      // tall enough for the big eyes and wrapped round the head on an oval that clears the eyes (they used to poke through the band)
+      const HW=.72,TH=1.12,EA=.76,EB=.71,sh=rrect(HW*2-.08,.44,.15),m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.03,bevelEnabled:true,bevelThickness:.012,bevelSize:.012,bevelSegments:2,curveSegments:16}),
+        new THREE.MeshStandardMaterial({color:it.glow,emissive:it.glow,emissiveIntensity:.9,roughness:.1,metalness:.3,transparent:true,opacity:.8}));
+      const f=new THREE.Mesh(new THREE.ExtrudeGeometry((()=>{const o=rrect(HW*2,.52,.18);o.holes.push(rrect(HW*2-.12,.42,.14));return o;})(),{depth:.05,bevelEnabled:false,curveSegments:16}),solid(fcol,.35,{metalness:.4}));
+      [[m,.01],[f,0]].forEach(([q,lift])=>{q.geometry.translate(0,0,-.02);const b=q.geometry.attributes.position;
+        for(let k=0;k<b.count;k++){const th=b.getX(k)/HW*TH,dz=b.getZ(k);b.setX(k,(EA+dz)*Math.sin(th));b.setZ(k,(EB+dz)*Math.cos(th));}
+        b.needsUpdate=true;q.geometry.computeVertexNormals();q.position.set(0,Y+lift,0);g.add(q);});
+      m.renderOrder=3;   // the see-through band is drawn after the eyes so they show tinted behind it
+      [-1,1].forEach(sd=>g.add(rod([sd*(EA-.01)*Math.sin(TH),Y+.03,(EB-.03)*Math.cos(TH)],[sd*.66,Y+.06,-.12],0.022,frame)));
       g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
     if(id==="goggles"){   // big round goggles with a strap round the head
       [eyeL,eyeR].forEach((e,i)=>{const s=i?1:-1,l=new THREE.Group();l.position.set(e.x,Y,Z+.01);l.rotation.y=s*.16;
@@ -5130,7 +5275,7 @@ function pickEye(i,user){eyeIdx=i;applyEyeColor();paintEyeUI();queueThumbs();
 let world=null,gameBuilt=false;
 const G={pos:new THREE.Vector3(),face:0,target:null,keys:{},phase:0,lastStep:0,moving:false,stall:0,
   colliders:[],bounds:{x0:-22,x1:22,z0:-19.6,z1:22},camPos:new THREE.Vector3(),sea:null,seaBase:null,jets:null,marker:null,npc:null,npcState:{greetT:-99,shown:false}};
-const SPEED=5.2,RUN=1.8;   // running (Shift or double-click) is 1.8x faster
+const SPEED=5.2,RUN=1.8,SWIM_FAST=1.65;   // swimming fast (the same Shift / run button) is 1.65x   // running (Shift or double-click) is 1.8x faster
 let zoomLevel=60;try{const z=+localStorage.getItem("jumpi-zoom");if(z>=0&&z<=100&&localStorage.getItem("jumpi-zoom")!==null)zoomLevel=z;}catch(e){}
 const zoomFactor=()=>1.6-zoomLevel/100;   // 1.6 (far) … 0.6 (close)
 
@@ -5243,7 +5388,9 @@ function makePalm(x,z,lean=0.25){
   for(let i=0;i<3;i++){const c=new THREE.Mesh(new THREE.SphereGeometry(.16,12,10),mat("#6b4a2a"));c.position.copy(top).add(new THREE.Vector3(Math.cos(i*2.1)*.2,-.2,Math.sin(i*2.1)*.2));g.add(c);}
   return g;
 }
+const WORLD_SEATS=[];   // benches and sun loungers outside: {k:"sit"|"lie", x, z, f, y} (sitting code: worldSeats / worldSit)
 function makeBench(x,z,ry){
+  const c=Math.cos(ry),sn=Math.sin(ry);[-.6,.6].forEach(lx=>WORLD_SEATS.push({k:"sit",x:x+lx*c+.02*sn,z:z-lx*sn+.02*c,f:ry,y:.66}));   // two places to sit
   const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;const wood=mat("#c27a3e"),iron=mat("#3b3f4a",{roughness:.5,metalness:.4});
   for(let i=0;i<3;i++)g.add(box(2.4,.1,.22,wood,0,.62,-.25+i*.25));
   for(let i=0;i<2;i++)g.add(box(2.4,.12,.1,wood,0,.95+i*.24,-.42));
@@ -5292,7 +5439,7 @@ function venueOutside(id,g,D,stripe){
   if(id==="furniture"){const a=buildFurniture(1);a.position.set(-1.9,0,z);g.add(a);const l=buildFurniture(5);l.position.set(1.35,0,z-.35);g.add(l);const p=buildFurniture(6);p.position.set(2.3,0,z+.25);g.add(p);}
   else if(id==="clothes"){[-1.9,1.9].forEach((x,i)=>{const r=makeRack(i);r.position.set(x,0,z);g.add(r);});}
   else if(id==="club"){// red carpet and velvet ropes
-    const c=new THREE.Mesh(new THREE.PlaneGeometry(1.7,5),mat("#c8283c",{roughness:1}));c.rotation.x=-Math.PI/2;c.position.set(0,.02,D/2+2.5);c.receiveShadow=true;g.add(c);
+    const c=new THREE.Mesh(new THREE.PlaneGeometry(1.7,5),mat("#c8283c",{roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));c.rotation.x=-Math.PI/2;c.position.set(0,.055,D/2+2.5);   /* above the plaza pavers (it used to flicker with them) */c.receiveShadow=true;g.add(c);
     const gold=mat("#ffc21a",{metalness:.8,roughness:.25}),rope=mat("#b0122a",{roughness:.7});
     [-1.25,1.25].forEach(x=>{[3.4,4.9,6.4].forEach(lz=>{g.add(cyl(.06,.06,1,gold,x,.5,lz,10));g.add(cyl(.2,.24,.06,gold,x,.03,lz,16));
         const k=new THREE.Mesh(new THREE.SphereGeometry(.1,12,10),gold);k.position.set(x,1.02,lz);g.add(k);});
@@ -5409,6 +5556,7 @@ const WALK=[
   {x0:-64,x1:42,z0:-64,z1:-24.6},  // beach and the shallow sea
   {x0:-26,x1:26,z0:22,z1:60},      // Park
   {x0:20,x1:100,z0:-17,z1:42},     // Water Park (entered between the east restaurants)
+  {x0:-64,x1:-5,z0:-25,z1:-19},    // the grass slope between the Plaza road and the beach (west of the ramp)
 ];
 const inOldWorld=(x,z)=>WALK.some(r=>x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1);
 const walkable=(x,z)=>G.home?homeWalk(x,z):inOldWorld(x,z)||!!(CITY&&CITY.walk(x,z));
@@ -5929,7 +6077,8 @@ function buildWaterPark(R){
       t.add(cyl(.04,.04,2.6,white,0,1.3,0,6));const u=new THREE.Mesh(new THREE.ConeGeometry(1.5,.6,10,1,true),new THREE.MeshStandardMaterial({side:THREE.DoubleSide,map:texCanvas(256,64,(c,w,h)=>{for(let q=0;q<10;q++){c.fillStyle=q%2?"#ffffff":S.c;c.fillRect(q*w/10,0,w/10,h);}})}));
       u.position.y=2.6;u.castShadow=true;t.add(u);world.add(t);G.colliders.push({c:[S.x+dx,S.z],r:1});});});
   // sun loungers and umbrellas around the pools
-  const lounger=(x,z,ry,c)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;const fr=mat("#ffffff",{roughness:.5}),pad=mat(c,{roughness:.7});
+  const lounger=(x,z,ry,c)=>{WORLD_SEATS.push({k:"lie",x:x+Math.sin(ry)*.72,z:z+Math.cos(ry)*.72,f:ry,y:.62});
+    const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;const fr=mat("#ffffff",{roughness:.5}),pad=mat(c,{roughness:.7});
     g.add(box(.8,.12,1.9,fr,0,.32,0));g.add(box(.72,.1,1.1,pad,0,.42,.35));const back=box(.72,.1,.8,pad,0,.66,-.62);back.rotation.x=.7;g.add(back);
     [[-.35,-.8],[.35,-.8],[-.35,.8],[.35,.8]].forEach(([a,b])=>g.add(cyl(.04,.04,.3,fr,a,.15,b,6)));world.add(g);G.colliders.push({c:[x,z],r:.8});};
   const lc=["#ff5fa8","#1fb6ff","#ffd23a","#2fd36b"];
@@ -5982,7 +6131,9 @@ function buildWaterPark(R){
   const petals=["#ff5fb4","#ffd23a","#ff8a1c","#ffffff","#9b5cff"];
   n=0;tries=0;while(n<40&&tries<1500){tries++;const x=29+R()*70,z=-16+R()*57;if(busy(x,z))continue;for(let k=0;k<5;k++){const f=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),mat(petals[(n+k)%5]));f.position.set(x+(R()-.5)*1.4,.16,z+(R()-.5)*1.4);world.add(f);}n++;}
   // trees outside the hedge so the park sits in green
-  for(let i=0;i<36;i++){const side=i%3,x=side===0?103+R()*18:30+R()*90,z=side===0?-16+R()*60:side===1?44+R()*14:-19-R()*3;if(side===2&&x>44)continue;world.add(makeTree(x,z,1+R()*.6,R));}
+  // (never on a city road, sidewalk, parking lot or inside a city district: those trees used to stand on Coral Avenue and Park Lane)
+  const cityBusy=(x,z)=>{const L=CITY_L;return L.ROADS.some(r=>L.inRect(x,z,L.roadRect(r),1.6))||L.PARKING.some(q=>L.inRect(x,z,q.rect,1.5))||L.CONNECTORS.some(q=>L.inRect(x,z,q,1.5))||L.DISTRICTS.some(d=>L.inRect(x,z,d.rect,1));};
+  for(let i=0;i<36;i++){const side=i%3,x=side===0?103+R()*18:30+R()*90,z=side===0?-16+R()*60:side===1?44+R()*14:-19-R()*3,s=1+R()*.6;if(side===2&&x>44)continue;if(cityBusy(x,z))continue;world.add(makeTree(x,z,s,R));}
   world.add(signPost("WATER PARK","#00b3c7",23.5,5.6,-Math.PI/2));G.colliders.push({c:[23.5,4],r:.3},{c:[23.5,7.2],r:.3});
 }
 function updateWaterPark(t,dt){const PK=G.park;if(!PK)return;
@@ -6024,7 +6175,16 @@ const SPOT_ICON={shop:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7
   slide:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4 Q12 4 12 10 T18 17" fill="none" stroke="#1fb6ff" stroke-width="3.2" stroke-linecap="round"/></svg>',
   bike:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4.5" cy="13.5" r="3.2" fill="none" stroke="#ff8a1c" stroke-width="2"/><circle cx="15.5" cy="13.5" r="3.2" fill="none" stroke="#ff8a1c" stroke-width="2"/><path d="M4.5 13.5 L8 8 H12 L15.5 13.5 M12 8 L13.5 5 H16" fill="none" stroke="#ff8a1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const VEH_SPOTS={"veh:ride":{id:"veh:ride",label:"RIDE",icon:"bike"},"veh:off":{id:"veh:off",label:"GET OFF",icon:"bike"}};
-function useSpot(id){if(!id)return;if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
+/* ---------- sitting outside: benches, picnic tables, sun loungers (WORLD_SEATS here + the city's benches) ---------- */
+function worldSeats(){return CITY&&CITY.seats?(WORLD_SEATS._all&&WORLD_SEATS._n===CITY.seats.length?WORLD_SEATS._all:(WORLD_SEATS._n=CITY.seats.length,WORLD_SEATS._all=[...WORLD_SEATS,...CITY.seats])):WORLD_SEATS;}
+// the closest free seat in reach (nobody else sitting there)
+function nearWorldSeat(){const L=worldSeats();let bi=-1,bd=1.35;
+  for(let i=0;i<L.length;i++){const S=L[i];if(Math.abs(S.x-G.pos.x)>bd||Math.abs(S.z-G.pos.z)>bd)continue;const d=Math.hypot(S.x-G.pos.x,S.z-G.pos.z);if(d>=bd)continue;
+    if([...remotes.values()].some(c=>c.pose&&Math.hypot(c.tx-S.x,c.tz-S.z)<.3))continue;bd=d;bi=i;}return bi;}
+function worldSit(i){const S=worldSeats()[i];if(!S||G.seat||VEH.ride)return;
+  G.seat={k:S.k,y:S.y,f:S.f,x:S.x,z:S.z,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(S.x,0,S.z);G.face=S.f;G.target=null;G.keys={};G.marker.visible=false;
+  nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");sfx.tick(true);toast(S.k==="lie"?"Time to relax! Move to get up.":"Ahh, comfy! Move to get up.");}
+function useSpot(id){if(!id)return;if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
   if(k==="evshop"){if(EV.cur)openGameStore("spooky");return;}
   if(k==="stand")openMenu("park",v);else if(k==="slide"){const S=PARK_SLIDES.find(q=>q.id===v);if(S)startSlide(S);}}
 
@@ -6320,6 +6480,7 @@ function makeCharacter(look,label,tagColor){
   const root=P.root.clone(true);P.root.position.copy(keep.pos);P.root.rotation.copy(keep.rot);
   off.forEach(([p,par])=>par.add(p));if(ghosted)applyMyGhost();
   root.children.filter(o=>o.userData.isAura).forEach(o=>o.removeFromParent());
+  root.userData.kick=0;{const B=root.getObjectByName("Body");if(B)B.traverse(o=>{if(o.isMesh)o.onBeforeRender=kickBR;});}   // swim kicks (shared materials: each body sets its own)
   const skin=new THREE.Color((COLORS[look.color]||COLORS[0])[1]),hsl={};skin.getHSL(hsl);   // used for the mouth shade
   const mouth=new THREE.Color().setHSL(hsl.h,Math.min(1,hsl.s*.9),hsl.l*.22);
   root.traverse(o=>{
@@ -6436,7 +6597,7 @@ function updateRemotes(t,dt){
     poseCharacter(c,p.x,p.z,c.cur,moving,c.phase,hy,t,c);
     if(c.run&&moving&&!inWater(p.x,p.z))c.root.rotation.x=.16;
     if(c.hopBig&&hk>=0&&hk<1&&!c.pose)applyFlip(c,hk,c.hopDir||-1,c.cur);
-    if(c.pose&&G.home)applyPose(c,c.pose,t);else if(c.zzz){c.zzz.remove();c.zzz=null;}
+    if(c.pose)applyPose(c,c.pose,t);else{if(c.zzz){c.zzz.remove();c.zzz=null;}if(c.root.rotation.order!=="XYZ")c.root.rotation.order="XYZ";}
     const br=Math.sin(t*2.1+c.phase*.1);c.body.scale.set(1+br*.012,1+br*.018,1+br*.012);c.head.position.y=c.headY+br*.012;
     if(t>c.blinkT){c.blinkT=t+2.5+Math.random()*3;c.blinkStart=t;}
     const bk=(t-c.blinkStart)/.25;c.eyeL.scale.y=c.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
@@ -6603,13 +6764,25 @@ function applyFlip(C,k,dir,face){
   const tuck=Math.sin(Math.PI*Math.min(1,k*1.1));C.armL.rotation.x=-2.5*tuck;C.armR.rotation.x=-2.5*tuck;
   if(C.armL.rotation.z!==undefined){C.armL.rotation.z=-.35*tuck;C.armR.rotation.z=.35*tuck;}
 }
+/* kicking legs while swimming: the feet are part of the body model, so the body (and trousers / shoes) get a little
+   vertex bend below the knees: left and right foot flutter in turns. kick = how strong (0 = off), kickT = the beat */
+function kickBR(){let o=this;while(o&&o.userData.kick===undefined)o=o.parent;const k=o?o.userData.kick:0;
+  for(const m of [].concat(this.material)){const u=m.userData.kickU;if(!u)continue;if(u.uKick.value!==k||k){u.uKick.value=k;u.uKickT.value=o?o.userData.kickT:0;m.uniformsNeedUpdate=true;}}}
+function kickPatchMat(m){if(m.userData.kickPatched)return;m.userData.kickPatched=true;const prev=m.onBeforeCompile;
+  m.onBeforeCompile=(sh,r)=>{if(prev)prev(sh,r);sh.uniforms.uKick={value:0};sh.uniforms.uKickT={value:0};m.userData.kickU=sh.uniforms;
+    sh.vertexShader="uniform float uKick;uniform float uKickT;\n"+sh.vertexShader.replace("#include <begin_vertex>",`#include <begin_vertex>
+      if(uKick>0.001&&position.y<0.34){float w=clamp((0.34-position.y)/0.36,0.,1.);float sd=position.x<0.?1.5708:-1.5708;
+        transformed.z+=uKick*w*sin(uKickT+sd)*0.17;transformed.y+=uKick*w*0.06*cos(uKickT+sd);}`);};
+  const key=m.customProgramCacheKey?m.customProgramCacheKey.bind(m):()=>"";m.customProgramCacheKey=()=>key()+"kick";m.needsUpdate=true;}
+function kickSet(C,k,t){const ud=C.root.userData;ud.kick=k;ud.kickT=t;
+  if(k>0&&!C.kickReady){C.kickReady=true;const B=C.root.getObjectByName("Body");if(B)B.traverse(o=>{if(!o.isMesh)return;[].concat(o.material).forEach(kickPatchMat);o.onBeforeRender=kickBR;});}}
 function poseCharacter(C,x,z,face,moving,phase,hy,t,state){
-  const r=C.root;r.rotation.order="YXZ";
+  const r=C.root;r.rotation.order="YXZ";if(C.root.userData.kick)kickSet(C,0,0);
   // the pool in a home garden: drop in and swim, climb out again
   let sink=0;
   if((G.home&&HSHAPE.pool)||(!G.home&&x>36&&z>-16&&z<40)){const inP=homePool(x,z);state.pk=THREE.MathUtils.lerp(state.pk||0,inP?1:0,inP?.14:.2);
     const wy=G.home?POOL_Y+Math.sin(t*1.7+x*.6)*.03:parkWaterY(x,z,t);sink=(wy-.78)*state.pk;
-    if(inP){r.position.set(x,sink+hy*.5,z);r.rotation.set(moving?.42:.12,face,moving?Math.sin(phase)*.12:Math.sin(t*1.5)*.06);
+    if(inP){r.position.set(x,sink+hy*.5,z);r.rotation.set(moving?.42:.12,face,moving?Math.sin(phase)*.12:Math.sin(t*1.5)*.06);kickSet(C,moving?1:.35,moving?phase*2.2:t*3);
       if(moving){C.armL.rotation.set(Math.sin(phase)*1.7-1.2,0,-.25);C.armR.rotation.set(Math.sin(phase+Math.PI)*1.7-1.2,0,.25);}
       else{C.armL.rotation.set(-.3+Math.sin(t*2.4)*.25,0,-.9);C.armR.rotation.set(-.3+Math.sin(t*2.4+1)*.25,0,.9);}
       if(state.pk>.6){state.rip=(state.rip||0)-1/60;if(state.rip<=0){addRipple(x,z,wy,moving?.7:.4);state.rip=moving?.35:1.2;}}
@@ -6629,7 +6802,7 @@ function poseCharacter(C,x,z,face,moving,phase,hy,t,state){
     // swimming: sunk to the chest, bobbing on the waves, leaning forward and doing front-crawl strokes
     const wy=-0.9+waveAt(x,z,t);
     r.position.set(x,wy-0.78+Math.sin(t*2.2+x)*.04+hy*.5,z);
-    r.rotation.set(moving?.42:.12,face,moving?Math.sin(phase)*.12:Math.sin(t*1.5)*.06);
+    r.rotation.set(moving?.42:.12,face,moving?Math.sin(phase)*.12:Math.sin(t*1.5)*.06);kickSet(C,moving?1:.35,moving?phase*2.2:t*3);
     if(moving){C.armL.rotation.set(Math.sin(phase)*1.7-1.2,0,-.25);C.armR.rotation.set(Math.sin(phase+Math.PI)*1.7-1.2,0,.25);}
     else{C.armL.rotation.set(-.3+Math.sin(t*2.4)*.25,0,-.9);C.armR.rotation.set(-.3+Math.sin(t*2.4+1)*.25,0,.9);}
     // ripples spread from the swimmer
@@ -6935,7 +7108,7 @@ function renderMap(){
     const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingQuality="high";
     g.fillStyle="#5fb35a";g.fillRect(0,0,f.W,f.H);g.fillStyle="#1479d6";g.fillRect(0,0,f.W,f.oy+mZ(-34)*f.s);
     g.drawImage(mapArt,f.ox,f.oy,mapArt.width*f.s,mapArt.height*f.s);
-    mapView=f;drawMarkers(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],true,Math.max(.6,Math.min(1.15,f.W/800)));
+    mapView=f;routeDraw(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],5);drawMarkers(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],true,Math.max(.6,Math.min(1.15,f.W/800)));
     if(mapHover){g.beginPath();g.arc(mapHover[0],mapHover[1],12,0,Math.PI*2);g.strokeStyle=mapHover[2]?"rgba(255,255,255,.9)":"rgba(255,80,80,.9)";g.lineWidth=3;g.setLineDash([5,4]);g.stroke();g.setLineDash([]);}
   }else{
     const host=document.getElementById("mmHost"),cv=host.firstChild;if(!cv)return;
@@ -6944,7 +7117,7 @@ function renderMap(){
     const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);
     const span=56,s=W/(span*MAP_PX),ox=W/2-mX(G.pos.x)*s,oy=H/2-mZ(G.pos.z)*s;
     g.fillStyle=G.zone==="cave"?"#2a2433":"#1479d6";g.fillRect(0,0,W,H);if(G.zone!=="cave")g.drawImage(mapArt,ox,oy,mapArt.width*s,mapArt.height*s);
-    drawMarkers(g,(x,z)=>[ox+mX(x)*s,oy+mZ(z)*s],false);
+    routeDraw(g,(x,z)=>[ox+mX(x)*s,oy+mZ(z)*s],4);drawMarkers(g,(x,z)=>[ox+mX(x)*s,oy+mZ(z)*s],false);
   }
   const zn=ZONES.find(q=>q.id===G.zone);document.getElementById("mmZone").textContent=G.zone==="waterpark"?"WATER PARK":((zn&&zn.short)||G.zone||"plaza").toUpperCase();
   document.querySelectorAll("#mapTravel button").forEach(b=>b.setAttribute("aria-current",b.dataset.zone===G.zone));
@@ -6987,9 +7160,88 @@ mapHostEl.addEventListener("click",e=>{
   if(e.target.closest&&e.target.closest(".map-zoom"))return;
   const p=mapToWorld(e);if(!p)return;const {x,z}=p;
   if(!walkable(x,z)){toast("You can't walk there.");sfx.error();return;}
-  G.target=new THREE.Vector3(x,0,z);G.stall=0;G.marker.position.set(x,groundY(x,z)+.05,z);G.marker.visible=true;G.marker.userData.t=now();
-  closeMap();toast("Walking there…");
+  if(!routeTo(x,z)){toast(VEH.ride?"There's no way to drive there.":"There's no way to walk there.");sfx.error();return;}
+  closeMap();toast("Follow the blue line!");sfx.success();
 });
+/* ---------- the route: click a place on the map -> a line to follow (on foot, or by road on your vehicle) ----------
+   A* over a grid of the open world (1.5 m squares): where you can walk (or drive), minus walls, trees and other colliders.
+   Driving prefers roads. The line is drawn on the ground and on both maps; it shortens as you go, finds a new way if
+   you leave it, and says when you've arrived. Like a sat-nav, but just the line (no arrows). */
+const ROUTE={pts:null,dest:null,drive:false,mesh:null,grids:{},prog:0,off:0,lastBuild:-9,lastLen:0,chip:null};
+const RG={x0:-172,z0:-84,x1:335,z1:295,c:1.5};RG.W=Math.ceil((RG.x1-RG.x0)/RG.c);RG.H=Math.ceil((RG.z1-RG.z0)/RG.c);
+function routeGrid(drive){const key=drive?"d":"w";if(ROUTE.grids[key])return ROUTE.grids[key];
+  const {W,H,c,x0,z0}=RG,ok=new Uint8Array(W*H),road=new Uint8Array(W*H),L=CITY_L,rr=L.ROADS.map(L.roadRect);
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const x=x0+(i+.5)*c,z=z0+(j+.5)*c;
+    const f=drive?vehOk(x,z):walkable(x,z)&&!deepWater(x,z)&&!inWater(x,z)&&!homePool(x,z);if(!f)continue;ok[j*W+i]=1;if(rr.some(r=>L.inRect(x,z,r)))road[j*W+i]=1;}
+  // walls, trees, lamps…: a little wider than they are so the line keeps off them
+  const m=.35,mark=(ax,az,bx,bz,test)=>{const i0=Math.max(0,Math.floor((ax-x0)/c)),i1=Math.min(W-1,Math.floor((bx-x0)/c)),j0=Math.max(0,Math.floor((az-z0)/c)),j1=Math.min(H-1,Math.floor((bz-z0)/c));
+    for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)if(!test||test(x0+(i+.5)*c,z0+(j+.5)*c))ok[j*W+i]=0;};
+  for(const q of G.colliders){if(q.box){const b=q.box;mark(b[0]-m,b[1]-m,b[2]+m,b[3]+m);}else if(q.c){const [cx,cz]=q.c,r=(q.r||.5)+m;mark(cx-r,cz-r,cx+r,cz+r,(x,z)=>Math.hypot(x-cx,z-cz)<r+c*.5);}}
+  return ROUTE.grids[key]={ok,road};}
+const rgCell=(x,z)=>[Math.floor((x-RG.x0)/RG.c),Math.floor((z-RG.z0)/RG.c)];
+function rgNearest(g,x,z,rad){const [ci,cj]=rgCell(x,z);let best=-1,bd=1e9;const R=Math.ceil(rad/RG.c);
+  for(let dj=-R;dj<=R;dj++)for(let di=-R;di<=R;di++){const i=ci+di,j=cj+dj;if(i<0||j<0||i>=RG.W||j>=RG.H||!g.ok[j*RG.W+i])continue;const d=di*di+dj*dj;if(d<bd){bd=d;best=j*RG.W+i;}}return best;}
+// A* with a binary heap; 8 directions, no cutting corners
+function rgPath(g,from,to,drive){const {W,H}=RG,N=W*H,gs=new Float32Array(N).fill(1e9),par=new Int32Array(N).fill(-1),closed=new Uint8Array(N);
+  const tx=to%W,ty=(to/W)|0,h=k=>{const dx=Math.abs(k%W-tx),dy=Math.abs(((k/W)|0)-ty);return (dx+dy+(1.414-2)*Math.min(dx,dy))*(drive?1:1);};
+  const heap=[],push=(k,f)=>{heap.push([f,k]);let i=heap.length-1;while(i){const p=(i-1)>>1;if(heap[p][0]<=heap[i][0])break;[heap[p],heap[i]]=[heap[i],heap[p]];i=p;}},
+    pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;let i=0;for(;;){const l=i*2+1,r=l+1;let m=i;if(l<heap.length&&heap[l][0]<heap[m][0])m=l;if(r<heap.length&&heap[r][0]<heap[m][0])m=r;if(m===i)break;[heap[m],heap[i]]=[heap[i],heap[m]];i=m;}}return top;};
+  gs[from]=0;push(from,h(from));const D=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,1.414],[1,-1,1.414],[-1,1,1.414],[-1,-1,1.414]];let n=0;
+  while(heap.length){const [,k]=pop();if(closed[k])continue;if(k===to)break;closed[k]=1;if(++n>400000)return null;const x=k%W,y=(k/W)|0;
+    for(const [dx,dy,w] of D){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=W||ny>=H)continue;const nk=ny*W+nx;if(!g.ok[nk]||closed[nk])continue;
+      if(dx&&dy&&(!g.ok[y*W+nx]||!g.ok[ny*W+x]))continue;
+      const cost=gs[k]+w*(drive?(g.road[nk]?1:2.6):1);if(cost<gs[nk]){gs[nk]=cost;par[nk]=k;push(nk,cost+h(nk));}}}
+  if(par[to]<0&&to!==from)return null;const out=[];for(let k=to;k>=0;k=par[k]){out.push(k);if(k===from)break;}return out.reverse();}
+// straighten: skip points while the straight line between them stays on free squares
+function rgSee(g,a,b){const [ax,az]=a,[bx,bz]=b,n=Math.ceil(Math.hypot(bx-ax,bz-az)/(RG.c*.4));
+  for(let k=1;k<n;k++){const x=ax+(bx-ax)*k/n,z=az+(bz-az)*k/n,[i,j]=rgCell(x,z);if(!g.ok[j*RG.W+i])return false;}return true;}
+function routeTo(x,z,quiet){if(!inGame||G.home)return false;const drive=!!VEH.ride,g=routeGrid(drive),me=[G.pos.x,G.pos.z];
+  const a=rgNearest(g,me[0],me[1],4),b=rgNearest(g,x,z,5);if(a<0||b<0)return false;const path=rgPath(g,a,b,drive);if(!path)return false;
+  const cen=k=>[RG.x0+((k%RG.W)+.5)*RG.c,RG.z0+(((k/RG.W)|0)+.5)*RG.c];
+  let pts=[me,...path.map(cen),[x,z]];
+  // string-pull (keeps road corners when driving: only straightens inside the same kind of ground)
+  const out=[pts[0]];let i=0;while(i<pts.length-1){let j=pts.length-1;while(j>i+1&&!rgSee(g,pts[i],pts[j]))j--;out.push(pts[j]);i=j;}
+  ROUTE.pts=out;ROUTE.dest=[x,z];ROUTE.drive=drive;ROUTE.prog=0;ROUTE.off=0;ROUTE.lastBuild=-9;routeBuild();routeChip();return true;}
+function routeClear(){ROUTE.pts=null;ROUTE.dest=null;if(ROUTE.mesh){ROUTE.mesh.geometry.dispose();ROUTE.mesh.removeFromParent();ROUTE.mesh=null;}routeChip();}
+// the line on the ground: a soft glowing band, following the ground's height
+let routeTex=null;
+function routeBuild(){if(ROUTE.mesh){ROUTE.mesh.geometry.dispose();ROUTE.mesh.removeFromParent();ROUTE.mesh=null;}if(!ROUTE.pts||!world)return;
+  const src=routeRemaining();if(src.length<2)return;const pts=[];
+  for(let k=0;k<src.length-1;k++){const [ax,az]=src[k],[bx,bz]=src[k+1],n=Math.max(1,Math.ceil(Math.hypot(bx-ax,bz-az)/1.2));for(let q=0;q<n;q++)pts.push([ax+(bx-ax)*q/n,az+(bz-az)*q/n]);}
+  pts.push(src[src.length-1]);
+  const W=ROUTE.drive?.75:.42,pos=[],uv=[],idx=[];let acc=0;
+  for(let k=0;k<pts.length;k++){const p=pts[k],q=pts[Math.min(pts.length-1,k+1)],o=pts[Math.max(0,k-1)],dx=q[0]-o[0],dz=q[1]-o[1],l=Math.hypot(dx,dz)||1,nx=-dz/l*W,nz=dx/l*W;
+    if(k)acc+=Math.hypot(p[0]-pts[k-1][0],p[1]-pts[k-1][1]);const y=groundY(p[0],p[1])+.09;pos.push(p[0]+nx,y,p[1]+nz,p[0]-nx,y,p[1]-nz);uv.push(0,acc,1,acc);if(k){const b=(k-1)*2;idx.push(b,b+1,b+2,b+1,b+3,b+2);}}
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));geo.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);
+  if(!routeTex)routeTex=texCanvas(64,8,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,0);gr.addColorStop(0,"rgba(255,255,255,0)");gr.addColorStop(.18,"rgba(255,255,255,.95)");gr.addColorStop(.3,"rgba(40,190,255,.95)");
+    gr.addColorStop(.7,"rgba(40,190,255,.95)");gr.addColorStop(.82,"rgba(255,255,255,.95)");gr.addColorStop(1,"rgba(255,255,255,0)");c.fillStyle=gr;c.fillRect(0,0,w,h);});
+  ROUTE.mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:routeTex,transparent:true,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,fog:false}));
+  ROUTE.mesh.renderOrder=1;ROUTE.mesh.frustumCulled=false;world.add(ROUTE.mesh);}
+// what's left of the line from where I am now
+function routeRemaining(){const P0=ROUTE.pts,k=ROUTE.prog;if(!P0)return [];const [ax,az]=P0[k],[bx,bz]=P0[Math.min(P0.length-1,k+1)],dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1;
+  const u=Math.max(0,Math.min(1,((G.pos.x-ax)*dx+(G.pos.z-az)*dz)/L2));return [[ax+dx*u,az+dz*u],...P0.slice(k+1)];}
+function routeLeft(){const r=routeRemaining();let d=0;for(let k=1;k<r.length;k++)d+=Math.hypot(r[k][0]-r[k-1][0],r[k][1]-r[k-1][1]);return d+Math.hypot(G.pos.x-r[0][0],G.pos.z-r[0][1]);}
+// a small sign at the top: how far it is still, and a button to stop
+function routeChip(){let el=ROUTE.chip;if(!el){el=ROUTE.chip=document.createElement("div");el.className="route-chip";el.setAttribute("role","status");
+  el.innerHTML='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18 C6 13 4 10.5 4 7.5 A6 6 0 0 1 16 7.5 C16 10.5 14 13 10 18Z" fill="#2fc6ff"/><circle cx="10" cy="7.5" r="2.4" fill="#fff"/></svg><b></b><button type="button" aria-label="Stop the route">✕</button>';
+  el.querySelector("button").onclick=()=>{routeClear();sfx.close();};document.body.appendChild(el);}
+  el.hidden=!ROUTE.pts||G.home;if(!el.hidden)el.querySelector("b").textContent=Math.max(1,Math.round(routeLeft()))+" m";}
+function routeTick(t){if(!ROUTE.pts)return;if(!inGame||G.home){routeClear();return;}
+  const P0=ROUTE.pts;
+  // move the progress along: the closest segment from here on (looking a few ahead)
+  let best=ROUTE.prog,bd=1e9;for(let k=ROUTE.prog;k<Math.min(P0.length-1,ROUTE.prog+6);k++){const [ax,az]=P0[k],[bx,bz]=P0[k+1],dx=bx-ax,dz=bz-az,L2=dx*dx+dz*dz||1,u=Math.max(0,Math.min(1,((G.pos.x-ax)*dx+(G.pos.z-az)*dz)/L2)),d=Math.hypot(G.pos.x-ax-dx*u,G.pos.z-az-dz*u);if(d<bd-.01){bd=d;best=k;}}
+  if(best!==ROUTE.prog){ROUTE.prog=best;ROUTE.lastBuild=-9;}
+  const left=routeLeft();
+  if(Math.hypot(G.pos.x-ROUTE.dest[0],G.pos.z-ROUTE.dest[1])<(ROUTE.drive?4:2.2)){routeClear();toast("You've arrived!");sfx.success();return;}
+  // left the line (or got on / off the vehicle): find a new way
+  ROUTE.off=bd>(ROUTE.drive?9:6)?ROUTE.off+1/60:0;
+  if(ROUTE.off>1.2||ROUTE.drive!==!!VEH.ride){const [dx,dz]=ROUTE.dest;if(!routeTo(dx,dz,true))routeClear();return;}
+  if(t-ROUTE.lastBuild>.6&&Math.abs(left-ROUTE.lastLen)>1.5){ROUTE.lastBuild=t;ROUTE.lastLen=left;routeBuild();}
+  if(ROUTE.chip&&(Math.floor(t*4)%2===0))ROUTE.chip.querySelector("b").textContent=Math.max(1,Math.round(left))+" m";}
+function routeDraw(g,toScreen,w){if(!ROUTE.pts)return;const r=routeRemaining();if(r.length<2)return;g.save();g.lineJoin=g.lineCap="round";
+  for(const [col,lw] of [["#ffffff",w+3],["#22b8ff",w]]){g.beginPath();g.moveTo(...toScreen(G.pos.x,G.pos.z));for(const p of r)g.lineTo(...toScreen(p[0],p[1]));g.strokeStyle=col;g.lineWidth=lw;g.stroke();}
+  const d=toScreen(ROUTE.dest[0],ROUTE.dest[1]);g.beginPath();g.arc(d[0],d[1],w+3,0,Math.PI*2);g.fillStyle="#22b8ff";g.fill();g.lineWidth=3;g.strokeStyle="#fff";g.stroke();g.restore();}
+
 // jump somewhere with the wipe (the secret cave and its way out)
 const CITY_TP={busy:false};
 function cityTeleport(x,z,face,zone){
@@ -7101,8 +7353,9 @@ function vehDrive(dt,ix,iz){const def=vehDef(VEH.mine?VEH.mine.i:0)||VEHICLES[0]
   const sx=Math.sin(G.face)*step,sz=Math.cos(G.face)*step,np=tryStep(sx,sz)||tryStep(sx,0)||tryStep(0,sz);
   if(np)G.pos.copy(np);const moved=before.distanceTo(G.pos);
   if(Math.abs(step)>.05&&moved<Math.abs(step)*.4){if(Math.abs(VEH.speed)>6)sfx.step();VEH.speed*=.25;}
-  // the camera swings round behind
-  let want=G.face-Math.PI,d=want-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*(Math.abs(VEH.speed)>1?2.4:1.1));}
+  // the camera swings round behind (not while you turn it yourself: drag to look around, it comes back a few seconds after you let go)
+  if(!G.orbiting&&now()-(G.camDragT||0)>3){const back=Math.min(1,(now()-(G.camDragT||0)-3)/1.5);
+    let want=G.face-Math.PI,d=want-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*(Math.abs(VEH.speed)>1?2.4:1.1)*back);}}
 // sit a character on a bike (me or another rider)
 function vehRiderPose(C,v,t,speed,lean){const ud=v.g.userData,y=v.g.position.y+ud.seatY;
   C.root.position.y=y+Math.sin(t*30)*.008*Math.min(1,Math.abs(speed));C.root.rotation.x=0;C.root.rotation.z=lean;
@@ -7212,7 +7465,8 @@ function gameTick(dt,t,hy){
   if(moving){
     G.running=!G.seat&&(!!(G.keys.ShiftLeft||G.keys.ShiftRight)||!!(G.target&&G.runTarget)||!!(G.stick&&G.stick.run));
     if(G.running&&!canRun()){G.running=false;noRunWarn();}   // out of stamina: no running
-    const before=G.pos.clone(),sp=SPEED*needSpeed()*(1-.38*wadeK(G.pos.z,G.pos.x))*(homePool(G.pos.x,G.pos.z)?.65:1)*(G.running&&!deepWater(G.pos.x,G.pos.z)&&!homePool(G.pos.x,G.pos.z)?RUN:1)*dt;
+    if(!G.swimTip&&(deepWater(G.pos.x,G.pos.z)||homePool(G.pos.x,G.pos.z))){G.swimTip=true;toast(IS_PHONE?"Tip: hold the run button to swim fast!":"Tip: hold Shift to swim fast!");}
+    const before=G.pos.clone(),sp=SPEED*needSpeed()*(1-.38*wadeK(G.pos.z,G.pos.x))*(homePool(G.pos.x,G.pos.z)?.65:1)*(G.running?(deepWater(G.pos.x,G.pos.z)||homePool(G.pos.x,G.pos.z)?SWIM_FAST:RUN):1)*dt;
     // try the full step, then slide along x or z if it would leave the walkable areas
     // (a step can't jump up or down a wall: that's how the shipwreck's deck is only reached by its plank)
     const gy0=groundY(before.x,before.z),tryStep=(dx,dz)=>{const p=before.clone();p.x+=dx;p.z+=dz;collide(p);return walkable(p.x,p.z)&&Math.abs(groundY(p.x,p.z)-gy0)<.6?p:null;};
@@ -7221,7 +7475,7 @@ function gameTick(dt,t,hy){
     // give up on a click target if something is in the way
     if(G.target){if(before.distanceTo(G.pos)<SPEED*dt*.25)G.stall+=dt;else G.stall=0;if(G.stall>.4){G.target=null;G.marker.visible=false;}}
     const want=Math.atan2(mx,mz);let d=want-G.face;d=Math.atan2(Math.sin(d),Math.cos(d));G.face+=d*Math.min(1,dt*12);
-    G.phase+=dt*(deepWater(G.pos.x,G.pos.z)?6:THREE.MathUtils.lerp(G.running?16:11,7,wadeK(G.pos.z,G.pos.x)));const st=Math.floor(G.phase/Math.PI);if(st!==G.lastStep){G.lastStep=st;inWater(G.pos.x,G.pos.z)||homePool(G.pos.x,G.pos.z)?sfx.paddle():sfx.step();}
+    G.phase+=dt*(deepWater(G.pos.x,G.pos.z)||homePool(G.pos.x,G.pos.z)?(G.running?10:6):THREE.MathUtils.lerp(G.running?16:11,7,wadeK(G.pos.z,G.pos.x)));const st=Math.floor(G.phase/Math.PI);if(st!==G.lastStep){G.lastStep=st;inWater(G.pos.x,G.pos.z)||homePool(G.pos.x,G.pos.z)?sfx.paddle():sfx.step();}
   }
   poseCharacter(P,G.pos.x,G.pos.z,G.face,moving,G.phase,hy,t,G);
   if(DLV.ride)dlvPose(t,dt);
@@ -7269,24 +7523,59 @@ function refreshMyTag(){
 }
 let VIEW_FAR=185,FOG_NEAR=70,FOG_FAR=178;   // how far you can see in the world (the city hides squares past this); "Fast" graphics see less
 /* ---------- graphics quality (settings): Auto lowers the resolution by itself when the game runs slowly ---------- */
-const GFX={mode:"auto",pr:1,acc:0,n:0,last:0,cool:0};
-try{const m=localStorage.getItem("jumpi-gfx");if(m==="fast"||m==="best"||m==="auto")GFX.mode=m;}catch(e){}
+/* ---------- graphics: a preset (Auto / Low / Medium / High) or the player's own mix ----------
+   res = sharpness (share of the screen's pixels drawn), shadows off/low/high, view distance, a frame-rate cap,
+   effects (auras, lots of rain) and smooth edges (antialiasing; needs the game to open again) */
+const GFX_PRESETS={
+  low:   {res:.6, shadows:"off", view:"short", fps:"30",fx:"off",aa:"off"},
+  medium:{res:.8, shadows:"low", view:"medium",fps:"60",fx:"on", aa:"on"},
+  high:  {res:1,  shadows:"high",view:"far",   fps:"0", fx:"on", aa:"on"},
+  auto:  {res:1,  shadows:"high",view:"far",   fps:"0", fx:"on", aa:"on"}};
+const GFX={mode:"auto",o:{...GFX_PRESETS.auto},pr:1,acc:0,n:0,last:0,cool:0,lastFrame:0,autoSteps:0};
 const IS_PHONE=matchMedia("(pointer:coarse)").matches;
-function gfxApply(){const fast=GFX.mode==="fast";
-  GFX.pr=fast?1:GFX.mode==="best"?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,IS_PHONE?1.5:2);
+try{const o=JSON.parse(localStorage.getItem("jumpi-gfx2")||"null");
+  if(o&&o.mode){GFX.mode=o.mode;GFX.o={...GFX_PRESETS.auto,...(GFX_PRESETS[o.mode]||{}),...(o.mode==="custom"?o:{})};}
+  else{const m=localStorage.getItem("jumpi-gfx");if(m==="fast"){GFX.mode="low";GFX.o={...GFX_PRESETS.low};}else if(m==="best"){GFX.mode="high";GFX.o={...GFX_PRESETS.high};}}}catch(e){}
+if(GFX.mode==="auto"&&IS_PHONE)GFX.o.shadows="low";
+GFX.fx=GFX.o.fx!=="off";
+function gfxSave(){try{localStorage.setItem("jumpi-gfx2",JSON.stringify({mode:GFX.mode,...GFX.o}));}catch(e){}}
+function gfxApply(){const o=GFX.o;GFX.fx=o.fx!=="off";
+  const cap=GFX.mode==="auto"?(IS_PHONE?1.5:2):2;
+  GFX.pr=Math.max(.4,Math.min(devicePixelRatio,cap)*o.res);
   renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);
-  VIEW_FAR=fast?140:185;FOG_NEAR=fast?48:70;FOG_FAR=fast?134:178;
+  const V={short:[105,38,100,96],medium:[140,48,134,128],far:[185,70,178,175]}[o.view]||[185,70,178,175];
+  VIEW_FAR=V[0];FOG_NEAR=V[1];FOG_FAR=V[2];
   if(inGame&&!G.home&&scene.fog){scene.fog.near=FOG_NEAR;scene.fog.far=FOG_FAR;cam.far=VIEW_FAR;cam.updateProjectionMatrix();}
-  if(CITY&&CITY.setView)CITY.setView(fast?128:175);
-  if(G.sun&&G.sun.shadow){const sz=fast?1024:2048;if(G.sun.shadow.mapSize.x!==sz){G.sun.shadow.mapSize.set(sz,sz);if(G.sun.shadow.map){G.sun.shadow.map.dispose();G.sun.shadow.map=null;}}}
-  document.querySelectorAll("#gfxSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.gfx===GFX.mode));}
+  if(CITY&&CITY.setView)CITY.setView(V[3]);
+  const shOn=o.shadows!=="off";
+  if(renderer.shadowMap.enabled!==shOn&&G.sun){renderer.shadowMap.enabled=shOn;scene.traverse(q=>{if(q.material){(Array.isArray(q.material)?q.material:[q.material]).forEach(m=>m.needsUpdate=true);}});}
+  if(G.sun){G.sun.castShadow=shOn;if(G.sun.shadow){const sz=o.shadows==="high"?2048:1024;if(G.sun.shadow.mapSize.x!==sz){G.sun.shadow.mapSize.set(sz,sz);if(G.sun.shadow.map){G.sun.shadow.map.dispose();G.sun.shadow.map=null;}}}}
+  gfxPaint();}
+function gfxPaint(){const o=GFX.o;
+  document.querySelectorAll("#gfxSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.gfx===GFX.mode));
+  document.querySelectorAll("#gfxMore [data-gk]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(o[g.dataset.gk])===b.dataset.v)));
+  const r=document.getElementById("gfxRes");if(r){r.value=Math.round(o.res*100);document.getElementById("gfxResN").textContent=Math.round(o.res*100)+"%";}
+  const n=document.getElementById("gfxNote");if(n)n.hidden=(o.aa!=="off")===GFX_AA0;}
+// a preset button
+function gfxSet(m){if(!GFX_PRESETS[m])return;GFX.mode=m;GFX.o={...GFX_PRESETS[m]};if(m==="auto"&&IS_PHONE)GFX.o.shadows="low";GFX.acc=GFX.n=0;GFX.autoSteps=0;gfxSave();gfxApply();}
+// one of the extra options: that makes it the player's own mix
+function gfxOpt(k,v){GFX.mode="custom";GFX.o={...GFX.o,[k]:v};gfxSave();gfxApply();}
 document.getElementById("gfxSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-gfx]");if(!b)return;sfx.click();gfxSet(b.dataset.gfx);});
-function gfxSet(m){GFX.mode=m;try{localStorage.setItem("jumpi-gfx",m);}catch(e){}GFX.acc=GFX.n=0;gfxApply();}
-// Auto: if the last 4 seconds ran under ~38 frames a second, draw fewer pixels (never under 1 pixel per screen pixel)
+document.getElementById("gfxMore").addEventListener("click",e=>{const b=e.target.closest("[data-gk] button");if(!b)return;sfx.click();gfxOpt(b.parentElement.dataset.gk,b.dataset.v);});
+{const r=document.getElementById("gfxRes");r.addEventListener("input",()=>{document.getElementById("gfxResN").textContent=r.value+"%";});r.addEventListener("change",()=>gfxOpt("res",+r.value/100));}
+document.getElementById("gfxMoreBtn").addEventListener("click",e=>{const b=e.currentTarget,box=document.getElementById("gfxMore"),open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",open);sfx.click();if(open)setTimeout(()=>box.scrollIntoView({block:"nearest",behavior:"smooth"}),30);});
+gfxPaint();
+// the frame-rate cap: true = skip drawing this frame
+function gfxSkip(){const cap=+GFX.o.fps;if(!cap)return false;const t=performance.now();if(t-GFX.lastFrame<1000/cap-2)return true;GFX.lastFrame=t;return false;}
+// Auto: if the last 4 seconds ran under ~38 frames a second, step down: fewer pixels first, then lighter shadows, then a shorter view
 function gfxTick(){const t=performance.now();if(!GFX.last){GFX.last=t;return;}const dt=t-GFX.last;GFX.last=t;
   if(GFX.mode!=="auto"||!inGame||dt>250||document.hidden)return;GFX.acc+=dt;GFX.n++;
-  if(GFX.acc>4000){const fps=GFX.n*1000/GFX.acc;GFX.acc=GFX.n=0;if(t<GFX.cool)return;
-    if(fps<38&&GFX.pr>1){GFX.pr=Math.max(1,GFX.pr-.25);renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);GFX.cool=t+3000;}}}
+  if(GFX.acc>4000){const fps=GFX.n*1000/GFX.acc;GFX.acc=GFX.n=0;if(t<GFX.cool||fps>=38)return;GFX.cool=t+3000;const o=GFX.o;
+    if(GFX.pr>1){GFX.pr=Math.max(1,GFX.pr-.25);renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);return;}
+    if(o.shadows==="high"){o.shadows="low";gfxApply();return;}
+    if(o.view==="far"){o.view="medium";gfxApply();return;}
+    if(o.shadows==="low"&&fps<28){o.shadows="off";gfxApply();return;}
+    if(o.res>.75&&fps<28){o.res=.75;gfxApply();}}}
 function enterGame(){
   if(!P)return;
   if(!gameBuilt)buildPlaza();
@@ -7995,7 +8284,7 @@ function renderStoreGrid(){
     else price=`<span class="pr">${COIN_SVG}${it?it.price.toLocaleString("en-US"):"…"}</span>`;
     const rar=i>=0?itemRarity(slot,i):null,legend=i>=0&&(slot==="aura"||rar==="legendary"),isNew=!legend&&!rar&&!inv&&it&&!it.starter&&!owns(id);if(legend)b.classList.add("legendary");
     if(rar&&!legend)b.classList.add("r-"+rar);
-    b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew?'<span class="badge-new">NEW</span>':""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
+    b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew&&!(it&&it.member)?'<span class="badge-new">NEW</span>':""}${it&&it.member?'<span class="mchip" title="Members Club">★ MEMBERS</span>':""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
     b.setAttribute("aria-label",(i<0?"None":itemName(slot,i))+", "+b.querySelector(".pr").textContent);
     b.onclick=()=>selectItem(i);storeGrid.appendChild(b);});
   paintStoreFoot();
@@ -8023,6 +8312,8 @@ function paintStoreFoot(){
   document.getElementById("storeSelName").textContent=i<0?"None":itemName(slot,i);
   const id=slot+":"+i,it=catalog&&catalog.get(id);
   if(i>=0&&storeMode!=="inventory"&&it&&it.event&&it.event!==EV.cur&&!(owns(id)&&slot!=="furniture")){storeAct.textContent=(EVENTS[it.event]?EVENTS[it.event].name:"Event")+" only";return;}
+  // the Members Club collection: only members can buy it
+  if(i>=0&&storeMode!=="inventory"&&it&&it.member&&!owns(id)&&!(me&&me.subscriber)){storeAct.textContent="Members only";storeAct.title="Become a member in the Jumpi Store to get this";return;}
   if(i<0){storeAct.textContent=wearing(slot,-1)?"Nothing on":"Take off";storeAct.disabled=wearing(slot,-1);storeAct.classList.toggle("ready",!storeAct.disabled);return;}
   if(slot==="emote"){
     if(owns(id)){storeAct.textContent=freeEmoteId(id)?"Free for everyone":"Use it from the chat bar";return;}
@@ -8318,8 +8609,10 @@ function buildFurniture(f){
     case 7:{add(box(2,2.6,.6,wood,0,1.3,0));[.45,1.2,1.95].forEach(y=>add(box(1.84,.06,.55,dark,0,y,.03)));
       const cols=["#ff4545","#1f9bff","#2fd36b","#ffd23a","#9b5cff","#ff5fb4"];[.45,1.2,1.95].forEach((y,row)=>{for(let k=0;k<7;k++){const h=.42+((k*7+row*3)%4)*.06;add(box(.18,h,.42,fm(cols[(k+row)%6]),-.75+k*.24,y+.03+h/2,.06));}});break;}
     case 8:{add(box(2.4,.65,.6,dark,0,.33,0));add(box(2.3,1.35,.12,fm("#16161e"),0,1.38,-.05));
-      const scr=new THREE.Mesh(new THREE.PlaneGeometry(2.12,1.18),new THREE.MeshBasicMaterial({map:texCanvas(256,144,(c,w,h)=>{const gr=c.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#1fb6ff");gr.addColorStop(1,"#9b5cff");c.fillStyle=gr;c.fillRect(0,0,w,h);
-        c.fillStyle="#ffd23a";c.beginPath();c.arc(70,80,26,0,7);c.fill();c.fillStyle="#fff";c.font="bold 30px sans-serif";c.fillText("JUMPI TV",110,90);})}));scr.position.set(0,1.38,.02);g.add(scr);break;}
+      // the screen shows JUMPI NEWS (TVNEWS: one moving picture shared by every TV); it can be switched off (TV_OFF)
+      const scr=new THREE.Mesh(new THREE.PlaneGeometry(2.12,1.18),tvNews().on);scr.position.set(0,1.38,.02);g.add(scr);g.userData.tv=scr;
+      const led=new THREE.Mesh(new THREE.CircleGeometry(.025,10),new THREE.MeshBasicMaterial({color:"#ff3b30"}));led.position.set(1.05,.76,.02);g.add(led);g.userData.tvLed=led;
+      g.userData.anim=t=>{const off=tvIsOff(g);if(scr.material!==(off?TVNEWS.off:TVNEWS.on)){scr.material=off?TVNEWS.off:TVNEWS.on;led.material.color.set(off?"#ff3b30":"#2fd36b");}if(!off)tvNewsTick(t);};break;}
     case 9:{const t=texCanvas(256,256,(c,w,h)=>{const cs=["#ff5fb4","#ffffff","#1fb6ff","#ffffff","#ffd23a","#ff5fb4"];for(let i=0;i<6;i++){c.fillStyle=cs[i];c.beginPath();c.arc(w/2,h/2,w/2-i*21,0,7);c.fill();}});
       const r=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,.03,48),new THREE.MeshStandardMaterial({map:t,roughness:1}));r.position.y=.016;r.receiveShadow=true;g.add(r);break;}
     case 10:{const b=add(new THREE.Mesh(new THREE.SphereGeometry(.75,24,16),fm("#9b5cff",{roughness:.8})));b.position.y=.42;b.scale.set(1,.6,1);
@@ -8327,10 +8620,10 @@ function buildFurniture(f){
     case 11:{add(box(1.8,.8,.8,dark,0,.4,0));const gl=new THREE.Mesh(new THREE.BoxGeometry(1.7,1,.7),new THREE.MeshStandardMaterial({color:"#7fdcff",transparent:true,opacity:.35,roughness:.05}));gl.position.y=1.31;g.add(gl);
       add(box(1.7,.12,.7,fm("#e6c27a"),0,.87,0));[["#ff8a1c",-.4,1.3],["#ffd23a",.3,1.5],["#ff4f8b",.1,1.15]].forEach(([c,x,y])=>{const fish=new THREE.Mesh(new THREE.SphereGeometry(.1,10,8),fm(c));fish.scale.set(1.6,1,.7);fish.position.set(x,y,0);g.add(fish);});
       add(box(1.74,.06,.74,dark,0,1.83,0));break;}
-    case 12:{const body=fm("#1f6bff");add(box(1,2.2,.9,body,0,1.1,0));add(box(.86,.62,.1,fm("#0d0d16"),0,1.62,.45));
+    case 12:{const body=fm("#1f6bff");add(box(1,1.9,.9,body,0,.95,0));   /* the cabinet stops under the pink top (the two used to overlap and flicker) */add(box(.86,.62,.1,fm("#0d0d16"),0,1.62,.45));
       const sc=new THREE.Mesh(new THREE.PlaneGeometry(.78,.55),new THREE.MeshBasicMaterial({color:"#39ff14"}));sc.position.set(0,1.62,.51);g.add(sc);
       add(box(.96,.14,.45,fm("#ffd23a"),0,1.2,.5));add(cyl(.05,.05,.15,fm("#ff4545"),-.2,1.33,.55,10));[.1,.25].forEach(x=>add(cyl(.06,.06,.04,fm("#ff4545"),x,1.29,.55,12)));
-      add(box(1,.3,.92,fm("#ff4f8b"),0,2.05,0));break;}
+      add(box(1.04,.3,.94,fm("#ff4f8b"),0,2.05,0));break;}
     case 13:{const bl=fm("#16161e",{roughness:.25});add(box(2.2,1.3,.7,bl,0,.85,0));add(box(2.2,.1,.4,bl,0,.92,.5));
       add(box(2,.06,.3,white,0,.99,.5));for(let k=0;k<12;k++)if(k%7!==2&&k%7!==6)add(box(.08,.05,.18,bl,-.9+k*.17,1.03,.43));
       add(box(.15,.2,.4,bl,-1.02,.5,.4));add(box(.15,.2,.4,bl,1.02,.5,.4));// the bench sits back from the keys, with legs and a red cushion
@@ -8513,7 +8806,11 @@ function homeTick(t){updateSeatPrompt();placeTick(t);Sound.piano(pianoLevel());i
 /* ---------- sitting and sleeping ---------- */
 // where you sit on each piece (in the piece's own space), how high, and if you face the other way (piano bench)
 const SEATS={0:{k:"sit",y:.8,at:[[-.7,.08],[.7,.08]]},1:{k:"sit",y:.8,at:[[0,.08]]},3:{k:"sit",y:.6,at:[[0,0]]},10:{k:"sit",y:.58,at:[[0,.08]]},
-  13:{k:"play",y:.52,at:[[0,1.32]],flip:true},4:{k:"sleep",y:1.38,at:[[0,.95]],reach:2.1}};
+  13:{k:"play",y:.52,at:[[0,1.32]],flip:true},4:{k:"sleep",y:1.38,at:[[0,.95]],reach:2.1},
+  // the Big World collection: gaming chair, bunk bed (bottom / top: stand by the ladder for the top), throne, dancing by the jukebox and under the disco ball
+  33:{k:"sit",y:.66,at:[[0,.04]]},38:{k:"sit",y:.86,at:[[0,.06]]},
+  34:{k:"sleep",y:1.19,at:[[-.35,.95],[.35,.95,2.49,"TOP BUNK"]],reach:2.1},
+  36:{k:"dance",y:0,at:[[0,1.15]],reach:1.4},32:{k:"dance",y:0,at:[[0,.9]],reach:1.5}};
 const seatPrompt=document.getElementById("seatPrompt");
 const SEAT_ICON={adopt:'<svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx="10" cy="13" rx="4.2" ry="3.6" fill="#ff5fb4"/><ellipse cx="4.2" cy="9" rx="1.8" ry="2.3" fill="#ff5fb4"/><ellipse cx="7.6" cy="5.2" rx="1.8" ry="2.4" fill="#ff5fb4"/><ellipse cx="12.4" cy="5.2" rx="1.8" ry="2.4" fill="#ff5fb4"/><ellipse cx="15.8" cy="9" rx="1.8" ry="2.3" fill="#ff5fb4"/></svg>',
   dance:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L12 7.5 L18 8 L13.4 11.6 L15 17.5 L10 14.2 L5 17.5 L6.6 11.6 L2 8 L8 7.5 Z" fill="#ff5fb4"/></svg>',
@@ -8522,15 +8819,20 @@ const SEAT_ICON={adopt:'<svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx=
   order:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5 V8 Q5 10 7 10 V17.5 M7 2.5 V8 M9 2.5 V8 Q9 10 7 10 M14 17.5 V2.5 Q11 4 11 9 Q11 11 14 11" fill="none" stroke="#ff5fb4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   sit:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 9 V6 Q4 4 6 4 H14 Q16 4 16 6 V9 M3 9 H17 V13 H3 Z M5 13 V16 M15 13 V16" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   sleep:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 12.5 A6.5 6.5 0 1 1 8 4 A5 5 0 0 0 15 12.5 Z" fill="#ff5fb4"/></svg>',
+  tv:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="4" width="15" height="10" rx="2" fill="none" stroke="#ff5fb4" stroke-width="2.2"/><path d="M7 17.5 H13" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  lie:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="15" cy="4.5" r="2.4" fill="#ff5fb4"/><path d="M2.5 13 H11 L15.5 8.5 M4 13 V17 M13 13 V17 M2.5 13 H17" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   play:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 14.5 V4.5 L16 3 V12.5" fill="none" stroke="#ff5fb4" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6" cy="14.5" r="2.6" fill="#ff5fb4"/><circle cx="14" cy="12.5" r="2.6" fill="#ff5fb4"/></svg>'};
 let nearSeat=null;
 function seatSpots(){const out=[];if(!HOME.layout)return out;const PC=HOME.place&&PLACE.cur;
   HOME.layout.items.forEach((it,k)=>{const S=SEATS[it.f];if(!S)return;const a=it.r*Math.PI/2,c=Math.cos(a),s=Math.sin(a);
-    S.at.forEach(([sx,sz],n)=>out.push({k:S.k,y:S.y,x:it.x+sx*c+sz*s,z:it.z-sx*s+sz*c,f:a+(S.flip?Math.PI:0),reach:S.reach||1.9,piece:k,n,tab:PC&&PC.chairTab&&it.f===3?PC.chairTab:null}));});
+    S.at.forEach(([sx,sz,sy,lab],n)=>out.push({k:S.k,y:sy??S.y,x:it.x+sx*c+sz*s,z:it.z-sx*s+sz*c,f:a+(S.flip?Math.PI:0),reach:S.reach||1.9,piece:k,n,label:lab,tab:PC&&PC.chairTab&&it.f===3?PC.chairTab:null}));});
+  // TVs: a button to switch it on / off
+  HOME.layout.items.forEach((it,k)=>{if(it.f!==8||PC)return;const a=it.r*Math.PI/2,g=HOME.pieces.children.find(p=>p.userData.k===k),off=g&&tvIsOff(g);
+    out.push({k:"tv",y:0,x:it.x+Math.sin(a)*1.3,z:it.z+Math.cos(a)*1.3,f:a,reach:1.6,piece:k,n:off?1:0,label:off?"TURN ON TV":"TURN OFF TV",act:()=>tvToggle(k)});});
   if(PC){out.push(...PC.spots);const D=PC.dance;   // anywhere on the dance floor is a place to dance
     if(D&&G.pos.x>D[0]&&G.pos.x<D[2]&&G.pos.z>D[1]&&G.pos.z<D[3])out.push({k:"dance",y:0,x:G.pos.x,z:G.pos.z,f:0,reach:1,piece:"dance",n:0});}   // dance facing the camera
   return out;}
-const SEAT_KINDS=new Set(["sit","sleep","play"]);
+const SEAT_KINDS=new Set(["sit","sleep","play","lie"]);
 function updateSeatPrompt(){
   let best=null;
   if(G.home&&!G.seat&&!HOME.leaving&&deco.hidden){let bd=Infinity;
@@ -8545,13 +8847,14 @@ function sitDown(){if(!nearSeat||G.seat)return;const sp=nearSeat;
   G.seat={...sp,back:{x:G.pos.x,z:G.pos.z}};if(sp.k==="dance")G.seat.y=Math.floor(Math.random()*DANCES.length);G.pos.set(sp.x,0,sp.z);G.face=sp.f;G.target=null;G.keys={};G.marker.visible=false;
   seatPrompt.hidden=true;nearSeat=null;sp.k==="sleep"?sfx.close():sfx.tick(true);
   if(sp.bar){setTimeout(()=>{if(G.seat&&G.seat.bar)openMenu("club");},250);return;}   // a bar stool: the menu opens right away
-  toast({sleep:"Sweet dreams! Move to wake up.",play:"🎹 Playing the piano! Move to stop.",sit:"Ahh, comfy! Move to get up.",dance:"Let's dance! Press E for a new move, move to stop."}[sp.k]);}
+  if(sp.k==="play"){openPiano();return;}
+  toast({sleep:"Sweet dreams! Move to wake up.",play:"🎹 Playing the piano! Move to stop.",sit:"Ahh, comfy! Move to get up.",lie:"Time to relax! Move to get up.",dance:"Let's dance! Press E for a new move, move to stop."}[sp.k]);}
 // get up and step back to where you were standing
-function standUp(quiet){if(!G.seat)return;const b=G.seat.back;G.seat=null;stopEating();P.armL.rotation.z=P.armR.rotation.z=0;P.root.rotation.z=0;
+function standUp(quiet){if(!G.seat)return;const b=G.seat.back;G.seat=null;closePiano();stopEating();P.armL.rotation.z=P.armR.rotation.z=0;P.root.rotation.z=0;
   if(b){const p=new THREE.Vector3(b.x,0,b.z);collide(p);if(walkable(p.x,p.z))G.pos.copy(p);}
-  P.root.rotation.x=0;P.eyeL.scale.y=P.eyeR.scale.y=1;if(!quiet)sfx.hover();}
+  P.root.rotation.order="XYZ";P.root.rotation.x=0;P.eyeL.scale.y=P.eyeR.scale.y=1;if(!quiet)sfx.hover();}
 // draws a character sitting or lying down (works for me and for other players)
-function applyPose(C,pose,t){const r=C.root,br=Math.sin(t*1.4);
+function applyPose(C,pose,t){const r=C.root,br=Math.sin(t*1.4);if(pose.k!=="lie"&&r.rotation.order!=="XYZ")r.rotation.order="XYZ";
   if(pose.k==="dance"){const b=t*124/60*Math.PI,s=Math.sin(b),a=Math.abs(s),m=Math.round(pose.y)||0;r.rotation.set(0,pose.f,0);
     if(m===1){r.rotation.y=pose.f+t*4.5;r.position.y=a*.12;C.armL.rotation.set(0,0,-1.35+a*.25);C.armR.rotation.set(0,0,1.35-a*.25);}       // spin, arms out
     else if(m===2){const up=Math.sin(b*.5)>0;r.position.y=a*.1;r.rotation.z=up?-.12:.12;C.armR.rotation.set(up?-2.9:-.5,0,up?.45:-.35);C.armL.rotation.set(0,0,-.3);}  // disco point
@@ -8562,6 +8865,8 @@ function applyPose(C,pose,t){const r=C.root,br=Math.sin(t*1.4);
       floatIcon(C,"notes","<i>♪</i><i>♫</i><i>♪</i>");}
     else{C.armL.rotation.x=-.35;C.armR.rotation.x=-.35;if(C.zzz){C.zzz.remove();C.zzz=null;}
       if(C===P&&G.eating){const k=Math.max(0,Math.sin(t*3.2));C.armR.rotation.x=-.9-k*1.25;C.armR.rotation.z=-k*.35;r.rotation.x=k*.05;}}return;}
+  if(pose.k==="lie"){r.rotation.order="YXZ";r.position.y=pose.y+br*.01;r.rotation.set(-1.22,pose.f,0);C.armL.rotation.set(-2.7,0,-.5);C.armR.rotation.set(-2.7,0,.5);
+    if(C.zzz){C.zzz.remove();C.zzz=null;}return;}
   // sleeping: on the back with the head on the pillow, breathing slowly, eyes shut, floating Zzz
   r.position.y=pose.y+br*.015;r.rotation.set(-Math.PI/2,pose.f,0);C.armL.rotation.x=C.armR.rotation.x=0;C.eyeL.scale.y=C.eyeR.scale.y=.1;
   floatIcon(C,"sleep","<i>Z</i><i>Z</i><i>Z</i>");}
@@ -8571,9 +8876,133 @@ function floatIcon(C,kind,html){
   if(!C.zzz){C.zzz=document.createElement("div");C.zzz.className="zzz "+kind;C.zzz.dataset.kind=kind;C.zzz.setAttribute("aria-hidden","true");C.zzz.innerHTML=html;document.body.appendChild(C.zzz);}
   C.head.getWorldPosition(_rp);_rp.y+=.5;_rp.project(cam);C.zzz.style.left=((_rp.x+1)/2*innerWidth)+"px";C.zzz.style.top=((1-_rp.y)/2*innerHeight)+"px";}
 // piano sound: loud when I play, softer the further away a visitor is playing
-function pianoLevel(){if(!G.home)return 0;let l=G.seat&&G.seat.k==="play"?1:0;
+function pianoLevel(){if(!G.home)return 0;let l=G.seat&&G.seat.k==="play"&&!PIANO.open?1:0;
   for(const c of remotes.values())if(c.pose&&c.pose.k==="play")l=Math.max(l,1-Math.hypot(c.root.position.x-G.pos.x,c.root.position.z-G.pos.z)/16);return l;}
 seatPrompt.onclick=e=>{press(e.currentTarget);if(!G.home&&nearDoor)useSpot(nearDoor);else sitDown();};
+
+/* ---------- the TV: JUMPI NEWS (an anchor with a microphone, rain behind the studio window, the news ticker) ----------
+   one canvas for every TV, redrawn about 12 times a second while a TV that is on is in the room; switched off per TV with E */
+const TVNEWS={c:null,tex:null,on:null,off:null,last:-1,news:["Rain over the Plaza today: grab an umbrella!","New furniture just arrived at the shop","Pine Lake Camp is open for canoe trips",
+  "The Water Park slides are extra fast this week","Remember: be kind and have fun!","Jumpi School is looking for new students","The Ferris wheel lights up every night"]};
+function tvNews(){if(TVNEWS.on)return TVNEWS;const c=document.createElement("canvas");c.width=384;c.height=216;TVNEWS.c=c;
+  TVNEWS.tex=new THREE.CanvasTexture(c);TVNEWS.tex.colorSpace=THREE.SRGBColorSpace;
+  TVNEWS.on=new THREE.MeshBasicMaterial({map:TVNEWS.tex});TVNEWS.off=new THREE.MeshStandardMaterial({color:"#0b0d12",roughness:.15,metalness:.4});
+  TVNEWS.drops=Array.from({length:70},()=>[Math.random(),Math.random(),.6+Math.random()*.6]);tvNewsDraw(0);return TVNEWS;}
+function tvNewsTick(t){if(t-TVNEWS.last<1/12)return;TVNEWS.last=t;tvNewsDraw(t);TVNEWS.tex.needsUpdate=true;}
+function tvNewsDraw(t){const x=TVNEWS.c.getContext("2d"),W=384,H=216;
+  // the studio: a big window with a rainy evening city behind it
+  x.fillStyle="#1d2b4f";x.fillRect(0,0,W,H);
+  const wx=150,wy=14,ww=220,wh=130;const sky=x.createLinearGradient(0,wy,0,wy+wh);sky.addColorStop(0,"#4d6280");sky.addColorStop(1,"#8ea3bd");x.fillStyle=sky;x.fillRect(wx,wy,ww,wh);
+  x.fillStyle="#3c4c66";[[0,60,26],[30,40,22],[56,74,30],[90,50,24],[118,82,28],[150,56,26],[180,70,40]].forEach(([dx,h,w])=>x.fillRect(wx+dx,wy+wh-h,w,h));
+  x.fillStyle="#ffe7a0";for(let k=0;k<16;k++){const bx=wx+8+((k*37)%200),by=wy+wh-12-((k*23)%50);if((k+Math.floor(t*.5))%5)x.fillRect(bx,by,4,5);}
+  x.strokeStyle="rgba(220,235,255,.75)";x.lineWidth=1.5;x.beginPath();
+  for(const d of TVNEWS.drops){const px=wx+((d[0]*ww+t*40*d[2])%ww),py=wy+((d[1]*wh+t*260*d[2])%wh);x.moveTo(px,py);x.lineTo(px-4,py+11);}x.stroke();
+  x.strokeStyle="#0f1a33";x.lineWidth=6;x.strokeRect(wx,wy,ww,wh);x.beginPath();x.moveTo(wx+ww/2,wy);x.lineTo(wx+ww/2,wy+wh);x.stroke();
+  // the desk
+  x.fillStyle="#e8423b";x.fillRect(0,150,W,24);x.fillStyle="#fff";x.font="bold 15px Fredoka,sans-serif";x.fillText("JUMPI NEWS",112,167);
+  // the anchor: a blue Jumpi, talking into a microphone
+  const bob=Math.sin(t*2.2)*2,cx=78,cy=88+bob;
+  x.fillStyle="#2a3d7a";x.beginPath();x.ellipse(cx,150,40,30,0,Math.PI,0);x.fill();   // jacket
+  x.fillStyle="#fff";x.beginPath();x.moveTo(cx-8,122);x.lineTo(cx+8,122);x.lineTo(cx,140);x.closePath();x.fill();x.fillStyle="#e8423b";x.fillRect(cx-3,124,6,14);   // shirt + tie
+  x.fillStyle="#1f9bff";x.beginPath();x.arc(cx,cy,40,0,Math.PI*2);x.fill();   // head
+  x.fillStyle="#7a4a2a";x.beginPath();x.ellipse(cx,cy-30,38,16,0,Math.PI,0);x.fill();x.beginPath();x.ellipse(cx-14,cy-34,14,10,-.4,0,Math.PI*2);x.fill();   // hair
+  const blink=(t%4)<.12;[-15,15].forEach(dx=>{x.fillStyle="#fff";x.beginPath();x.ellipse(cx+dx,cy-4,10,blink?1.5:11,0,0,Math.PI*2);x.fill();
+    if(!blink){x.fillStyle="#3a2210";x.beginPath();x.arc(cx+dx+2,cy-2,6,0,Math.PI*2);x.fill();x.fillStyle="#fff";x.beginPath();x.arc(cx+dx+4,cy-5,2,0,Math.PI*2);x.fill();}});
+  const talk=Math.max(0,Math.sin(t*11))*Math.max(0,Math.sin(t*1.7+.5));x.fillStyle="#0d2a55";x.beginPath();x.ellipse(cx,cy+18,9,2+talk*6,0,0,Math.PI*2);x.fill();   // mouth
+  x.fillStyle="#9aa3ad";x.fillRect(cx+24,cy+22,4,40);x.fillStyle="#2b2f3a";x.beginPath();x.ellipse(cx+26,cy+18,8,10,0,0,Math.PI*2);x.fill();   // microphone
+  x.fillStyle="#1f9bff";x.beginPath();x.arc(cx+28,cy+40,9,0,Math.PI*2);x.fill();   // hand on the mic
+  // LIVE and the ticker
+  if(Math.floor(t*1.5)%2){x.fillStyle="#e8423b";x.beginPath();x.arc(W-60,24,5,0,Math.PI*2);x.fill();}x.fillStyle="#fff";x.font="bold 14px Fredoka,sans-serif";x.fillText("LIVE",W-50,29);
+  x.fillStyle="#ffd23a";x.fillRect(0,178,W,38);x.fillStyle="#1d2b4f";x.fillRect(0,178,70,38);x.fillStyle="#ffd23a";x.font="bold 13px Fredoka,sans-serif";x.fillText("NEWS",14,202);
+  const txt=TVNEWS.news.join("   ★   ")+"   ★   ";x.font="bold 16px Fredoka,sans-serif";const tw=x.measureText(txt).width,off=(t*60)%tw;
+  x.save();x.beginPath();x.rect(72,178,W-72,38);x.clip();x.fillStyle="#1d2b4f";x.fillText(txt,72-off,203);x.fillText(txt,72-off+tw,203);x.restore();}
+// which TVs are switched off (this computer remembers it per home and spot)
+const TV_OFF=(()=>{try{return new Set(JSON.parse(localStorage.getItem("jumpi-tv-off")||"[]"));}catch(e){return new Set();}})();
+const tvKey=g=>{const it=HOME.layout&&HOME.layout.items[g.userData.k];return (HOME.owner||"me")+":"+(it?Math.round(it.x*10)+","+Math.round(it.z*10):"?");};
+function tvIsOff(g){return g.userData.k!==undefined&&TV_OFF.has(tvKey(g));}
+function tvToggle(k){const g=HOME.pieces.children.find(p=>p.userData.k===k);if(!g)return;const key=tvKey(g);
+  if(TV_OFF.has(key))TV_OFF.delete(key);else TV_OFF.add(key);try{localStorage.setItem("jumpi-tv-off",JSON.stringify([...TV_OFF].slice(-60)));}catch(e){}
+  sfx.tick(true);nearSeat=null;}   // the button shows the new label
+
+/* ---------- the piano: sheet music you can really play ----------
+   Sit at a piano: a sheet opens with a song, the next note glows on the sheet and on the keys; play it with the mouse / finger
+   or the computer keys (A S D F G H J K L ; for C to E, W E T Y U O P for the black keys). "Free play" just plays. Songs are
+   old public-domain tunes. */
+const PIANO={open:false,song:0,i:0,el:null,demo:null,down:new Set()};
+const PN_WHITE=[60,62,64,65,67,69,71,72,74,76],PN_BLACK=[[61,0],[63,1],[66,3],[68,4],[70,5],[73,7],[75,8]];   // [note, white key it sits after]
+const PN_KEYS={KeyA:60,KeyS:62,KeyD:64,KeyF:65,KeyG:67,KeyH:69,KeyJ:71,KeyK:72,KeyL:74,Semicolon:76,KeyW:61,KeyE:63,KeyT:66,KeyY:68,KeyU:70,KeyO:73,KeyP:75};
+const PN_NAME={60:"C",61:"C#",62:"D",63:"D#",64:"E",65:"F",66:"F#",67:"G",68:"G#",69:"A",70:"A#",71:"B",72:"C",73:"C#",74:"D",75:"D#",76:"E"};
+const PN_COL={C:"#ff4f4f",D:"#ff9a1f",E:"#ffd23a",F:"#2fd36b",G:"#1fb6ff",A:"#5b6bff",B:"#c45bff"};
+const pnCol=n=>PN_COL[PN_NAME[n][0]];
+const C4=60,D4=62,E4=64,F4=65,G4=67,A4=69,B4=71,C5=72,D5=74,E5=76;
+const PN_SONGS=[
+  {name:"Twinkle Twinkle Little Star",n:[[C4,1],[C4,1],[G4,1],[G4,1],[A4,1],[A4,1],[G4,2],[F4,1],[F4,1],[E4,1],[E4,1],[D4,1],[D4,1],[C4,2],[G4,1],[G4,1],[F4,1],[F4,1],[E4,1],[E4,1],[D4,2],
+    [G4,1],[G4,1],[F4,1],[F4,1],[E4,1],[E4,1],[D4,2],[C4,1],[C4,1],[G4,1],[G4,1],[A4,1],[A4,1],[G4,2],[F4,1],[F4,1],[E4,1],[E4,1],[D4,1],[D4,1],[C4,2]]},
+  {name:"Ode to Joy",n:[[E4,1],[E4,1],[F4,1],[G4,1],[G4,1],[F4,1],[E4,1],[D4,1],[C4,1],[C4,1],[D4,1],[E4,1],[E4,1.5],[D4,.5],[D4,2],
+    [E4,1],[E4,1],[F4,1],[G4,1],[G4,1],[F4,1],[E4,1],[D4,1],[C4,1],[C4,1],[D4,1],[E4,1],[D4,1.5],[C4,.5],[C4,2]]},
+  {name:"Mary Had a Little Lamb",n:[[E4,1],[D4,1],[C4,1],[D4,1],[E4,1],[E4,1],[E4,2],[D4,1],[D4,1],[D4,2],[E4,1],[G4,1],[G4,2],
+    [E4,1],[D4,1],[C4,1],[D4,1],[E4,1],[E4,1],[E4,1],[E4,1],[D4,1],[D4,1],[E4,1],[D4,1],[C4,4]]},
+  {name:"Jingle Bells",n:[[E4,1],[E4,1],[E4,2],[E4,1],[E4,1],[E4,2],[E4,1],[G4,1],[C4,1.5],[D4,.5],[E4,4],[F4,1],[F4,1],[F4,1.5],[F4,.5],[F4,1],[E4,1],[E4,1],[E4,.5],[E4,.5],
+    [E4,1],[D4,1],[D4,1],[E4,1],[D4,2],[G4,2]]},
+  {name:"Row, Row, Row Your Boat",n:[[C4,1.5],[C4,1.5],[C4,1],[D4,.5],[E4,1.5],[E4,1],[D4,.5],[E4,1],[F4,.5],[G4,3],[C5,.5],[C5,.5],[C5,.5],[G4,.5],[G4,.5],[G4,.5],
+    [E4,.5],[E4,.5],[E4,.5],[C4,.5],[C4,.5],[C4,.5],[G4,1],[F4,.5],[E4,1],[D4,.5],[C4,3]]},
+  {name:"Free play",n:[]}];
+function pianoEl(){if(PIANO.el)return PIANO.el;const el=document.createElement("div");el.className="pn";el.id="pianoPanel";el.hidden=true;el.setAttribute("role","dialog");el.setAttribute("aria-label","Piano");
+  const whites=PN_WHITE.map((n,k)=>`<button type="button" class="pn-w" data-n="${n}" aria-label="${PN_NAME[n]}"><i style="background:${pnCol(n)}"></i><b>${PN_NAME[n]}</b><kbd>${"ASDFGHJKL;"[k]}</kbd></button>`).join("");
+  const blacks=PN_BLACK.map(([n,a])=>`<button type="button" class="pn-b" data-n="${n}" style="--at:${a+1}" aria-label="${PN_NAME[n]}"><kbd>${"WETYUOP"[PN_BLACK.findIndex(q=>q[0]===n)]}</kbd></button>`).join("");
+  el.innerHTML=`<div class="pn-head"><h3>PIANO</h3><div class="pn-songs" role="tablist">${PN_SONGS.map((S,i)=>`<button type="button" role="tab" data-song="${i}">${S.name}</button>`).join("")}</div>
+    <button type="button" class="pn-x" aria-label="Stop playing"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg></button></div>
+    <div class="pn-sheet"><svg viewBox="0 0 900 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg></div>
+    <div class="pn-row"><button type="button" class="pn-listen">Listen</button><button type="button" class="pn-again">Start again</button><p class="pn-msg" role="status"></p></div>
+    <div class="pn-keys">${whites}${blacks}</div>`;
+  document.body.appendChild(el);PIANO.el=el;
+  el.querySelector(".pn-x").onclick=()=>{standUp();sfx.close();};
+  el.querySelector(".pn-songs").onclick=e=>{const b=e.target.closest("[data-song]");if(!b)return;pianoSong(+b.dataset.song);sfx.tick(true);};
+  el.querySelector(".pn-listen").onclick=()=>pianoDemo();
+  el.querySelector(".pn-again").onclick=()=>{pianoStopDemo();PIANO.i=0;pianoPaint();};
+  const keys=el.querySelector(".pn-keys");
+  keys.addEventListener("pointerdown",e=>{const b=e.target.closest("[data-n]");if(!b)return;e.preventDefault();pianoPress(+b.dataset.n);});
+  el.addEventListener("keydown",e=>e.stopPropagation());
+  return el;}
+function openPiano(){const el=pianoEl();PIANO.open=true;el.hidden=false;body.classList.add("piano-in");pianoSong(PIANO.song);Sound.unlock&&Sound.unlock();sfx.open();}
+function closePiano(){if(!PIANO.open)return;PIANO.open=false;pianoStopDemo();if(PIANO.el)PIANO.el.hidden=true;body.classList.remove("piano-in");}
+function pianoSong(i){pianoStopDemo();PIANO.song=i;PIANO.i=0;PIANO.el.querySelectorAll("[data-song]").forEach(b=>b.setAttribute("aria-selected",String(+b.dataset.song===i)));pianoPaint();}
+// the staff: the notes of the song around the one to play next, coloured like the keys, the next one big and bouncing
+function pianoPaint(){const el=PIANO.el,S=PN_SONGS[PIANO.song],svg=el.querySelector(".pn-sheet svg"),msg=el.querySelector(".pn-msg");
+  el.classList.toggle("free",!S.n.length);
+  const lineY=k=>40+k*16;   // 5 lines, top = F5
+  let h="";for(let k=0;k<5;k++)h+=`<line x1="20" x2="880" y1="${lineY(k)}" y2="${lineY(k)}" stroke="#c9d6ea" stroke-width="2"/>`;
+  h+=`<text x="26" y="${lineY(3)+14}" font-size="86" fill="#9fb3d1" font-family="serif">𝄞</text>`;
+  if(!S.n.length){svg.innerHTML=h;msg.textContent="Play anything you like!";pianoGlow(null);return;}
+  const STEP={60:-2,61:-2,62:-1,63:-1,64:0,65:1,66:1,67:2,68:2,69:3,70:3,71:4,72:5,73:5,74:6,75:6,76:7};   // half-line steps from E4 (bottom line)
+  const yOf=n=>lineY(4)-STEP[n]*8;
+  const cnt=innerWidth<600?5:10,gap=760/cnt,from=Math.max(0,Math.min(PIANO.i-(cnt>6?3:1),S.n.length-cnt)),to=Math.min(S.n.length,from+cnt);
+  svg.setAttribute("viewBox",cnt>6?"0 0 900 150":"60 0 560 150");
+  for(let j=from;j<to;j++){const [n,d]=S.n[j],x=110+(j-from)*gap,y=yOf(n),cur=j===PIANO.i,done=j<PIANO.i,big=cnt>6?1:1.4,r=(cur?17:13)*big;
+    if(n===C4)h+=`<line x1="${x-22}" x2="${x+22}" y1="${y}" y2="${y}" stroke="#c9d6ea" stroke-width="2"/>`;
+    h+=`<g class="${cur?"pn-cur":""}" opacity="${done?.35:1}"><line x1="${x+r-2}" x2="${x+r-2}" y1="${y}" y2="${y-52}" stroke="#22324f" stroke-width="3"/>`+
+      `<circle cx="${x}" cy="${y}" r="${r}" fill="${d>=2?"#fff":pnCol(n)}" stroke="${pnCol(n)}" stroke-width="${d>=2?6:2}"/>`+
+      `<text x="${x}" y="${y+6*big}" text-anchor="middle" font-size="${(cur?18:15)*big}" font-weight="700" font-family="Fredoka,sans-serif" fill="#22324f">${PN_NAME[n]}</text></g>`;
+    if(cur)h+=`<path class="pn-arrow" d="M${x-11} ${y-82} H${x+11} L${x} ${y-66} Z" fill="#ff8a1c"/>`;}
+  svg.innerHTML=h;
+  msg.textContent=PIANO.i>=S.n.length?"Bravo! You played the whole song!":(window.I18N&&I18N.T?I18N.T("Note {n} of {total}",{n:PIANO.i+1,total:S.n.length}):`Note ${PIANO.i+1} of ${S.n.length}`);
+  pianoGlow(PIANO.i<S.n.length?S.n[PIANO.i][0]:null);}
+function pianoGlow(n){PIANO.el.querySelectorAll("[data-n]").forEach(b=>b.classList.toggle("next",+b.dataset.n===n));}
+function pianoPress(n,fromKey){if(!PIANO.open)return;Sound.note(n);
+  const b=PIANO.el.querySelector(`[data-n="${n}"]`);if(b){b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");}
+  if(PIANO.demo)return;const S=PN_SONGS[PIANO.song];if(!S.n.length||PIANO.i>=S.n.length)return;
+  if(S.n[PIANO.i][0]===n){PIANO.i++;pianoPaint();if(PIANO.i>=S.n.length){setTimeout(()=>{sfx.success();coinRain&&coinRain(8);},350);}}
+  else if(b){b.classList.add("miss");setTimeout(()=>b.classList.remove("miss"),300);}}
+// "Listen": the piano plays the song, the sheet follows
+function pianoDemo(){const S=PN_SONGS[PIANO.song];if(!S.n.length)return;pianoStopDemo();PIANO.i=0;pianoPaint();const beat=.42;let t=0;const ids=[];
+  S.n.forEach(([n,d],j)=>{ids.push(setTimeout(()=>{if(!PIANO.open)return;PIANO.i=j;pianoPaint();pianoPress(n);},t*1000));t+=d*beat;});
+  ids.push(setTimeout(()=>{PIANO.demo=null;PIANO.i=0;pianoPaint();},t*1000+500));PIANO.demo=ids;}
+function pianoStopDemo(){if(PIANO.demo){PIANO.demo.forEach(clearTimeout);PIANO.demo=null;}}
+// the computer keys play the piano (and don't walk the Jumpi away from it)
+addEventListener("keydown",e=>{if(!PIANO.open||e.ctrlKey||e.metaKey||e.altKey)return;if(e.target&&(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA"))return;
+  if(e.key==="Escape"){e.preventDefault();e.stopImmediatePropagation();standUp();return;}
+  const n=PN_KEYS[e.code];if(n===undefined)return;e.preventDefault();e.stopImmediatePropagation();if(e.repeat||PIANO.down.has(e.code))return;PIANO.down.add(e.code);pianoPress(n,true);},true);
+addEventListener("keyup",e=>{if(PIANO.down.delete(e.code))e.stopImmediatePropagation();},true);
 
 // the owner changed the room while I'm visiting
 function homeUpdated(home){if(!G.home||HOME.mine||!home||HOME.place)return;HOME.layout=home;setHouse(home.house);homeSky();paintRoom();placePieces();
@@ -9420,7 +9849,7 @@ function dlvDrive(dt,ix,iz){let thr=-iz,st=-ix;
   const step=DLV.speed*dt,before=G.pos.clone(),p=before.clone();p.x+=Math.sin(G.face)*step;p.z+=Math.cos(G.face)*step;collide(p);
   if(walkable(p.x,p.z))G.pos.copy(p);const moved=before.distanceTo(G.pos);if(Math.abs(step)>.05&&moved<Math.abs(step)*.4){if(Math.abs(DLV.speed)>6)sfx.step();DLV.speed*=.3;}
   // the camera swings round behind the scooter
-  let want=G.face-Math.PI,d=want-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*(Math.abs(DLV.speed)>1?2.6:1.2));}
+  if(!G.orbiting&&now()-(G.camDragT||0)>3){let want=G.face-Math.PI,d=want-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*(Math.abs(DLV.speed)>1?2.6:1.2));}}
 function dlvPose(t,dt){const s=DLV.scooter;if(!s)return;s.position.set(G.pos.x,.15,G.pos.z);s.rotation.set(0,G.face,-DLV.steer*Math.min(1,Math.abs(DLV.speed)/8)*.22);
   const spin=DLV.speed*dt/.32;s.userData.wf.rotation.x+=spin;s.userData.wb.rotation.x+=spin;
   P.root.position.set(G.pos.x-Math.sin(G.face)*.32,.62+Math.sin(t*30)*.01*Math.min(1,Math.abs(DLV.speed)),G.pos.z-Math.cos(G.face)*.32);P.root.rotation.z=s.rotation.z;
@@ -9933,7 +10362,7 @@ function weatherTick(t,dt){
     if(WX.flash>0)c.m.material.color.lerp(_cb.set("#ffffff"),WX.flash*.6);});
   // rain streaks (outside only)
   const rainOn=k.rain>.02&&outside;P.rain.visible=rainOn;
-  if(rainOn){const a=P.rain.geometry.attributes.position.array,N=P.rainN,act=Math.floor(N*Math.min(1,k.rain)),fall=24*dt,wx=k.storm*6,cx=G.pos.x,cz=G.pos.z;
+  if(rainOn){const a=P.rain.geometry.attributes.position.array,N=P.rainN,act=Math.floor(N*Math.min(1,k.rain)*(GFX.fx?1:.3)),fall=24*dt,wx=k.storm*6,cx=G.pos.x,cz=G.pos.z;
     P.rain.material.opacity=.32+k.rain*.28;P.rain.geometry.setDrawRange(0,act*2);
     for(let i=0;i<act;i++){const o=i*6;let x=a[o],y=a[o+1]-fall,z=a[o+2];x+=wx*dt;
       if(y<-1){y+=20+Math.random()*2;x=cx+(Math.random()-.5)*44;z=cz+(Math.random()-.5)*44;}
@@ -9941,7 +10370,7 @@ function weatherTick(t,dt){
       a[o]=x;a[o+1]=y;a[o+2]=z;a[o+3]=x-wx*.04;a[o+4]=y+.55+k.storm*.2;a[o+5]=z;}
     P.rain.geometry.attributes.position.needsUpdate=true;
     // splashes on the ground around me
-    WX.splashT+=dt*k.rain*55;while(WX.splashT>1){WX.splashT--;const s=WX.splashes.find(q=>t-q.t0>.4);if(!s)break;const x=G.pos.x+(Math.random()-.5)*16,z=G.pos.z+(Math.random()-.5)*14;
+    WX.splashT+=GFX.fx?dt*k.rain*55:0;while(WX.splashT>1){WX.splashT--;const s=WX.splashes.find(q=>t-q.t0>.4);if(!s)break;const x=G.pos.x+(Math.random()-.5)*16,z=G.pos.z+(Math.random()-.5)*14;
       s.m.position.set(x,Math.max(groundY(x,z),z<SHORE_Z?-.9:0)+.04,z);s.t0=t;s.m.visible=true;}}
   WX.splashes.forEach(s=>{if(!s.m.visible)return;const q=(t-s.t0)/.4;if(q>=1||!rainOn){s.m.visible=false;return;}s.m.scale.setScalar(1+q*2.2);s.m.material.opacity=.4*(1-q);});
   // lightning in a storm
@@ -10519,7 +10948,7 @@ function makeFood(kind,i){
     else if(N==="Croissant"){const c=add(new THREE.Mesh(new THREE.TorusGeometry(.13,.06,10,16,Math.PI*1.25),mat("#e0a24a",{roughness:.55})));c.rotation.x=Math.PI/2;c.position.y=.06;c.rotation.z=.9;
       for(let k=0;k<4;k++){const r=add(new THREE.Mesh(new THREE.TorusGeometry(.13,.062,6,4,.12),mat("#b8742a")));r.rotation.set(Math.PI/2,0,.9+k*.9);r.position.y=.06;}}
     else if(N==="Rainbow Cupcake"){add(cyl(.11,.08,.12,mat("#ff9ed8",{roughness:.5}),0,.06,0,16));["#ff5f8a","#ffd23a","#7fd34f","#4fc3ff","#b07bff"].forEach((c,k)=>sph(.1-k*.016,c,0,.15+k*.04,0,.7));sph(.03,"#e8172f",0,.36,0);}
-    else if(N==="Taco"){const sh=add(new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.22,20,1,true,0,Math.PI),mat("#f2c14a",{side:THREE.DoubleSide})));sh.rotation.z=Math.PI/2;sh.position.y=.16;
+    else if(N==="Taco"){const sh=add(new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.22,20,1,true,0,Math.PI),mat("#f2c14a",{side:THREE.DoubleSide})));sh.rotation.z=-Math.PI/2;   /* the open side of the shell up */sh.position.y=.16;
       sph(.08,"#7a3a1a",0,.13,0,.6).scale.set(1.6,.6,.6);add(box(.24,.03,.08,mat("#7fd34f"),0,.18,0));add(box(.2,.025,.05,mat("#e8423b"),0,.2,0));}
     else if(N==="Nachos"){add(cyl(.22,.2,.025,mat("#ffffff",{roughness:.3}),0,.012,0,24));for(let k=0;k<9;k++){const t=add(new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.01,3),mat("#ffb84a")));t.position.set(Math.cos(k*.8)*.1,.035+k*.006,Math.sin(k*.8)*.1);t.rotation.set(.3,k,.2);}
       add(cyl(.05,.045,.05,mat("#ffffff"),0,.05,0,14));add(cyl(.044,.044,.01,mat("#ffd23a",{emissive:"#ffb000",emissiveIntensity:.2}),0,.075,0,14));}
@@ -10577,7 +11006,7 @@ function openMenu(kind,stand){if(!menuOverlay.hidden)return;G.keys={};G.target=n
 // the club bar: the server takes the coins, then you get your order
 Sound.onClubSong=name=>{if(Sound.musicVol>0)toast("Now playing: "+name);};
 // /play?beachtest: jump around the beach (window.__beach.go(x,z,face), .walk(x,z) walks there, .ground(x,z))
-if(new URLSearchParams(location.search).has("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,stage:()=>GS_STAGE?{wv:world.visible,pIn:P.root.parent===scene,pw:P.root.parent===world,cam:cam.position.toArray().map(v=>+v.toFixed(2)),n:GS_STAGE.vis.length,vis:scene.children.filter(o=>o.visible).map(o=>o.type+":"+o.name)}:null,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures})};
+if(new URLSearchParams(location.search).has("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,stage:()=>GS_STAGE?{wv:world.visible,pIn:P.root.parent===scene,pw:P.root.parent===world,cam:cam.position.toArray().map(v=>+v.toFixed(2)),n:GS_STAGE.vis.length,vis:scene.children.filter(o=>o.visible).map(o=>o.type+":"+o.name)}:null,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures}),scene:()=>scene,route:(x,z)=>{const t0=performance.now();const ok=routeTo(x,z);return {ok,ms:Math.round(performance.now()-t0),pts:ROUTE.pts&&ROUTE.pts.length,left:ROUTE.pts&&Math.round(routeLeft())};},seats:()=>worldSeats(),seated:()=>G.seat,gfx:()=>({mode:GFX.mode,o:GFX.o,pr:GFX.pr,sh:renderer.shadowMap.enabled,fx:GFX.fx,far:cam.far})};
 if(new URLSearchParams(location.search).has("bartest"))window.__bar={go:()=>enterPlace("club"),menu:()=>openMenu("club"),song:()=>Sound.clubSong};
 function closeMenu(quiet){if(menuOverlay.hidden)return;menuOverlay.hidden=true;if(!quiet)sfx.close();}
 document.getElementById("menuClose").onclick=()=>closeMenu();
@@ -10662,10 +11091,17 @@ function poseHold(C,st,info,dt,bite){
   if(!st.mesh)return;
   const e=smooth(st.k),b=Math.sin(Math.PI*Math.min(1,Math.max(0,bite)));
   st.mesh.visible=st.k>.05;if(!st.mesh.visible)return;
-  const armX=C.armR.rotation.x*(1-e)+(-1.15-1.05*b)*e;C.armR.rotation.x=armX;C.armR.rotation.z=(.12+.55*b)*e;
-  if(b>0)C.head.rotation.x=-.12*b;
+  // a bite: the arm swings in front of the face (towards the mouth, not out to the side) and the food goes right up to the mouth
+  const armX=C.armR.rotation.x*(1-e)+(-1.15+(HOLD_MOUTH.rx+1.15)*b)*e;C.armR.rotation.x=armX;C.armR.rotation.z=(.12+(HOLD_MOUTH.rz-.12)*b)*e;
+  if(b>0)C.head.rotation.x=.1*b;   // a little nod down into the bite
   const f=info?info.f:st.f||1;st.f=f;const sc=st.mesh.userData.base*(.4+.6*f)*Math.max(.001,Math.min(1,st.k*1.6));
-  st.mesh.scale.setScalar(sc);st.mesh.position.copy(st.hand).add(new THREE.Vector3(0,-.02,.1));st.mesh.rotation.set(-armX-.1,0,-C.armR.rotation.z);}
+  st.mesh.scale.setScalar(sc);st.mesh.position.copy(st.hand).add(_hv.set(0,-.02,.1));
+  if(b>.01){C.armR.updateWorldMatrix(true,false);const m=C.armR.worldToLocal(C.root.localToWorld(_hm.copy(HOLD_MOUTH.p)));st.mesh.position.lerp(m.sub(_hv.set(0,.06*sc/st.mesh.userData.base,0)),b*.85);}
+  st.mesh.rotation.set(-armX-.1,0,-C.armR.rotation.z);}
+// where the mouth is (character space) and the arm angles that point the hand at it
+const HOLD_MOUTH=(()=>{const p=new THREE.Vector3(0,1.0,.6),sh=new THREE.Vector3(.35,.72,.02),d=p.clone().sub(sh).normalize();
+  return {p,rz:Math.asin(d.x),rx:Math.atan2(-d.z,-d.y)};})();
+const _hv=new THREE.Vector3(),_hm=new THREE.Vector3();
 const MYHOLD={};
 function myHoldTick(dt){if(!P)return;
   const s=PH.k>0||G.seat&&G.seat.k==="sleep"||DLV.ride?null:heldSnack();
@@ -10686,8 +11122,10 @@ function doorTick(){
   else if(inGame&&!G.home&&!GS.open&&!PLACE.busy&&!HOME.leaving&&menuOverlay.hidden&&!RIDE.on){if(vehNearMine())best="veh:ride";else for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,VENUES[id].door||3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
     if(!best&&G.pos.x>30)for(const s of PARK_SPOTS)if(Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<1.9){best=s.id;break;}
     if(!best)for(const s of EV_SPOTS)if(Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<2.1){best=s.id;break;}
-    if(!best&&CITY)for(const s of CITY.spots)if(Math.abs(G.pos.x-s.x)<s.r&&Math.abs(G.pos.z-s.z)<s.r&&Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<s.r){best=s.id;break;}}
+    if(!best&&CITY)for(const s of CITY.spots)if(Math.abs(G.pos.x-s.x)<s.r&&Math.abs(G.pos.z-s.z)<s.r&&Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<s.r){best=s.id;break;}
+    if(!best&&!G.seat){const i=nearWorldSeat();if(i>=0)best="seat:"+i;}}
   if(best===nearDoor)return;nearDoor=best;seatPrompt.hidden=!best;body.classList.toggle("at-door",!!best);
+  if(best&&best.startsWith("seat:")){const S=worldSeats()[+best.slice(5)];document.getElementById("seatText").textContent=S.k==="lie"?"LIE DOWN":"SIT";document.getElementById("seatIcon").innerHTML=SEAT_ICON[S.k]||SEAT_ICON.sit;sfx.tick(true);return;}
   if(best){const sp=VEH_SPOTS[best]||PARK_SPOTS.find(q=>q.id===best)||EV_SPOTS.find(q=>q.id===best)||(CITY&&CITY.spots.find(q=>q.id===best));document.getElementById("seatText").textContent=sp?sp.label:VENUES[best].enter;document.getElementById("seatIcon").innerHTML=sp?(SPOT_ICON[sp.icon]||SPOT_ICON[best.split(":")[0]]||DOOR_ICON):DOOR_ICON;sfx.tick(true);}}
 function roomLights(C){if(!HOME.hemi)return;const dim=!!(C&&C.dim);HOME.hemi.intensity=dim?.55:1.25;HOME.sun.intensity=dim?.35:1.6;HOME.lamp.intensity=dim?0:14;HOME.win.visible=!C;if(HOME.win2)HOME.win2.visible=!C;}
 function placeDetach(){if(PLACE.cur){PLACE.cur.g.removeFromParent();PLACE.cur=null;}HOME.place=null;roomLights(null);Sound.venue(null);closeMenu(true);stopEating();}
@@ -12017,8 +12455,10 @@ let pcTarget=null,invite=null,inviteT=null,TR=null;   // TR = the open trade
 const TRADE_SLOTS=["hair","shirt","pants","glasses","hat","neck","eyes","color","tag","furniture","aura"];
 let tradeSlot="hair";
 const parseItem=id=>{const [s,i]=String(id).split(":");return [s,+i];};
-function slotHTML(id,extra=""){if(!id)return '<div class="slot empty" aria-hidden="true"></div>';const [s,i]=parseItem(id);
-  return `<button type="button" class="slot full" data-id="${id}" ${extra} title="${itemName(s,i)}">${itemPic(s,i)}<small>${itemName(s,i)}</small></button>`;}
+function slotHTML(id,extra="",n=1){if(!id)return '<div class="slot empty" aria-hidden="true"></div>';const [s,i]=parseItem(id);
+  return `<button type="button" class="slot full" data-id="${id}" ${extra} title="${itemName(s,i)}${n>1?" x"+n:""}">${qtyBadge(n)}${itemPic(s,i)}<small>${itemName(s,i)}</small></button>`;}
+// the table: the same item offered more than once shows once with "x2", "x3"…
+function groupSlots(list){const m=new Map();for(const id of list)m.set(id,(m.get(id)||0)+1);return [...m];}
 
 /* click another player -> their card */
 function remoteAt(e){_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);
@@ -12054,9 +12494,9 @@ function openTrade(d){
 function closeTradeWindow(){tradeOverlay.hidden=true;TR=null;}
 function renderTrade(){
   if(!TR)return;
-  const pad=a=>[...a,...Array(6-a.length).fill(null)];
-  document.getElementById("slotsMine").innerHTML=pad(TR.mine).map(id=>slotHTML(id,'aria-label="Take back"')).join("");
-  document.getElementById("slotsTheirs").innerHTML=pad(TR.theirs).map(id=>slotHTML(id,"disabled")).join("");
+  const pad=a=>[...a,...Array(Math.max(0,6-a.length)).fill(null)];
+  document.getElementById("slotsMine").innerHTML=pad(groupSlots(TR.mine)).map(g=>g?slotHTML(g[0],'aria-label="Take one back"',g[1]):slotHTML(null)).join("");
+  document.getElementById("slotsTheirs").innerHTML=pad(groupSlots(TR.theirs)).map(g=>g?slotHTML(g[0],"disabled",g[1]):slotHTML(null)).join("");
   document.getElementById("offerMine").classList.toggle("is-ready",TR.readyMe);document.getElementById("offerTheirs").classList.toggle("is-ready",TR.readyThem);
   // my items, by kind
   const tabs=document.getElementById("tradeTabs");tabs.innerHTML="";
@@ -12210,12 +12650,18 @@ function openDuel(d){
   DU={...d,last:null,over:null};quitArmed=false;duelCard.querySelector(".duel-end")?.remove();
   document.getElementById("duelTitle").textContent=GAME_NAME[d.game].toUpperCase();
   document.getElementById("duelPot").innerHTML=`${COIN_SVG}${d.pot}`;
-  duelOverlay.hidden=false;G.keys={};sfx.whoosh();setSideNames("ppDuelThem",d.players[1-d.you].username);paintDuel(true);
+  duelOverlay.hidden=false;G.keys={};sfx.whoosh();document.querySelectorAll("#duelCard .pp-bubble").forEach(b=>b.classList.remove("show"));
+  // the two players walk apart from the middle to their sides
+  duelCard.classList.remove("walkin");void duelCard.offsetWidth;duelCard.classList.add("walkin");sideFrame=0;
+  paintDuel(true);
 }
 function paintDuel(fresh){
   if(!DU)return;const me_=DU.you,them=1-me_,marks=DU.game==="ttt"?MARK:DISC;
-  const chip=(i,el)=>{el.innerHTML=`<span class="mk">${marks[i]}</span><b>${i===me_?"You":DU.players[i].username}</b><i class="tbar"></i>`;
-    el.classList.toggle("turn",!DU.over&&DU.turn===i);if(!DU.over&&DU.turn===i)el.style.setProperty("--left",(DU.left||30000)/1000+"s");};
+  // under each player: X / O (or the disc colour) and the name; the arrow and the timer go to whoever's turn it is
+  const chip=(i,el)=>{const turn=!DU.over&&DU.turn===i,pp=el.closest(".pp"),key=i+":"+DU.game+":"+DU.players[i].username;
+    if(el.dataset.k!==key){el.dataset.k=key;el.innerHTML=`<span class="mk">${marks[i]}</span><span class="nm">${esc(i===me_?"You":DU.players[i].username)}</span><i class="tbar"></i>`;}
+    if(turn&&!pp.classList.contains("turn")){const bar=el.querySelector(".tbar");bar.style.animation="none";void bar.offsetWidth;bar.style.animation="";}
+    pp.classList.toggle("turn",turn);if(turn)el.style.setProperty("--left",(DU.left||30000)/1000+"s");};
   chip(me_,document.getElementById("dpMe"));chip(them,document.getElementById("dpThem"));
   const st=document.getElementById("duelStatus");
   st.textContent=DU.over?"":DU.turn===me_?"Your turn!":`${DU.players[them].username}'s turn…`;st.style.color=DU.turn===me_?"#ffd23a":"#fff";
@@ -12238,12 +12684,12 @@ duelBoard.addEventListener("click",e=>{if(!DU||DU.over||DU.turn!==DU.you)return;
   socket.emit("duel:move",DU.game==="ttt"?{cell:+b.dataset.cell}:{col:+b.dataset.col});sfx.tick(true);});
 function giveUp(){if(!DU)return;if(DU.over){closeDuel();return;}
   const q=document.getElementById("duelQuit");
-  if(!quitArmed){quitArmed=true;q.textContent="Sure? You'll lose your 100";q.classList.remove("ghost");clearTimeout(quitT);quitT=setTimeout(()=>{quitArmed=false;q.textContent="Give up";q.classList.add("ghost");},3500);return;}
+  if(!quitArmed){quitArmed=true;q.textContent="Sure? You'll lose your 100";q.classList.add("armed");clearTimeout(quitT);quitT=setTimeout(()=>{quitArmed=false;q.textContent="Give up";q.classList.remove("armed");},3500);return;}
   socket.emit("duel:quit");}
 document.getElementById("duelQuit").onclick=giveUp;
 document.getElementById("duelX").onclick=giveUp;
 duelOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){if(e.target.tagName==="INPUT"){e.target.blur();return;}giveUp();}});
-function closeDuel(){duelOverlay.hidden=true;DU=null;const q=document.getElementById("duelQuit");q.textContent="Give up";q.classList.add("ghost");quitArmed=false;}
+function closeDuel(){duelOverlay.hidden=true;DU=null;const q=document.getElementById("duelQuit");q.textContent="Give up";q.classList.remove("armed");quitArmed=false;duelCard.classList.remove("walkin");}
 function duelOver(d){
   if(!DU||DU.id!==d.id)return;Object.assign(DU,{board:d.board,last:d.last,over:d});paintDuel();
   const won=d.winner===DU.you,draw=d.winner<0,opp=d.opponent.username;
@@ -12285,13 +12731,13 @@ function renderCharInto(root,face,hide,canvas){
 }
 function activeWin(){
   if(TR&&!tradeOverlay.hidden)return {me:"ppTradeMe",them:"ppTradeThem",partner:TR.partner.id,input:"tradeChat"};
-  if(DU&&!duelOverlay.hidden)return {me:"ppDuelMe",them:"ppDuelThem",partner:DU.opp,input:"duelChat"};
+  if(DU&&!duelOverlay.hidden)return {me:"ppDuelMe",them:"ppDuelThem",partner:DU.opp,input:"duelChat",look:DU.players&&DU.players[1-DU.you]&&DU.players[1-DU.you].look};
   return null;
 }
 function sidePortraits(){
   const w=activeWin();if(!w||(sideFrame++)%2)return;
   studioDraw(myLook(),document.querySelector("#"+w.me+" canvas"));
-  const c=remotes.get(w.partner);if(c)studioDraw(lookOf(c),document.querySelector("#"+w.them+" canvas"));
+  const c=remotes.get(w.partner),look=c?lookOf(c):w.look;if(look)studioDraw(look,document.querySelector("#"+w.them+" canvas"));
 }
 function setSideNames(themId,name){document.querySelector("#"+themId+">b").textContent=name;
   document.querySelectorAll(".pp-bubble").forEach(b=>b.classList.remove("show"));}
@@ -12806,7 +13252,7 @@ const TL_STEPS=[
   // ---- the screen ----
   {ch:"YOUR SCREEN",hl:"#coins",btn:"Next",say:`These are your <b>coins</b>, the money of Jumpi. You win them in mini-games, jobs, the daily gift and the Lucky Wheel, and spend them on clothes, furniture, pets, food and house upgrades.`},
   {ch:"YOUR SCREEN",hl:"#needsBar",btn:"Next",say:`These four circles are your Jumpi's <b>needs</b>: <b>Hunger</b>, <b>Energy</b>, <b>Stamina</b> and <b>Fun</b>. They go down slowly while you play, and your Jumpi shows it (sleepy eyes, slumping...). <b>Eat</b> for Hunger, <b>sleep</b> in a bed for Energy, <b>sit down</b> for Stamina, and <b>dance or play</b> for Fun. Click a circle any time for tips.`},
-  {ch:"YOUR SCREEN",hl:()=>mapOverlay.hidden?"#minimap":"#mapClose",needs:"mapOpen",ev:"mapClose",say:`This is the <b>mini-map</b>, and the dot in the middle is you. <b>Click it</b> to open the big map of the whole world (you can even click a place on it to walk there). Then close it with the <b>X</b>.`},
+  {ch:"YOUR SCREEN",hl:()=>mapOverlay.hidden?"#minimap":"#mapClose",needs:"mapOpen",ev:"mapClose",say:`This is the <b>mini-map</b>, and the dot in the middle is you. <b>Click it</b> to open the big map of the whole world (click a place on it and a blue line shows you the way there). Then close it with the <b>X</b>.`},
   {ch:"YOUR SCREEN",hl:"#wxClock",btn:"Next",say:`The clock shows the <b>real time in Israel</b>. Morning, sunset and night follow the real sky, and the weather changes for everyone together: sunny, cloudy, rain and even thunderstorms! Click the clock to see the forecast.`},
   {ch:"YOUR SCREEN",hl:"#giftBtn",btn:"Next",say:`This is your <b>daily gift</b>. Come back every day and open it for free coins. The more days in a row, the bigger the gift!`},
   {ch:"YOUR SCREEN",hl:"#seasonBtn",btn:"Next",say:`The star is the <b>Season Pass</b>: a free prize track with 30 tiers. You get XP from mini-games, jobs, the daily gift and the wheel. Every tier gives coins, and some tiers give clothes you can only get this season!`},

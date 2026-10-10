@@ -430,7 +430,12 @@ function car(p, x, z, ry, color, kind = "sedan") {
   q.colBox(-W / 2 - 0.15, -L / 2 - 0.15, W / 2 + 0.15, L / 2 + 0.15);
 }
 const WOOD = () => M("#b07a48"), IRON = () => M("#3b3f4a", { roughness: 0.5, metalness: 0.45 });
-function bench(p, x, z, ry, col = "#c27a3e") { const q = p.at(x, z, ry), wd = M(col), ir = IRON();
+// a place to sit (or lie) for the game: q = the piece's painter, (lx, lz) where in its own space, h = seat height above the ground
+// (or y = an exact height), facing the piece's +z (or -z with flip)
+const SEATS_W = [];
+function addSeat(q, lx, lz, h, k = "sit", flip = false, y = null) { const w = q.world(lx, 0, lz), o = q.world(0, 0, 0), fw = q.world(0, 0, flip ? -1 : 1);
+  SEATS_W.push({ k, x: w.x, z: w.z, f: Math.atan2(fw.x - o.x, fw.z - o.z), y: y ?? q.world(lx, h, lz).y }); }
+function bench(p, x, z, ry, col = "#c27a3e") { const q = p.at(x, z, ry), wd = M(col), ir = IRON(); addSeat(q, -0.5, 0.02, 0.58); addSeat(q, 0.5, 0.02, 0.58);
   for (let i = 0; i < 3; i++) q.box(2.2, 0.08, 0.2, wd, 0, 0.58, -0.22 + i * 0.22); for (let i = 0; i < 2; i++) q.box(2.2, 0.1, 0.08, wd, 0, 0.88 + i * 0.22, -0.4);
   [-0.95, 0.95].forEach((s) => { q.box(0.07, 0.58, 0.62, ir, s, 0.29, -0.05); q.box(0.07, 0.66, 0.07, ir, s, 0.88, -0.42); }); q.colCircle(0, 0, 0.9); }
 function bin(p, x, z) { const q = p.at(x, z); q.cyl(0.32, 0.27, 0.95, M("#2f7d4f", { metalness: 0.3, roughness: 0.5 }), 0, 0.48, 0, 12); q.cyl(0.35, 0.35, 0.07, M("#235f3c"), 0, 0.98, 0, 12); q.colCircle(0, 0, 0.35); }
@@ -442,12 +447,14 @@ function flowerBed(p, x, z, w, d, seed = 1) { const q = p.at(x, z), R = rng(seed
   for (let i = 0; i < n; i++) { const fx = (R() - 0.5) * (w - 0.5), fz = (R() - 0.5) * (d - 0.5); q.cyl(0.02, 0.02, 0.3, M("#3f9a3d"), fx, 0.38, fz, 4); q.sphere(0.11, M(cols[Math.floor(R() * cols.length)]), fx, 0.55, fz, 1, 0.8, 1, [6, 4]); } }
 function hedge(p, x, z, w, d, h = 1.1) { p.box(w, h, d, M("#3a8f3e", { roughness: 1 }), x, h / 2, z); p.box(w - 0.1, 0.12, d - 0.1, M("#4aa34a", { roughness: 1 }), x, h + 0.04, z); p.colBox(x - w / 2, z - d / 2, x + w / 2, z + d / 2); }
 function picketFence(p, x0, z0, x1, z1, col = "#ffffff", gap = null) { const L = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(x1 - x0, z1 - z0) - Math.PI / 2, q = p.at(x0, z0, -ry), wm = M(col);
-  for (let t = 0; t <= L; t += 0.32) { if (gap && t > gap[0] && t < gap[1]) continue; q.box(0.08, 0.95, 0.06, wm, t, 0.48, 0); q.cone(0.06, 0.12, wm, t, 1.0, 0, 4); }
+  // gap: one opening [a, b] or a list of them ([[a, b], [c, d]]: the garden gate and the driveway)
+  const gaps = !gap ? [] : Array.isArray(gap[0]) ? [...gap].sort((u, v) => u[0] - v[0]) : [gap], runs = []; { let a = 0; for (const [g0, g1] of gaps) { runs.push([a, g0]); a = g1; } runs.push([a, L]); }
+  for (let t = 0; t <= L; t += 0.32) { if (gaps.some(([g0, g1]) => t > g0 && t < g1)) continue; q.box(0.08, 0.95, 0.06, wm, t, 0.48, 0); q.cone(0.06, 0.12, wm, t, 1.0, 0, 4); }
   const rail = (a, b) => { if (b - a > 0.1) { q.box(b - a, 0.08, 0.05, wm, (a + b) / 2, 0.35, -0.04); q.box(b - a, 0.08, 0.05, wm, (a + b) / 2, 0.75, -0.04); } };
-  if (gap) { rail(0, gap[0]); rail(gap[1], L); } else rail(0, L);
+  runs.forEach(([a, b]) => rail(a, b));
   // walls for the game (straight runs only, axis-aligned)
   const seg = (a, b) => { if (b - a < 0.2) return; const A = q.world(a, 0, 0), B = q.world(b, 0, 0); COLS.push({ box: [Math.min(A.x, B.x) - 0.12, Math.min(A.z, B.z) - 0.12, Math.max(A.x, B.x) + 0.12, Math.max(A.z, B.z) + 0.12] }); };
-  if (gap) { seg(0, gap[0]); seg(gap[1], L); } else seg(0, L); }
+  runs.forEach(([a, b]) => seg(a, b)); }
 function metalFence(p, x0, z0, x1, z1, h = 2.2) { const L = Math.hypot(x1 - x0, z1 - z0), ry = Math.atan2(x1 - x0, z1 - z0) - Math.PI / 2, q = p.at(x0, z0, -ry), m = M("#9aa3ad", { metalness: 0.6, roughness: 0.35 });
   for (let t = 0; t <= L; t += 3) q.cyl(0.06, 0.06, h, m, t, h / 2, 0, 6); q.box(L, 0.06, 0.06, m, L / 2, h - 0.05, 0); q.box(L, 0.06, 0.06, m, L / 2, 0.15, 0);
   q.put(planeG(), M("#c5ccd4", { transparent: true, opacity: 0.35, metalness: 0.5, side: THREE.DoubleSide, depthWrite: false }), L / 2, h / 2, 0, 0, L, 1, h - 0.2, Math.PI / 2, 0, false);
@@ -617,15 +624,26 @@ const anim = (fn, g = ANIM_G) => ANIM.push({ fn, g });
 /* =====================================================================
    BUILDING THE CITY
    ===================================================================== */
+// driveways (filled by homePlot) and the "is this where cars drive?" test for trees and lamps
+const DRIVES = [];
+function onTarmac(L, x, z, pad = 0) {
+  const h = L.ROAD_W / 2 + pad;
+  if (L.ROADS.some((r) => (r.z !== undefined ? x >= r.x0 - 1 && x <= r.x1 + 1 && Math.abs(z - r.z) < h : z >= r.z0 - 1 && z <= r.z1 + 1 && Math.abs(x - r.x) < h))) return true;
+  if (L.PARKING.some((p) => L.inRect(x, z, p.rect, pad))) return true;
+  return DRIVES.some((d) => Math.abs(x - d.x) < 2.4 && z >= d.z0 && z <= d.z1);
+}
+// a lamp that would stand in a driveway moves to its side
+const clearOfDrive = (x, z) => { for (const d of DRIVES) if (Math.abs(x - d.x) < 2.6 && z >= d.z0 && z <= d.z1) return d.x + (x < d.x ? -2.7 : 2.7); return x; };
 const CELL = 80; let VIEW = 175;   // the world is cut into CELL×CELL squares; squares further than VIEW are hidden
 export function buildCity(L, host) {
-  COLS = []; nightMats.length = 0; ANIM.length = 0; LAMP_FX.length = 0;
+  COLS = []; DRIVES.length = 0; SEATS_W.length = 0; nightMats.length = 0; ANIM.length = 0; LAMP_FX.length = 0;
   const root = new THREE.Group(); root.name = "city"; host.world.add(root);
   const cells = new Map();
   const cell = (x, z) => { const i = Math.floor(x / CELL), j = Math.floor(z / CELL), k = i + "," + j;
     let c = cells.get(k); if (!c) { c = { i, j, cx: (i + 0.5) * CELL, cz: (j + 0.5) * CELL, group: new THREE.Group(), acc: new Acc(), trees: new TreeField(), lamps: new LampField() }; root.add(c.group); cells.set(k, c); } return c; };
   const P = (x, z, ry = 0) => new Painter(cell(x, z).acc).at(x, z, ry);
-  const tree = (kind, x, z, s = 1, y = null) => cell(x, z).trees.add(kind, x, z, s, y === null ? ground(x, z) : y);
+  // never a tree on a road, a parking lot or in front of a driveway
+  const tree = (kind, x, z, s = 1, y = null) => { if (onTarmac(L, x, z, 1.1)) return; cell(x, z).trees.add(kind, x, z, s, y === null ? ground(x, z) : y); };
   const lamp = (x, z, ry = 0, style = "street") => { cell(x, z).lamps.add(null, x, z, ry, style); };
   const live = (x, z) => { const c = cell(x, z); ANIM_G = c.group; return c.group; };   // animated things go straight into their square
   const ground = (x, z) => (z > HILL_Z0 ? hillHeight(x, z) : 0);
@@ -649,7 +667,7 @@ export function buildCity(L, host) {
     if (roadRects.some((r) => inRect(x, z, r)) || CONNECTORS.some((r) => inRect(x, z, r)) || DECKS.some((r) => inRect(x, z, r))) return !BLOCKED.some((r) => inRect(x, z, r)) || roadRects.some((r) => inRect(x, z, r));
     if (BLOCKED.some((r) => inRect(x, z, r))) return false;
     if (inLake(x, z)) return BRIDGES.some((r) => inRect(x, z, r));
-    if (!DISTRICTS.some((d) => inRect(x, z, d.rect))) return false;
+    if (!DISTRICTS.some((d) => inRect(x, z, d.rect)) && !(L.OPEN_LAND || []).some((r) => inRect(x, z, r))) return false;
     if (z > HILL_Z0) return hillSlope(x, z) < 1.15;
     return true;
   }
@@ -694,7 +712,7 @@ export function buildCity(L, host) {
     for (const f of LAMP_FX) { f.hm.opacity = k * 0.9; f.pm.opacity = k * 0.8; }
     for (const b of BEAMS) b.opacity = k * 0.16;
   }
-  return { setView: (v) => { VIEW = v; last = -1; }, root, colliders, walk, camClamp, chest: CHEST, ground: groundAt, deck: (x, z) => L.onDeck(x, z) || BRIDGES.some((r) => inRect(x, z, r)), zoneAt, zones: ZONE_OF, update, night, spots: SPOTS, cells };
+  return { setView: (v) => { VIEW = v; last = -1; }, root, colliders, walk, camClamp, chest: CHEST, ground: groundAt, deck: (x, z) => L.onDeck(x, z) || BRIDGES.some((r) => inRect(x, z, r)), zoneAt, zones: ZONE_OF, update, night, spots: SPOTS, seats: SEATS_W, cells };
 }
 const SPOTS = [];      // places with an action key (E): {id, x, z, r, label, icon}
 const DISTRICT_BUILDERS = [];
@@ -1049,11 +1067,13 @@ function homePlot(B, x, z, facing, look, o = {}) {
   // front garden: a path to the door, a fence with a gate, flowers, a mailbox
   const gz = front + facing * 3.6, fz = front + facing * 6.4, wd = (o.w || 9) / 2 + 5;
   pave(B, x - 0.7, Math.min(front + facing * 2.4, fz), x + 0.7, Math.max(front + facing * 2.4, fz), texMat(sidewalkTex()), [2, 2], 0.04);
-  picketFence(B.P(x - wd, fz), 0, 0, wd * 2, 0, "#ffffff", [wd - 1.0, wd + 1.0]);
+  const gx = x + (facing > 0 ? 1 : -1) * ((o.w || 9) / 2 + 2.2), hasDrive = o.garage !== false;
+  if (hasDrive) DRIVES.push({ x: gx, z0: Math.min(front, fz + facing * 9), z1: Math.max(front, fz + facing * 9) });   // the driveway and the way out to the lane
+  picketFence(B.P(x - wd, fz), 0, 0, wd * 2, 0, "#ffffff", hasDrive && Math.abs(gx - x) < wd ? [[wd - 1.0, wd + 1.0], [gx - x + wd - 2.1, gx - x + wd + 2.1]] : [wd - 1.0, wd + 1.0]);
   flowerBed(B.P(x - 3.4, gz), 0, 0, 3.2, 1.2, x * 7 + z); flowerBed(B.P(x + 3.4 - (o.garage !== false ? 0 : 0), gz), 0, 0, 2.2, 1.2, x * 3 + z);
   { const p = B.P(x + 1.6, fz + facing * 0.5); p.cyl(0.05, 0.05, 1.1, M("#5e3f25"), 0, 0.55, 0, 6); p.box(0.36, 0.3, 0.5, M(look.door), 0, 1.2, 0); p.box(0.04, 0.14, 0.18, M("#e8423b"), 0.2, 1.38, 0.08); p.colCircle(0, 0, 0.2); }
   // driveway + a car by the garage
-  if (o.garage !== false) { const gx = x + (facing > 0 ? 1 : -1) * ((o.w || 9) / 2 + 2.2);
+  if (hasDrive) {
     pave(B, gx - 1.9, Math.min(front, fz + facing * 1.5), gx + 1.9, Math.max(front, fz + facing * 1.5), texMat(concreteTex()), [4, 4], 0.04);
     if (o.car !== false) car(B.P(gx, front + facing * 3.4), 0, 0, facing > 0 ? 0 : Math.PI, CAR_COLS[Math.abs(Math.round(x + z)) % CAR_COLS.length], ["sedan", "hatch", "pickup", "van"][Math.abs(Math.round(x)) % 4]); }
   // backyard trees
@@ -1064,7 +1084,7 @@ DISTRICT_BUILDERS.push(function residential(B) {
   [-84, -66, -48].forEach((x, i) => homePlot(B, x, 102.6, 1, HOUSE_LOOKS[i]));
   [-84, -66].forEach((x, i) => homePlot(B, x, 131.4, -1, HOUSE_LOOKS[i + 3]));
   playground(B, -48, 134);
-  for (let x = -90; x <= -42; x += 12) { B.lamp(x, 112.2, 0, "park"); COLS.push({ c: [x, 112.2], r: 0.25 }); B.tree("round", x + 6, 121.8, 0.75); }
+  for (let x0 = -90; x0 <= -42; x0 += 12) { const x = clearOfDrive(x0, 112.2); B.lamp(x, 112.2, 0, "park"); COLS.push({ c: [x, 112.2], r: 0.25 }); B.tree("round", x0 + 6, 121.8, 0.75); }
   sideSignPost(B, -92, 113.4, "MAPLE LANE");
   // cars in the neighborhood parking
   [[-89.4, 142], [-84, 142]].forEach(([x, z], i) => car(B.P(x, z), 0, 0, 0, CAR_COLS[(i * 4 + 3) % CAR_COLS.length]));
@@ -1099,7 +1119,7 @@ DISTRICT_BUILDERS.push(function suburbs(B) {
     hedge(B.P(x, bz - f * 4.6), 0, 0, 22, 1.1); 
     B.tree("pine", x - 9, bz, 1.0); B.tree("tall", x + 10, bz + f * 2, 1.0); B.tree("round", x + 9, z + f * 1, 0.8);
   });
-  for (let x = -166; x <= -112; x += 14) { B.lamp(x, 112.5, 0, "park"); COLS.push({ c: [x, 112.5], r: 0.25 }); }
+  for (let x0 = -166; x0 <= -112; x0 += 14) { const x = clearOfDrive(x0, 112.5); B.lamp(x, 112.5, 0, "park"); COLS.push({ c: [x, 112.5], r: 0.25 }); }
   sideSignPost(B, -108, 112.2, "SUNNY HILLS DRIVE");
   // the cul-de-sac end: a round turning circle with a tree in the middle
   { const p = B.P(-169, 117); p.cyl(1.6, 1.6, 0.4, M("#d8d2c4"), 0, 0.2, 0, 20); p.colCircle(0, 0, 1.6); } B.tree("round", -169, 117, 1.1);
@@ -1150,7 +1170,7 @@ DISTRICT_BUILDERS.push(function centralPark(B) {
       const tex = canvasTex("blanket" + i, 128, 128, (c, w, h) => { c.fillStyle = cols[i][1]; c.fillRect(0, 0, w, h); c.fillStyle = cols[i][0]; for (let k = 0; k < 8; k++) { c.globalAlpha = 0.7; c.fillRect(k * 16, 0, 8, h); c.fillRect(0, k * 16, w, 8); } }, { repeat: false });
       p.geo(new THREE.PlaneGeometry(3, 2.4).rotateX(-Math.PI / 2), texMat(tex), 0, 0.05, 0, 0, false);
       p.box(0.6, 0.35, 0.4, M("#c99a63"), 0.8, 0.2, 0.5); p.cyl(0.3, 0.3, 0.04, M("#ffffff"), -0.6, 0.08, -0.3, 14); p.sphere(0.12, M("#e8423b"), -0.6, 0.18, -0.3, 1, 1, 1, [8, 6]); }
-    [[24, 141], [14, 143]].forEach(([x, z]) => { const p = B.P(x, z); p.box(2.6, 0.1, 1.0, WOOD(), 0, 0.78, 0); [-1, 1].forEach((s) => { p.box(2.6, 0.08, 0.35, WOOD(), 0, 0.45, s * 0.75); p.box(0.1, 0.78, 1.6, WOOD(), s * 1.1, 0.39, 0); }); p.colBox(-1.4, -1.0, 1.4, 1.0); }); }
+    [[24, 141], [14, 143]].forEach(([x, z]) => { const p = B.P(x, z); p.box(2.6, 0.1, 1.0, WOOD(), 0, 0.78, 0); [-1, 1].forEach((s) => { p.box(2.6, 0.08, 0.35, WOOD(), 0, 0.45, s * 0.75); p.box(0.1, 0.78, 1.6, WOOD(), s * 1.1, 0.39, 0); [-0.6, 0.6].forEach((sx) => addSeat(p, sx, s * 0.78, 0.45, "sit", s > 0)); }); p.colBox(-1.4, -1.0, 1.4, 1.0); }); }
   // benches around the lake, facing the water
   for (let a = 0; a < TAU - 0.01; a += TAU / 10) { if (Math.abs(Math.sin(a)) < 0.25) continue; const x = lx + Math.cos(a) * (L.rx + 4.2), z = lz + Math.sin(a) * (L.rz + 4.2); bench(B.P(x, z), 0, 0, -a - Math.PI / 2); }
   for (let a = 0.3; a < TAU; a += TAU / 8) { const x = lx + Math.cos(a) * (L.rx + 8.6), z = lz + Math.sin(a) * (L.rz + 8.6); B.lamp(x, z, 0, "park"); COLS.push({ c: [x, z], r: 0.25 }); }
@@ -1341,10 +1361,32 @@ DISTRICT_BUILDERS.push(function airport(B) {
   [[190.5, 22], [190.5, 30], [190.5, 50], [190.5, 58]].forEach(([x, z]) => car(B.P(x, z), 0, 0, 0, "#ffd23a", "taxi"));
   // the control tower
   { const p = B.P(220, 78); p.cyl(1.8, 2.4, 22, M("#e9eef6"), 0, 11, 0, 18); p.cyl(3.6, 2.6, 1.2, M("#dfe6ec"), 0, 22.6, 0, 18); p.cyl(3.4, 3.4, 2.6, M("#2a4a68", { roughness: 0.1, metalness: 0.5 }), 0, 24.5, 0, 18); p.cyl(3.8, 3.6, 0.6, M("#ffffff"), 0, 26.1, 0, 18); p.cyl(0.08, 0.08, 3, M("#2b2f3a"), 0, 27.9, 0, 6); p.sphere(0.2, glowMat("#ff3b30", 3), 0, 29.5, 0); p.colCircle(0, 0, 2.5); }
-  // the hangar (open, a little plane inside)
-  { const p = B.P(208, 100); const arch = unitGeo("hangar", () => { const g = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true, -Math.PI / 2, Math.PI); g.rotateZ(Math.PI / 2); return g; });
-    p.put(arch, texMat(metalRibTex("#8a99ab"), { side: THREE.DoubleSide }), 0, 0, 0, 0, 22, 9, 11); p.box(0.3, 9, 22, M("#7d8b9c"), -11, 4.5, 0); p.colBox(-11.3, -11, 11, -10); p.colBox(-11.3, 10, 11, 11); p.colBox(-11.3, -11, -10.4, 11);
-    sideSign(p, "HANGAR 1", -10.7, 7, 0, 5, 1.2, { bg: "#ffd23a", fg: "#1d2b4f" }); }
+  // the hangar: a ribbed barrel roof on its long side, a closed back, a front wall with a wide door opening towards the runway,
+  // the HANGAR 1 sign on that front wall above the door, a small plane parked inside
+  { const X = 208, Z = 100, L = 24, RW = 11, RH = 9, DW = 7.5, DH = 6.4, p = B.P(X, Z);
+    const vault = unitGeo("hangarVault", () => new THREE.CylinderGeometry(1, 1, 1, 32, 6, true, -Math.PI / 2, Math.PI).rotateX(-Math.PI / 2).rotateY(Math.PI / 2));
+    p.put(vault, texMat(metalRibTex("#9aa8b8"), { side: THREE.DoubleSide, roughness: 0.5, metalness: 0.3 }), 0, 0, 0, 0, L, RH, RW);
+    // a half-oval; the front one has the door notched out of its bottom edge
+    const half = (door) => { const sh = new THREE.Shape(); sh.moveTo(-RW, 0); sh.absellipse(0, 0, RW, RH, Math.PI, 0, true);
+      if (door) { sh.lineTo(DW, 0); sh.lineTo(DW, DH); sh.lineTo(-DW, DH); sh.lineTo(-DW, 0); } sh.lineTo(-RW, 0); return sh; };
+    const wallM = M("#7d8b9c", { roughness: 0.7 }), trim = M("#ffd23a", { roughness: 0.5 });
+    // back wall (closed) and front wall (with the door opening): flat half-ovals, a little thick
+    p.geo(new THREE.ExtrudeGeometry(half(false), { depth: 0.3, bevelEnabled: false, curveSegments: 32 }).rotateY(Math.PI / 2), wallM, -L / 2, 0, 0);
+    p.geo(new THREE.ExtrudeGeometry(half(true), { depth: 0.3, bevelEnabled: false, curveSegments: 32 }).rotateY(Math.PI / 2), wallM, L / 2 - 0.3, 0, 0);
+    // the door frame in yellow and two big sliding door panels pushed to the sides
+    p.box(0.4, 0.4, DW * 2 + 0.8, trim, L / 2 + 0.05, DH + 0.2, 0); [-1, 1].forEach((s) => p.box(0.4, DH, 0.4, trim, L / 2 + 0.05, DH / 2, s * (DW + 0.2)));
+    [-1, 1].forEach((s) => p.box(0.25, DH - 0.4, 4.2, M("#5d6b7c", { roughness: 0.6 }), L / 2 + 0.35, (DH - 0.4) / 2, s * (DW + 2.0)));
+    // the sign, on the front wall between the door and the roof
+    p.box(0.12, 1.6, 7.2, M("#1d2b4f"), L / 2 + 0.06, DH + 1.35, 0);
+    p.geo(new THREE.PlaneGeometry(6.9, 1.35).rotateY(Math.PI / 2), signMat("hangar1", "HANGAR 1", { bg: "#ffd23a", fg: "#1d2b4f", w: 1024, h: 200, size: 150 }), L / 2 + 0.13, DH + 1.35, 0, 0, false);
+    // a concrete floor inside and an apron out to the taxiway
+    pave(B, X - L / 2, Z - RW + 0.3, X + L / 2, Z + RW - 0.3, texMat(concreteTex()), [6, 6], 0.035);
+    pave(B, X + L / 2, Z - DW - 1, 226, Z + DW + 1, texMat(concreteTex()), [6, 6], 0.03);
+    // walls for the game: the two long sides, the back, the front either side of the door
+    p.colBox(-L / 2, -RW - 0.3, L / 2, -RW + 1.2); p.colBox(-L / 2, RW - 1.2, L / 2, RW + 0.3); p.colBox(-L / 2 - 0.3, -RW, -L / 2 + 0.3, RW);
+    p.colBox(L / 2 - 0.4, -RW, L / 2 + 0.6, -DW); p.colBox(L / 2 - 0.4, DW, L / 2 + 0.6, RW);
+    // the little plane inside, nose to the door
+    { const g = B.live(X, Z), pl = makePlane("#1fb6c9"); pl.position.set(X - 1, 0, Z); pl.rotation.y = Math.PI / 2; pl.scale.setScalar(0.55); g.add(pl); p.colBox(-6, -1.2, 5, 1.2); } }
   // the fence along the runway
   for (let z = -4; z < 158; z += 18) metalFence(B.P(225.6, z), 0, 0, 0, Math.min(18, 158 - z), 2.6);
   // apron, taxiway and runway
@@ -1534,7 +1576,7 @@ DISTRICT_BUILDERS.push(function camp(B) {
   [[88, 212, 0], [100, 230, 0.2]].forEach(([x, z, ry], i) => { const y = hillHeight(x, z); building(B.P(x, z, ry), { w: 9, d: 7, floors: 1, style: "siding", wall: "#8a5a34", opt: { shutter: "#2f7d4f", frame: "#e9dcc4" }, roof: "gable", roofCol: "#3f5a3a", base: Math.max(0.3, y + 0.3), roofStuff: false }); });
   { const x = 100, z = 172, y = hillHeight(x, z); building(B.P(x, z, Math.PI), { w: 8, d: 6, floors: 1, style: "siding", wall: "#a06a3e", opt: { frame: "#e9dcc4" }, roof: "gable", roofCol: "#2f5d3a", base: Math.max(0.3, y + 0.3), sign: { text: "CAMP STORE", bg: "#2f7d4f", fg: "#ffffff" } }); }
   // picnic tables
-  [[130, 176], [136, 182], [104, 200]].forEach(([x, z], i) => { const y = hillHeight(x, z), p = B.P(x, z, i * 0.4); p.box(2.6, 0.1, 1.0, WOOD(), 0, y + 0.78, 0); [-1, 1].forEach((s) => { p.box(2.6, 0.08, 0.35, WOOD(), 0, y + 0.45, s * 0.75); p.box(0.1, 0.78, 1.6, WOOD(), s * 1.1, y + 0.39, 0); }); p.colBox(-1.4, -1.0, 1.4, 1.0); });
+  [[130, 176], [136, 182], [104, 200]].forEach(([x, z], i) => { const y = hillHeight(x, z), p = B.P(x, z, i * 0.4); p.box(2.6, 0.1, 1.0, WOOD(), 0, y + 0.78, 0); [-1, 1].forEach((s) => { p.box(2.6, 0.08, 0.35, WOOD(), 0, y + 0.45, s * 0.75); p.box(0.1, 0.78, 1.6, WOOD(), s * 1.1, y + 0.39, 0); [-0.6, 0.6].forEach((sx) => addSeat(p, sx, s * 0.78, 0.45, "sit", s > 0, y + 0.45)); }); p.colBox(-1.4, -1.0, 1.4, 1.0); });
   // the canoe dock on the lake (you can walk out on it) and canoes
   { const [dx0, dz0, dx1, dz1] = B.L.DECKS[B.L.DECKS.length - 1], cx = (dx0 + dx1) / 2; CAMP_DOCK_Y = Math.max(level + 0.35, hillHeight(cx, dz0 - 0.4));
     const p = B.P(cx, (dz0 + dz1) / 2); p.geo(stripGeo(dx1 - dx0, dz1 - dz0, 2, 2, CAMP_DOCK_Y), texMat(planksTex()), 0, 0, 0, 0, false); p.box(dx1 - dx0 + 0.2, 0.3, dz1 - dz0, M("#7a5232"), 0, CAMP_DOCK_Y - 0.17, 0, 0, { cast: false });
