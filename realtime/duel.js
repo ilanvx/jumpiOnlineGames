@@ -166,6 +166,7 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
         if (xp) addLevelXp(m.p[i].userId, xp, { why: "duel" });
       }
     })).catch(() => {});
+    import("../routes/quests.js").then(({ questEvent }) => { for (let i = 0; i < 2; i++) if (winner === i || (reason !== "quit" && reason !== "left")) questEvent(m.p[i].userId, "duel", 1); }).catch(() => {});
     logQuietly(DuelLog, { game: GAMES[m.game].name, winner: winner < 0 ? "" : m.p[winner].username, reason,
       players: m.p.map((p, i) => ({ userId: p.userId, username: p.username, paid: ENTRY, won: pay[i] })) });
     for (let i = 0; i < 2; i++)

@@ -6,6 +6,7 @@ import { requireUser } from "./shop.js";
 import { notifyCoins } from "../realtime/plaza.js";
 import { addSeasonXp } from "./season.js";
 import { addLevelXp } from "./levels.js";
+import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
 import { SEASON_XP } from "../public/shared/season.js";
 import { JOBS, JOB_LIST, SHIFT_SECONDS, MIN_SECONDS_PER_ORDER, JOB_DAILY_CAP, jobView, jobLevel, maxLevel, payPerOrder, tipFor, JOB_GIFTS, shiftSecs } from "../public/shared/jobs.js";
@@ -90,7 +91,7 @@ router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => 
       );
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
-      if (served) { addSeasonXp(updated._id, served * SEASON_XP.jobTask); addLevelXp(updated._id, served * LEVEL_XP.jobTask, { why: "job" }); }
+      if (served) { addSeasonXp(updated._id, served * SEASON_XP.jobTask); addLevelXp(updated._id, served * LEVEL_XP.jobTask, { why: "job" }); questEvent(updated._id, "job", served); }
       let after = jobView(s.job, recOf(updated, s.job)), gift = null, owner = updated;
       // top level reached: every piece of the job's uniform goes into the inventory as a gift (only once)
       const missing = after.level >= maxLevel(s.job) ? (JOB_GIFTS[s.job] || []).filter((id) => !(updated.inventory || []).includes(id)) : [];

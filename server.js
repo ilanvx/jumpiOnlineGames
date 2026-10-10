@@ -23,6 +23,7 @@ import seasonRoutes from "./routes/season.js";
 import secretRoutes from "./routes/secrets.js";
 import codeRoutes from "./routes/codes.js";
 import tutorialRoutes from "./routes/tutorial.js";
+import questRoutes from "./routes/quests.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
 import { saveAllNeeds } from "./realtime/needs.js";
@@ -74,6 +75,7 @@ app.use("/api", seasonRoutes);
 app.use("/api", secretRoutes);
 app.use("/api", codeRoutes);
 app.use("/api", tutorialRoutes);
+app.use("/api", questRoutes);
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });
 app.use("/api/admin", adminRoutes);

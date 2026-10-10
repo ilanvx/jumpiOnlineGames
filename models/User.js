@@ -109,6 +109,8 @@ const userSchema = new mongoose.Schema(
     levelXp: { type: Number, default: 0, min: 0 },
     levelDay: { type: String, default: "" },
     levelDayXp: { type: Number, default: 0 },
+    // quests from the people of Jumpi (routes/quests.js): { done: [ids], active: { id: { step, n, got, snap } } }
+    quests: { type: mongoose.Schema.Types.Mixed, default: () => ({ done: [], active: {} }) },
     // players this player blocked (routes/social.js): no messages or friend requests, and both are "ghosts" to each other in the game
     blocked: { type: [mongoose.Schema.Types.ObjectId], default: [], index: true },
     // daily login bonus: the last day it was claimed ("2026-10-06", Israel time) and the current streak

@@ -2957,6 +2957,76 @@ body.rtl .lvx-state{right:auto;left:12px}
 .lvx-rank-card.now .lvx-state{background:#ffd23a;color:#6b3d00}
 .lvx-rank-card.done .lvx-state{background:#2fd36b}
 .lvx-rank-card.locked img{filter:saturate(.75)}
+/* ---------- RESIDENTS + QUESTS ---------- */
+.qtrack{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 118px);right:90px;width:min(260px,40vw);display:none;flex-direction:column;gap:6px;padding:8px 10px;border-radius:16px;
+  background:rgb(30 60 110 / .62);backdrop-filter:blur(4px);color:#fff;font-family:"Fredoka",system-ui,sans-serif}
+body.in-game.logged .qtrack:not([hidden]){display:flex}
+body.game-store .qtrack,body.phone-open .qtrack{display:none!important}
+.qt-h{font:400 .85rem/1 var(--font);letter-spacing:.06em;color:#ffe27a}
+.qt-row{display:flex;align-items:center;gap:8px}
+.qt-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.qt-txt b{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qt-txt small{font-size:.78rem;opacity:.92}
+.qt-row.ready small{color:#7dffaa;font-weight:600}
+.qt-go{flex:none;width:30px;height:30px;border:0;border-radius:50%;cursor:pointer;background:#1f9bff;box-shadow:0 3px 0 #06488a;display:grid;place-items:center}
+.qt-go svg{width:16px;height:16px}
+.qt-go:active{transform:translateY(2px);box-shadow:0 1px 0 #06488a}
+.qt-go:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+body.land .qtrack{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 84px);right:calc(var(--lg) + var(--lb) + 10px);transform:scale(.85);transform-origin:100% 0}
+.npc-prompt{--c:#ff8a1c}
+#npcOv,#famOv{z-index:44}
+.idle-card.npc-card{width:min(520px,100%);max-height:calc(100dvh - 90px);overflow-y:auto;padding:84px 22px 20px;text-align:start}
+.npc-card h2{text-align:center;color:#ff8a1c;text-shadow:0 4px 0 #ffe0bf;margin-bottom:0}
+.npc-role{text-align:center;margin:2px auto 12px!important;font-weight:600;color:#7a8aa3!important}
+.npc-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border:0;border-radius:12px;background:#ff5a5a;box-shadow:0 4px 0 #8a1c1c;cursor:pointer;display:grid;place-items:center;z-index:2}
+.npc-x svg{width:16px;height:16px}
+body.rtl .npc-x{right:auto;left:12px}
+.npc-q{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:20px;background:#fff7e6;box-shadow:inset 0 -4px 0 #ffe0a8;margin-bottom:12px}
+.npc-q.done{background:#e6faee;box-shadow:inset 0 -4px 0 #b9f0cc}
+.npc-q small{font:400 .85rem/1 var(--font);letter-spacing:.06em;color:#ff8a1c}
+.npc-q.done small{color:#13813f}
+.npc-q>b{font:400 1.4rem/1.1 var(--font);color:#22324a;letter-spacing:.02em}
+.npc-say{margin:2px 0!important;max-width:none!important;font-size:1rem!important;color:#34445e!important;font-style:italic}
+.npc-say.hi{text-align:center;margin-bottom:12px!important}
+.npc-step{margin:2px 0!important;max-width:none!important;font-weight:600!important;color:#22324a!important}
+.npc-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.npc-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:#fff;box-shadow:0 2px 0 #e3d3b0;font-weight:600;font-size:.9rem;color:#22324a}
+.npc-chip svg{width:18px;height:18px}
+.npc-chip.xp{background:#dff8e8;color:#13813f;box-shadow:0 2px 0 #b9f0cc}
+.npc-chip .pic{display:inline-grid;width:26px;height:26px}
+.npc-chip .pic svg,.npc-chip .pic img,.npc-chip .pic canvas{width:26px;height:26px}
+.npc-acts{display:flex;gap:8px;flex-wrap:wrap}
+.npc-btn{flex:1;min-height:46px;padding:0 16px;border:0;border-radius:16px;cursor:pointer;background:#e8eef7;color:#4a5b75;box-shadow:0 4px 0 #c3cfdf;font:600 1rem "Fredoka",system-ui,sans-serif}
+.npc-btn.go{background:linear-gradient(180deg,#5ee08f,#25c36a);color:#fff;box-shadow:0 4px 0 #13813f}
+.npc-btn.way{background:linear-gradient(180deg,#4fc8ff,#1f9bff);color:#fff;box-shadow:0 4px 0 #06488a;flex:none;align-self:flex-start}
+.npc-btn.fam{flex:none;align-self:flex-start;min-height:40px;font-size:.9rem}
+.npc-btn:active{transform:translateY(3px)}
+.npc-btn:focus-visible{outline:3px solid #1f9bff;outline-offset:2px}
+.npc-btn:disabled{opacity:.6;cursor:default}
+.npc-about{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:18px;background:#eef4fc}
+.npc-about b{font:400 1.05rem var(--font);color:#22324a;letter-spacing:.03em}
+.npc-about p{margin:0!important;max-width:none!important;font-size:.92rem!important;line-height:1.45!important;text-align:start}
+.npc-fam{font-weight:600!important;color:#1f6fd0!important}
+.npc-quiz{display:flex;flex-direction:column;gap:10px}
+.fam-card small,.npc-quiz label,.npc-quiz legend,.npc-chip,.npc-role{font-family:"Fredoka",system-ui,sans-serif!important}
+.npc-quiz fieldset{margin:0;padding:8px 10px;border:2px solid #f0dfb8;border-radius:14px;background:#fff}
+.npc-quiz fieldset.wrong{border-color:#ff8a96;background:#fff1f2}
+.npc-quiz legend{padding:0 4px;font-weight:600;color:#22324a}
+.npc-quiz label{display:flex;align-items:center;gap:8px;padding:4px 2px;cursor:pointer;color:#34445e}
+.npc-quiz input{width:18px;height:18px;accent-color:#25c36a}
+.npc-msg{margin:0!important;max-width:none!important;color:#c8263c!important;font-weight:600!important}
+.npc-msg:empty{display:none}
+.idle-card.fam-cardwrap{width:min(720px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;padding:22px 20px 20px}
+.fam-cardwrap h2{color:#ff8a1c;text-shadow:0 4px 0 #ffe0bf}
+.fam-intro{max-width:60ch!important;font-size:.95rem!important}
+.fam-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;text-align:start}
+.fam-card{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:16px;background:#eef4fc}
+.fam-card img{flex:none;width:56px;height:56px}
+.fam-card b{display:block;font:400 1.1rem/1.1 var(--font);color:#22324a;letter-spacing:.02em}
+.fam-card small{display:block;font-weight:600;color:#ff8a1c;font-size:.82rem}
+.fam-card p{margin:4px 0 0!important;max-width:none!important;font-size:.85rem!important;line-height:1.35!important}
+body.land .idle-card.npc-card{padding:14px 18px;max-height:calc(100dvh - 16px)}
+body.land .npc-card .idle-face{display:none}
 </style>
 </head>
 <body>
@@ -3597,6 +3667,26 @@ body.rtl .lvx-state{right:auto;left:12px}
   <button class="tl-skip" id="tlSkip" type="button">Skip</button>
   <div class="tl-prog" aria-hidden="true"><i id="tlProg"></i></div>
 </div>
+<!-- RESIDENTS + QUESTS: the tracker, the "talk" prompt, a resident's window and the family window (the RESIDENTS + QUESTS block) -->
+<div class="qtrack" id="qTrack" role="status" aria-live="polite" hidden></div>
+<button class="mg-prompt npc-prompt" id="npcPrompt" type="button" hidden><span class="play"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3 C5.5 3 2.5 5.7 2.5 9.2 C2.5 11 3.3 12.5 4.6 13.6 L4 17 L7.4 15.1 C8.2 15.3 9.1 15.4 10 15.4 C14.5 15.4 17.5 12.7 17.5 9.2 C17.5 5.7 14.5 3 10 3 Z" fill="#ff8a1c"/></svg></span><span>TALK TO</span>&nbsp;<span id="npcPromptName" data-noi18n></span><kbd>E</kbd></button>
+<div class="idle-overlay" id="npcOv" role="dialog" aria-modal="true" aria-labelledby="npcName" hidden>
+  <div class="idle-card npc-card">
+    <button class="npc-x" id="npcClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+    <img class="idle-face" id="npcFace" alt="">
+    <h2 id="npcName" data-noi18n>Resident</h2>
+    <p class="npc-role" id="npcRole"></p>
+    <div class="npc-body" id="npcBody"></div>
+  </div>
+</div>
+<div class="idle-overlay" id="famOv" role="dialog" aria-modal="true" aria-labelledby="famTitle" hidden>
+  <div class="idle-card fam-cardwrap">
+    <button class="npc-x" id="famClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
+    <h2 id="famTitle">THE HOPWELL FAMILY</h2>
+    <p class="fam-intro">Fifty years ago Grandpa Ziggy sailed to an empty island with his dog Jumpi and built the first house. His family built everything else: the park, the restaurants, the harbor, the school, the shops and the station. Today the whole town is one big family, and that includes you!</p>
+    <div class="fam-list" id="famList"></div>
+  </div>
+</div>
 <!-- LEVELS: my level, how to earn XP, and every badge + chat bubble colour (the LV block in the script) -->
 <div class="settings-overlay sx-ov lv-ov" id="lvOv" hidden>
   <div class="lvx" role="dialog" aria-modal="true" aria-labelledby="lvTitle">
@@ -4060,6 +4150,7 @@ import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} from "/shared/food.js";
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
+import {RESIDENTS,RESIDENT_BY_ID,QUESTS,QUEST_BY_ID,NPC_REACH,PICK_REACH,turnInOf} from "/shared/quests.js";
 import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN} from "/shared/store.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
@@ -6827,6 +6918,7 @@ function buildPlaza(){
   G.marker=new THREE.Mesh(new THREE.RingGeometry(.35,.5,32),new THREE.MeshBasicMaterial({color:"#ffffff",transparent:true,opacity:.9,depthWrite:false}));
   G.marker.rotation.x=-Math.PI/2;G.marker.position.y=.05;G.marker.visible=false;world.add(G.marker);
   G.npc=null;   // Pip the resident was removed from the Plaza (the tutorial still shows Pip's face in its panel)
+  buildResidents();   // the Hopwell family (RESIDENTS + QUESTS block)
   gameBuilt=true;
 }
 
@@ -6924,6 +7016,169 @@ chatInput.addEventListener("focus",()=>{G.keys={};});
 function positionBubble(){const b=bubbleEl();if(!b.classList.contains("show")||!G.npc)return;
   _bp.copy(G.npc.root.position);_bp.y+=3.3;_bp.project(cam);b.style.left=((_bp.x+1)/2*innerWidth)+"px";b.style.top=((1-_bp.y)/2*innerHeight)+"px";}
 
+/* =====================================================================
+   RESIDENTS + QUESTS (public/shared/quests.js; the server: routes/quests.js)
+   The Hopwell family lives around Jumpi. "?" over a head = they have a quest for you, "!" = go there to finish
+   a step or collect a prize, nothing = nothing for you now. Tap a resident (or walk up and press E) to open their
+   window: the quest, their story and the family. The tracker under the level chip shows your quests with
+   "Show the way". Things to pick up (flowers, shells, bottles) appear only while you have that quest.
+   ===================================================================== */
+const QS={data:null,res:[],items:new Map(),busy:false,checkT:0,pending:null,open:null,near:null};
+const RES_TAG="#ffe27a";
+const _mk={};
+function markerMat(k){if(_mk[k])return _mk[k];
+  const tex=canvasTex(128,160,x=>{x.lineJoin="round";const col=k==="!"?"#2fd36b":"#ffc21f",edge=k==="!"?"#13813f":"#b07800";
+    x.beginPath();x.arc(64,64,52,0,7);x.fillStyle=edge;x.fill();x.beginPath();x.arc(64,58,52,0,7);x.fillStyle=col;x.fill();x.lineWidth=7;x.strokeStyle="#000";x.stroke();
+    x.beginPath();x.moveTo(50,108);x.lineTo(64,140);x.lineTo(78,108);x.fillStyle=col;x.fill();x.stroke();
+    x.font='400 84px "Lilita One","Fredoka",sans-serif';x.textAlign="center";x.textBaseline="middle";x.lineWidth=12;x.strokeText(k,64,66);x.fillStyle="#fff";x.fillText(k,64,66);});
+  return _mk[k]=new THREE.SpriteMaterial({map:tex,depthTest:true,depthWrite:false,transparent:true});}
+function buildResidents(){
+  QS.res.forEach(r=>{r.n.root.removeFromParent();r.n.tag.removeFromParent();r.mk.removeFromParent();});QS.res=[];
+  for(const R of RESIDENTS){const n=makeCharacter({neck:-1,hat:-1,glasses:-1,...R.look},R.name,RES_TAG,0);
+    n.root.position.set(R.at[0],groundY(R.at[0],R.at[1]),R.at[1]);n.root.rotation.y=R.face;Object.assign(n,{face:R.face,waveT:-9,greetT:-99});
+    const mk=new THREE.Sprite(markerMat("?"));mk.scale.set(.85,1.06,1);mk.visible=false;mk.renderOrder=11;
+    world.add(n.root,n.tag,mk);G.colliders.push({c:[R.at[0],R.at[1]],r:.55});QS.res.push({R,n,mk,kind:""});}
+  paintMarkers();}
+const qStatus=id=>QS.data&&QS.data.status&&QS.data.status[id]||"locked";
+const qActive=id=>QS.data&&QS.data.active&&QS.data.active[id];
+function qStep(q){const a=qActive(q.id);return a&&a.step<q.steps.length?q.steps[a.step]:null;}
+// what a resident shows over the head
+function markerFor(id){if(!QS.data)return "";
+  for(const q of QUESTS){const s=qStatus(q.id);if(s==="ready"&&turnInOf(q)===id)return "!";if(s==="active"){const st=qStep(q);if(st&&st.type==="talk"&&st.npc===id)return "!";}}
+  return QUESTS.some(q=>q.giver===id&&qStatus(q.id)==="available")?"?":"";}
+function paintMarkers(){for(const r of QS.res){r.kind=markerFor(r.R.id);if(r.kind)r.mk.material=markerMat(r.kind);r.mk.visible=!!r.kind;}}
+async function loadQuests(){if(!me)return;const r=await api("/api/quests");if(!r.ok||!r.data||!r.data.status)return;QS.data=r.data;questsChanged();}
+function questsChanged(){paintMarkers();syncQuestItems();paintTracker();if(QS.open)renderNpc(QS.open,true);}
+// the text for where you are in a quest
+function stepText(q){const a=qActive(q.id),st=qStep(q),R=RESIDENT_BY_ID;
+  if(!a)return "";if(!st)return I18N.T("Go to {name} for your prize!",{name:R[turnInOf(q)].name});
+  const n=a.n||0;
+  switch(st.type){
+    case "talk":return I18N.T("Talk to {name}",{name:R[st.npc].name});
+    case "visit":{const vs=q.steps.filter(s=>s.type==="visit");return vs.length>1?I18N.T("Go to {place} ({a}/{b})",{place:st.place,a:vs.indexOf(st)+1,b:vs.length}):I18N.T("Go to {place}",{place:st.place});}
+    case "collect":return I18N.T("Find the {what}s: {a}/{b}",{what:st.what,a:(a.got||[]).length,b:st.spots.length});
+    case "quiz":return I18N.T("Answer {name}'s quiz",{name:R[q.giver].name});
+    case "buy":return I18N.T("Buy {what} in the Shop",{what:st.label});
+    case "adopt":return I18N.T("Adopt a pet at the Pet Center");
+    case "member":return I18N.T("Become a Jumpi member");
+    case "level":return I18N.T("Reach level {n} (you're level {l})",{n:st.n,l:myLevel()});
+    case "play":return st.kind==="minigame"?I18N.T("Play mini-games: {a}/{b}",{a:n,b:st.n}):st.kind==="job"?I18N.T("Finish job orders: {a}/{b}",{a:n,b:st.n}):I18N.T("Play board games: {a}/{b}",{a:n,b:st.n});
+  }return "";}
+// where "Show the way" leads
+function stepTarget(q){const st=qStep(q),R=RESIDENT_BY_ID;if(!qActive(q.id))return null;
+  if(!st)return R[turnInOf(q)].at;
+  if(st.type==="talk")return R[st.npc].at;if(st.type==="visit")return st.at;if(st.type==="quiz")return R[q.giver].at;
+  if(st.type==="collect"){const got=qActive(q.id).got||[];let best=null,bd=1e9;st.spots.forEach((p,i)=>{if(got.includes(i))return;const d=Math.hypot(p[0]-G.pos.x,p[1]-G.pos.z);if(d<bd){bd=d;best=p;}});return best;}
+  return null;}
+function showWay(q){const p=stepTarget(q);if(!p)return;if(G.home){toast("Go out into Jumpi first.");return;}closeNpc();
+  if(!routeTo(p[0],p[1])){toast("There's no way to walk there.");sfx.error();return;}sfx.tick(true);}
+/* the tracker: the quests you're doing */
+const qTrack=document.getElementById("qTrack");
+function paintTracker(){if(!QS.data||!me){qTrack.hidden=true;return;}
+  const list=QUESTS.filter(q=>{const s=qStatus(q.id);return s==="active"||s==="ready";}).slice(0,3);
+  qTrack.hidden=!list.length;if(!list.length)return;
+  qTrack.innerHTML=`<b class="qt-h">${esc(I18N.T("QUESTS"))}</b>`+list.map(q=>{const ready=qStatus(q.id)==="ready",tg=stepTarget(q);
+    return `<div class="qt-row${ready?" ready":""}"><span class="qt-txt"><b>${esc(q.title)}</b><small>${esc(stepText(q))}</small></span>${tg?`<button type="button" class="qt-go" data-q="${q.id}" aria-label="${esc(I18N.T("Show the way"))}" title="${esc(I18N.T("Show the way"))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L20 21 L12 16.5 L4 21 Z" fill="#fff"/></svg></button>`:""}</div>`;}).join("");}
+qTrack.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(b)showWay(QUEST_BY_ID[b.dataset.q]);});
+/* things to pick up */
+function itemMesh(what){const g=new THREE.Group();
+  if(what==="flower"){g.add(cyl(.03,.03,.5,mat("#3fae4a"),0,.25,0,6));const pet=mat("#ff7ac8");for(let i=0;i<5;i++){const a=i/5*Math.PI*2,p=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),pet);p.position.set(Math.cos(a)*.12,.55,Math.sin(a)*.12);g.add(p);}
+    const c=new THREE.Mesh(new THREE.SphereGeometry(.08,10,8),mat("#ffd23a"));c.position.y=.56;g.add(c);}
+  else if(what==="shell"){const s=new THREE.Mesh(new THREE.ConeGeometry(.22,.38,10,1),mat("#ffc9a8",{roughness:.6}));s.rotation.z=Math.PI/2.4;s.position.y=.2;g.add(s);
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.17,12,10),mat("#ffb38a",{roughness:.6}));b.scale.set(1,.7,1);b.position.set(-.1,.16,0);g.add(b);}
+  else{const glass=new THREE.MeshStandardMaterial({color:"#5fd38a",transparent:true,opacity:.7,roughness:.15});g.add(cyl(.11,.11,.4,glass,0,.25,0,12));g.add(cyl(.05,.07,.14,glass,0,.52,0,10));g.add(cyl(.045,.045,.06,mat("#a87545"),0,.61,0,8));
+    const paper=new THREE.Mesh(new THREE.BoxGeometry(.05,.22,.12),mat("#fff3d0"));paper.position.y=.25;g.add(paper);}
+  const glow=new THREE.Mesh(new THREE.RingGeometry(.35,.48,24),new THREE.MeshBasicMaterial({color:"#fff6a8",transparent:true,opacity:.7,depthWrite:false}));glow.rotation.x=-Math.PI/2;glow.position.y=.04;g.add(glow);g.userData.glow=glow;
+  g.traverse(o=>{if(o.isMesh)o.castShadow=true;});return g;}
+function syncQuestItems(){const want=new Map();
+  if(QS.data&&world)for(const q of QUESTS){const st=qStep(q);if(!st||st.type!=="collect")continue;const got=qActive(q.id).got||[];
+    st.spots.forEach((p,i)=>{if(!got.includes(i))want.set(q.id+":"+i,{q,i,p,what:st.what});});}
+  for(const [k,it] of QS.items)if(!want.has(k)){it.g.removeFromParent();QS.items.delete(k);}
+  for(const [k,w] of want)if(!QS.items.has(k)){const g=itemMesh(w.what);g.position.set(w.p[0],groundY(w.p[0],w.p[1]),w.p[1]);world.add(g);QS.items.set(k,{...w,g,busy:false});}}
+async function questStep(id,body){if(QS.busy)return null;QS.busy=true;const r=await api("/api/quests/step",{id,...body});QS.busy=false;
+  if(r.ok||r.data.status){QS.data={done:r.data.done,active:r.data.active,status:r.data.status};questsChanged();}return r;}
+/* every frame: the residents breathe, look at you, wave; the markers bob; picking things up; places you visit */
+function updateResidents(t,dt){
+  if(!QS.res.length||G.home)return;let near=null,nd=1e9;
+  for(const r of QS.res){const n=r.n,br=Math.sin(t*1.9+r.R.at[0]);n.body.scale.set(1+br*.012,1+br*.018,1+br*.012);n.head.position.y=n.headY+br*.012;
+    const dx=G.pos.x-n.root.position.x,dz=G.pos.z-n.root.position.z,dist=Math.hypot(dx,dz);
+    if(dist<40){const want=dist<9?Math.atan2(dx,dz):r.R.face;let d=want-n.face;d=Math.atan2(Math.sin(d),Math.cos(d));n.face+=d*Math.min(1,dt*3);n.root.rotation.y=n.face;
+      const lx=dist<9?Math.max(-1,Math.min(1,Math.sin(d)*2)):0;n.head.rotation.y=lx*.3;placeIris(n.lookL,-1,lx,dist<9?.2:0);placeIris(n.lookR,1,lx,dist<9?.2:0);
+      if(t>n.blinkT){n.blinkT=t+2.5+Math.random()*3;n.blinkStart=t;}const bk=(t-(n.blinkStart||-9))/.25,ls=bk<1?1-.9*Math.sin(Math.PI*bk):1;n.eyeL.scale.y=n.eyeR.scale.y=ls;
+      if(dist<7&&r.kind&&t-n.greetT>15){n.greetT=t;n.waveT=t;}
+      const wk=(t-n.waveT)/2.2;n.armR.rotation.z=wk>=0&&wk<1?ease(wk/.18)*(1-ease((wk-.82)/.18))*(2.35+.32*Math.sin((t-n.waveT)*13)):br*.03;}
+    if(r.mk.visible){r.mk.position.set(n.root.position.x,n.root.position.y+3.35+Math.sin(t*2.6+r.R.at[1])*.12,n.root.position.z);}
+    if(dist<NPC_REACH-1&&dist<nd){nd=dist;near=r;}
+    if(QS.pending===r.R.id&&dist<4){QS.pending=null;G.target=null;openResident(r);}}
+  if(near!==QS.near){QS.near=near;npcPrompt.hidden=!near;if(near)document.getElementById("npcPromptName").textContent=near.R.name;}
+  for(const it of QS.items.values()){it.g.rotation.y=t*1.4+it.i;const gl=it.g.userData.glow;gl.material.opacity=.45+.3*Math.sin(t*4+it.i);
+    if(!it.busy&&Math.hypot(G.pos.x-it.p[0],G.pos.z-it.p[1])<PICK_REACH-.8){it.busy=true;pickItem(it);}}
+  if(t-QS.checkT>.6&&QS.data&&!QS.busy){QS.checkT=t;for(const q of QUESTS){const st=qStep(q);if(st&&st.type==="visit"&&Math.hypot(G.pos.x-st.at[0],G.pos.z-st.at[1])<st.r){
+    questStep(q.id,{}).then(r=>{if(r&&r.ok){sfx.success();toast(I18N.T("{place}: done!",{place:st.place}));}});break;}}}}
+async function pickItem(it){const r=await questStep(it.q.id,{spot:it.i});
+  if(r&&r.ok){sfx.success();const a=qActive(it.q.id),st=it.q.steps.find(s=>s.type==="collect");
+    toast(a&&a.step<it.q.steps.length&&qStep(it.q)===st?I18N.T("Found one! {a}/{b}",{a:(a.got||[]).length,b:st.spots.length}):I18N.T("You found them all! Go back to {name}.",{name:RESIDENT_BY_ID[turnInOf(it.q)].name}));}
+  else{it.busy=false;if(r&&r.data&&r.data.error&&!/closer/.test(r.data.error))toast(r.data.error);}}
+function residentAt(e){if(!QS.res.length||G.home)return null;_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);
+  let best=null,bd=1e9;for(const r of QS.res){const h=_ray.intersectObject(r.n.root,true)[0]||_ray.intersectObject(r.mk,false)[0];if(h&&h.distance<bd){bd=h.distance;best=r;}}return best;}
+// tap a resident: walk over if far, then the window
+function openResident(r){const d=Math.hypot(G.pos.x-r.n.root.position.x,G.pos.z-r.n.root.position.z);
+  if(d>NPC_REACH-1){const k=2.5/d;QS.pending=r.R.id;G.target=new THREE.Vector3(r.n.root.position.x+(G.pos.x-r.n.root.position.x)*k,0,r.n.root.position.z+(G.pos.z-r.n.root.position.z)*k);G.stall=0;return;}
+  QS.open=r.R.id;npcOv.hidden=false;G.keys={};sfx.open();renderNpc(r.R.id);}
+const npcOv=document.getElementById("npcOv"),npcBody=document.getElementById("npcBody"),npcPrompt=document.getElementById("npcPrompt");
+function closeNpc(){if(npcOv.hidden)return;npcOv.hidden=true;QS.open=null;sfx.close();}
+const coinSVG='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/></svg>';
+function rewardChips(rw){let h=`<span class="npc-chip coin">${coinSVG}${rw.coins}</span><span class="npc-chip xp">+${rw.xp} XP</span>`;
+  if(rw.item){const [s,i]=rw.item.split(":");h+=`<span class="npc-chip item"><span class="pic">${itemPic(s,+i)}</span>${esc(itemName(s,+i))}</span>`;}return `<div class="npc-chips">${h}</div>`;}
+const faceOf=R=>emoteImage("happy",skinOf(R.look));
+async function renderNpc(id,quiet){const R=RESIDENT_BY_ID[id];if(!R)return;
+  document.getElementById("npcFace").src=faceOf(R);document.getElementById("npcName").textContent=R.name;document.getElementById("npcRole").textContent=R.role;
+  if(!quiet&&QS.data){const talk=QUESTS.find(q=>{const st=qStep(q);return st&&st.type==="talk"&&st.npc===id;});
+    if(talk){const r=await questStep(talk.id,{});if(r&&!r.ok&&r.data.error)toast(r.data.error);return;}}   // talking finishes the step (questStep repaints)
+  let h="";
+  const ready=QUESTS.find(q=>qStatus(q.id)==="ready"&&turnInOf(q)===id);
+  const quiz=QUESTS.find(q=>{const st=qStep(q);return st&&st.type==="quiz"&&q.giver===id;});
+  const avail=QUESTS.find(q=>q.giver===id&&qStatus(q.id)==="available");
+  const mine=QUESTS.find(q=>q.giver===id&&qStatus(q.id)==="active");
+  if(ready)h=`<div class="npc-q done"><small>${esc(I18N.T("QUEST COMPLETE"))}</small><b>${esc(ready.title)}</b><p class="npc-say">“${esc(ready.done)}”</p>${rewardChips(ready.reward)}
+    <button type="button" class="npc-btn go" data-act="claim" data-q="${ready.id}">${esc(I18N.T("Collect prize"))}</button></div>`;
+  else if(quiz){const st=qStep(quiz);h=`<div class="npc-q"><small>${esc(I18N.T("QUIZ"))}</small><b>${esc(quiz.title)}</b><form class="npc-quiz" data-q="${quiz.id}">`+st.questions.map((x,k)=>`<fieldset><legend>${k+1}. ${esc(x.q)}</legend>${x.options.map((o,j)=>`<label><input type="radio" name="q${k}" value="${j}" required><span>${esc(o)}</span></label>`).join("")}</fieldset>`).join("")+
+    `<p class="npc-msg" id="npcMsg" role="status"></p><button type="submit" class="npc-btn go">${esc(I18N.T("Check my answers"))}</button></form></div>`;}
+  else if(avail)h=`<div class="npc-q"><small>${esc(I18N.T("NEW QUEST"))}</small><b>${esc(avail.title)}</b><p class="npc-say">“${esc(avail.intro)}”</p>${rewardChips(avail.reward)}
+    <div class="npc-acts"><button type="button" class="npc-btn go" data-act="accept" data-q="${avail.id}">${esc(I18N.T("Accept quest"))}</button><button type="button" class="npc-btn" data-act="close">${esc(I18N.T("Maybe later"))}</button></div></div>`;
+  else if(mine)h=`<div class="npc-q"><small>${esc(I18N.T("IN PROGRESS"))}</small><b>${esc(mine.title)}</b><p class="npc-step">${esc(stepText(mine))}</p>${stepTarget(mine)?`<button type="button" class="npc-btn way" data-act="way" data-q="${mine.id}">${esc(I18N.T("Show the way"))}</button>`:""}</div>`;
+  else h=`<p class="npc-say hi">“${esc(I18N.T("Hi {name}! It's always nice to see you.",{name:me?me.username:"friend"}))}”</p>`;
+  h+=`<div class="npc-about"><b>${esc(I18N.T("About me"))}</b><p>${esc(R.bio)}</p><p class="npc-fam">${esc(R.family)}</p><button type="button" class="npc-btn fam" data-act="family">${esc(I18N.T("Meet the Hopwell family"))}</button></div>`;
+  npcBody.innerHTML=h;
+  const f=npcBody.querySelector(".npc-quiz");if(f)f.onsubmit=async e=>{e.preventDefault();const id2=f.dataset.q,st=qStep(QUEST_BY_ID[id2]),ans=st.questions.map((_,k)=>+((f.querySelector(`input[name=q${k}]:checked`)||{}).value??-1));
+    const r=await questStep(id2,{answers:ans});if(r&&r.ok){sfx.success();return;}const m=document.getElementById("npcMsg");if(m){m.textContent=r&&r.data.error||"Try again!";}sfx.error();
+    if(r&&r.data.wrong)r.data.wrong.forEach(k=>f.querySelectorAll("fieldset")[k]?.classList.add("wrong"));};}
+npcBody.addEventListener("click",async e=>{const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,q=b.dataset.q&&QUEST_BY_ID[b.dataset.q];
+  if(a==="close")closeNpc();
+  else if(a==="way")showWay(q);
+  else if(a==="family")openFamily();
+  else if(a==="accept"){b.disabled=true;const r=await api("/api/quests/accept",{id:q.id});if(!r.ok){toast(r.data.error||"Something went wrong.");sfx.error();b.disabled=false;return;}
+    QS.data=r.data;sfx.success();toast(I18N.T("New quest: {title}",{title:q.title}));questsChanged();}
+  else if(a==="claim"){b.disabled=true;const r=await api("/api/quests/claim",{id:q.id});if(!r.ok){toast(r.data.error||"Something went wrong.");sfx.error();b.disabled=false;return;}
+    QS.data={done:r.data.done,active:r.data.active,status:r.data.status};const P2=r.data.prize;confettiRain();sfx.success();
+    toast(I18N.T("Quest complete! +{c} coins · +{x} XP",{c:P2.coins,x:P2.xp})+(P2.item?" · "+itemName(...P2.item.split(":").map((v,i)=>i?+v:v)):""));
+    if(me&&r.data.total!=null){me.coins=r.data.total;}if(P2.item){const u=await api("/api/auth/me");if(u.ok&&u.data.user)setAccount(u.data.user,true);}
+    questsChanged();}});
+document.getElementById("npcClose").onclick=closeNpc;
+npcOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeNpc();}});
+npcOv.addEventListener("pointerdown",e=>{if(e.target===npcOv)closeNpc();});
+npcPrompt.onclick=e=>{press(e.currentTarget);if(QS.near)openResident(QS.near);};
+addEventListener("keydown",e=>{if(!inGame||!QS.near||nearStation||!npcOv.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
+  if(e.code==="KeyE"){e.preventDefault();openResident(QS.near);}});
+// the family window
+const famOv=document.getElementById("famOv");
+function openFamily(){document.getElementById("famList").innerHTML=RESIDENTS.map(R=>`<div class="fam-card"><img src="${faceOf(R)}" alt="" width="64" height="64"><div><b>${esc(R.name)}</b><small>${esc(R.role)}</small><p>${esc(R.family)}</p></div></div>`).join("");
+  famOv.hidden=false;sfx.open();setTimeout(()=>document.getElementById("famClose").focus(),40);}
+const closeFamily=()=>{famOv.hidden=true;sfx.close();};
+document.getElementById("famClose").onclick=closeFamily;
+famOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeFamily();}});
+if(new URLSearchParams(location.search).has("questtest"))window.__q={QS,load:loadQuests,go:(x,z)=>{G.pos.set(x,0,z);G.target=null;G.camPos.set(x,4,z+9);},open:id=>openResident(QS.res.find(r=>r.R.id===id)),walk:(x,z)=>{try{const W=window.__beach;return W&&W.vdbg(x,z);}catch(e){return null;}}};
+
 /* ---------- multiplayer: other players in the Plaza ---------- */
 const remotes=new Map();let socket=null;const NET={last:0,x:0,z:0,face:0,moving:false};
 const onlineEl=document.getElementById("online");
@@ -6991,6 +7246,7 @@ function netJoin(){
     socket.on("player:member",d=>{const c=remotes.get(d.id);if(!c||c.member===!!d.member)return;c.member=!!d.member;rebuildRemoteTag(c);});
     socket.on("player:level",d=>{const c=remotes.get(d.id);if(!c||c.lv===d.lv)return;c.lv=d.lv;rebuildRemoteTag(c);if(c.role!=="admin"&&c.role!=="mod")paintBubbleRank(c.bubble,c.lv);});
     socket.on("level:xp",onLevelXp);
+    socket.on("quests:changed",()=>loadQuests());
     socket.on("player:pet",d=>{const c=remotes.get(d.id);if(c)setRemotePet(c,d.pet);else if(d.id===socket.id)loadPets();});
     socket.on("pet:pat",d=>{if(d.by===socket.id)return;if(d.owner){const c=remotes.get(d.owner);if(c&&c.petObj)patPet(c.petObj,true);else if(d.owner===socket.id&&PETS.me)patPet(PETS.me,true);}
       else if(d.pid){const P=PETS.home.find(x=>x.info.id===d.pid);if(P)patPet(P,true);}});
@@ -7411,6 +7667,7 @@ function drawMarkers(g,toScreen,big,size){
     if(name&&big){g.font="600 13px Fredoka,sans-serif";g.textAlign="center";g.lineWidth=4;g.strokeStyle="rgba(20,40,80,.8)";g.strokeText(name,sx,sy-16);g.fillStyle="#fff";g.fillText(name,sx,sy-16);}};
   for(const c of remotes.values())dot(c.root.position.x,c.root.position.z,c.role==="admin"?"#ff4545":c.role==="mod"?"#2f5bff":"#1fb6ff",c.username);
   if(G.npc&&!G.home)dot(G.npc.root.position.x,G.npc.root.position.z,"#2fd36b","Pip");
+  if(!G.home)for(const r of QS.res)if(r.kind)dot(r.R.at[0],r.R.at[1],r.kind==="!"?"#2fd36b":"#ffc21f",r.R.name+" "+r.kind);
   if(WORK.active&&WORK.job==="police")POL.tasks.forEach(k=>{if(k.stage==="done")return;const b=k.stage==="return"||k.stage==="follow"?k.b:k.a;dot(b.x,b.z,k.type==="thief"?"#ff4f4f":"#ffb21f",k.type==="thief"?"Pickpocket":"Lost kid");});
   // my parked vehicle: an orange badge with a little bike
   if(VEH.mine&&!VEH.mine.r&&!G.home){const [bx,by]=toScreen(VEH.mine.x,VEH.mine.z),R=11*pr+2;g.beginPath();g.arc(bx,by,R+3,0,Math.PI*2);g.fillStyle="#fff";g.fill();g.beginPath();g.arc(bx,by,R,0,Math.PI*2);g.fillStyle=VEH.mine.towAt?"#ff8a1c":"#2fb84f";g.fill();
@@ -7872,8 +8129,8 @@ function gameTick(dt,t,hy){
   if(G.home&&HOME.sun){HOME.sun.position.set(G.pos.x+5,12,G.pos.z+7);HOME.sun.target.position.set(G.pos.x,0,G.pos.z);HOME.sun.target.updateMatrixWorld();}
   weatherTick(t,dt);   // time of day, weather, sun position, lamps and weather sounds
   policeTick(t,dt);    // on patrol: the cases around the Plaza
-  updateJets(t);updateAreas(t,dt);if(CITY&&!G.home)CITY.update(t,dt,cam);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home)updateResident(t,dt);updateRemotes(t,dt);if(!G.home)vehTick(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
-  if(G.tag)placeTag(G.tag,P.root.position);if(G.npc)placeTag(G.npc.tag,G.npc.root.position);for(const c of remotes.values())placeTag(c.tag,c.root.position);
+  updateJets(t);updateAreas(t,dt);if(CITY&&!G.home)CITY.update(t,dt,cam);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home){updateResident(t,dt);updateResidents(t,dt);}updateRemotes(t,dt);if(!G.home)vehTick(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
+  if(G.tag)placeTag(G.tag,P.root.position);if(G.npc)placeTag(G.npc.tag,G.npc.root.position);for(const r of QS.res)placeTag(r.n.tag,r.n.root.position);for(const c of remotes.values())placeTag(c.tag,c.root.position);
   if(G.seaU)G.seaU.value=t;
   G.boat.position.x=-25+Math.sin(t*.05)*30;G.boat.rotation.z=Math.sin(t*1.2)*.05;
 }
@@ -7951,7 +8208,7 @@ function gfxTick(){const t=performance.now();if(!GFX.last){GFX.last=t;return;}co
 function enterGame(){
   if(!P)return;
   if(!gameBuilt)buildPlaza();
-  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();seasonWheelInit();maybeAskBirthday();birthdayParty();setTimeout(()=>loadFoodBag(),800);
+  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();setTimeout(()=>loadFoodBag(),800);
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
@@ -8991,7 +9248,7 @@ document.getElementById("shop").onclick=e=>{press(e.currentTarget);openStore("sh
 document.getElementById("tags").onclick=e=>{press(e.currentTarget);openStore("tags");};
 document.getElementById("inventory").onclick=e=>{press(e.currentTarget);openStore("inventory");};
 stage.addEventListener("click",e=>{if(performance.now()-TOUCH.dragT<350)return;   // that was a camera drag / pinch, not a tap
-  if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
+  if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const rs=residentAt(e);if(rs){openResident(rs);return;}const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
 document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoosh();exitGame();};
 
 /* =====================================================================

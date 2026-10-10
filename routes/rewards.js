@@ -8,6 +8,7 @@ import { bumpNeeds } from "../realtime/needs.js";
 import { addSeasonXp } from "./season.js";
 import { SEASON_XP } from "../public/shared/season.js";
 import { addLevelXp } from "./levels.js";
+import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
 
 /*
@@ -300,6 +301,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
       addSeasonXp(updated._id, SEASON_XP.minigame);
       addLevelXp(updated._id, LEVEL_XP.minigame, { why: "minigame" });
+      if (score > 0) questEvent(updated._id, "minigame", 1);   // quests: "play N mini-games"
       return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap, best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });
