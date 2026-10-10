@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { ghosts } from "./blocks.js";
 import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { ITEMS, LOOK_SLOTS } from "../catalog.js";
@@ -62,7 +63,7 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
     if (!canAsk()) return fail("Slow down a little before asking again.");
     const from = players.get(socket.id), target = players.get(String(to || ""));
     if (!from) return;
-    if (!target) return fail("That player isn't here any more.");
+    if (!target || (from.role !== "admin" && target.role !== "admin" && ghosts(from.userId, target.userId))) return fail("That player isn't here any more.");
     if (target.userId === from.userId) return fail("You can't trade with yourself.");
     // nobody can ask an admin; an admin may ask a player, but then nothing can be put on the table
     if (target.role === "admin" && from.role !== "admin") return fail("Admins can't be asked to trade.");

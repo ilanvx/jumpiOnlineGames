@@ -2728,6 +2728,58 @@ body.tl-chat .tl-card,body.tl-chat .tl-spot,body.tl-chat .tl-edge{visibility:hid
 body.tl-chat .chat-send{animation:tlSend 1s ease-in-out infinite}
 body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
 @keyframes tlSend{50%{transform:scale(1.14);box-shadow:0 0 0 6px rgb(255 178 31 / .6)}}
+/* report / block a player (#sfOv) and the small Report / Block buttons on the player card */
+.pc-safe{display:flex;gap:8px;margin-top:2px}
+.pc-mini{flex:1;min-width:0;height:36px;padding:0 8px;border:0;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:rgb(255 255 255 / .12);color:#fff;font:600 .9rem "Fredoka",system-ui,sans-serif;transition:background .15s}
+.pc-mini svg{width:18px;height:18px;flex:none}
+.pc-mini.rep svg{color:#ff9b9b}.pc-mini.blk svg{color:#ffd0d0}
+.pc-mini:hover{background:rgb(255 255 255 / .22)}
+.pc-mini:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.pc-mini[hidden]{display:none}
+.pc-full .pc-mini{height:clamp(36px,6vh,46px);font-size:clamp(.85rem,2vh,1rem)}
+#sfOv{z-index:61}
+.idle-card.sf-card{width:min(470px,100%);padding:84px 22px 22px}
+.sf-card h2{color:#e0262f;text-shadow:0 4px 0 #ffd6da}
+.sf-card.ok h2{color:#25c36a;text-shadow:0 4px 0 #d5f6e2}
+.sf-who{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 10px!important;max-width:none!important;font:400 1.35rem var(--font)!important;color:#22324a!important;letter-spacing:.03em}
+.sf-ic{display:inline-flex;width:30px;height:30px;border-radius:50%;align-items:center;justify-content:center;background:#ffe3e3;color:#e0262f}
+.sf-ic svg{width:18px;height:18px}
+#sfAskText{max-width:40ch!important;font-size:.95rem!important}
+.sf-q,.sf-askq{margin:0 0 8px!important;max-width:none!important;font:600 1.05rem "Fredoka",system-ui,sans-serif!important;color:#22324a!important}
+.sf-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.sf-r{min-height:48px;padding:6px 10px;border:2px solid #d5e0ef;border-radius:14px;background:#fff;color:#22324a;cursor:pointer;font:600 .9rem/1.2 "Fredoka",system-ui,sans-serif;text-align:center;transition:transform .12s,border-color .12s,background .12s}
+.sf-r.sf-urgent{border-color:#ffc9cf}
+.sf-r:hover{transform:translateY(-1px);border-color:#ff8a96}
+.sf-r[aria-checked="true"]{border-color:#e0262f;background:#ffeef0;color:#b31d2f;box-shadow:0 0 0 3px rgb(224 38 47 / .18)}
+.sf-r:focus-visible{outline:3px solid #1f9bff;outline-offset:2px}
+#sfDetails{display:block;width:100%;box-sizing:border-box;min-height:58px;margin:0 0 8px;padding:9px 12px;border:2px solid #d5e0ef;border-radius:14px;resize:vertical;font:500 .95rem/1.35 "Fredoka",system-ui,sans-serif;color:#22324a;background:#fff}
+#sfDetails:focus{outline:none;border-color:#1f9bff}
+.sf-note{margin:0 auto 10px!important;max-width:none!important;padding:8px 12px;border-radius:12px;background:#fff6dc;color:#8a5a00!important;font-size:.86rem!important;line-height:1.35!important}
+.sf-thanks{margin:0 auto 12px!important;max-width:none!important;padding:10px 12px;border-radius:12px;background:#ddf8e7;color:#13813f!important;font-weight:600!important}
+.sf-msg{margin:0 0 8px!important;max-width:none!important;color:#c8263c!important;font-weight:600!important;font-size:.92rem!important}
+.sf-msg:empty{display:none}
+.sf-go{background:linear-gradient(180deg,#ff6f7d,#e0262f);color:#fff;box-shadow:0 5px 0 #8f1218}
+.sf-go svg{color:#fff}
+.sf-go:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+#sfOv .idle-acts{flex-direction:row}
+#sfOv .idle-acts button{flex:1}
+body.land .idle-card.sf-card{width:min(720px,100%);padding:10px 16px 12px;max-height:calc(100dvh - 16px);overflow-y:auto}
+body.land .sf-card h2{font-size:1.4rem;margin:0 0 2px}
+body.land .sf-who{margin-bottom:6px!important;font-size:1.1rem!important}
+body.land .sf-q{margin-bottom:6px!important}
+body.land #sfDetails{min-height:38px;height:38px;margin-bottom:6px;padding:6px 10px}
+body.land .sf-note{margin-bottom:6px!important;padding:5px 10px;font-size:.76rem!important}
+body.land #sfOv .idle-acts button{height:42px}
+body.land .sf-card .idle-face{display:none}
+body.land .sf-reasons{grid-template-columns:repeat(3,1fr)}
+body.land .sf-r{min-height:40px;font-size:.82rem}
+@media (max-width:420px){.sf-reasons{grid-template-columns:1fr}}
+/* JumpiChat: the report / block buttons in a chat's top bar, and the Blocked list in the Friends app */
+.ph-extra .ph-hb{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;margin-left:4px;border:0;border-radius:50%;background:rgb(255 255 255 / .2);color:#fff;cursor:pointer}
+.ph-extra .ph-hb svg{width:18px;height:18px}
+.ph-extra .ph-hb:hover{background:rgb(255 255 255 / .32)}
+.ph-row.blocked .ph-av{filter:grayscale(1);opacity:.6}
+.ph-blocknote{margin:4px 12px 10px;font-size:.8rem;color:#6b7c93}
 </style>
 </head>
 <body>
@@ -3105,6 +3157,7 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
       <p class="pc-label"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/></svg>PLAY · 100 COINS EACH · WINNER TAKES 200</p>
       <button class="pc-btn ttt" id="pcTTT" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4 L10 10 M10 4 L4 10" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="17" cy="17" r="3.6" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M12 2 V22 M2 12 H22" stroke="rgb(255 255 255 / .45)" stroke-width="1.6"/></svg><span>Tic-Tac-Toe</span></button>
       <button class="pc-btn c4" id="pcC4" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="18" r="3.4" fill="#fff"/><circle cx="18" cy="18" r="3.4" fill="#ffd23a"/><circle cx="12" cy="11" r="3.4" fill="#ffd23a"/><circle cx="18" cy="11" r="3.4" fill="#fff"/><circle cx="18" cy="4" r="3.4" fill="#fff"/></svg><span>4 in a Row</span></button>
+      <div class="pc-safe"><button class="pc-mini rep" id="pcReport" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 3 V21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 4 H18.5 L16 8.5 L18.5 13 H6.5 Z" fill="currentColor"/></svg><span>Report</span></button><button class="pc-mini blk" id="pcBlock" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M6 6 L18 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg><span>Block</span></button></div>
     </div>
   </div>
 </div>
@@ -3315,6 +3368,30 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
   </div>
   <button class="tl-skip" id="tlSkip" type="button">Skip</button>
   <div class="tl-prog" aria-hidden="true"><i id="tlProg"></i></div>
+</div>
+<!-- report / block a player (the SAFE block in the script) -->
+<div class="idle-overlay" id="sfOv" role="dialog" aria-modal="true" aria-labelledby="sfTitle" hidden>
+  <div class="idle-card sf-card">
+    <img class="idle-face" id="sfFace" alt="">
+    <h2 id="sfTitle">REPORT A PLAYER</h2>
+    <p class="sf-who"><span class="sf-ic" id="sfIc" aria-hidden="true"></span><b id="sfName" data-noi18n></b></p>
+    <div id="sfReport">
+      <p class="sf-q" id="sfQ">What happened?</p>
+      <div class="sf-reasons" role="radiogroup" aria-labelledby="sfQ"><button class="sf-r sf-urgent" type="button" role="radio" aria-checked="false" data-r="grooming">Asked to meet, for photos or personal details</button><button class="sf-r sf-urgent" type="button" role="radio" aria-checked="false" data-r="sexual">Sexual or inappropriate talk</button><button class="sf-r" type="button" role="radio" aria-checked="false" data-r="bullying">Bullying or harassment</button><button class="sf-r" type="button" role="radio" aria-checked="false" data-r="language">Bad language or hate</button><button class="sf-r" type="button" role="radio" aria-checked="false" data-r="scam">Scam or stealing items</button><button class="sf-r" type="button" role="radio" aria-checked="false" data-r="other">Something else</button></div>
+      <label class="sr-only" for="sfDetails">Tell us more (optional)</label>
+      <textarea id="sfDetails" maxlength="300" rows="2" dir="auto" placeholder="Tell us more (optional)"></textarea>
+      <p class="sf-note">If someone makes you feel unsafe or scared, stop talking to them and tell a parent or a grown-up you trust.</p>
+      <p class="sf-msg" id="sfMsg" role="status"></p>
+      <div class="idle-acts"><button class="sf-go" id="sfSend" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 3 V21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 4 H18.5 L16 8.5 L18.5 13 H6.5 Z" fill="currentColor"/></svg>Send report</button><button class="idle-exit" id="sfCancel" type="button">Cancel</button></div>
+    </div>
+    <div id="sfAsk" hidden>
+      <p id="sfThanks" class="sf-thanks" hidden>Thank you for telling us! The Jumpi team will check it.</p>
+      <p id="sfAskQ" class="sf-askq">Block this player too?</p>
+      <p id="sfAskText">You won't see each other in the game any more, they can't send you messages or friend requests, and they won't be your friend. You can unblock them any time in your phone: Friends → Blocked.</p>
+      <p class="sf-msg" id="sfAskMsg" role="status"></p>
+      <div class="idle-acts"><button class="sf-go blk" id="sfBlockYes" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M6 6 L18 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>Block</button><button class="idle-exit" id="sfBlockNo" type="button">Not now</button></div>
+    </div>
+  </div>
 </div>
 <div class="idle-overlay" id="piOv" role="alertdialog" aria-modal="true" aria-labelledby="piTitle" aria-describedby="piText" hidden>
   <div class="idle-card pi-card">
@@ -12621,6 +12698,7 @@ function openPlayerCard(hit,e){
   const poor=!me||(me.coins||0)<100;["pcTTT","pcC4"].forEach(id=>{const b=document.getElementById(id);b.disabled=poor;b.title=poor?"You need 100 coins to play":"";});
   // nobody can ask an admin to trade or play (an admin can still ask a player)
   const noAsk=hit.c.role==="admin"&&!(me&&me.role==="admin");["pcTrade","pcTTT","pcC4"].forEach(id=>document.getElementById(id).hidden=noAsk);pcard.querySelector(".pc-label").hidden=noAsk;
+  document.getElementById("pcBlock").hidden=hit.c.role==="admin"||hit.c.role==="mod";   // the Jumpi team can't be blocked (they can be reported)
   sfx.open();setTimeout(()=>document.getElementById(noAsk?"pcFriend":"pcTrade").focus(),30);
 }
 function closePlayerCard(){pcard.hidden=true;pcTarget=null;pcChar=null;}
@@ -12891,9 +12969,9 @@ const actBtn=(a,cls,label,icon,text="")=>`<button type="button" class="${cls}" d
 
 /* Friends */
 async function appFriends(tok){
-  const r=await api("/api/friends");if(stale(tok))return;
+  const [r,bl]=await Promise.all([api("/api/friends"),api("/api/blocked")]);if(stale(tok))return;
   if(!r.ok){phBody.innerHTML=`<p class="ph-empty">${esc(r.data.error||"Couldn't load your friends.")}</p>`;return;}
-  const {friends,requests}=r.data;PH.reqs=requests.length;paintBadge();
+  const {friends,requests}=r.data,blocked=bl.ok?bl.data.blocked:[];PH.reqs=requests.length;paintBadge();
   phExtra.textContent=friends.length?`${friends.length} friend${friends.length===1?"":"s"}`:"";
   let h=`<form class="ph-add" id="phAddForm"><input id="phAddName" dir="auto" maxlength="32" placeholder="Add a friend by name" autocomplete="off" aria-label="Friend's name"><button type="submit">Add</button></form><p class="ph-msg" id="phMsg" role="status"></p>`;
   if(requests.length)h+=`<h4 class="ph-sec">Friend requests · ${requests.length}</h4>`+requests.map(q=>row(q.look,q.username,"Wants to be your friend!",false,
@@ -12902,6 +12980,9 @@ async function appFriends(tok){
   h+=friends.length?friends.map(f=>row(f.look,f.username,whereText(f.where,f.username),!!f.where,
     actBtn("chat","g","Chat with "+f.username,I.chatS)+actBtn("visit","y","Visit "+f.username+"'s home",I.homeS)+actBtn("more","gr","More",I.dotsS))).join("")
     :`<div class="ph-empty">${I.friends.replace('<svg','<svg style="background:#ff8a1c;border-radius:28px;padding:14px"')}<b>No friends yet</b>Type a name above, or tap a player in the Plaza and press "Add friend".</div>`;
+  // players I blocked: they can't see me or message me (tap Unblock to undo)
+  if(blocked.length)h+=`<h4 class="ph-sec">Blocked · ${blocked.length}</h4><p class="ph-blocknote">You and these players don't see each other, and they can't message you.</p>`
+    +blocked.map(b=>row(b.look,b.username,"Blocked",false,actBtn("unblock","gr","Unblock "+b.username,"","Unblock")).replace('class="ph-row"','class="ph-row blocked"')).join("");
   phBody.innerHTML=h;
   document.getElementById("phAddForm").onsubmit=async e=>{e.preventDefault();const inp=document.getElementById("phAddName"),name=inp.value.trim();if(!name)return;
     const res=await api("/api/friends/add",{username:name});const m=document.getElementById("phMsg");if(!m)return;
@@ -12980,8 +13061,9 @@ async function appConvo(tok,name){
   phTitle.innerHTML='<span class="t">…</span>';
   const r=await api("/api/dm/with/"+encodeURIComponent(name));if(stale(tok))return;
   if(!r.ok){phBody.innerHTML=`<p class="ph-empty">${esc(r.data.error||"Couldn't open this chat.")}</p>`;return;}
-  const w=r.data.with;PH.chat={name:w.username,friend:w.friend,msgs:r.data.messages,more:r.data.more};
+  const w=r.data.with;PH.chat={name:w.username,friend:w.friend,staff:!!w.staff,msgs:r.data.messages,more:r.data.more};
   phTitle.innerHTML=`${avatarImg(w.look,38)}<span class="t">${esc(w.username)}<small>${esc(w.where?"online · "+whereText(w.where,w.username):"offline")}</small></span>`;
+  phExtra.innerHTML=`<button type="button" class="ph-hb" data-h="report" aria-label="Report ${esc(w.username)}" title="Report">${SF_FLAG}</button>${w.staff?"":`<button type="button" class="ph-hb" data-h="block" aria-label="Block ${esc(w.username)}" title="Block">${SF_BAN}</button>`}`;
   paintConvo(true);
   phFoot.hidden=false;
   phFoot.innerHTML=w.friend?`<form class="ph-send" id="phSend"><input id="phSendText" dir="auto" maxlength="300" placeholder="Message" autocomplete="off" aria-label="Message to ${esc(w.username)}"><button type="submit" aria-label="Send" disabled>${I.send}</button></form>`
@@ -13028,6 +13110,8 @@ async function visitHome(name){
   if(G.home){if(lower(HOME.owner)===target){toast("You're already here!");return;}await leaveHome();await new Promise(r=>setTimeout(r,500));}
   setTimeout(()=>enterHome(name&&lower(name)!==lower(me.username)?name:undefined),300);
 }
+phExtra.addEventListener("click",e=>{const b=e.target.closest("[data-h]"),C=PH.chat;if(!b||!C)return;sfx.tick(true);
+  if(b.dataset.h==="report")openReport(C.name,"chat",C.staff);else openBlock(C.name);});
 phBody.addEventListener("click",async e=>{
   const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,rowEl=b.closest("[data-u]"),u=rowEl&&rowEl.dataset.u;
   if(a==="open"||a==="chat"){sfx.tick(true);openApp("convo",u);}
@@ -13050,7 +13134,10 @@ phBody.addEventListener("click",async e=>{
     const r=a==="add"?await api("/api/friends/add",{username:u}):await api("/api/friends/respond",{username:u,accept:true});
     toast(r.ok?(r.data.message||"Done!"):(r.data.error||"Something went wrong."));r.ok?sfx.success():sfx.error();if(PH.open)renderApp();refreshPhoneBadges();}
   else if(a==="decline"){b.disabled=true;await api("/api/friends/respond",{username:u,accept:false});sfx.close();renderApp();refreshPhoneBadges();}
-  else if(a==="more"){const acts=b.closest(".ph-acts");acts.innerHTML=`<button type="button" class="r" data-a="remove">Remove</button><button type="button" class="gr" data-a="keep">Keep</button>`;acts.querySelector("button").focus();}
+  else if(a==="more"){const acts=b.closest(".ph-acts");acts.innerHTML=`<button type="button" class="r" data-a="remove">Remove</button><button type="button" class="r" data-a="block" aria-label="Block">${SF_BAN}</button><button type="button" class="o" data-a="report" aria-label="Report">${SF_FLAG}</button><button type="button" class="gr" data-a="keep">Keep</button>`;acts.querySelector("button").focus();}
+  else if(a==="block"){sfx.tick(true);openBlock(u);}
+  else if(a==="report"){sfx.tick(true);openReport(u,"friends");}
+  else if(a==="unblock"){b.disabled=true;unblock(u);}
   else if(a==="keep")renderApp();
   else if(a==="remove"){const r=await api("/api/friends/remove",{username:u});toast(r.ok?`${u} is no longer your friend.`:(r.data.error||"Something went wrong."));renderApp();}
   // music player
@@ -13077,7 +13164,9 @@ function bindPhoneSocket(s){
   s.on("dm:read",d=>{const C=PH.chat;if(!C||lower(C.name)!==lower(d.by))return;C.msgs.forEach(m=>{if(lower(m.from)===lower(me.username))m.read=true;});paintConvo();});
   s.on("friends:request",d=>{PH.reqs++;paintBadge();sfx.wave();toast(`${d.username} wants to be your friend! Open your phone 📱`);if(PH.open&&PH.stack.at(-1)?.id==="friends")renderApp();});
   s.on("friends:accepted",d=>{sfx.success();toast(`🎉 ${d.username} is your friend now!`);if(PH.open&&["friends","online","chat"].includes(PH.stack.at(-1)?.id))renderApp();});
-  s.on("friends:changed",()=>{if(PH.open&&["friends","online","chat","home"].includes(PH.stack.at(-1)?.id))renderApp();});
+  s.on("friends:changed",()=>{if(PH.open&&["friends","online","chat","home","convo"].includes(PH.stack.at(-1)?.id))renderApp();refreshPhoneBadges();});
+s.on("blocks:changed",()=>{if(PH.open&&["friends","online","chat"].includes(PH.stack.at(-1)?.id))renderApp();});
+s.on("admin:report",d=>{if(me&&(me.role==="admin"||me.role==="mod")){toast(`${d.urgent?"🚨 ":""}New report: ${d.from} reported ${d.target} (admin panel → Player reports)`);sfx.wave();}});
 }
 
 /* ---------- the character takes the phone out and looks at it ---------- */
@@ -13466,6 +13555,74 @@ function piWatch(input){if(!input||input.dataset.piw)return;input.dataset.piw="1
   input.addEventListener("input",()=>{const k=privateInfo(input.value);input.classList.toggle("pi-warn",!!k);tip.hidden=!k;
     if(k)tip.textContent=k==="phone"?"Phone numbers can't be sent":k==="email"?"Emails can't be sent":"Addresses can't be sent";});}
 piWatch(chatInput);document.querySelectorAll(".win-chat input").forEach(piWatch);
+
+/* ---------- REPORT and BLOCK a player (SAFE) ----------
+   Report: from the player card, a JumpiChat chat (the flag at the top) or the Friends app. The server keeps a copy of
+   the chat for the team (/admin → Player reports). After a report the window asks if you want to block them too.
+   Block: the two players become "ghosts" to each other (realtime/blocks.js), no messages, no friend requests,
+   no friendship. The Friends app has a Blocked list to unblock. Team members (admins / moderators) can't be blocked. */
+const sfOv=document.getElementById("sfOv"),sfCard=sfOv.querySelector(".sf-card");
+const SF={name:"",where:"card",reason:"",busy:false,staff:false};
+const SF_FLAG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 3 V21" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M6.5 4 H18.5 L16 8.5 L18.5 13 H6.5 Z" fill="currentColor"/></svg>',SF_BAN='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M6 6 L18 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>';
+function sfOpen(name,mode,where,staff){
+  SF.name=name;SF.where=where||"card";SF.reason="";SF.busy=false;SF.staff=!!staff;
+  document.getElementById("sfName").textContent=name;document.getElementById("sfIc").innerHTML=mode==="report"?SF_FLAG:SF_BAN;
+  document.getElementById("sfFace").src=emoteImage(mode==="report"?"sad":"wow",skinOf({color:lk("color")}));
+  sfOv.querySelectorAll(".sf-r").forEach(b=>b.setAttribute("aria-checked","false"));
+  document.getElementById("sfDetails").value="";document.getElementById("sfSend").disabled=true;
+  document.getElementById("sfMsg").textContent=document.getElementById("sfAskMsg").textContent="";
+  sfStep(mode);sfOv.hidden=false;G.keys={};sfx.open();
+  setTimeout(()=>(mode==="report"?sfOv.querySelector(".sf-r"):document.getElementById("sfBlockYes")).focus(),60);
+}
+// "report": the form · "block": are you sure? · "thanks": sent, block them too?
+function sfStep(step){
+  const rep=step==="report";
+  document.getElementById("sfReport").hidden=!rep;document.getElementById("sfAsk").hidden=rep;
+  sfCard.classList.toggle("ok",step==="thanks");
+  document.getElementById("sfTitle").textContent=rep?"REPORT A PLAYER":step==="thanks"?"THANK YOU!":"BLOCK THIS PLAYER?";
+  document.getElementById("sfThanks").hidden=step!=="thanks";
+  const ask=step!=="thanks"||!SF.staff;   // team members can't be blocked: just "OK"
+  document.getElementById("sfAskQ").hidden=step!=="thanks"||!ask;
+  document.getElementById("sfAskText").hidden=!ask;document.getElementById("sfBlockYes").hidden=!ask;
+  document.getElementById("sfBlockNo").textContent=step==="block"?"Cancel":ask?"Not now":"OK";
+  if(step==="thanks"){document.getElementById("sfFace").src=emoteImage("happy",skinOf({color:lk("color")}));if(ask)document.getElementById("sfIc").innerHTML=SF_BAN;
+    setTimeout(()=>document.getElementById(ask?"sfBlockYes":"sfBlockNo").focus(),60);}
+}
+function sfClose(){sfOv.hidden=true;SF.busy=false;sfx.close();}
+const openReport=(name,where,staff)=>{if(name&&me&&lower(name)!==lower(me.username))sfOpen(name,"report",where,staff);};
+const openBlock=name=>{if(name&&me&&lower(name)!==lower(me.username))sfOpen(name,"block");};
+sfOv.querySelector(".sf-reasons").addEventListener("click",e=>{const b=e.target.closest(".sf-r");if(!b)return;
+  sfOv.querySelectorAll(".sf-r").forEach(x=>x.setAttribute("aria-checked",String(x===b)));SF.reason=b.dataset.r;
+  document.getElementById("sfSend").disabled=false;document.getElementById("sfMsg").textContent="";sfx.tick(true);});
+document.getElementById("sfSend").onclick=async()=>{
+  if(SF.busy||!SF.reason)return;SF.busy=true;const btn=document.getElementById("sfSend");btn.disabled=true;
+  const r=await api("/api/report",{username:SF.name,reason:SF.reason,where:SF.where,details:document.getElementById("sfDetails").value.trim()});
+  SF.busy=false;btn.disabled=false;
+  if(!r.ok){document.getElementById("sfMsg").textContent=r.data.error||"Something went wrong. Try again.";sfx.error();return;}
+  sfx.success();
+  if(r.data.blocked){toast(r.data.message);sfClose();return;}   // already blocked: nothing more to ask
+  SF.staff=r.data.canBlock===false;sfStep("thanks");
+};
+document.getElementById("sfBlockYes").onclick=async()=>{
+  if(SF.busy)return;SF.busy=true;const name=SF.name;
+  const r=await api("/api/block",{username:name});SF.busy=false;
+  if(!r.ok){document.getElementById("sfAskMsg").textContent=r.data.error||"Something went wrong. Try again.";sfx.error();return;}
+  sfClose();toast(r.data.message);sfx.success();afterBlock(name);
+};
+document.getElementById("sfBlockNo").onclick=sfClose;
+document.getElementById("sfCancel").onclick=sfClose;
+sfOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();sfClose();}});
+sfOv.addEventListener("pointerdown",e=>{if(e.target===sfOv)sfClose();});
+// after blocking: the card closes, and a chat with them closes
+function afterBlock(name){
+  if(pcChar&&lower(pcChar.username)===lower(name))closePlayerCard();
+  if(PH.open){const top=PH.stack.at(-1);if(top&&top.id==="convo"&&lower(top.arg)===lower(name))goBack();else renderApp();}
+  refreshPhoneBadges();
+}
+async function unblock(name){const r=await api("/api/unblock",{username:name});toast(r.ok?r.data.message:(r.data.error||"Something went wrong."));r.ok?sfx.success():sfx.error();if(PH.open)renderApp();}
+document.getElementById("pcReport").onclick=()=>{const c=pcChar;if(!c)return;closePlayerCard();openReport(c.username,"card",c.role==="admin"||c.role==="mod");};
+document.getElementById("pcBlock").onclick=()=>{const c=pcChar;if(!c)return;closePlayerCard();openBlock(c.username);};
+if(new URLSearchParams(location.search).has("sftest"))window.__sf={openReport,openBlock,card:id=>openPlayerCard({id,c:remotes.get(id)},{clientX:innerWidth/2,clientY:innerHeight/2}),phone:()=>openPhone(),app:a=>openApp(a[0],a[1])};
 
 /* ---------- bad words never leave the page (and the server checks again) ---------- */
 let blockedCount=0;

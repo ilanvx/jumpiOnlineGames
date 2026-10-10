@@ -20,6 +20,7 @@ import { isBirthdayOn } from "../public/shared/birthday.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
 import { WORLD_BOUNDS } from "../public/shared/city-layout.js";
 import { modLog } from "../discord/pip.js";
+import { loadBlocks, ghosts, hasGhosts } from "./blocks.js";
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
@@ -89,12 +90,13 @@ const UNIFORMS = new Set(Object.keys(JOBS));   // work uniforms other players ca
    An admin can play invisibly (on by default; "adminInvisible" on the User). Then only other admins
    in the same room see them (half see-through); everyone else gets nothing at all from them:
    not their character, moves, chat, emotes, pets, badges, and they don't show as online. */
-// may player q see player p?
-const sees = (q, p) => !p.invisible || q.role === "admin";
+// may player q see player p? (invisible admins, and players who blocked each other: realtime/blocks.js)
+const ghostPair = (q, p) => q.role !== "admin" && p.role !== "admin" && ghosts(q.userId, p.userId);
+const sees = (q, p) => (!p.invisible || q.role === "admin") && !ghostPair(q, p);
 // send something about player p to the people in p's room who can see p (self: include p's own window)
 function roomSend(p, event, data, { self = true, volatile = false } = {}) {
   if (!ioRef) return;
-  if (!p.invisible) {
+  if (!p.invisible && !hasGhosts(p.userId)) {
     const s = ioRef.sockets.sockets.get(p.id);
     let to = self || !s ? ioRef.to(p.room) : s.to(p.room);
     if (volatile) to = to.volatile;
@@ -255,6 +257,7 @@ export function attachPlaza(io) {
       const inApp = /JumpiApp\//.test(String(socket.handshake.headers["user-agent"] || ""));   // players in the Android app can play now
       if (LAUNCH_HOSTS.includes(host) && Date.now() < LAUNCH_AT && user.role !== "admin" && !inApp) return next(new Error("not-open"));
       socket.data.user = user.toPublic();
+      await loadBlocks(user._id).catch(() => {});   // who this player blocked / is blocked by: they don't see each other
       if (user.mutedUntil && user.mutedUntil.getTime() > Date.now()) mutedUntil.set(user._id.toString(), user.mutedUntil.getTime());
       next();
     } catch {
@@ -327,7 +330,7 @@ export function attachPlaza(io) {
       else if (homeOf) {
         try {
           const owner = await User.findOne({ usernameLower: homeOf }, { house: 1 }).lean();
-          if (!owner) return socket.emit("home:gone");
+          if (!owner || (me.role !== "admin" && ghosts(me.id, owner._id))) return socket.emit("home:gone");
           homeBounds.set("home:" + homeOf, houseShape(owner.house).bounds);
         } catch {
           return;
@@ -763,9 +766,31 @@ export function worldPos(userId) {
 export function onlinePlayers(seeHidden = true, selfId = "") {
   const seen = new Map();
   for (const p of players.values())
-    if (!seen.has(p.userId) && (seeHidden || !p.invisible || p.userId === selfId))
+    if (!seen.has(p.userId) && (seeHidden || ((!p.invisible || p.userId === selfId) && !(p.role !== "admin" && ghosts(selfId, p.userId)))))
       seen.set(p.userId, { userId: p.userId, username: p.username, look: p.look, role: p.role, where: p.room || ROOM, invisible: !!p.invisible });
   return [...seen.values()];
+}
+// a block was added (on) or taken away: the two players vanish from / come back into each other's game right away
+export function ghostUpdate(a, b, on) {   // a, b: { id, username, role }
+  if (!ioRef) return;
+  const A = [...players.values()].filter((p) => p.userId === String(a.id)), B = [...players.values()].filter((p) => p.userId === String(b.id));
+  // visiting the other one's home (even when they're not online): back to the Plaza
+  if (on && a.role !== "admin" && b.role !== "admin")
+    for (const [X, y] of [[A, b], [B, a]])
+      for (const x of X) if (x.room === "home:" + String(y.username).toLowerCase()) ioRef.to(x.id).emit("home:gone");
+  for (const a of A)
+    for (const b of B) {
+      if (a.room !== b.room) continue;
+      for (const [x, y] of [[a, b], [b, a]]) {
+        if (on) { if (x.role !== "admin" && y.role !== "admin") ioRef.to(x.id).emit("player:leave", y.id); }
+        else if (sees(x, y)) ioRef.to(x.id).emit("player:join", publicView(y));
+      }
+    }
+}
+// to every admin / moderator playing right now (a new report)
+export function emitToAdmins(event, data) {
+  if (!ioRef) return;
+  for (const p of players.values()) if (p.role === "admin" || p.role === "mod") ioRef.to(p.id).emit(event, data);
 }
 // send something to every window this player has open in the game
 export function emitToUser(userId, event, data) {

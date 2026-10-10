@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
+import { Report, URGENT_REASONS } from "../models/Report.js";
 import { TeamApplication, TEAM_ROLES, TEAM_STATUS } from "../models/TeamApplication.js";
 import { Order } from "../models/Order.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
@@ -166,15 +167,15 @@ router.get("/overview", async (req, res, next) => {
     const online = onlinePlayers();
     const rooms = {};
     for (const p of online) { const r = p.where.startsWith("home:") ? "homes" : p.where; rooms[r] = (rooms[r] || 0) + 1; }
-    const [users, new24, new7, banned, muted, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew] = await Promise.all([
+    const [users, new24, new7, banned, muted, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew, reportsOpen] = await Promise.all([
       User.estimatedDocumentCount(), User.countDocuments({ createdAt: { $gte: day } }), User.countDocuments({ createdAt: { $gte: week } }),
       User.countDocuments({ bannedUntil: { $gt: now } }), User.countDocuments({ mutedUntil: { $gt: now } }),
       ChatLog.countDocuments({ at: { $gte: day }, blocked: false }), ChatLog.countDocuments({ at: { $gte: day }, blocked: true }),
       TradeLog.countDocuments({ at: { $gte: day } }), DuelLog.countDocuments({ at: { $gte: day } }), ContactMessage.countDocuments({ handled: false }),
       AdminLog.find().sort({ at: -1 }).limit(8).lean(), User.find().sort({ coins: -1 }).limit(5).select("username coins").lean(),
-      TeamApplication.countDocuments({ status: "new" }),
+      TeamApplication.countDocuments({ status: "new" }), Report.countDocuments({ status: "open" }),
     ]);
-    res.json({ users, new24, new7, banned, muted, online: online.length, rooms, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew });
+    res.json({ users, new24, new7, banned, muted, online: online.length, rooms, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew, reportsOpen });
   } catch (err) {
     next(err);
   }
@@ -628,6 +629,40 @@ router.post("/contact/:id", async (req, res, next) => {
     const m = await ContactMessage.findByIdAndUpdate(req.params.id, { handled: req.body.handled === true }, { new: true });
     if (!m) return fail(res, 404, "Not found.");
     audit(req, m.handled ? "contact-done" : "contact-reopen", null, `${m.email} · ${m.topic}`);
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- player reports (from the game: player card, JumpiChat, Friends app; routes/social.js) ---------- */
+router.get("/reports/count", async (req, res, next) => {
+  try { res.json({ open: await Report.countDocuments({ status: "open" }) }); } catch (err) { next(err); }
+});
+router.get("/reports", async (req, res, next) => {
+  try {
+    const q = req.query.show === "all" ? {} : req.query.show === "done" ? { status: "done" } : { status: "open" };
+    if (req.query.user && isId(req.query.user)) q.targetId = req.query.user;
+    const list = await Report.find(q).sort({ at: -1 }).limit(300).lean();
+    // how many times each reported player was reported (all time), so repeat offenders stand out
+    const ids = [...new Set(list.map((r) => String(r.targetId)))].map((id) => new mongoose.Types.ObjectId(id));
+    const counts = await Report.aggregate([{ $match: { targetId: { $in: ids } } }, { $group: { _id: "$targetId", n: { $sum: 1 }, by: { $addToSet: "$fromId" } } }]);
+    const times = new Map(counts.map((c) => [String(c._id), { n: c.n, people: c.by.length }]));
+    // urgent ones (asking to meet / for photos, sexual talk) first, then the newest
+    list.sort((a, b) => (b.status === "open" && URGENT_REASONS.has(b.reason)) - (a.status === "open" && URGENT_REASONS.has(a.reason)) || b.at - a.at);
+    res.json({ list: list.map((r) => ({ ...r, urgent: URGENT_REASONS.has(r.reason), times: times.get(String(r.targetId)) || { n: 1, people: 1 } })) });
+  } catch (err) {
+    next(err);
+  }
+});
+router.post("/reports/:id", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const done = req.body.status === "done";
+    const note = String(req.body.note ?? "").replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim().slice(0, 500);
+    const r = await Report.findByIdAndUpdate(req.params.id, { status: done ? "done" : "open", handledBy: done ? req.admin.username : "", ...(note ? { note } : {}) }, { new: true });
+    if (!r) return fail(res, 404, "Not found.");
+    audit(req, done ? "report-done" : "report-reopen", { _id: r.targetId, username: r.target }, `${r.reason} · from ${r.from}${note ? " · " + note : ""}`);
     res.json({ ok: true });
   } catch (err) {
     next(err);

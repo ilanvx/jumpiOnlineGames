@@ -105,6 +105,8 @@ const userSchema = new mongoose.Schema(
     // friends (both players list each other) and friend requests waiting for this player's answer
     friends: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     friendReqIn: { type: [mongoose.Schema.Types.ObjectId], default: [] },
+    // players this player blocked (routes/social.js): no messages or friend requests, and both are "ghosts" to each other in the game
+    blocked: { type: [mongoose.Schema.Types.ObjectId], default: [], index: true },
     // daily login bonus: the last day it was claimed ("2026-10-06", Israel time) and the current streak
     dailyLast: { type: String, default: "" },
     dailyStreak: { type: Number, default: 0, min: 0 },

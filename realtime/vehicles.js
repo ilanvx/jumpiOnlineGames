@@ -1,4 +1,5 @@
 import { User } from "../models/User.js";
+import { ghosts, hasGhosts } from "./blocks.js";
 import { VEHICLES, VEH_SUMMON_GAP_MS, VEH_REACH, vehicleOf } from "../public/shared/vehicles.js";
 import { PARK_FREE_MS, parkingAt, inCave, inLake, WORLD_BOUNDS } from "../public/shared/city-layout.js";
 
@@ -31,9 +32,11 @@ function state(io) {
 }
 const view = (v) => ({ o: v.owner, n: v.name, i: v.i, x: +v.x.toFixed(2), z: +v.z.toFixed(2), f: +v.f.toFixed(3), r: v.rider || null, tow: v.towAt ? Math.max(0, v.towAt - Date.now()) : 0 });
 // tell everyone in the open world (an invisible admin's vehicle: admins only)
+// (the vehicle of a player someone blocked: not to them, realtime/blocks.js)
+const seesVeh = (p, v) => p.role === "admin" || (!v.hidden && !ghosts(p.userId, v.owner));
 function send(S, v, event, data) {
-  if (!v.hidden) return S.io.to(ROOM).emit(event, data);
-  for (const p of S.players.values()) if (p.room === ROOM && p.role === "admin") S.io.to(p.id).emit(event, data);
+  if (!v.hidden && !hasGhosts(v.owner)) return S.io.to(ROOM).emit(event, data);
+  for (const p of S.players.values()) if (p.room === ROOM && seesVeh(p, v)) S.io.to(p.id).emit(event, data);
 }
 function gone(S, v, why) {
   S.byOwner.delete(v.owner);
@@ -52,7 +55,7 @@ function park(S, v, x, z, f) {
 export function sendVehicles(io, socket, viewer) {
   const S = io.__veh;
   if (!S) return;
-  socket.emit("veh:all", [...S.byOwner.values()].filter((v) => !v.hidden || viewer.role === "admin").map(view));
+  socket.emit("veh:all", [...S.byOwner.values()].filter((v) => seesVeh(viewer, v)).map(view));
 }
 // a player left the open world (closed the game, went home or into a shop): their vehicle stays where it is, parked
 export function vehiclePlayerLeft(io, socketId, p) {

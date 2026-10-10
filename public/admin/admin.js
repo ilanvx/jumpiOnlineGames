@@ -172,6 +172,7 @@
         tile(d.banned, "banned", "#ff5a5a", "#8a1c1c", "#players/banned"), tile(d.muted, "muted", "#ff9a1f", "#a3410a", "#players/muted"),
         tile(d.chat24, "chat messages today", "#3e5b86", "#1f3355", "#chat"), tile(d.blocked24, "blocked by the filter today", "#c8263c", "#7a1020", "#chat/blocked"),
         tile(d.trades24, "trades today", "#12b8a0", "#0a8a77", "#trades"), tile(d.duels24, "games today", "#ffb21f", "#c98a00", "#duels"),
+        tile(d.reportsOpen || 0, "player reports to check", "#e0262f", "#8f1218", "#reports"),
         tile(d.contactOpen, "contact messages to answer", "#ff5fb4", "#a3226a", "#contact"),
         tile(d.teamNew || 0, "new team applications", "#ff9a1f", "#a3410a", "#team")));
       const rooms = Object.entries(d.rooms || {}).map(([k, v]) => h("span", { class: "tag blue" }, `${k}: ${v}`));
@@ -225,7 +226,7 @@
     async player(id) {
       const d = await api("/users/" + id), u = d.user;
       const isAdmin = u.role === "admin";
-      page(u.username, h("a", { class: "b b-sm b-ghost", href: "#players" }, "← All players"));
+      page(u.username, h("a", { class: "b b-sm b-ghost", href: "#reports/" + id }, "Reports about this player"), h("a", { class: "b b-sm b-ghost", href: "#players" }, "← All players"));
       main.append(panel(null,
         h("div", { class: "pl-head" }, h("span", { class: "avatar", style: `--c:${SKIN[u.look?.color] || "#ff9a1f"}` }, u.username[0].toUpperCase()),
           h("div", null, h("h2", { style: "margin:0" }, u.username), h("span", { class: "chips" },
@@ -425,6 +426,38 @@
       draw();
     },
 
+    /* ---------- player reports from the game (routes/social.js → models/Report.js) ---------- */
+    async reports(arg) {
+      const REASON = { grooming: "Asked to meet / for photos / personal details", sexual: "Sexual or inappropriate talk", bullying: "Bullying or harassment", language: "Bad language or hate", scam: "Scam or stealing items", other: "Something else" };
+      const WHERE = { card: "player card", chat: "JumpiChat", friends: "Friends app" };
+      page("Player reports", h("button", { class: "b b-sm b-ghost", onclick: () => load().catch(oops) }, "Refresh"));
+      const sel = h("select", { class: "inp" }, [["", "To check"], ["done", "Checked"], ["all", "All"]].map(([v, t]) => h("option", { value: v }, t)));
+      const box = h("div");
+      const load = async () => {
+        const d = await api("/reports?show=" + sel.value + (arg ? "&user=" + encodeURIComponent(arg) : ""));
+        box.replaceChildren(d.list.length ? h("div", null, d.list.map((r) => {
+          const note = h("input", { class: "inp", placeholder: "Note (what you did)", maxlength: 500, value: r.note || "", style: "flex:1;min-width:160px" });
+          return panel(null, h("div", { class: "rp-card" + (r.urgent && r.status === "open" ? " urgent" : "") + (r.status === "done" ? " done" : "") },
+            h("div", { class: "tools" },
+              h("span", { class: "tag " + (r.urgent ? "red" : "orange") }, REASON[r.reason] || r.reason),
+              h("b", null, userLink(r.target, r.targetId)), h("span", { class: "muted small" }, "reported by"), userLink(r.from, r.fromId),
+              h("span", { class: "tag" }, WHERE[r.where] || r.where), r.room ? h("span", { class: "tag blue" }, r.room) : null,
+              r.times.n > 1 ? h("span", { class: "tag violet" }, `reported ${r.times.n}× by ${r.times.people} player${r.times.people === 1 ? "" : "s"}`) : null,
+              h("span", { class: "muted small" }, fmtDate(r.at))),
+            r.details ? h("p", { class: "rp-details", dir: "auto" }, r.details) : null,
+            r.context.length ? h("div", { class: "rp-ctx" }, r.context.map((c) => h("p", { class: c.from === r.target ? "tgt" : "", dir: "auto" }, h("small", null, `${fmtDate(c.at)} · ${c.room === "dm" ? "private" : c.room}`), h("b", null, c.from + ": "), c.text)))
+              : h("p", { class: "muted small" }, "No chat saved with this report."),
+            h("div", { class: "tools", style: "margin-top:8px" }, note,
+              h("a", { class: "b b-sm b-ghost", href: "#player/" + r.targetId }, "Open player (mute / ban)"),
+              h("button", { class: "b b-sm " + (r.status === "done" ? "b-ghost" : "b-green"), onclick: async () => { try { await api("/reports/" + r._id, { status: r.status === "done" ? "open" : "done", note: note.value }); load(); refreshCounts(); } catch (e) { oops(e); } } }, r.status === "done" ? "Open again" : "Mark as checked")),
+            r.handledBy ? h("p", { class: "muted small" }, "Checked by " + r.handledBy) : null));
+        })) : h("p", { class: "empty" }, "No reports here."));
+      };
+      sel.onchange = () => load().catch(oops);
+      main.append(h("div", { class: "tools" }, sel, arg ? h("a", { class: "b b-sm b-ghost", href: "#reports" }, "All players") : null), box);
+      await load();
+    },
+
     async contact() {
       page("Contact messages");
       const sel = h("select", { class: "inp" }, h("option", { value: "" }, "Waiting for an answer"), h("option", { value: "all" }, "All messages"));
@@ -575,7 +608,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", event: "Holiday event", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code", "team-status": "Team application", "team-note": "Note on a team application", "team-delete": "Deleted a team application" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "report-done": "Checked a player report", "report-reopen": "Reopened a player report", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code", "team-status": "Team application", "team-note": "Note on a team application", "team-delete": "Deleted a team application" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],
@@ -644,7 +677,8 @@
   addEventListener("hashchange", () => { if (!$("#app").hidden) route(); });
   async function refreshCounts() {
     try {
-      const [o, c, tm] = await Promise.all([api("/online"), api("/contact"), api("/team/count").catch(() => ({ new: 0 }))]);
+      const [o, c, tm, rp] = await Promise.all([api("/online"), api("/contact"), api("/team/count").catch(() => ({ new: 0 })), api("/reports/count").catch(() => ({ open: 0 }))]);
+      $("#navReports").textContent = rp.open || "";
       $("#navOnline").textContent = o.players.length || "";
       $("#navContact").textContent = c.list.length || "";
       $("#navTeam").textContent = tm.new || "";

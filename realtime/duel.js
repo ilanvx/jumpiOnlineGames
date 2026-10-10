@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { ghosts } from "./blocks.js";
 import mongoose from "mongoose";
 import { User } from "../models/User.js";
 import { DuelLog, logQuietly } from "../models/Logs.js";
@@ -36,7 +37,7 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
     if (!GAMES[game]) return fail("That game doesn't exist.");
     const from = players.get(socket.id), target = players.get(String(d?.to || ""));
     if (!from) return;
-    if (!target) return fail("That player isn't here any more.");
+    if (!target || (from.role !== "admin" && target.role !== "admin" && ghosts(from.userId, target.userId))) return fail("That player isn't here any more.");
     if (target.userId === from.userId) return fail("You can't play against yourself.");
     if (target.role === "admin" && from.role !== "admin") return fail("Admins can't be asked to play.");
     if (busy(socket.id)) return fail("Finish what you're doing first.");
