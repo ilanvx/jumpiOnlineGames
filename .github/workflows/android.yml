@@ -6,6 +6,7 @@ name: Android app
 on:
   push:
     branches: [android-app]
+    paths-ignore: ["desktop/**", ".github/workflows/desktop.yml", "ios/**", ".github/workflows/ios.yml", "README-DESKTOP.md"]
   workflow_dispatch:
 
 permissions:

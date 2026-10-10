@@ -1,0 +1,51 @@
+# Builds the Jumpi Games Windows app (desktop/) at GitHub and publishes it as a GitHub Release.
+# The installer is always at: https://github.com/ilanvx/jumpiOnlineGames/releases/latest/download/Jumpi-Games-Setup.exe
+# (the website's /download/windows sends people there). Installed games find new releases by themselves (electron-updater).
+# Runs on pushes to android-app that change desktop/ (or by hand: Actions → "Windows app" → Run workflow).
+name: Windows app
+
+on:
+  push:
+    branches: [android-app]
+    paths: ["desktop/**", ".github/workflows/desktop.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-app
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Version 1.0.<run number>
+        run: npm version "1.0.${{ github.run_number }}" --no-git-tag-version --allow-same-version
+
+      - name: Build the installer and publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always
+
+      - name: Keep the installer with the run too
+        uses: actions/upload-artifact@v4
+        with:
+          name: Jumpi-Games-Setup
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/latest.yml

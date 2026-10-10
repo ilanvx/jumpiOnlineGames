@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self' 'unsafe-inline'">
+<title>Jumpi Games</title>
+<style>
+  @font-face{font-family:"Lilita One";src:url("assets/fonts/LilitaOne-Regular.ttf")}
+  @font-face{font-family:"Fredoka";src:url("assets/fonts/Fredoka.ttf");font-weight:300 700}
+  :root{--blue:#1f8fff;--deep:#0b3d91;--ink:#ffffff}
+  html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;-webkit-user-select:none}
+  .card{position:absolute;inset:10px;border-radius:22px;overflow:hidden;background:#0c2a66;
+    box-shadow:0 10px 30px rgba(4,16,48,.45);-webkit-app-region:drag;display:flex;flex-direction:column}
+  .art{position:relative;flex:1;background:url("assets/banner.jpg") center/cover no-repeat}
+  .art::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(rgba(12,42,102,0),#0c2a66)}
+  .x{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(10,30,80,.45);color:#fff;
+    font:600 18px/30px "Fredoka",sans-serif;cursor:pointer;-webkit-app-region:no-drag;z-index:2}
+  .x:hover{background:rgba(10,30,80,.7)}
+  .panel{padding:4px 34px 24px;color:var(--ink);font-family:"Fredoka",sans-serif}
+  .row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:10px}
+  h1{margin:0;font:400 24px/1.1 "Lilita One",sans-serif;letter-spacing:.3px;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+  .pct{font:400 22px/1 "Lilita One",sans-serif;color:#ffd23a;min-width:60px;text-align:right}
+  .track{position:relative;height:22px;border-radius:999px;background:#08204f;box-shadow:inset 0 2px 4px rgba(0,0,0,.45);padding:3px}
+  .fill{position:relative;height:100%;width:0;border-radius:999px;overflow:hidden;
+    background:linear-gradient(180deg,#ffe27a 0%,#ffc21a 45%,#ff9a1c 100%);box-shadow:0 0 12px rgba(255,194,26,.55);transition:width .35s ease}
+  .fill::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(255,255,255,.28) 0 10px,rgba(255,255,255,0) 10px 20px);
+    background-size:28px 28px;animation:move 0.9s linear infinite}
+  .fill::after{content:"";position:absolute;left:6px;right:6px;top:2px;height:35%;border-radius:999px;background:rgba(255,255,255,.55)}
+  @keyframes move{to{background-position:28px 0}}
+  .sub{margin-top:10px;font-size:14px;color:#bcd3ff;min-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ver{position:absolute;right:34px;bottom:24px;font:400 12px "Fredoka",sans-serif;color:#7f9fd8}
+  body.update .art{filter:saturate(1.05)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="art"><button class="x" id="x" title="Close" aria-label="Close">×</button></div>
+  <div class="panel">
+    <div class="row"><h1 id="title">Starting Jumpi Games</h1><span class="pct" id="pct">0%</span></div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="sub" id="sub">Getting everything ready…</div>
+  </div>
+  <div class="ver" id="ver"></div>
+</div>
+<script>
+  const $=(id)=>document.getElementById(id);
+  const ver=new URLSearchParams(location.search).get("v");if(ver)$("ver").textContent="v"+ver;
+  let shown=0,target=6,mode="load",real=false;
+  // while loading there is no real number, so the bar glides up on its own (never past 92%) until the game is ready
+  function tick(){
+    if(mode==="load"&&!real&&target<92)target+=Math.max(.15,(92-target)*.012);
+    shown+=(target-shown)*.12;if(Math.abs(target-shown)<.05)shown=target;
+    $("fill").style.width=shown.toFixed(2)+"%";$("pct").textContent=Math.floor(shown)+"%";
+    requestAnimationFrame(tick);}
+  requestAnimationFrame(tick);
+  window.splash&&splash.onState((s)=>{
+    if(s.mode&&s.mode!==mode){mode=s.mode;document.body.classList.toggle("update",mode==="update");
+      if(mode==="update"){shown=0;target=0;$("title").textContent="Updating Jumpi Games";}else{$("title").textContent="Starting Jumpi Games";}}
+    if(s.title)$("title").textContent=s.title;
+    if(s.text)$("sub").textContent=s.text;
+    if(typeof s.pct==="number"){real=mode==="update"||s.pct>=100;target=Math.max(target,Math.min(100,s.pct));}
+  });
+  $("x").onclick=()=>window.splash&&splash.close();
+</script>
+</body>
+</html>
