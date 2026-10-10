@@ -80,11 +80,11 @@
       }
     ],
     "appx": {
-      "identityName": "JumpiGames.JumpiGames",
+      "identityName": "JumpiGames.JumpiGames3DWorld",
       "publisher": "CN=D1A5ED0C-E553-4DC9-807F-75C79F612D36",
       "publisherDisplayName": "JumpiGames",
       "applicationId": "JumpiGames",
-      "displayName": "Jumpi Games",
+      "displayName": "Jumpi Games: 3D World",
       "backgroundColor": "#1f8fff",
       "showNameOnTiles": true,
       "languages": [
