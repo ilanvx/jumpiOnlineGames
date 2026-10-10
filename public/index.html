@@ -5081,15 +5081,17 @@ function buildOutfit(){
       g.add(m);[-1,1].forEach(s=>{const strap=new THREE.Mesh(new THREE.TorusGeometry(.66,.014,6,24,Math.PI*.55),solid("#1d1d24",.6));strap.rotation.set(Math.PI/2,0,s>0?-.12:Math.PI+.12);strap.position.set(0,Y+.04,-.04);g.add(strap);});
       g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
     if(id==="visor"){   // the Big World collection: one glowing band across both eyes, bent round the face
-      // tall enough for the big eyes and wrapped round the head on an oval that clears the eyes (they used to poke through the band)
-      const HW=.72,TH=1.12,EA=.76,EB=.71,sh=rrect(HW*2-.08,.44,.15),m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.03,bevelEnabled:true,bevelThickness:.012,bevelSize:.012,bevelSegments:2,curveSegments:16}),
-        new THREE.MeshStandardMaterial({color:it.glow,emissive:it.glow,emissiveIntensity:.9,roughness:.1,metalness:.3,transparent:true,opacity:.8}));
-      const f=new THREE.Mesh(new THREE.ExtrudeGeometry((()=>{const o=rrect(HW*2,.52,.18);o.holes.push(rrect(HW*2-.12,.42,.14));return o;})(),{depth:.05,bevelEnabled:false,curveSegments:16}),solid(fcol,.35,{metalness:.4}));
-      [[m,.01],[f,0]].forEach(([q,lift])=>{q.geometry.translate(0,0,-.02);const b=q.geometry.attributes.position;
-        for(let k=0;k<b.count;k++){const th=b.getX(k)/HW*TH,dz=b.getZ(k);b.setX(k,(EA+dz)*Math.sin(th));b.setZ(k,(EB+dz)*Math.cos(th));}
-        b.needsUpdate=true;q.geometry.computeVertexNormals();q.position.set(0,Y+lift,0);g.add(q);});
+      // tall enough for the big eyes and wrapped round the head on an oval that clears the eyes. The lens is a finely cut curved band
+      // (a flat extruded shape only bends at its corners and sat behind the eyes), the frame is tubes along its edges
+      const TH=1.05,EA=.8,EB=.82,LH=.46,arc=(y,a0=-TH,a1=TH,n=40)=>Array.from({length:n+1},(_,k)=>{const a=a0+(a1-a0)*k/n;return new THREE.Vector3(EA*Math.sin(a),y,EB*Math.cos(a));});
+      const m=new THREE.Mesh(new THREE.CylinderGeometry(1,1,LH,56,1,true,-TH,TH*2).scale(EA,1,EB),
+        new THREE.MeshStandardMaterial({color:it.glow,emissive:it.glow,emissiveIntensity:.9,roughness:.1,metalness:.3,transparent:true,opacity:.62,side:THREE.DoubleSide,depthWrite:false}));
+      m.position.y=Y+.01;g.add(m);
+      const f=new THREE.Group();f.position.y=Y+.01;g.add(f);
+      [LH/2,-LH/2].forEach(y=>f.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(arc(y)),56,.032,8),frame)));
+      [-TH,TH].forEach(a=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,LH+.06,10),frame);e.position.set(EA*Math.sin(a),0,EB*Math.cos(a));f.add(e);});
       m.renderOrder=3;   // the see-through band is drawn after the eyes so they show tinted behind it
-      [-1,1].forEach(sd=>g.add(rod([sd*(EA-.01)*Math.sin(TH),Y+.03,(EB-.03)*Math.cos(TH)],[sd*.66,Y+.06,-.12],0.022,frame)));
+      [-1,1].forEach(sd=>g.add(rod([sd*EA*Math.sin(TH),Y+.03,EB*Math.cos(TH)],[sd*.66,Y+.06,-.12],0.022,frame)));
       g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
     if(id==="goggles"){   // big round goggles with a strap round the head
       [eyeL,eyeR].forEach((e,i)=>{const s=i?1:-1,l=new THREE.Group();l.position.set(e.x,Y,Z+.01);l.rotation.y=s*.16;
