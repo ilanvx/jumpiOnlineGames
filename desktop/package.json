@@ -22,10 +22,33 @@
     "appId": "com.jumpigames.desktop",
     "productName": "Jumpi Games",
     "copyright": "© 2026 Jumpi Games",
-    "directories": { "buildResources": "build", "output": "dist" },
-    "files": ["main.js", "preload.js", "splash.html", "splash-preload.js", "offline.html", "assets/**"],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "splash-preload.js",
+      "offline.html",
+      "assets/**"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "build/icon.ico",
       "artifactName": "Jumpi-Games-Setup.${ext}"
     },
@@ -48,6 +71,27 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false
     },
-    "publish": [{ "provider": "github", "owner": "ilanvx", "repo": "jumpiOnlineGames", "releaseType": "release" }]
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ilanvx",
+        "repo": "jumpiOnlineGames",
+        "releaseType": "release"
+      }
+    ],
+    "appx": {
+      "identityName": "JumpiGames.JumpiGames",
+      "publisher": "CN=D1A5ED0C-E553-4DC9-807F-75C79F612D36",
+      "publisherDisplayName": "JumpiGames",
+      "applicationId": "JumpiGames",
+      "displayName": "Jumpi Games",
+      "backgroundColor": "#1f8fff",
+      "showNameOnTiles": true,
+      "languages": [
+        "en-US",
+        "he-IL"
+      ],
+      "artifactName": "Jumpi-Games-Store.${ext}"
+    }
   }
 }

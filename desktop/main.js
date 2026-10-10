@@ -38,7 +38,8 @@ function makeSplash() {
 
 // ---------- updates ----------
 function checkUpdates() {
-  if (!app.isPackaged) return startGame();
+  // the Microsoft Store version gets its updates from the Store itself
+  if (!app.isPackaged || process.windowsStore) return startGame();
   let autoUpdater;
   try { ({ autoUpdater } = require("electron-updater")); } catch { return startGame(); }
   autoUpdater.autoDownload = true;

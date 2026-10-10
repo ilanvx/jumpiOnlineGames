@@ -1,4 +1,5 @@
-# Builds the Jumpi Games Windows app (desktop/) at GitHub and publishes it as a GitHub Release.
+# Builds the Jumpi Games Windows app (desktop/) at GitHub and publishes it as a GitHub Release:
+# Jumpi-Games-Setup.exe (own installer + auto-updates) and Jumpi-Games-Store.appx (upload to the Microsoft Store / Partner Center).
 # The installer is always at: https://github.com/ilanvx/jumpiOnlineGames/releases/latest/download/Jumpi-Games-Setup.exe
 # (the website's /download/windows sends people there). Installed games find new releases by themselves (electron-updater).
 # Runs on pushes to android-app that change desktop/ (or by hand: Actions → "Windows app" → Run workflow).
@@ -64,4 +65,5 @@ jobs:
           name: Jumpi-Games-Setup
           path: |
             desktop/dist/*.exe
+            desktop/dist/*.appx
             desktop/dist/latest.yml
