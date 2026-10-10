@@ -617,7 +617,16 @@ body.login-mode .logout-btn{opacity:0;translate:-140% 0;pointer-events:none}
 body.in-game .exit-game{display:flex}
 body.in-game .side,body.in-game .logout-btn{display:none!important}
 body.in-game #stage{cursor:default}
-.wipe{position:fixed;inset:0;z-index:20;pointer-events:none;background:radial-gradient(circle at 50% 50%,#ffffff 0 40%,#bfe9ff 100%);clip-path:circle(0% at 50% 50%)}
+/* moving between places: the blue Jumpi loading screen (logo + loading bar) closes in and opens again */
+.wipe{position:fixed;inset:0;z-index:20;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#3fb4ff 0%,#0a8cff 45%,#0656c9 100%);clip-path:circle(0% at 50% 50%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3.5vh,28px)}
+.wipe .wp-logo{width:min(380px,62vw);aspect-ratio:684/398;object-fit:contain;filter:drop-shadow(0 12px 0 rgb(0 30 90 / .25))}
+.wipe .wp-track{width:min(380px,70vw)}
+.wipe .wp-fill{width:100%;transform:scaleX(.04);transform-origin:left center}
+.wipe.in .wp-fill{animation:wpFill 1.4s cubic-bezier(.2,.7,.3,1) forwards,ldStripes .6s linear infinite}
+.wipe.out .wp-fill{transform:scaleX(1)}
+@keyframes wpFill{from{transform:scaleX(.04)}to{transform:scaleX(.9)}}
+.wipe .wp-text{margin:0}
 .wipe.in{transition:clip-path .55s cubic-bezier(.6,0,.4,1);clip-path:circle(150% at 50% 50%)}
 .wipe.out{transition:clip-path .6s cubic-bezier(.6,0,.4,1);clip-path:circle(0% at 50% 50%)}
 /* speech bubbles: chunky comic bubbles with an outline, a rounded tail and a soft drop shadow */
@@ -1748,7 +1757,8 @@ body.game-store #storeCard{z-index:9;right:max(24px,4vw)}
 .store-back-game:active{transform:translateY(3px);box-shadow:0 1px 0 #a3410a}
 .store-back-game:focus-visible{outline:3px solid #fff;outline-offset:2px}
 body.game-store .store-back-game{display:inline-flex}
-body.game-store .phone-btn,body.game-store .home-btn,body.game-store .gift-btn{opacity:.35;pointer-events:none}
+/* the shop / wardrobe inside the game looks like the start page: only the store card and the character */
+html body.game-store .phone-btn,html body.game-store .home-btn,html body.game-store .gift-btn,html body.game-store .season-btn,html body.game-store .exit-game,html body.game-store .wheel-btn,html body.game-store .minimap,html body.game-store .wx-clock,html body.game-store .coins,html body.game-store .chat-dock,html body.game-store .spx-btn,html body.game-store .lang-btn,html body.game-store #settingsBtn,html body.game-store .zone-banner,html body.game-store .seat-prompt,html body.game-store .mg-prompt,html body.game-store .food-bar,html body.game-store .duel-hud,html body.game-store .rail-tog,html body.game-store .site-btn{display:none!important}
 @media (max-width:700px){body.game-store .chat-dock,body.game-store .minimap,body.game-store .mg-prompt{display:none!important}}
 /* ---------- away too long ---------- */
 .idle-overlay{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:16px;
@@ -2850,7 +2860,7 @@ body.tl-chat #chatInput::placeholder{color:#ff7a1a;opacity:1;font-weight:600}
     <button class="btn newhere" id="accAddNew" type="button" role="menuitem"><span>NEW ACCOUNT</span></button>
   </div>
 </div>
-<div class="wipe" id="wipe" aria-hidden="true"></div>
+<div class="wipe" id="wipe" aria-hidden="true"><img class="wp-logo" src="/jumpi-logo.png" alt=""><div class="ld-track wp-track"><div class="ld-fill wp-fill"></div></div><p class="ld-text wp-text">LOADING…</p></div>
 <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
 <!-- phones in a web browser, when PHONES_NEED_APP is on (public/shared/app.js): get the Android app -->
 <div class="app-gate" id="appGate" role="dialog" aria-modal="true" aria-labelledby="agTitle" hidden>
@@ -3841,7 +3851,7 @@ shadow.rotation.x=-Math.PI/2;shadow.position.y=0.003;scene.add(shadow);
 
 function resize(){
   const w=innerWidth,h=innerHeight;renderer.setSize(w,h);cam.aspect=w/h;
-  if(inGame){cam.updateProjectionMatrix();return;}
+  if(inGame&&!GS_STAGE){cam.updateProjectionMatrix();return;}
   const narrow=w<700;cam.fov=narrow?(w/h<0.7?44:36):30;
   cam.position.set(0,narrow?1.7:2.0,5.4);cam.lookAt(0,narrow?0.78:0.95,0);cam.updateProjectionMatrix();
 }
@@ -3876,6 +3886,7 @@ new GLTFLoader().load("/blobby.glb",g=>{
 const act={blink:null,wave:null,hop:null};
 // walking between centre and the left side
 const walk={x:0,from:0,to:0,t0:-1,dur:1.5,face:0,onDone:null,lastStep:-1};
+var GS_STAGE=null;   // the shop / wardrobe opened inside the game: the world is set aside and it looks like the start page (gsStageOn)
 function walkTo(x,done){walk.from=walk.x;walk.to=x;walk.t0=now();walk.dur=reduce?0.01:Math.max(0.6,Math.abs(x-walk.x)*1.05);walk.onDone=done||null;}
 // stand roughly halfway between the screen centre and the left edge
 function sideX(){if(innerWidth<700)return 0;const halfW=cam.aspect*Math.tan(cam.fov*Math.PI/360)*cam.position.distanceTo(new THREE.Vector3(0,0.95,0));return -Math.min(1.7,halfW*0.48);}
@@ -3944,7 +3955,7 @@ renderer.setAnimationLoop(()=>{
     // big jump with a backflip (PLAY → game)
     if(inGame&&act.jump){const k=(now()-act.jump.t)/JUMP_T;if(k<1)hy+=jumpY(k);}
     let flipRot=0;if(act.flip){const k=(now()-act.flip.t)/1.1;if(k<1){hy+=Math.sin(Math.PI*k)*2.4;flipRot=-ease(Math.min(1,k*1.15))*Math.PI*2;}}
-    if(inGame){gameTick(dt,t,hy);if(myInvisible&&t-ghostT>.5){ghostT=t;applyMyGhost();}}else{
+    if(inGame&&!GS_STAGE){gameTick(dt,t,hy);if(myInvisible&&t-ghostT>.5){ghostT=t;applyMyGhost();}}else{
     // walking: turn toward the direction of travel, bob, swing arms
     let walking=false,swing=0,bob=0;
     if(walk.t0>=0){const k=(now()-walk.t0)/walk.dur;
@@ -3964,7 +3975,7 @@ renderer.setAnimationLoop(()=>{
       menuTag.position.y=.42+Math.sin(t*2.1)*.015;P.armL.rotation.set(-.95,0,.35);P.armR.rotation.set(-.95,0,-.35);}
     if(CODE.sign)codeTick(t);
     P.root.position.y=hy+bob;P.root.rotation.x=flipRot;const ss=Math.max(.2,1-hy*1.4);shadow.scale.set(ss,ss,1);shadow.material.opacity=Math.max(0,1-hy*2);
-    accTick(t);
+    if(!GS_STAGE)accTick(t);
     }
   }
   tickAuras(t);gfxTick();vehPreviewTick(t);
@@ -4972,6 +4983,7 @@ function buildOutfit(){
   /* ---- hats (head) and necklaces (body) ---- */
   OUTFIT_PARTS.hat.forEach(it=>{const g=buildHat(it);g.visible=false;P.head.add(g);OUTFIT_OBJ.hat.push(g);});
   OUTFIT_PARTS.neck.forEach(it=>{const g=buildNeck(it);g.visible=false;P.body.add(g);OUTFIT_OBJ.neck.push(g);});
+  P.root.traverse(o=>{o.userData.base=true;});   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
 }
 function applyOutfit(){
   if(!P||!OUTFIT_OBJ.hair.length)return;
@@ -5057,33 +5069,36 @@ let thumbR=null,thumbTimer=null;
 const THUMB_VIEW={hair:{pos:[1.45,2.05,2.35],at:[0,1.48,0]},glasses:{pos:[0.7,1.33,2.25],at:[0,1.23,0]},
   shirt:{pos:[0.7,0.82,1.95],at:[0,0.56,0]},pants:{pos:[0.62,0.45,1.7],at:[0,0.28,0]},
   hat:{pos:[1.25,2.35,2.75],at:[0,1.72,0]},neck:{pos:[0.45,1.0,1.7],at:[0,0.74,0]}};
+/* pictures of every clothing item for the shop and the sign-up chips. Made on a separate copy of the character in its own
+   little scene, a few per frame, so the real character never freezes or changes pose; redone only when skin or eyes change. */
+const THB={key:"",n:null,scene:null,queue:[],raf:0,done:new Set()};
+function thbScene(){if(THB.scene)return THB.scene;const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x2a4fb0,1.5));
+  const k=new THREE.DirectionalLight(0xffffff,2.3);k.position.set(2,4,4);sc.add(k);const f=new THREE.DirectionalLight(0xffffff,.6);f.position.set(-3,2,3);sc.add(f);return THB.scene=sc;}
 function renderThumbs(){
   if(!P||!OUTFIT_OBJ.hair.length)return;
-  if(!thumbR){thumbR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});thumbR.setPixelRatio(1);thumbR.setSize(120,120);
+  const look={color:lk("color")??0,eyes:lk("eyes")??0},key=JSON.stringify(look);
+  if(!THB.n){THB.n=cleanChar(look);THB.n.root.traverse(o=>{if(o.isMesh)o.castShadow=false;});thbScene().add(THB.n.root);}
+  if(key!==THB.key){THB.key=key;THB.done.clear();recolorChar(THB.n,look);}
+  // what the player is looking at right now comes first
+  const first=[storeSlot,...Object.keys(OUTFIT_OBJ)].filter((k,i,a)=>OUTFIT_OBJ[k]&&a.indexOf(k)===i);
+  THB.queue=[];first.forEach(k=>OUTFIT_OBJ[k].forEach((o,i)=>{if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
+  if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
+}
+function thbPump(){
+  THB.raf=0;if(!thumbR){thumbR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});thumbR.setPixelRatio(1);thumbR.setSize(120,120);
     thumbR.outputColorSpace=THREE.SRGBColorSpace;thumbR.toneMapping=THREE.ACESFilmicToneMapping;thumbR.setClearColor(0x000000,0);}
-  const tc=new THREE.PerspectiveCamera(30,1,0.1,20);
-  // neutral pose (the animation loop restores everything on the next frame)
-  P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);P.head.rotation.set(0,0,0);P.head.position.y=P.headY;P.body.rotation.set(0,0,0);P.body.scale.set(1,1,1);
-  P.armL.rotation.set(0,0,0);P.armR.rotation.set(0,0,0);P.eyeL.scale.set(1,1,1);P.eyeR.scale.set(1,1,1);
-  placeIris(P.lookL,-1,0,0);placeIris(P.lookR,1,0,0);P.root.updateMatrixWorld(true);
-  const was=previewOn;previewOn=true;applyColor();applyEyeColor();
-  // inside the game: hide the world and use the menu lights so the pictures look the same as on the menu
-  const keep={spot:spot.visible,shadow:shadow.visible,world:world&&world.visible,home:HOME.group&&HOME.group.visible,bg:scene.background,fog:scene.fog,
-    lights:G.menuLights?G.menuLights.map(l=>l.visible):[],phone:PH.mesh&&PH.mesh.visible,tag:G.tag&&G.tag.visible};
-  if(world)world.visible=false;if(HOME.group)HOME.group.visible=false;scene.background=null;scene.fog=null;(G.menuLights||[]).forEach(l=>l.visible=true);
-  if(PH.mesh)PH.mesh.visible=false;if(G.tag)G.tag.visible=false;
-  spot.visible=shadow.visible=false;const auraWas=P.aura&&P.aura.g.visible;if(P.aura)P.aura.g.visible=false;
-  if(typeof ACC!=="undefined")ACC.sides.forEach(x=>{x.n.root.visible=false;x.sh.visible=false;});
-  const signWas=menuTag&&menuTag.visible;if(menuTag)menuTag.visible=false;
-  const ghostWas=typeof myInvisible!=="undefined"&&myInvisible&&inGame;if(ghostWas)setGhost(P.root,false);   // the other saved accounts stay out of the pictures
-  const all=Object.values(OUTFIT_OBJ).flat(2);
-  for(const kind in OUTFIT_OBJ){const v=THUMB_VIEW[kind];tc.position.set(...v.pos);tc.lookAt(...v.at);
-    OUTFIT_OBJ[kind].forEach((o,i)=>{all.forEach(p=>p.visible=false);[].concat(o).forEach(p=>p.visible=true);
-      thumbR.render(scene,tc);THUMBS[kind][i]=thumbR.domElement.toDataURL("image/png");});}
-  spot.visible=shadow.visible=true;if(P.aura)P.aura.g.visible=auraWas!==false;previewOn=was;if(menuTag)menuTag.visible=signWas!==false;if(ghostWas)applyMyGhost();applyColor();applyEyeColor();applyOutfit();refreshChipImages();
-  if(inGame){spot.visible=keep.spot;shadow.visible=keep.shadow;if(world)world.visible=keep.world;if(HOME.group)HOME.group.visible=keep.home;scene.background=keep.bg;scene.fog=keep.fog;
-    (G.menuLights||[]).forEach((l,i)=>l.visible=keep.lights[i]);if(PH.mesh)PH.mesh.visible=keep.phone;if(G.tag)G.tag.visible=keep.tag;}
-  if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();
+  // never while the character is walking or hopping (that's when a skipped frame shows): wait until it stands still
+  if(walk.t0>=0||(act.hop&&now()-act.hop.t<.9)||(act.flip&&now()-act.flip.t<1.4)){THB.raf=requestAnimationFrame(thbPump);return;}
+  const tc=THB.cam||(THB.cam=new THREE.PerspectiveCamera(30,1,0.1,20)),n=THB.n,t0=performance.now();let changed=false,slotDone=false;
+  while(THB.queue.length&&performance.now()-t0<6){
+    const [kind,i]=THB.queue.shift(),v=THUMB_VIEW[kind];tc.position.set(...v.pos);tc.lookAt(...v.at);
+    // a copy of just this item, hung on the same part of the copy character
+    const added=[].concat(OUTFIT_OBJ[kind][i]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);return q;});
+    thumbR.render(thbScene(),tc);THUMBS[kind][i]=thumbR.domElement.toDataURL("image/png");added.forEach(q=>q.removeFromParent());
+    THB.done.add(kind+":"+i);changed=true;if(kind===storeSlot&&!THB.queue.some(q=>q[0]===storeSlot))slotDone=true;}
+  if(changed&&(slotDone||!THB.queue.length)){refreshChipImages();if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
+  else if(changed&&THB.queue.length%40===0)refreshChipImages();
+  if(THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
 function queueThumbs(){clearTimeout(thumbTimer);thumbTimer=setTimeout(renderThumbs,120);}
 function refreshChipImages(){document.querySelectorAll(".chip").forEach(b=>{const i=+b.dataset.i,k=b.dataset.kind;if(i<0||!THUMBS[k][i])return;
@@ -7135,9 +7150,9 @@ function vehPreview(i){
   if(!VEH.preview){VEH.preview=vehModel(i);VEH.preview.userData.t0=now();(P.root.parent||scene).add(VEH.preview);}}
 function vehPreviewTick(t){const g=VEH.preview;if(!g)return;
   const show=(GS.open||body.classList.contains("store-in"))&&storeSlot==="vehicle";if(!show){g.removeFromParent();VEH.preview=null;VEH.prevI=-1;return;}
-  const r=P.root,k=Math.min(1,(now()-g.userData.t0)/.5),side=inGame?1.75:1.55,rt=new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion);rt.y=0;rt.normalize();
-  const gx=r.position.x+rt.x*side,gz=r.position.z+rt.z*side;g.position.set(gx,(inGame?groundY(gx,gz):0)+(g.userData.hover?.3:0),gz);
-  g.rotation.y=t*.6;g.scale.setScalar(.2+.8*(k*k*(3-2*k))*(inGame?1:.72));}
+  const live=inGame&&!GS_STAGE,r=P.root,k=Math.min(1,(now()-g.userData.t0)/.5),side=live?1.75:1.55,rt=new THREE.Vector3(1,0,0).applyQuaternion(cam.quaternion);rt.y=0;rt.normalize();
+  const gx=r.position.x+rt.x*side,gz=r.position.z+rt.z*side;g.position.set(gx,(live?groundY(gx,gz):0)+(g.userData.hover?.3:0),gz);
+  g.rotation.y=t*.6;g.scale.setScalar(.2+.8*(k*k*(3-2*k))*(live?1:.72));}
 
 /* ---------- moving the player ---------- */
 // walls are looked up in a grid (thousands of them in the city), rebuilt when the list changes
@@ -8179,16 +8194,29 @@ async function openGameStore(mode,slot,pets=false){
   GS.open=true;storeMode=mode;storeSlot=slot&&STORE_MODES[mode].slots.includes(slot)?slot:STORE_MODES[mode].slots[0];storeSel=null;
   document.getElementById("storeTitle").textContent=storePets?"PET SHOP":mode==="spooky"?EVENTS[EV.cur]?EVENTS[EV.cur].shop:"SPOOKY SHOP":mode==="shop"?"SHOP":"MY LOOK";body.classList.toggle("store-spooky",mode==="spooky");storeMsg.textContent="";
   const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1});
-  setPreview(true);if(!THUMBS.hair||!THUMBS.hair.length)queueThumbs();
+  setPreview(true);queueThumbs();
   renderStoreTabs();renderStoreGrid();
-  body.classList.add("store-in","game-store");sfx.whoosh();
+  gsStageOn();body.classList.add("store-in","game-store");sfx.whoosh();
   setTimeout(()=>document.getElementById("storeBackGame").focus({preventScroll:true}),80);
   await loadCatalog();if(GS.open)renderStoreGrid();
 }
 function closeGameStore(quiet){
   if(!GS.open)return;GS.open=false;storeSel=null;body.classList.remove("store-in","game-store","store-spooky");
-  setPreview(false);refreshMyTag();if(!quiet)sfx.close();
+  setPreview(false);gsStageOff();refreshMyTag();if(!quiet)sfx.close();
 }
+// like the start page: blue background, the big character walks to the side, no world behind (and no zooming in on the character)
+function gsStageOn(){
+  if(GS_STAGE)return;const S=GS_STAGE={vis:scene.children.map(o=>[o,o.visible]),bg:scene.background,fog:scene.fog,fov:cam.fov,far:cam.far,
+    pos:P.root.position.clone(),rot:P.root.rotation.clone(),shadow:shadow.position.clone(),spot:spot.position.clone(),sv:[spot.visible,shadow.visible]};void S;
+  scene.children.forEach(o=>{o.visible=!!(o===P.root||o===spot||o===shadow||G.menuLights.includes(o)||(VEH.preview&&o===VEH.preview));});
+  spot.visible=shadow.visible=true;scene.background=null;scene.fog=null;cam.far=50;PH.target=0;PH.k=0;resetPhonePose();
+  P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);shadow.position.set(0,.003,0);spot.position.set(0,.001,0);walk.x=0;walk.face=0;walk.t0=-1;
+  resize();setTimeout(()=>{if(GS_STAGE)walkTo(sideX());},120);}
+function gsStageOff(){
+  const S=GS_STAGE;if(!S)return;GS_STAGE=null;walk.t0=-1;walk.onDone=null;
+  S.vis.forEach(([o,v])=>{o.visible=v;});scene.background=S.bg;scene.fog=S.fog;cam.fov=S.fov;cam.far=S.far;
+  P.root.position.copy(S.pos);P.root.rotation.copy(S.rot);shadow.position.copy(S.shadow);spot.position.copy(S.spot);spot.visible=S.sv[0];shadow.visible=S.sv[1];
+  cam.position.copy(G.camPos);resize();}
 document.getElementById("storeBackGame").onclick=()=>closeGameStore();
 document.getElementById("storeCard").addEventListener("keydown",e=>{if(!GS.open)return;e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeGameStore();}});
 // login gate for players who aren't signed in
@@ -10549,7 +10577,7 @@ function openMenu(kind,stand){if(!menuOverlay.hidden)return;G.keys={};G.target=n
 // the club bar: the server takes the coins, then you get your order
 Sound.onClubSong=name=>{if(Sound.musicVol>0)toast("Now playing: "+name);};
 // /play?beachtest: jump around the beach (window.__beach.go(x,z,face), .walk(x,z) walks there, .ground(x,z))
-if(new URLSearchParams(location.search).has("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures})};
+if(new URLSearchParams(location.search).has("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,stage:()=>GS_STAGE?{wv:world.visible,pIn:P.root.parent===scene,pw:P.root.parent===world,cam:cam.position.toArray().map(v=>+v.toFixed(2)),n:GS_STAGE.vis.length,vis:scene.children.filter(o=>o.visible).map(o=>o.type+":"+o.name)}:null,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures})};
 if(new URLSearchParams(location.search).has("bartest"))window.__bar={go:()=>enterPlace("club"),menu:()=>openMenu("club"),song:()=>Sound.clubSong};
 function closeMenu(quiet){if(menuOverlay.hidden)return;menuOverlay.hidden=true;if(!quiet)sfx.close();}
 document.getElementById("menuClose").onclick=()=>closeMenu();
@@ -11654,6 +11682,34 @@ const STUDIO_SCENES={
     build(){const r=stBanner({title:"JUMPI GAMES",titleSize:300,sub:"Play with friends!",subDir:"ltr",frame:["#ffc25a","#ff8a1c","#c25e00","#ffe4c4"],tc:["#b49bff","#7b5cff","#4a2fc0"],sc:["#7fd8ff","#1f8fff","#0f5cb8"],
       icons:[["#2fd36b","play"],["#ff5f8f","heart"],["#ffb21f","star"],["#1fb6ff","gift"]],
       left:{color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},right:{color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19}});r.camera.fov=27;return r;}},
+  mailHero:{name:"Email banner (official letters)",about:"Wide picture at the bottom of the official emails from management: the Jumpi Games logo in the middle of a glowing blue sky with sun rays, four Jumpis waving on both sides, confetti and sparkles.",round:false,aspect:2.4,
+    build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(26,2.4,.1,200);
+      const bg=new THREE.Mesh(new THREE.PlaneGeometry(64,27),new THREE.MeshBasicMaterial({map:stGlowBg(["#a8e6ff","#3fb0ff","#1a7ff0","#0c52c4","#06287a"],.5,.42),toneMapped:false}));bg.position.set(0,1.3,-12);sc.add(bg);
+      // a warm sun glow behind the logo
+      const glowT=stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,"rgba(255,250,220,.95)");g.addColorStop(.4,"rgba(255,240,190,.45)");g.addColorStop(1,"rgba(200,235,255,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
+      const gs=new THREE.Sprite(new THREE.SpriteMaterial({map:glowT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));gs.material.opacity=.55;gs.position.set(0,1.75,-6);gs.scale.set(9,6,1);sc.add(gs);
+      // big soft sun rays fanning out from behind the logo
+      const rayT=stCanvasTex(1024,1024,(c,w,h)=>{c.translate(w/2,h/2);for(let k=0;k<24;k++){c.rotate(Math.PI*2/24);const g=c.createLinearGradient(0,0,w*.5,0);g.addColorStop(0,"rgba(255,252,230,.5)");g.addColorStop(1,"rgba(255,252,230,0)");c.fillStyle=g;c.beginPath();c.moveTo(0,0);c.lineTo(w*.5,-w*(k%2?.05:.085));c.lineTo(w*.5,w*(k%2?.05:.085));c.closePath();c.fill();}});
+      const rays=new THREE.Mesh(new THREE.PlaneGeometry(26,26),new THREE.MeshBasicMaterial({map:rayT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false,opacity:.42}));rays.position.set(0,1.75,-8);rays.rotation.z=.07;sc.add(rays);
+      const add=(look,x,z,ry,wave)=>{const J=stJumpi(look);J.root.position.set(x,0,z);J.root.rotation.y=ry;sc.add(J.root);stShadow(sc,x,z,1.4);
+        if(wave==="L"){J.armL.rotation.set(.35,0,-2.15);J.head.rotation.z=.08;}else if(wave==="R"){J.armR.rotation.set(.35,0,2.15);J.head.rotation.z=-.08;}return J;};
+      add({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},-3.55,.6,.42,"L");
+      add({color:3,eyes:5,hair:24,shirt:31,pants:20,neck:19},-4.75,-.5,.5,null);
+      add({color:0,eyes:1,shirt:4,pants:17,hat:1},3.55,.6,-.42,"R");
+      add({color:4,eyes:6,hair:6,shirt:44,pants:41,neck:20},4.75,-.5,-.5,null);
+      stConfetti(sc,110,[-6.5,6.5,-.4,3.8,-3,-.5],(x,y)=>Math.abs(x)<2.6&&y>.4&&y<3.2);
+      stLights(sc,[0x8fe8ff,0xffe0f4]);
+      const spT=stCanvasTex(128,128,(c,w,h)=>{const g=c.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,"rgba(255,255,255,1)");g.addColorStop(.18,"rgba(255,250,210,.85)");g.addColorStop(1,"rgba(180,230,255,0)");c.fillStyle=g;c.fillRect(0,0,w,h);
+        c.fillStyle="rgba(255,255,255,.95)";c.beginPath();c.moveTo(64,2);c.lineTo(70,58);c.lineTo(126,64);c.lineTo(70,70);c.lineTo(64,126);c.lineTo(58,70);c.lineTo(2,64);c.lineTo(58,58);c.closePath();c.fill();});
+      [[-2.4,2.9,.45],[2.5,3.0,.4],[-2.2,.7,.28],[2.3,.8,.3],[-5.6,2.6,.35],[5.5,2.4,.32],[0,3.45,.25]].forEach(([x,y,s])=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:spT,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));sp.position.set(x,y,-1);sp.scale.setScalar(s);sc.add(sp);});
+      cam.position.set(0,1.45,11.2);cam.lookAt(0,1.35,0);
+      // the real logo in the middle, a soft shadow under it, and one line about the game
+      const overlay=(c,W,H)=>{if(ST_LOGO.complete&&ST_LOGO.naturalWidth){const lw=W*.4,lh=lw*ST_LOGO.naturalHeight/ST_LOGO.naturalWidth,lx=(W-lw)/2,ly=H*.43-lh/2;
+          c.save();c.filter=`blur(${Math.round(W/90)}px)`;c.globalAlpha=.35;c.drawImage(ST_LOGO,lx,ly+H*.03,lw,lh);c.restore();   // shadow (the logo is dark-edged, so this reads as a soft drop shadow)
+          c.drawImage(ST_LOGO,lx,ly,lw,lh);}
+        const t="עולם משחק תלת־ממדי לילדים";c.save();c.direction="rtl";c.textAlign="center";c.textBaseline="middle";c.font=`700 ${Math.round(H*.068)}px "RubikStudio", sans-serif`;
+        c.fillStyle="rgba(8,30,100,.45)";c.fillText(t,W/2,H*.8+H*.008);c.fillStyle="#ffffff";c.fillText(t,W/2,H*.8);c.restore();};
+      return {scene:sc,camera:cam,glow:.16,vignette:.18,overlay};}},
   welcomeCard:{name:"Welcome card (Discord, background)",about:"The background of the picture Pip posts in #welcome for every new member: the server writes their avatar into the ring and their name on the plate (discord/card.js).",round:false,aspect:2.4,
     build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(25,2.4,.1,200);
       const bg=new THREE.Mesh(new THREE.PlaneGeometry(60,26),new THREE.MeshBasicMaterial({map:stGlowBg(["#a8e8ff","#5fbfff","#3d7cf0","#3a3bc8","#24186e"],.5,.45),toneMapped:false}));bg.position.set(0,1.4,-12);sc.add(bg);
@@ -11691,6 +11747,7 @@ function studioRender(id,size){const S=STUDIO_SCENES[id],{scene,camera,glow=0,vi
   if(vignette){const g=c.createRadialGradient(W/2,H/2,Math.max(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);g.addColorStop(0,"rgba(20,8,40,0)");g.addColorStop(1,`rgba(20,8,40,${vignette})`);c.fillStyle=g;c.fillRect(0,0,W,H);}
   if(overlay)overlay(c,W,H);   // 2D signs drawn on top
   scene.traverse(o=>{if(o.geometry)o.geometry.dispose();});return out;}
+const ST_LOGO=new Image();if(STUDIO_ON)ST_LOGO.src="/jumpi-logo.png";   // the email banner draws the real logo
 const STUDIO={R:null,cur:"sunsetSurf",size:4096,fmt:"png",round:false};
 function studioOpen(){
   const el=document.createElement("div");el.id="studio";el.innerHTML=`
@@ -12050,6 +12107,46 @@ function tradeDone(d){
 // a character picture with NO background (only the character and the scene's lights, on a see-through canvas):
 // the character and the lights go on layer SOLO for a moment and the camera only sees that layer
 const SOLO=7,_soloCC=new THREE.Color();let soloLights=[],soloLightsT=-1e9;
+/* ---------- STUDIO COPIES: the player card, trade and game windows show a clean copy of a character, built from its look
+   (straight on, standing still, never the live one: not see-through when hidden, nothing in the hands, no mid-jump pose) ---------- */
+function cleanChar(look){
+  const n=makeCharacter(look,"");if(n.tag){n.tag.material.map&&n.tag.material.map.dispose();n.tag=null;}
+  const extra=[];n.root.traverse(o=>{if(o!==n.root&&!o.userData.base&&!o.userData.isAura&&!(o.parent&&o.parent.userData.isAura)&&!isAuraPart(o))extra.push(o);});extra.forEach(o=>o.removeFromParent());
+  n.root.position.set(0,0,0);n.root.rotation.set(0,0,0);n.head.rotation.set(0,0,0);n.body.rotation.set(0,0,0);n.body.scale.set(1,1,1);
+  n.armL.rotation.set(0,0,0);n.armR.rotation.set(0,0,0);n.eyeL.scale.set(1,1,1);n.eyeR.scale.set(1,1,1);
+  n.root.traverse(o=>{if(o.isMesh){o.castShadow=false;[].concat(o.material).forEach(m=>{if(m.transparent&&m.userData&&m.userData.ghost){m.transparent=false;m.opacity=1;}});}});
+  return n;}
+// change skin and eye colours of a copy without building it again
+function recolorChar(n,look){const skin=new THREE.Color((COLORS[look.color]||COLORS[0])[1]),hsl={};skin.getHSL(hsl);
+  n.root.traverse(o=>{if(!o.isMesh)return;[].concat(o.material).forEach(m=>{
+    if(m.name==="Skin")skinMaterial(m,look.color||0);
+    else if(m.name==="Iris"){let q=o;while(q&&q.name!=="LookL"&&q.name!=="LookR")q=q.parent;m.color.set(eyeHex(look.eyes||0,q&&q.name==="LookR"?1:-1));}
+    else if(m.name==="Mouth")m.color.setHSL(hsl.h,Math.min(1,hsl.s*.9),hsl.l*.22);});});}
+function isAuraPart(o){let q=o;while(q){if(q.userData&&q.userData.isAura)return true;q=q.parent;}return false;}
+const STU={scene:null,list:[],rt:new Map(),cam:new THREE.PerspectiveCamera(28,1,.1,50),buf:new Map()};
+function stuScene(){if(STU.scene)return STU.scene;const sc=new THREE.Scene();
+  sc.add(new THREE.HemisphereLight(0xffffff,0x5f86c9,1.55));const k=new THREE.DirectionalLight(0xffffff,2.2);k.position.set(2,4,5);sc.add(k);
+  const f=new THREE.DirectionalLight(0xbfe0ff,.7);f.position.set(-3,2,2);sc.add(f);return STU.scene=sc;}
+function stuChar(look){const key=JSON.stringify(look);let e=STU.list.find(q=>q.key===key);
+  if(!e){e={key,n:cleanChar(look),born:now()};stuScene().add(e.n.root);STU.list.push(e);
+    while(STU.list.length>6){const old=STU.list.shift();old.n.root.removeFromParent();dropAura(old.n);}}
+  e.used=now();return e.n;}
+// draw the clean copy of `look` into a 2D canvas (w×h pixels), gently breathing and blinking
+function studioDraw(look,canvas){
+  if(!canvas||!look)return;const w=canvas.width,h=canvas.height,key=w+"x"+h;
+  let rt=STU.rt.get(key);if(!rt){rt=new THREE.WebGLRenderTarget(w,h);rt.texture.colorSpace=THREE.SRGBColorSpace;STU.rt.set(key,rt);STU.buf.set(key,new Uint8Array(w*h*4));}
+  const n=stuChar(look),t=now();STU.list.forEach(q=>q.n.root.visible=q.n===n);
+  const br=Math.sin(t*2.1);n.body.scale.set(1+br*.012,1+br*.018,1+br*.012);n.head.position.y=n.headY+br*.012;
+  if(t>n.blinkT){n.blinkT=t+2.5+Math.random()*3;n.blinkStart=t;}const bk=(t-n.blinkStart)/.25;n.eyeL.scale.y=n.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
+  const c=STU.cam;c.aspect=w/h;c.fov=28;c.updateProjectionMatrix();c.position.set(0,1.5,5.9);c.lookAt(0,1.08,0);
+  const pxWas=AURA_PX.value;AURA_PX.value=h*.5/Math.tan(THREE.MathUtils.degToRad(c.fov)/2);
+  const ca=renderer.getClearAlpha();renderer.getClearColor(_soloCC);renderer.setClearColor(0x000000,0);
+  renderer.setRenderTarget(rt);renderer.clear();renderer.render(stuScene(),c);renderer.setRenderTarget(null);renderer.setClearColor(_soloCC,ca);AURA_PX.value=pxWas;
+  const buf=STU.buf.get(key);renderer.readRenderTargetPixels(rt,0,0,w,h,buf);
+  const x=canvas.getContext("2d");if(!canvas._img||canvas._img.width!==w)canvas._img=x.createImageData(w,h);
+  for(let y=0;y<h;y++)canvas._img.data.set(buf.subarray((h-1-y)*w*4,(h-y)*w*4),y*w*4);x.putImageData(canvas._img,0,0);}
+const myLook=()=>uniformLook((me&&me.look)||{},wearUniform||null);
+const lookOf=c=>c?uniformLook(c.look||{},c.uniform||null):null;
 function soloRender(root,camera,rt){
   if(performance.now()-soloLightsT>2000){soloLights=[];scene.traverse(o=>{if(o.isLight)soloLights.push(o);});soloLightsT=performance.now();}
   root.traverse(o=>o.layers.enable(SOLO));soloLights.forEach(l=>l.layers.enable(SOLO));camera.layers.set(SOLO);
@@ -12061,7 +12158,9 @@ const PR=300,PRH=420,portraitRT=new THREE.WebGLRenderTarget(PR,PRH);portraitRT.t
 const portraitCam=new THREE.PerspectiveCamera(30,PR/PRH,.1,300),portraitBuf=new Uint8Array(PR*PRH*4);
 let pcChar=null,pcImg=null;
 function drawPortrait(){
-  if(!pcChar||pcard.hidden)return;const c=pcChar,p=c.root.position,f=c.cur||0,canvas=document.getElementById("pcPortrait");
+  if(!pcChar||pcard.hidden)return;const canvas=document.getElementById("pcPortrait");
+  if(canvas.width!==PR||canvas.height!==PRH){canvas.width=PR;canvas.height=PRH;}studioDraw(pcChar===P?myLook():lookOf(pcChar),canvas);return;
+  const c=pcChar,p=c.root.position,f=c.cur||0;
   portraitCam.position.set(p.x+Math.sin(f)*5.6,p.y+1.5,p.z+Math.cos(f)*5.6);portraitCam.lookAt(p.x,p.y+1.08,p.z);
   const tagVis=c.tag.visible;c.tag.visible=false;
   const pxWas=AURA_PX.value;AURA_PX.value=PRH*.5/Math.tan(THREE.MathUtils.degToRad(portraitCam.fov)/2);
@@ -12191,8 +12290,8 @@ function activeWin(){
 }
 function sidePortraits(){
   const w=activeWin();if(!w||(sideFrame++)%2)return;
-  renderCharInto(P.root,G.face,[G.tag],document.querySelector("#"+w.me+" canvas"));
-  const c=remotes.get(w.partner);if(c)renderCharInto(c.root,c.cur||0,[c.tag],document.querySelector("#"+w.them+" canvas"));
+  studioDraw(myLook(),document.querySelector("#"+w.me+" canvas"));
+  const c=remotes.get(w.partner);if(c)studioDraw(lookOf(c),document.querySelector("#"+w.them+" canvas"));
 }
 function setSideNames(themId,name){document.querySelector("#"+themId+">b").textContent=name;
   document.querySelectorAll(".pp-bubble").forEach(b=>b.classList.remove("show"));}

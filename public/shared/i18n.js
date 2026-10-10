@@ -19,7 +19,7 @@
     "ACCOUNT": "החשבון שלי", "Player": "שחקן", "Account age": "ותק", "Membership": "מנוי", "Coins": "מטבעות", "Member": "מנוי", "Not a member": "בלי מנוי",
     "1 day": "יום אחד", "{n} days": "{n} ימים",
     // loading screen
-    "LOADING {n}%": "טוען {n}%", "TIP": "טיפ",
+    "LOADING {n}%": "טוען {n}%", "LOADING…": "טוען…", "TIP": "טיפ",
     "Warming up the Plaza…": "מחממים את הפלאזה…", "Filling the fountain…": "ממלאים את המזרקה…", "Teaching Jumpi to wave…": "מלמדים את ג'אמפי לנופף…",
     "Polishing the coins…": "מבריקים את המטבעות…", "Almost there!": "כמעט מוכן!",
     "Press Space to jump and do a flip!": "לחצו על רווח כדי לקפוץ ולעשות סלטה!",
