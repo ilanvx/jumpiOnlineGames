@@ -1,0 +1,30 @@
+/* /partners: the businesses and projects we work with (partners.html). Header/footer: chrome.css; buttons and two languages: guide.css */
+.pt h1,.pt h2{font-family:var(--display);font-weight:400;color:#1d2b4f}
+
+/* the banner */
+.pt-hero{background:radial-gradient(circle at 15% 0%,#8fe3ff 0,transparent 45%),linear-gradient(180deg,#1fb6ff,#0b8fe0);color:#fff;padding:46px clamp(16px,4vw,40px) 74px;text-align:center;position:relative}
+.pt-hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:44px;background:#f3f8ff;border-radius:50% 50% 0 0/100% 100% 0 0}
+.pt-hero-in{max-width:720px;margin:0 auto}
+.pt-hero h1{margin:0 0 12px;color:#fff;font-size:clamp(2.4rem,6vw,4rem);line-height:1.02;text-shadow:0 5px 0 #0b5fa8}
+.pt-hero p{margin:0;font-size:1.16rem;line-height:1.6;color:#eaf6ff}
+
+/* a partner: the logo on its own panel, and what they are */
+.pt-list{width:min(1060px,100%);margin:0 auto;padding:24px clamp(16px,4vw,40px) 10px;box-sizing:border-box;display:grid;gap:24px}
+.pt-card{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 8px 0 #c9dcf2,0 20px 40px rgb(16 60 130 / .12)}
+.pt-logo{display:grid;place-items:center;padding:36px 30px;background:radial-gradient(circle at 50% 40%,#fff6d8 0,#ffe7a3 55%,#ffd36b 100%)}
+.pt-logo img{width:min(100%,380px);height:auto;filter:drop-shadow(0 8px 14px rgb(120 70 0 / .25))}
+.pt-txt{padding:30px clamp(22px,3vw,36px) 30px;display:flex;flex-direction:column;justify-content:center}
+.pt-txt h2{margin:0 0 10px;font-size:clamp(1.7rem,3.2vw,2.3rem);line-height:1.1;color:#e2650a}
+.pt-txt p{margin:0 0 20px;color:#3a4a6a;font-size:1.08rem;line-height:1.7}
+.pt-btns{display:flex;flex-wrap:wrap;gap:12px}
+.pt-btns .gd-btn{min-height:50px;font-size:1.15rem;gap:10px}
+.pt-btns svg{width:22px;height:22px}
+.pt-site{color:#fff;background:linear-gradient(180deg,#ffb04a,#ff8a1c 60%);box-shadow:0 5px 0 #c25e00;text-shadow:0 2px 0 #c25e00}
+.pt-dc{color:#fff;background:linear-gradient(180deg,#8f97ff,#5865f2 60%);box-shadow:0 5px 0 #3d43a8;text-shadow:0 2px 0 #3d43a8}
+
+/* want to work with us */
+.pt-join{width:min(860px,calc(100% - 32px));margin:44px auto 0;padding:30px clamp(18px,4vw,40px) 32px;box-sizing:border-box;text-align:center;background:#fff;border-radius:28px;box-shadow:0 6px 0 #c9dcf2,0 14px 30px rgb(16 60 130 / .1);margin-bottom:120px}
+.pt-join h2{margin:0 0 8px;font-size:clamp(1.6rem,3.4vw,2.2rem)}
+.pt-join p{margin:0 0 18px;color:#3a4a6a;font-size:1.06rem}
+
+@media (max-width:760px){.pt-card{grid-template-columns:1fr}.pt-logo{padding:26px 20px}}
