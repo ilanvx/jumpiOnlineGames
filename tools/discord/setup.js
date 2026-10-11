@@ -1,5 +1,6 @@
 // Jumpi Discord tool. `npm run discord` = look only (writes last-report.txt), `npm run discord:apply` = make the server
-// match server.config.js. Deletes only what config.remove lists. Needs DISCORD_BOT_TOKEN and DISCORD_GUILD_ID in .env.
+// match server.config.js. Each part (settings, roles, channels, AutoMod, emojis, messages) runs only if the config
+// has it. Deletes only what config.remove lists. Needs DISCORD_BOT_TOKEN and DISCORD_GUILD_ID in .env.
 import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
@@ -124,7 +125,7 @@ async function main() {
     if (everyoneRole.permissions !== want) await write(`@everyone permissions → ${config.everyone.join(", ")}`, "PATCH", `/guilds/${GUILD}/roles/${GUILD}`, { permissions: want });
   }
   const roleId = {};
-  for (const want of config.roles) {
+  for (const want of config.roles || []) {
     const body = { name: want.name, color: color(want.color), hoist: !!want.hoist, mentionable: !!want.mentionable, permissions: bits(want.perms).toString() };
     const have = roles.find((r) => lc(r.name) === lc(want.name) && !r.managed);
     if (!have) {
@@ -139,7 +140,7 @@ async function main() {
   }
   // order: the first role in the config on top, right under the bot
   if (APPLY) roles = await api("GET", `/guilds/${GUILD}/roles`);
-  const ours = config.roles.map((w) => roles.find((r) => r.id === roleId[w.name])).filter(Boolean);
+  const ours = (config.roles || []).map((w) => roles.find((r) => r.id === roleId[w.name])).filter(Boolean);
   const okOrder = ours.every((r, i) => i === 0 || ours[i - 1].position > r.position);
   if (!okOrder && ours.length > 1) {
     const slots = ours.map((r) => r.position).sort((a, b) => b - a);
@@ -168,7 +169,7 @@ async function main() {
   }
   const owKey = (list) => JSON.stringify((list || []).map((o) => [o.id, String(o.type), String(o.allow), String(o.deny)]).sort());
   const missingRoles = !TEAM || !MOD || !FRIEND;
-  if (missingRoles && !APPLY) log("  (the roles don't exist yet, so channel permissions are checked after they're made)");
+  if (missingRoles && !APPLY && config.categories?.length) log("  (the roles don't exist yet, so channel permissions are checked after they're made)");
   const noFE = (n) => String(n).replace(/️/g, "");
   // a channel/category matches by the letters of its name, an old name in `was`, or (counters) the start of its name
   const same = (ch, want) => (want.match ? key(ch.name).startsWith(key(want.match))
@@ -180,7 +181,7 @@ async function main() {
   };
 
   const chanId = {};
-  for (const [ci, cat] of config.categories.entries()) {
+  for (const [ci, cat] of (config.categories || []).entries()) {
     let c = pick(cat, true);
     const allStaff = cat.channels.every((ch) => ch.mode === "staff"), allStat = cat.channels.every((ch) => ch.mode === "stat");
     const catOw = allStaff ? overwrites("staff") : allStat ? overwrites("stat") : [];
@@ -231,15 +232,15 @@ async function main() {
   const inOrder = (list) => list.every((c, i) => i === 0 || list[i - 1].position < c.position);
   if (APPLY) channels = await api("GET", `/guilds/${GUILD}/channels`);
   const byId = (id) => channels.find((x) => x.id === id);
-  const catList = config.categories.map((cat) => channels.find((x) => x.type === 4 && same(x, cat))).filter(Boolean);
+  const catList = (config.categories || []).map((cat) => channels.find((x) => x.type === 4 && same(x, cat))).filter(Boolean);
   if (!inOrder(catList)) catList.forEach((c, i) => positions.push({ id: c.id, position: i }));
-  for (const cat of config.categories) {
+  for (const cat of config.categories || []) {
     const list = cat.channels.map((w) => byId(chanId[key(w.match || w.name)])).filter(Boolean);
     if (!inOrder(list)) list.forEach((c, i) => positions.push({ id: c.id, position: i }));
   }
   if (positions.length) await write(`fix the order of ${positions.length} channel(s)/categories`, "PATCH", `/guilds/${GUILD}/channels`, positions);
   const extra = channels.filter((c) => !used.has(c.id) && !(c.type === 4 ? rmCat : rmChan).has(key(c.name)));
-  if (extra.length) log(`  (not in the config, left as they are: ${extra.map((c) => (c.type === 4 ? "▸" : "#") + c.name).join(", ")})`);
+  if (extra.length && config.categories?.length) log(`  (not in the config, left as they are: ${extra.map((c) => (c.type === 4 ? "▸" : "#") + c.name).join(", ")})`);
 
   // ---------- AutoMod ----------
   log(`AutoMod:`);
@@ -292,16 +293,20 @@ async function main() {
   const button = (b) => ({ type: 2, label: b.label, ...(b.emoji ? { emoji: { name: b.emoji } } : {}),
     ...(b.url ? { style: 5, url: b.url } : { style: b.style || 1, custom_id: b.id }) });
   for (const m of config.messages || []) {
-    const embeds = m.embeds.map((e) => ({
+    const embeds = (m.embeds || []).map((e) => ({
       title: links(e.title), description: links(e.description), color: e.color ? color(e.color) : undefined, url: e.url,
       thumbnail: e.thumbnail ? { url: e.thumbnail } : undefined, image: e.image ? { url: e.image } : undefined,
       fields: e.fields?.map((f) => ({ name: links(f.name), value: links(f.value), inline: !!f.inline })),
       footer: e.footer ? { text: e.footer } : undefined,
     }));
     const components = (m.buttons || []).map((row) => ({ type: 1, components: row.map(button) }));
-    const body = { content: links(m.content || ""), embeds, components, allowed_mentions: { parse: [] } };
-    const h = hash(body), cid = chanId[key(m.channel)], saved = state.messages[m.key];
-    if (!cid) { plan(`post "${m.key}" in #${m.channel} (after the channel is made)`); continue; }
+    // noPreview: no link previews under the message (SUPPRESS_EMBEDS)
+    const body = { content: links(m.content || ""), embeds, components, allowed_mentions: { parse: [] }, ...(m.noPreview ? { flags: 4 } : {}) };
+    if (body.content.length > 2000) { warn(`"${m.key}" is ${body.content.length} characters, Discord allows 2,000: skipped`); continue; }
+    // the channel: one the config made/matched, or else any channel already on the server with these letters (never made here)
+    const cid = chanId[key(m.channel)] || channels.find((x) => x.type !== 4 && key(x.name) === key(m.channel))?.id;
+    const h = hash(body), saved = state.messages[m.key];
+    if (!cid) { warn(`no #${m.channel} channel on the server: "${m.key}" not posted`); continue; }
     let exists = false;
     if (saved?.id && saved.channel === cid) {
       try { await api("GET", `/channels/${cid}/messages/${saved.id}`); exists = true; } catch { exists = false; }
