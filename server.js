@@ -116,7 +116,7 @@ function cspFor(html, req) {
   return [
     "default-src 'self'", `script-src 'self' ${[...hashes].join(" ")}`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:", "img-src 'self' data: blob:", "media-src 'self' data: blob:",
-    `connect-src 'self'${host ? ` wss://${host} ws://${host}` : ""}`, "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
+    `connect-src 'self' blob:${host ? ` wss://${host} ws://${host}` : ""}`, "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
   ].join("; ");
 }
 // a page from public/ with its CSP (read again only when the file changes)
@@ -226,6 +226,16 @@ app.use((req, res, next) => {
   next();
 });
 // scripts, styles and pages: the browser may keep them but must check for a newer one each time (cheap: 304 when unchanged)
+// 3D models: send the compressed copy (file.glb.gz, made next to it) when the browser takes gzip and the copy is up to date
+app.get(/\.glb$/i, (req, res, next) => {
+  try {
+    if (!/\bgzip\b/.test(String(req.headers["accept-encoding"] || ""))) return next();
+    const file = path.join(PUBLIC_DIR, decodeURIComponent(req.path));
+    if (!file.startsWith(PUBLIC_DIR + path.sep) || !existsSync(file + ".gz") || statSync(file + ".gz").mtimeMs < statSync(file).mtimeMs - 10000) return next();   // (a fresh checkout writes both within seconds)
+    res.set({ "Content-Type": "model/gltf-binary", "Content-Encoding": "gzip", Vary: "Accept-Encoding", "Cache-Control": "public, max-age=86400" });
+    res.sendFile(file + ".gz");
+  } catch (err) { next(); }
+});
 app.use(express.static(PUBLIC_DIR, { index: false, setHeaders: (res, file) => { if (/\.(js|mjs|css|html|json)$/i.test(file)) res.set("Cache-Control", "no-cache"); } }));
 
 // anything else: the "Jumpi got lost" page for people, a short text for files and scripts

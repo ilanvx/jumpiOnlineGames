@@ -64,6 +64,10 @@ a{color:inherit}
 .hm-hero-pic::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16%;background:linear-gradient(180deg,rgb(23 158 218 / 0),var(--sea0) 96%);pointer-events:none;z-index:5}
 .hm-stage{position:absolute;left:50%;bottom:0;width:max(100%,calc(var(--hh) * 2));aspect-ratio:2/1;transform:translateX(-50%)}
 .hm-stage picture,.hm-stage>picture img{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* the live 3D scene (home3d.js) fades in over the still picture; the picture's own moving layers step aside */
+.hm-3d{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity 1.2s ease}
+.live3d .hm-3d{opacity:1}
+.live3d .hm-sky,.live3d .hm-sea,.live3d .hm-ball,.live3d .hm-ball-shadow{opacity:0;transition:opacity 1.2s}
 /* clouds drift across the sky, behind the palm trees (the sky mask is rendered from the same 3D scene) */
 .hm-sky{position:absolute;inset:0;container-type:inline-size;-webkit-mask:url(/site/img/home/sky-mask.png) 0 0/100% 100% no-repeat;mask:url(/site/img/home/sky-mask.png) 0 0/100% 100% no-repeat;pointer-events:none}
 .hm-cloud{position:absolute;height:auto;opacity:.95;will-change:transform;animation:hmCloud var(--t) linear infinite;animation-delay:var(--d)}
