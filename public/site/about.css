@@ -12,8 +12,8 @@
 .ab-hero p{margin:0 auto;max-width:62ch;font-size:1.16rem;line-height:1.65;color:#eaf6ff}
 .ab-pic{position:relative;z-index:1;width:min(1000px,100%);margin:34px auto 0;border-radius:28px;overflow:hidden;border:6px solid #fff;box-shadow:0 10px 0 #0b5fa8,0 26px 50px rgb(0 40 100 / .25)}
 .ab-pic{aspect-ratio:16/9;background:#0b3f80}
-.ab-pic img{display:block;width:100%;height:100%;object-fit:cover}
-.ab-pic iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.ab-pic video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;background:#0b3f80}
+.ab-pic.on .ab-play-btn{display:none}
 /* the big play button over the picture */
 .ab-play-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:12px;padding:16px 30px 16px 22px;border:0;border-radius:999px;cursor:pointer;
   background:linear-gradient(180deg,#ffb04a,#ff8a1c 60%);color:#fff;font:400 clamp(1.1rem,2.4vw,1.6rem)/1 var(--display);letter-spacing:.03em;text-shadow:0 2px 0 #c25e00;
@@ -21,8 +21,7 @@
 .ab-play-btn svg{width:clamp(30px,4vw,44px);height:clamp(30px,4vw,44px);fill:currentColor;filter:drop-shadow(0 2px 0 #c25e00)}
 .ab-play-btn:hover{transform:translate(-50%,-50%) scale(1.06);filter:brightness(1.05)}
 [lang="he"] .ab-play-btn{font-family:"Secular One","Lilita One",system-ui,sans-serif}
-/* inside the Jumpi app the trailer stays a picture (no YouTube there) */
-.in-app .ab-play-btn{display:none}
+
 
 /* the story */
 .ab-story{width:min(780px,calc(100% - 32px));margin:56px auto 0;text-align:center}
@@ -40,6 +39,16 @@
 /* where to play */
 .ab-play{width:min(1160px,calc(100% - 32px));margin:54px auto 0;text-align:center}
 .ab-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+
+/* the developer: websites and games for others */
+.ab-dev{width:min(1160px,calc(100% - 32px));margin:54px auto 0;border-radius:30px;padding:30px clamp(20px,4vw,44px);box-sizing:border-box;color:#fff;
+  background:radial-gradient(circle at 90% 10%,#7b5cff 0,transparent 50%),linear-gradient(135deg,#1d2b4f,#2a1f80);box-shadow:0 8px 0 #141c38,0 20px 40px rgb(16 30 80 / .25)}
+.ab-dev-in{display:flex;align-items:center;gap:24px;justify-content:space-between;flex-wrap:wrap}
+.ab-dev-txt{flex:1 1 420px}
+.ab-dev h2{margin:0 0 10px;color:#fff;font-size:clamp(1.6rem,3.4vw,2.3rem);line-height:1.12}
+.ab-dev p{margin:0;color:#d8dcff;font-size:1.07rem;line-height:1.65}
+.ab-dev-btn{color:#2a1f80;background:linear-gradient(180deg,#fff27a,#ffc21c);box-shadow:0 5px 0 #b8860b;font-size:1.3rem;gap:10px}
+.ab-dev-btn svg{width:22px;height:22px}
 
 /* join and contact */
 .ab-more{width:min(1160px,100%);margin:0 auto;padding:50px clamp(16px,4vw,40px) 10px;box-sizing:border-box;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}

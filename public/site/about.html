@@ -53,10 +53,10 @@
       <p class="ab-slogan" lang="en" dir="ltr">Where Imagination Comes to Life</p>
       <p data-l="en">We are an independent game studio from Israel. We make Jumpi: a free 3D world where kids create their own character, explore with friends, work at fun jobs, raise pets and build a home of their own.</p><p data-l="he">אנחנו סטודיו עצמאי למשחקים מישראל. אנחנו יוצרים את ג'אמפי: עולם תלת-ממדי חינמי שבו ילדים יוצרים דמות משלהם, מטיילים עם חברים, עובדים בעבודות כיפיות, מגדלים חיות מחמד ובונים בית משלהם.</p>
     </div>
-    <!-- the Jumpi trailer: YouTube (no-cookie) loads only when someone presses play (about.js) -->
+    <!-- the Jumpi trailer, from our own site (public/site/trailer/); the big button starts it (about.js) -->
     <figure class="ab-pic" id="trailer">
-      <img src="/site/img/home/island-hero-1440.jpg" width="1440" height="720" alt="Four Jumpi friends on a little island in the sea" loading="eager">
-      <button class="ab-play-btn" id="trailerPlay" type="button" data-video="vWNaLL8TLDU"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span><span data-l="en">Watch the trailer</span><span data-l="he">לצפייה בטריילר</span></span></button>
+      <video id="trailerVideo" src="/site/trailer/jumpi-trailer.mp4" poster="/site/trailer/poster.jpg" preload="none" playsinline controls></video>
+      <button class="ab-play-btn" id="trailerPlay" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span><span data-l="en">Watch the trailer</span><span data-l="he">לצפייה בטריילר</span></span></button>
     </figure>
   </section>
 
@@ -82,6 +82,18 @@
       <a class="gd-btn green" href="/play"><span data-l="en">Play online</span><span data-l="he">לשחק אונליין</span></a>
       <a class="gd-btn white hm-noapp" href="https://apps.microsoft.com/detail/9N4FZ4DJKMSD" target="_blank" rel="noopener">Microsoft Store</a>
       <a class="gd-btn white hm-noapp" href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
+    </div>
+  </section>
+
+  <!-- the developer of Jumpi builds websites and games for others -->
+  <section class="ab-dev hm-noapp">
+    <div class="ab-dev-in">
+      <div class="ab-dev-txt">
+        <h2><span data-l="en">Want the developer of Jumpi to build something for you?</span><span data-l="he">רוצים שהמפתח של המשחק יצור עבורכם אתר? משחק משלכם?</span></h2>
+        <p data-l="en">Ilan Vexlender built Jumpi from the ground up: the 3D world, the characters, the website and the apps. He also builds websites and games for others.</p>
+        <p data-l="he">אילן וקסלנדר בנה את ג'אמפי מהיסוד: העולם התלת-ממדי, הדמויות, האתר והאפליקציות. הוא בונה אתרים ומשחקים גם עבור אחרים.</p>
+      </div>
+      <a class="gd-btn ab-dev-btn" href="https://ilanvx.com" target="_blank" rel="noopener"><span dir="ltr">ilanvx.com</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
   </section>
 
