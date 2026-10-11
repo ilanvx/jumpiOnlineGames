@@ -151,9 +151,12 @@ router.get("/online", requireUser, (req, res) => {
 });
 
 /* ---------- JumpiChat ---------- */
+// parents turned the chat off (the /parents page): no JumpiChat at all
+const chatLocked = (res, me) => (me.parental?.chatLock === true ? (fail(res, 403, "Your parents turned off JumpiChat. You can still say hi in the game with the ready-made messages!"), true) : false);
 // all my chats: one per friend, with the last message and how many I haven't read
 router.get("/dm", requireUser, async (req, res, next) => {
   try {
+    if (chatLocked(res, req.user)) return;
     const me = req.user._id;
     const rows = await Message.aggregate([
       { $match: { $or: [{ from: me }, { to: me }] } },
@@ -189,6 +192,7 @@ router.get("/dm", requireUser, async (req, res, next) => {
 // the messages with one player (newest PAGE, or older ones with ?before=<ms>); opening a chat marks it read
 router.get("/dm/with/:username", requireUser, async (req, res, next) => {
   try {
+    if (chatLocked(res, req.user)) return;
     const me = req.user, other = await User.findOne({ usernameLower: nameOf(req.params.username) }).select("username look blocked role");
     if (!other || blocks(other, me._id)) return fail(res, 404, "There's no player with that name.");
     if (blocks(me, other._id)) return fail(res, 403, `You blocked ${other.username}. Unblock them in the Friends app to see this chat.`);
@@ -212,6 +216,7 @@ router.get("/dm/with/:username", requireUser, async (req, res, next) => {
 router.post("/dm", requireJson, requireUser, async (req, res, next) => {
   try {
     const me = req.user;
+    if (chatLocked(res, me)) return;
     if (me.mutedUntil && me.mutedUntil.getTime() > Date.now()) return fail(res, 403, "You're muted right now, so you can't send messages.");
     if (!canSend(idStr(me._id))) return fail(res, 429, "Slow down a little!");
     const text = cleanText(req.body.text);
@@ -229,11 +234,12 @@ router.post("/dm", requireJson, requireUser, async (req, res, next) => {
       const st = await strike(idStr(me._id));
       return res.status(400).json({ error: st.muted ? "You used bad words too many times, so you're muted for 5 minutes." : FRIENDLY_MESSAGE, blocked: true });
     }
-    const other = await User.findOne({ usernameLower: nameOf(req.body.to) }).select("username friends blocked");
+    const other = await User.findOne({ usernameLower: nameOf(req.body.to) }).select("username friends blocked parental");
     if (!other || blocks(other, me._id)) return fail(res, 404, "There's no player with that name.");
     if (blocks(me, other._id)) return fail(res, 403, `You blocked ${other.username}.`);
     // both sides must still be friends
     if (!isFriend(me, other._id) || !isFriend(other, me._id)) return fail(res, 403, `You can only chat with friends. Add ${other.username} as a friend first!`);
+    if (other.parental?.chatLock === true) return fail(res, 403, `${other.username} can't get messages right now.`);   // their parents turned JumpiChat off
     const m = await Message.create({ from: me._id, to: other._id, text });
     if (riskText(text)) flagChat(me._id, me.username, text, "dm:" + other.username, false);
     const view = msgView(m, new Map([[idStr(me._id), me.username], [idStr(other._id), other.username]]));

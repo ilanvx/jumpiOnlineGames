@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumpi · Parents</title>
+<meta name="description" content="Jumpi parental controls: see your child's chat and trades, set times when Jumpi is closed, and turn the chat off.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/shared/a11y.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/parents.css">
+</head>
+<body class="pa">
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <span class="pa-tag" data-en="Parents" data-he="הורים">Parents</span>
+  <button class="pa-out" id="logout" type="button" hidden data-en="Log out" data-he="יציאה">Log out</button>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="true">English</button><button type="button" data-l="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<main>
+  <!-- logging in: the account's email, then the code from the email -->
+  <section class="pa-gate" id="gate">
+    <div class="pa-intro">
+      <h1 data-en="Parental controls" data-he="בקרת הורים">Parental controls</h1>
+      <p data-en="See what your child writes in the chat and who they trade with, choose times when Jumpi is closed, and turn the chat off if you want." data-he="ראו מה הילד כותב בצ'אט ועם מי הוא מחליף פריטים, בחרו שעות שבהן ג'אמפי סגור, וכבו את הצ'אט אם תרצו.">See what your child writes in the chat and who they trade with, choose times when Jumpi is closed, and turn the chat off if you want.</p>
+      <ul class="pa-points">
+        <li data-en="No password needed: we send a code to the email of the account." data-he="לא צריך סיסמה: אנחנו שולחים קוד לאימייל של החשבון.">No password needed: we send a code to the email of the account.</li>
+        <li data-en="Changes work right away, also if your child is playing now." data-he="השינויים עובדים מיד, גם אם הילד משחק עכשיו.">Changes work right away, also if your child is playing now.</li>
+        <li data-en="Tip: use your own email for your child's account, so only you get the code." data-he="טיפ: השתמשו באימייל שלכם לחשבון של הילד, כך שרק אתם תקבלו את הקוד.">Tip: use your own email for your child's account, so only you get the code.</li>
+      </ul>
+    </div>
+    <div class="pa-card">
+      <form class="pa-view" data-v="email" id="eForm" novalidate>
+        <h2 data-en="Log in" data-he="כניסה">Log in</h2>
+        <label class="pa-field"><span data-en="The email of your child's Jumpi account" data-he="האימייל של חשבון הג'אמפי של הילד">The email of your child's Jumpi account</span>
+          <input id="email" type="email" inputmode="email" autocomplete="email" maxlength="254" required dir="ltr"></label>
+        <p class="pa-msg" id="eMsg" role="alert"></p>
+        <button class="pa-cta" id="eGo" type="submit" data-en="SEND ME A CODE" data-he="שלחו לי קוד">SEND ME A CODE</button>
+      </form>
+      <form class="pa-view" data-v="code" id="cForm" novalidate hidden>
+        <h2 data-en="Check your email" data-he="בדקו את האימייל">Check your email</h2>
+        <p><span data-en="If there's a Jumpi account for" data-he="אם יש חשבון ג'אמפי עבור">If there's a Jumpi account for</span> <b id="cTo" dir="ltr"></b><span data-en=", a 6-digit code is on its way. It works for 15 minutes." data-he=", קוד בן 6 ספרות בדרך. הוא עובד 15 דקות.">, a 6-digit code is on its way. It works for 15 minutes.</span></p>
+        <p class="pa-hint" data-en="Asked a few minutes ago? The code in that first email still works: we don't send a new one while it does." data-he="ביקשתם לפני כמה דקות? הקוד במייל הראשון עדיין עובד, ולא נשלח קוד חדש כל עוד הוא תקף.">Asked a few minutes ago? The code in that first email still works: we don't send a new one while it does.</p>
+        <label class="pa-field"><span data-en="The code" data-he="הקוד">The code</span>
+          <input id="code" class="pa-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" required dir="ltr"></label>
+        <p class="pa-msg" id="cMsg" role="alert"></p>
+        <button class="pa-cta" id="cGo" type="submit" data-en="OPEN" data-he="כניסה">OPEN</button>
+        <button class="pa-link" id="cBack" type="button" data-en="Use another email" data-he="אימייל אחר">Use another email</button>
+      </form>
+      <div class="pa-view pa-wait" data-v="wait" hidden><span class="pa-spin" aria-hidden="true"></span></div>
+    </div>
+  </section>
+
+  <!-- the dashboard -->
+  <section class="pa-dash" id="dash" hidden>
+    <div class="pa-kid">
+      <div class="pa-ava" id="kAva" aria-hidden="true"></div>
+      <div class="pa-kid-main">
+        <h1 id="kName" dir="ltr"></h1>
+        <p class="pa-status" id="kStatus"></p>
+      </div>
+      <dl class="pa-facts" id="kFacts"></dl>
+    </div>
+    <p class="pa-closed" id="kClosed" hidden data-en="Jumpi is closed for your child right now (a no-Jumpi time is on)." data-he="ג'אמפי סגור לילד עכשיו (זמן ללא ג'אמפי פעיל).">Jumpi is closed for your child right now (a no-Jumpi time is on).</p>
+
+    <nav class="pa-tabs" role="tablist">
+      <button type="button" role="tab" data-t="chat" aria-selected="true" data-en="Chat" data-he="צ'אט">Chat</button>
+      <button type="button" role="tab" data-t="trades" aria-selected="false" data-en="Trades" data-he="החלפות">Trades</button>
+      <button type="button" role="tab" data-t="time" aria-selected="false" data-en="Play times" data-he="זמני משחק">Play times</button>
+      <button type="button" role="tab" data-t="lock" aria-selected="false" data-en="Chat settings" data-he="הגדרות צ'אט">Chat settings</button>
+    </nav>
+
+    <div class="pa-panel" data-p="chat" role="tabpanel">
+      <p class="pa-lead" data-en="Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked." data-he="כל מה שהילד כתב: הצ'אט במשחק (נשמר 30 יום) והודעות פרטיות לחברים ב-JumpiChat. הודעות שהמסנן שלנו עצר מסומנות.">Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked.</p>
+      <ol class="pa-list" id="chatList"></ol>
+      <button class="pa-more" id="chatMore" type="button" hidden data-en="Show older" data-he="הצגת ישנות יותר">Show older</button>
+    </div>
+    <div class="pa-panel" data-p="trades" role="tabpanel" hidden>
+      <p class="pa-lead" data-en="Every trade: who with, what your child gave and what they got." data-he="כל החלפה: עם מי, מה הילד נתן ומה הוא קיבל.">Every trade: who with, what your child gave and what they got.</p>
+      <ol class="pa-list" id="tradeList"></ol>
+    </div>
+    <div class="pa-panel" data-p="time" role="tabpanel" hidden>
+      <p class="pa-lead" data-en="Choose times when Jumpi doesn't work for your child. In these times they can't log in, and a game that is open closes by itself. Times are Israel time." data-he="בחרו שעות שבהן ג'אמפי לא עובד לילד. בשעות האלה אי אפשר להתחבר, ומשחק פתוח נסגר מעצמו. השעות לפי שעון ישראל.">Choose times when Jumpi doesn't work for your child. In these times they can't log in, and a game that is open closes by itself. Times are Israel time.</p>
+      <div class="pa-quick">
+        <button type="button" id="qNight" data-en="+ School nights (Sat–Thu nights, 21:00–07:00)" data-he="+ לילות לפני בית ספר (מוצ״ש עד ה׳, מ-21:00 עד 07:00)">+ School nights (Sat–Thu nights, 21:00–07:00)</button>
+        <button type="button" id="qSchool" data-en="+ School hours (Sun–Fri, 08:00–13:00)" data-he="+ שעות בית ספר (א׳–ו׳, מ-08:00 עד 13:00)">+ School hours (Sun–Fri, 08:00–13:00)</button>
+        <button type="button" id="qDay" data-en="+ A whole day" data-he="+ יום שלם">+ A whole day</button>
+        <button type="button" id="qAdd" data-en="+ Another time" data-he="+ זמן אחר">+ Another time</button>
+      </div>
+      <ol class="pa-rules" id="rules"></ol>
+      <p class="pa-empty" id="rulesEmpty" data-en="No closed times yet: Jumpi is open all day." data-he="עוד אין זמנים סגורים: ג'אמפי פתוח כל היום.">No closed times yet: Jumpi is open all day.</p>
+      <p class="pa-msg" id="tMsg" role="status"></p>
+      <button class="pa-cta" id="tSave" type="button" data-en="SAVE PLAY TIMES" data-he="שמירת זמני משחק">SAVE PLAY TIMES</button>
+    </div>
+    <div class="pa-panel" data-p="lock" role="tabpanel" hidden>
+      <label class="pa-switch">
+        <input type="checkbox" id="lockOn">
+        <span class="pa-knob" aria-hidden="true"></span>
+        <span><b data-en="Turn off the chat" data-he="כיבוי הצ'אט">Turn off the chat</b><small data-en="Your child can't type in the chat and JumpiChat (private messages) is closed. They can still say hello with ready-made messages, so they still feel part of the game." data-he="הילד לא יוכל להקליד בצ'אט, ו-JumpiChat (הודעות פרטיות) סגור. הוא עדיין יוכל להגיד שלום עם הודעות מוכנות מראש, כדי להרגיש חלק מהמשחק.">Your child can't type in the chat and JumpiChat (private messages) is closed. They can still say hello with ready-made messages, so they still feel part of the game.</small></span>
+      </label>
+      <h3 data-en="The ready-made messages" data-he="ההודעות המוכנות">The ready-made messages</h3>
+      <ul class="pa-chips" id="quick"></ul>
+      <p class="pa-msg" id="lMsg" role="status"></p>
+    </div>
+  </section>
+</main>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">Terms of Use</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">Privacy Policy</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">Contact</a></footer>
+<script type="module" src="/site/parents.js"></script>
+</body>
+</html>

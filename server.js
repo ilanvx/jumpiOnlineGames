@@ -24,6 +24,7 @@ import secretRoutes from "./routes/secrets.js";
 import codeRoutes from "./routes/codes.js";
 import tutorialRoutes from "./routes/tutorial.js";
 import questRoutes from "./routes/quests.js";
+import parentRoutes from "./routes/parents.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
 import { saveAllNeeds } from "./realtime/needs.js";
@@ -92,6 +93,7 @@ app.use("/api", secretRoutes);
 app.use("/api", codeRoutes);
 app.use("/api", tutorialRoutes);
 app.use("/api", questRoutes);
+app.use("/api/parents", parentRoutes);   // parental controls (the /parents page)
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });
 app.use("/api/admin", adminRoutes);
@@ -177,6 +179,7 @@ app.get("/privacy", page("site/privacy.html"));
 app.get(["/accessibility", "/accessibility-statement", "/negishut"], page("site/accessibility.html"));   // accessibility statement (Israeli regulations 2013, IS 5568)
 app.get("/delete-account", page("site/delete-account.html"));   // Google Play: how to delete a JUMPI account
 app.get("/contact", page("site/contact.html"));
+app.get(["/parents", "/parent", "/horim"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/parents.html")(req, res, next); });   // parental controls
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
 app.get("/trailer", page("site/trailer.html"));
 // the Windows app: the newest installer from GitHub Releases (built by the "Windows app" workflow, branch android-app)

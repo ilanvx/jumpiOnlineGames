@@ -18,6 +18,15 @@
     "SETTINGS": "הגדרות", "Close settings": "סגירת ההגדרות", "Sound": "צלילים", "Zoom": "זום", "Zoom out": "התרחקות", "Zoom in": "התקרבות",
     "ACCOUNT": "החשבון שלי", "Player": "שחקן", "Account age": "ותק", "Membership": "מנוי", "Coins": "מטבעות", "Member": "מנוי", "Not a member": "בלי מנוי",
     "1 day": "יום אחד", "{n} days": "{n} ימים",
+    // parental controls (/parents)
+    "Your parents set a no-Jumpi time until {t}. See you then!": "ההורים שלך קבעו זמן בלי ג'אמפי עד {t}. נתראה אז!",
+    "Your parents set a no-Jumpi time. See you later!": "ההורים שלך קבעו זמן בלי ג'אמפי. נתראה אחר כך!",
+    "Your parents turned the chat off. Pick a message!": "ההורים שלך כיבו את הצ'אט. בחרו הודעה!",
+    "Your parents turned the chat off. Pick a ready-made message!": "ההורים שלך כיבו את הצ'אט. בחרו הודעה מוכנה!",
+    "Your parents turned the chat off. You can still say hi with the ready-made messages!": "ההורים שלך כיבו את הצ'אט. אפשר עדיין להגיד היי עם ההודעות המוכנות!",
+    "Your parents turned the chat back on.": "ההורים שלך החזירו את הצ'אט.",
+    "Ready-made messages": "הודעות מוכנות",
+    "Your parents turned off JumpiChat. You can still say hi in the game with the ready-made messages!": "ההורים שלך כיבו את JumpiChat. אפשר עדיין להגיד היי במשחק עם ההודעות המוכנות!",
     // loading screen
     "LOADING {n}%": "טוען {n}%", "LOADING…": "טוען…", "TIP": "טיפ",
     "Warming up the Plaza…": "מחממים את הפלאזה…", "Filling the fountain…": "ממלאים את המזרקה…", "Teaching Jumpi to wave…": "מלמדים את ג'אמפי לנופף…",

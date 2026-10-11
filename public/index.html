@@ -801,6 +801,16 @@ body.in-game .chat-dock{display:flex}
 .chat-close:active{transform:translateY(3px);box-shadow:0 1px 0 #8a1c1c}
 .chat-send:focus-visible,.chat-close:focus-visible,.emote-pick:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
 .emote-tray{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:6px}
+/* parents turned the chat off (the /parents page): ready-made messages instead of typing */
+.quick-tray{display:flex;flex-wrap:wrap;gap:6px;max-height:156px;overflow-y:auto;padding:2px}
+.quick-tray[hidden]{display:none}
+.quick-tray button{border:0;border-radius:999px;padding:8px 13px;background:#fff;color:#1d2b4f;font:600 .95rem "Fredoka",system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 #b9c9e0;transition:transform .1s}
+.quick-tray button:hover{background:#fff6d9}.quick-tray button:active{transform:translateY(2px);box-shadow:0 1px 0 #b9c9e0}
+.chat-bar.locked .chat-row input,.chat-bar.locked .chat-send{display:none}
+.chat-lock-note{display:none}
+.chat-bar.locked .chat-lock-note{display:block;flex:1;color:#dbe7f7;font:500 .9rem "Fredoka",system-ui,sans-serif}
+body.chat-locked .win-chat{display:none!important}
+body.land .quick-tray{max-height:92px}body.land .quick-tray button{padding:6px 10px;font-size:.85rem}
 .emote-pick{aspect-ratio:1;border:0;border-radius:14px;cursor:pointer;padding:3px;background:#2c4468;box-shadow:inset 0 -4px 0 #1b2c47;display:grid;place-items:center;transition:transform .15s,background .15s;min-width:0}
 .emote-pick img{width:100%;height:100%}
 .emote-pick{position:relative}
@@ -4039,7 +4049,9 @@ body.land .npc-card .idle-face{display:none}
   </button>
   <form class="chat-bar" id="chatBar" autocomplete="off">
     <div class="emote-tray" id="emoteTray" role="group" aria-label="Emotes"></div>
+    <div class="quick-tray" id="quickTray" role="group" aria-label="Ready-made messages" hidden></div>
     <div class="chat-row">
+      <span class="chat-lock-note">Your parents turned the chat off. Pick a message!</span>
       <label class="sr-only" for="chatInput">Chat message</label>
       <input id="chatInput" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send">
       <button class="chat-send" id="chatSend" type="submit" aria-label="Send message">
@@ -4191,6 +4203,7 @@ import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
 import {OUTFITS} from "/shared/outfits.js";
 import {EVENTS,isEvent} from "/shared/events.js";
 import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
+import {QUICK_CHAT} from "/shared/parental.js";
 import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/pets.js";
 import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} from "/shared/food.js";
@@ -7058,6 +7071,14 @@ document.getElementById("chatBar").addEventListener("submit",e=>{
   say(text);sfx.tick(true);chatInput.value="";if(socket&&socket.connected)socket.emit("chat",text);
 });
 chatInput.addEventListener("keydown",e=>{if(e.key==="Escape"){e.stopPropagation();closeChat();chatFab.focus();}});
+/* the chat lock from the parents' page: no typing, only the ready-made messages (public/shared/parental.js) */
+const quickTray=document.getElementById("quickTray"),chatBarEl=document.getElementById("chatBar");
+function paintChatLock(){const on=!!(me&&me.chatLock);chatBarEl.classList.toggle("locked",on);body.classList.toggle("chat-locked",on);quickTray.hidden=!on;
+  if(!on){quickTray.replaceChildren();return;}
+  const he=window.I18N&&I18N.lang==="he";
+  quickTray.replaceChildren(...QUICK_CHAT.map(pair=>{const b=document.createElement("button");b.type="button";b.textContent=he?pair[1]:pair[0];b.dir="auto";
+    b.onclick=()=>{if(mutedLeft()){toast(mutedText());sfx.error();return;}const text=b.textContent;say(text);sfx.tick(true);if(socket&&socket.connected)socket.emit("chat",text);};return b;}));}
+addEventListener("langchange",paintChatLock);
 chatInput.addEventListener("focus",()=>{G.keys={};});
 function positionBubble(){const b=bubbleEl();if(!b.classList.contains("show")||!G.npc)return;
   _bp.copy(G.npc.root.position);_bp.y+=3.3;_bp.project(cam);b.style.left=((_bp.x+1)/2*innerWidth)+"px";b.style.top=((1-_bp.y)/2*innerHeight)+"px";}
@@ -7284,7 +7305,8 @@ function netJoin(){
     socket.on("whoami",d=>{if(!me||!d||!d.id||String(d.id)===String(me.id))return;console.warn("[socket] connected as another account, reconnecting");
       const s0=socket;socket=null;try{s0.disconnect();}catch(e){}clearRemotes();if(NET_RETRY++<2)setTimeout(netJoin,300);else toast("Couldn't connect as "+me.username+". Please reload the game.");});    socket.on("connect",()=>{updateOnline();if(inGame)socket.emit("join",netState());loadFoodBag();});
     socket.on("disconnect",()=>{clearRemotes();updateOnline();});
-    socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}});
+    socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}
+      if(err&&err.message==="parent-time"){exitGame();toast("Your parents set a no-Jumpi time. See you later!");socket.disconnect();socket=null;}});
     socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
     socket.on("player:join",p=>{addRemote(p);});
     socket.on("needs",setNeeds);
@@ -7330,6 +7352,9 @@ function netJoin(){
     socket.on("chat:muted",d=>{myMutedUntil=d.until||myMutedUntil;myBubble.classList.remove("show");toast(mutedText());sfx.error();});
     socket.on("coins",d=>{if(me)me.coins=d.coins;paintCoins(true);if(d.delta>0){toast("You got "+d.delta.toLocaleString("en-US")+" coins!");sfx.success();}});
     socket.on("kicked:role",()=>{location.reload();});
+    socket.on("parental",d=>{if(me){me.chatLock=!!(d&&d.chatLock);paintChatLock();toast(me.chatLock?"Your parents turned the chat off. You can still say hi with the ready-made messages!":"Your parents turned the chat back on.");}});
+    socket.on("chat:locked",()=>{toast("Your parents turned the chat off. Pick a ready-made message!");sfx.error();});
+    socket.on("kicked:parent",d=>{exitGame();toast(parentMsg(d));sfx.error();});
     socket.on("kicked:password",()=>{exitGame();setAccount(null);toast("Your password was changed. Please log in again.");sfx.error();});
     socket.on("kicked:logout",()=>{exitGame();toast("You logged out.");});   // made admin / no longer admin in the admin panel
     socket.on("kicked:admin",()=>{exitGame();toast("You were kicked from the Plaza by an admin.");sfx.error();});
@@ -8608,13 +8633,15 @@ function accountChanged(name){const ov=document.getElementById("acctOv");if(!ov|
 
 const toastEl=document.getElementById("toast");
 let me=null,toastT;
+// the parents' no-Jumpi time message, in the player's language ({until: "07:00"} from the server)
+const parentMsg=d=>d&&d.until?I18N.T("Your parents set a no-Jumpi time until {t}. See you then!",{t:d.until}):"Your parents set a no-Jumpi time. See you later!";
 function toast(text){toastEl.textContent=text;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("show"),2600);}
 function setAccount(user,quiet){
   // another account now (logged in / out / switched): the old connection belongs to the old account, drop it and join again as the new one
   if(typeof socket!=="undefined"&&socket&&String(socket._uid||"")!==String(user&&user.id||"")){const s0=socket;socket=null;try{s0.disconnect();}catch(e){}if(typeof clearRemotes==="function")clearRemotes();
     if(user&&typeof inGame!=="undefined"&&inGame)setTimeout(netJoin,0);}
   if(user&&me&&String(user.id)!==String(me.id))NET_RETRY=0;
-  me=user;accountLook=user?user.look:null;if(typeof setMyInvisible==="function"&&!(user&&user.role==="admin"))setMyInvisible(false);
+  me=user;accountLook=user?user.look:null;try{paintChatLock();}catch(e){}if(typeof setMyInvisible==="function"&&!(user&&user.role==="admin"))setMyInvisible(false);
   if(!quiet)accRefresh();
   document.body.classList.toggle("logged",!!user);
   if(typeof applyRoleUI==="function"){applyRoleUI();paintCoins();}
@@ -8827,6 +8854,7 @@ addEventListener("keydown",e=>{const k=(e.key||"").toLowerCase(),mod=e.ctrlKey||
 api("me").then(async r=>{
   if(!r.ok&&r.status===401&&!TAB.get())r=await api("me");   // this tab's token ran out: the browser's login may still be good
   if(r.ok&&r.data.user){setAccount(r.data.user);return;}
+  if(r.status===403&&r.data.code==="parent-time"){toast(parentMsg(r.data));return;}   // parents' no-Jumpi time
   const a=await api("accounts");const first=a.ok&&(a.data.accounts||[])[0];
   if(first){const s=await api("switch",{username:first.username});if(s.ok&&s.data.user)setAccount(s.data.user);}
 });

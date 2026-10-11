@@ -11,6 +11,7 @@ import { welcomeEmail } from "../mail/welcome.js";
 import { resetEmail } from "../mail/reset.js";
 import { PUBLIC_URL } from "../mail/send.js";
 import { Revoked } from "../models/Revoked.js";
+import { quietNow } from "../public/shared/parental.js";
 
 const router = express.Router();
 
@@ -25,6 +26,12 @@ const pwTooLong = (pw) => typeof pw === "string" && (pw.length > MAX_PASSWORD ||
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 12);
 
 /* ---------- helpers ---------- */
+// parents set a no-Jumpi time (the /parents page): the message for the child, or null
+export function parentTime(user) {
+  const r = quietNow(user?.parental);
+  return r ? `Your parents set a no-Jumpi time until ${r.to}. See you then!` : null;
+}
+const parentUntil = (user) => quietNow(user?.parental)?.to || "";
 export function banMessage(user) {
   const until = user.bannedUntil;
   const permanent = until && until.getFullYear() >= 9000;
@@ -77,7 +84,7 @@ export function readToken(token, kind) {
   }
 }
 // end one login token (log out). Returns its id, or null.
-async function revokeToken(token, kind) {
+export async function revokeToken(token, kind) {
   const p = readToken(token, kind);
   if (!p || !p.jti) return null;
   REVOKED.add(p.jti);
@@ -342,6 +349,7 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
     if (!user || !ok) { loginFailed(who, req.ip); return res.status(401).json({ error: "Wrong username or password." }); }
     badLogins.delete(who + "|" + req.ip);
     if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
+    if (parentTime(user)) return res.status(403).json({ error: parentTime(user), code: "parent-time", until: parentUntil(user) });
 
     if (needsVerify(user))
       return res.status(403).json({ needVerify: true, pending: pendingToken(user, req.body.remember === true), email: maskEmail(user.email), error: "Please check your email first." });
@@ -365,6 +373,7 @@ router.get("/me", async (req, res, next) => {
       clearAuthCookie(res);
       return res.status(403).json({ user: null, error: banMessage(user) });
     }
+    if (parentTime(user)) return res.status(403).json({ user: null, error: parentTime(user), code: "parent-time", until: parentUntil(user) });
     res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
     next(err);
@@ -380,9 +389,10 @@ router.post("/logout", requireJson, async (req, res, next) => {
     if (ended.length) import("../realtime/plaza.js").then((m) => m.endSessions(ended)).catch(() => {});
     const { users } = await savedUsers(req);
     const rest = users.filter(({ x }) => !me || x.s !== me._id.toString());
+    const open = rest.filter(({ u }) => !parentTime(u));   // not into an account whose parents' no-Jumpi time is on
     writeSaved(res, rest.map(({ x }) => x));
-    if (rest.length) {
-      const next = rest[0].u;
+    if (open.length) {
+      const next = open[0].u;
       setAuthCookie(res, next._id.toString(), true, next.tokenVersion || 0);
       return res.json({ ok: true, user: next.toPublic(), tab: tabToken(next) });
     }
@@ -430,6 +440,7 @@ router.post("/switch", requireJson, async (req, res, next) => {
     const hit = users.find(({ u }) => u.usernameLower === name);
     if (!hit) return res.status(404).json({ error: "That account isn't saved on this device any more. Please log in again." });
     const user = hit.u;
+    if (parentTime(user)) return res.status(403).json({ error: parentTime(user), code: "parent-time", until: parentUntil(user) });
     user.lastLoginAt = new Date();
     await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: user.lastLoginAt } });
     setAuthCookie(res, user._id.toString(), true, user.tokenVersion || 0);
@@ -477,6 +488,7 @@ router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
     const user = p ? p.user : await currentUser(req);
     if (!user) return res.status(401).json({ error: "Please log in again." });
     if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
+    if (parentTime(user)) return res.status(403).json({ error: parentTime(user), code: "parent-time", until: parentUntil(user) });
     if (needsVerify(user)) {
       const code = String(req.body.code || "").replace(/\D/g, "");
       const V = user.verify || {};

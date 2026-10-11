@@ -83,6 +83,10 @@ const userSchema = new mongoose.Schema(
       ),
       default: () => ({}),
     },
+    // parental controls set on the /parents page (routes/parents.js, public/shared/parental.js):
+    // { chatLock, quiet: [{ days, from, to }], updatedAt }; parentCode = the emailed code while it waits
+    parental: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
+    parentCode: { type: mongoose.Schema.Types.Mixed },
     // who may come into this player's home: everyone, friends only (the default, kids' safety) or nobody (routes/home.js)
     homeAccess: { type: String, enum: ["all", "friends", "closed"], default: "friends" },
     // house upgrades bought with coins (public/shared/houses.js)
@@ -202,6 +206,7 @@ userSchema.methods.toPublic = function () {
     birthDate: this.birthDate ? this.birthDate.toISOString().slice(0, 10) : null,   // shown only to the player (Settings → Account)
     birthdayToday: isBirthdayOn(this.birthDate),
     tutorialDone: !!this.tutorialAt,
+    chatLock: this.parental?.chatLock === true,   // parents turned the chat off: only the ready-made messages (public/shared/parental.js)
     secrets: Array.isArray(this.secrets) ? [...this.secrets] : [],
     mustVerify: !!process.env.RESEND_API_KEY && this.emailVerified !== true,   // the game asks for the email code before playing
   };

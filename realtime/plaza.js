@@ -1,7 +1,8 @@
 import { activeEvent } from "./events.js";
 import bcrypt from "bcryptjs";
 import { User } from "../models/User.js";
-import { banMessage, needsVerify, readToken } from "../routes/auth.js";
+import { banMessage, needsVerify, readToken, parentTime } from "../routes/auth.js";
+import { quietNow, isQuickChat } from "../public/shared/parental.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
 import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
@@ -258,6 +259,7 @@ export function attachPlaza(io) {
       if (!user || (v || 0) !== (user.tokenVersion || 0)) return next(new Error("not-logged-in"));
       if (user.isBanned()) return next(new Error("banned"));
       if (needsVerify(user)) return next(new Error("verify-email"));   // the email code comes first
+      if (parentTime(user)) return next(new Error("parent-time"));    // parents set a no-Jumpi time (the /parents page)
       // before the grand opening only admins can play on jumpigames.com (see public/shared/launch.js)
       const host = String(socket.handshake.headers["x-forwarded-host"] || socket.handshake.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase();
       const inApp = /JumpiApp\//.test(String(socket.handshake.headers["user-agent"] || ""));   // players in the Android app can play now
@@ -357,10 +359,11 @@ export function attachPlaza(io) {
         room = "home:" + homeOf;
       }
       // fresh look / coins / role from the database (they may have shopped since connecting)
-      let jobsOf = {};
+      let jobsOf = {}, parental = {};
       try {
         const fresh = await User.findById(me.id);
         jobsOf = (fresh && fresh.jobs) || {};
+        parental = (fresh && fresh.parental) || {};
         if (!fresh || fresh.isBanned()) return socket.disconnect(true);
         Object.assign(me, fresh.toPublic());
         needsOnline(me.id, fresh.needs);
@@ -403,9 +406,12 @@ export function attachPlaza(io) {
         invisible: !!me.invisible,
         bday: !!me.bday,
         lv: me.lv || 1,
+        parental,             // parents' settings: chat lock and no-Jumpi times (public/shared/parental.js)
         warpAt: Date.now(),   // just arrived (see "move")
         movedAt: Date.now(),
       };
+      const qr = quietNow(parental);
+      if (qr) { socket.emit("kicked:parent", { message: `Your parents set a no-Jumpi time until ${qr.to}. See you then!`, until: qr.to }); return socket.disconnect(true); }
       const already = players.has(socket.id);
       players.set(socket.id, player);
       socket.join(room);
@@ -416,15 +422,13 @@ export function attachPlaza(io) {
       sendNeeds(me.id);
     });
 
-    // the owner sends a visitor out of their home (they can't come back for 15 minutes)
+    // the owner sends a visitor out of their home (still friends: they may come back if the home's setting allows it)
     socket.on("home:kick", (d, ack) => {
       const r = typeof ack === "function" ? ack : () => {};
       const p = players.get(socket.id), t = players.get(String(d?.id || ""));
       if (!p || p.room !== "home:" + String(me.username).toLowerCase()) return r({ error: "You can only do that in your own home." });
       if (!t || t.room !== p.room || t.userId === p.userId) return r({ error: "That player isn't in your home." });
       if (t.role === "admin") return r({ error: "Admins can't be sent out." });
-      KICKED.set(p.userId + "|" + t.userId, Date.now() + KICK_MS);
-      if (KICKED.size > 20000) for (const [k, until] of KICKED) if (until < Date.now()) KICKED.delete(k);
       sendOut(t, `${p.username} asked you to leave their home.`);
       r({ ok: true, message: `${t.username} left your home.` });
     });
@@ -549,6 +553,7 @@ export function attachPlaza(io) {
       const text = cleanText(raw);
       if (!text) return;
       if (!canChat()) return socket.emit("chat:slow");   // before anything is checked or written down
+      if (p.parental?.chatLock === true && !isQuickChat(text)) return socket.emit("chat:locked");   // parents: only the ready-made messages
       // phone numbers, addresses and emails never go out (not a strike: the player gets a "never share this" window)
       const chk = checkText(text), sp = splitPhone(phoneBits(me.id), text);
       if (chk.kind === "private" || sp.hit) {
@@ -889,22 +894,42 @@ export function emitToUser(userId, event, data) {
   for (const p of players.values()) if (p.userId === userId) ioRef.to(p.id).emit(event, data);
 }
 
-/* ---------- homes: who may come in (kids' safety) ----------
-   The owner picks everyone / friends only (default) / nobody (User.homeAccess), and can send a visitor out
-   (they can't come back for 15 minutes). Admins can always come in; blocked players never. */
-const KICKED = new Map();   // "<owner id>|<visitor id>" -> until (ms)
-const KICK_MS = 15 * 60_000;
-export function homeKicked(ownerId, userId) {
-  const k = String(ownerId) + "|" + String(userId), t = KICKED.get(k);
-  if (t && t < Date.now()) KICKED.delete(k);
-  return !!t && t > Date.now();
+/* ---------- parental controls (routes/parents.js) ----------
+   A parent changed the settings: open game windows follow right away (chat lock), and a no-Jumpi time closes the game.
+   Every half minute the open games are checked too (a no-Jumpi time that starts while playing). */
+function parentKick(p, message) {
+  const s = ioRef?.sockets.sockets.get(p.id);
+  if (!s) return;
+  s.emit("kicked:parent", { message, until: message.match(/\d\d:\d\d/)?.[0] || "" });
+  dropPlayer(p.id, s);
+  s.disconnect(true);
 }
+export function parentalChanged(userId, parental) {
+  for (const p of [...players.values()]) {
+    if (p.userId !== String(userId)) continue;
+    p.parental = parental;
+    ioRef?.to(p.id).emit("parental", { chatLock: parental.chatLock === true });
+    const r = quietNow(parental);
+    if (r) parentKick(p, `Your parents set a no-Jumpi time until ${r.to}. See you then!`);
+  }
+}
+setInterval(() => {
+  for (const p of [...players.values()]) {
+    if (!p.parental?.quiet?.length) continue;
+    const r = quietNow(p.parental);
+    if (r) parentKick(p, `Your parents set a no-Jumpi time until ${r.to}. See you then!`);
+  }
+}, 30_000).unref?.();
+
+/* ---------- homes: who may come in (kids' safety) ----------
+   The owner picks everyone / friends only (default) / nobody (User.homeAccess), and can send a visitor out of
+   the home right now (they stay friends; they can come back if the home's setting lets them). Admins can always
+   come in; blocked players never. */
 // may this visitor ({ id, role }) come into this owner's home (a User with friends / blocked / homeAccess)?
 export function mayVisit(owner, visitor) {
   const oid = String(owner._id), vid = String(visitor.id || visitor._id);
   if (oid === vid || visitor.role === "admin") return true;
   if (ghosts(oid, vid) || (owner.blocked || []).some((b) => String(b) === vid)) return false;
-  if (homeKicked(oid, vid)) return false;
   const access = owner.homeAccess || "friends";
   if (access === "all") return true;
   if (access === "closed") return false;
