@@ -136,6 +136,9 @@
     ".jacc-lang button{border:2px solid #dbe9fb;background:#fff;border-radius:999px;padding:5px 12px;font:600 13px 'Fredoka',Arial,sans-serif;color:#1d2b4f;cursor:pointer}",
     ".jacc-lang button[aria-pressed=true]{background:#1d6fe0;border-color:#1d6fe0;color:#fff}",
     ".jacc-note{font-size:12px;color:#5b6577;text-align:center;margin:0}",
+    ".jacc-by{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;padding-top:12px;border-top:2px dashed #dbe9fb;color:#4a5a80;font:600 13px 'Fredoka','Rubik',Arial,sans-serif}",
+    ".jacc-by img{width:78px;height:auto;display:block}",
+    ".jacc-rights{font-size:12px;color:#5b6577;text-align:center;margin:0}",
     "@media (max-width:480px){.jacc-root{bottom:12px;right:12px}.jacc-fab{width:52px;height:52px}}",
     "@media print{.jacc-root,.jacc-skip{display:none!important}}"
   ].join("\n");
@@ -150,11 +153,11 @@
     en: { open: "Accessibility menu", title: "Accessibility", sub: "Make Jumpi easier for you", close: "Close", size: "Text size", smaller: "Smaller text", bigger: "Bigger text",
       contrast: "High contrast", gray: "Grayscale", links: "Underline links", font: "Readable font", noanim: "Stop animations", cursor: "Big cursor",
       spacing: "More spacing", focus: "Keyboard focus", reset: "Reset all", statement: "Accessibility statement", skip: "Skip to main content",
-      note: "Your choices are saved on this device. Shortcut: Alt + A" },
+      note: "Your choices are saved on this device. Shortcut: Alt + A", by: "Developed by", rights: "© 2026 Jumpi Games™. All rights reserved." },
     he: { open: "תפריט נגישות", title: "נגישות", sub: "להפוך את ג'אמפי לנוח יותר בשבילכם", close: "סגירה", size: "גודל טקסט", smaller: "הקטנת טקסט", bigger: "הגדלת טקסט",
       contrast: "ניגודיות גבוהה", gray: "גווני אפור", links: "הדגשת קישורים", font: "גופן קריא", noanim: "עצירת אנימציות", cursor: "סמן גדול",
       spacing: "ריווח טקסט", focus: "מיקוד מקלדת", reset: "איפוס הכל", statement: "הצהרת נגישות", skip: "דילוג לתוכן הראשי",
-      note: "הבחירות נשמרות במכשיר הזה. קיצור מקלדת: Alt + A" }
+      note: "הבחירות נשמרות במכשיר הזה. קיצור מקלדת: Alt + A", by: "פותח על ידי", rights: "כל הזכויות שמורות לג'אמפי גיימס™ © 2026" }
   };
   function lang() {
     var l = "";
@@ -202,7 +205,9 @@
         '</div>' +
         '<div class="jacc-foot"><button type="button" class="jacc-reset"></button><a class="jacc-link" href="/accessibility"></a>' +
           '<div class="jacc-lang" role="group" aria-label="Language / שפה"><button type="button" data-l="he" lang="he">עברית</button><button type="button" data-l="en" lang="en">English</button></div>' +
-          '<p class="jacc-note"></p></div>' +
+          '<p class="jacc-note"></p>' +
+          '<div class="jacc-by"><span class="jacc-by-t"></span><img src="/jumpi-logo.png" alt="Jumpi Games" width="118" height="69"></div>' +
+          '<p class="jacc-rights"></p></div>' +
       '</div>';
     document.body.appendChild(wrap);
     var q = function (s) { return wrap.querySelector(s); };
@@ -258,6 +263,8 @@
     q(".jacc-reset").textContent = t.reset;
     q(".jacc-link").textContent = t.statement;
     q(".jacc-note").textContent = t.note;
+    q(".jacc-by-t").textContent = t.by;
+    q(".jacc-rights").textContent = t.rights;
     ui.wrap.querySelectorAll(".jacc-lang button").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.l === l ? "true" : "false"); });
     var any = TILES.some(function (k) { return S[k]; }) || (S.size || 0) > 0;
     ui.wrap.classList.toggle("jacc-active", any);
