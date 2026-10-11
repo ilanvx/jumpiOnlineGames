@@ -9,7 +9,7 @@
 <meta property="og:url" content="https://jumpigames.com/store">
 <meta property="og:image" content="https://jumpigames.com/site/og-image.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="description" content="Coins, memberships that never renew by themselves, and special bundles with store-only auras for Jumpi.">
+<meta name="description" content="The Jumpi Store: coin packs, memberships that never renew by themselves, and special bundles with store-only auras. Safe payments by HYP.">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/jumpi-head-192.png">
@@ -19,9 +19,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
 <link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="preload" href="/site/img/store/coins-1400.webp" as="image">
 <link rel="stylesheet" href="/site/legal.css">
-<link rel="stylesheet" href="/site/store.css">
 <link rel="stylesheet" href="/site/chrome.css">
+<link rel="stylesheet" href="/site/store.css">
 </head>
 <body>
 <header class="hm-top" id="top">
@@ -44,41 +45,47 @@
 <script src="/site/chrome.js"></script>
 
 <section class="st-hero">
-  <div class="st-hero-text">
+  <canvas id="stHero" role="img" aria-label="Jumpis swimming in a sea of gold coins"></canvas>
+  <div class="st-hero-in">
     <h1 data-en="Jumpi Store" data-he="החנות של ג'אמפי">Jumpi Store</h1>
-    <p data-en="Coins, memberships and special bundles with auras you can't get anywhere else." data-he="מטבעות, מנויים וחבילות מיוחדות עם הילות שאין בשום מקום אחר.">Coins, memberships and special bundles with auras you can't get anywhere else.</p>
-    <div class="st-who" id="stWho" aria-live="polite"></div>
+    <p class="st-lead" data-en="Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi." data-he="צוללים לים של מטבעות! חבילות מטבעות, מנויים וחבילות מיוחדות לג'אמפי שלכם.">Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi.</p>
+    <div class="st-cta">
+      <a class="st-chip gold" href="#coins"><img src="/site/img/store/coins-600.webp" alt="" width="44" height="44"><span data-en="Coins" data-he="מטבעות">Coins</span></a>
+      <a class="st-chip purple" href="#membership"><img src="/site/img/store/member-30.webp" alt="" width="44" height="44"><span data-en="Membership" data-he="מנוי">Membership</span></a>
+      <a class="st-chip pink" href="#bundles"><img src="/site/img/bundle-sakura.png" alt="" width="44" height="44"><span data-en="Bundles" data-he="חבילות">Bundles</span></a>
+    </div>
   </div>
-  <div class="st-hero-stage"><canvas id="stHero" role="img" aria-label="A Jumpi next to a treasure chest full of coins"></canvas></div>
+  <svg class="st-hero-edge" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 180 90 360 0 560 34 C 760 70 940 10 1140 38 C 1280 58 1380 30 1440 34 V90 H0 Z"/></svg>
 </section>
 
+<div class="st-who-wrap"><div class="st-who" id="stWho" aria-live="polite"></div></div>
+<div class="st-note" id="stNote" hidden></div>
+
 <main class="st-main">
+  <section class="st-sec" id="coins">
+    <div class="st-head"><h2 data-en="Coin packs" data-he="חבילות מטבעות">Coin packs</h2>
+      <p data-en="Spend coins in the game on clothes, auras, furniture, pets, vehicles and house upgrades. Bigger packs come with free bonus coins." data-he="את המטבעות מוציאים במשחק על בגדים, הילות, רהיטים, חיות, כלי רכב ושדרוגים לבית. בחבילות הגדולות יש מטבעות בונוס בחינם.">Spend coins in the game on clothes, auras, furniture, pets, vehicles and house upgrades.</p></div>
+    <div class="st-coins" id="stCoins"></div>
+  </section>
+
+  <section class="st-sec st-member" id="membership">
+    <div class="st-head"><h2 data-en="Membership" data-he="מנוי">Membership</h2>
+      <p data-en="Pay once. It never renews by itself, and when it ends you can simply buy it again." data-he="משלמים פעם אחת. המנוי לא מתחדש לבד, וכשהוא נגמר אפשר פשוט לקנות שוב.">Pay once. It never renews by itself.</p></div>
+    <div class="st-perks" id="stPerks"><h3 data-en="Members get" data-he="מנויים מקבלים">Members get</h3><ul></ul></div>
+    <div class="st-passes" id="stPasses"></div>
+  </section>
+
   <section class="st-sec" id="bundles">
     <div class="st-head"><h2 data-en="Special bundles" data-he="חבילות מיוחדות">Special bundles</h2>
       <p data-en="Each bundle can be bought once. The auras inside are only in the store." data-he="אפשר לקנות כל חבילה פעם אחת. ההילות שבתוכן יש רק בחנות.">Each bundle can be bought once.</p></div>
     <div class="st-bundles" id="stBundles"></div>
   </section>
 
-  <section class="st-sec st-member" id="membership">
-    <div class="st-head"><h2 data-en="Membership" data-he="מנוי">Membership</h2>
-      <p data-en="Pay once. It never renews by itself. When it ends, you can simply buy it again." data-he="משלמים פעם אחת. המנוי לא מתחדש לבד. כשהוא נגמר, אפשר פשוט לקנות שוב.">Pay once. It never renews by itself.</p></div>
-    <div class="st-member-wrap">
-      <div class="st-perks" id="stPerks"><img data-art="member:30" alt=""><h3 data-en="Members get" data-he="מה מקבלים">Members get</h3><ul></ul></div>
-      <div class="st-passes" id="stPasses"></div>
-    </div>
-  </section>
-
-  <section class="st-sec" id="coins">
-    <div class="st-head"><h2 data-en="Coins" data-he="מטבעות">Coins</h2>
-      <p data-en="Use coins in the game for clothes, auras, furniture, pets and more." data-he="משתמשים במטבעות במשחק לבגדים, הילות, רהיטים, חיות מחמד ועוד.">Use coins in the game for clothes, auras, furniture, pets and more.</p></div>
-    <div class="st-coins" id="stCoins"></div>
-  </section>
-
   <section class="st-sec st-grown" id="parents">
     <div class="st-grown-card">
       <h2 data-en="For grown-ups" data-he="להורים">For grown-ups</h2>
       <div class="st-grown-grid">
-        <div><h3 data-en="Only you pay" data-he="רק אתם משלמים">Only you pay</h3><p data-en="Buying needs a grown-up: we ask a quick question first, and the card is entered on the payment company's secure page. Jumpi never sees or keeps card numbers." data-he="קנייה דורשת מבוגר: קודם נשאלת שאלה קצרה, ואת הכרטיס מקלידים בעמוד המאובטח של חברת הסליקה. ג'אמפי אף פעם לא רואה ולא שומר מספרי כרטיס.">Buying needs a grown-up.</p></div>
+        <div><h3 data-en="Only you pay" data-he="רק אתם משלמים">Only you pay</h3><p data-en="Buying needs a grown-up: we ask a quick question first, and the card is typed on the secure page of HYP, our payment company. Jumpi never sees or keeps card numbers." data-he="קנייה דורשת מבוגר: קודם נשאלת שאלה קצרה, ואת הכרטיס מקלידים בעמוד המאובטח של HYP, חברת הסליקה שלנו. ג'אמפי אף פעם לא רואה ולא שומר מספרי כרטיס.">Buying needs a grown-up.</p></div>
         <div><h3 data-en="No surprise charges" data-he="בלי חיובים מפתיעים">No surprise charges</h3><p data-en="Nothing renews automatically. Every purchase is one payment for exactly what's on the card." data-he="שום דבר לא מתחדש אוטומטית. כל קנייה היא תשלום אחד בדיוק על מה שכתוב בכרטיס.">Nothing renews automatically.</p></div>
         <div><h3 data-en="Questions or refunds" data-he="שאלות או החזרים">Questions or refunds</h3><p><span data-en="Write to" data-he="כתבו ל־">Write to</span> <a href="mailto:support@jumpigames.com" dir="ltr">support@jumpigames.com</a>. <span data-en="See the purchase rules in our" data-he="כללי הרכישה מופיעים ב">See the purchase rules in our</span> <a href="/terms#t-purchases" data-en="Terms of Use" data-he="תנאי השימוש">Terms of Use</a>.</p></div>
       </div>

@@ -214,7 +214,8 @@ app.get("/download/android", (req, res, next) => {
 });
 app.get(["/forgot-password", "/reset-password"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/reset.html")(req, res, next); });   // forgot password (routes/auth.js /forgot, /reset)   // the trailer video (public/site/trailer/)
 // while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
-app.get("/store", (req, res, next) => page(STORE_OPEN && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));   // "/store?soon": a preview of the closed-store page
+// "/store?soon": a preview of the closed-store page; "/store?preview": the real store while it's closed (only admins can buy there)
+app.get("/store", (req, res, next) => page((STORE_OPEN || "preview" in req.query) && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));
 app.get("/site/store.html", (req, res) => res.redirect(302, "/store"));
 // the admin panel: signed-in players who aren't admins get "Not found"; the page itself checks the rest with the server
 app.get(["/admin", "/admin/"], async (req, res, next) => {

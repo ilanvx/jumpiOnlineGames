@@ -1,32 +1,83 @@
 /*
-  HYP (Yaad Sarig) card payments: NOT CONNECTED YET.
+  HYP (Yaad Sarig) card payments, "Hyp Pay" payment page: https://developers.hyp.co.il/pay
 
-  When you have a HYP terminal, put these in .env and fill in the two functions below:
-    HYP_MASOF=...      terminal number (מסוף)
-    HYP_KEY=...        API key
-    HYP_PASSP=...      API password (PassP)
-    PUBLIC_URL=https://jumpigames.com   (where HYP sends the player back)
+  Settings (only in .env, typed in by Ilan, never in a file in git):
+    HYP_MASOF=...      terminal number (מסוף). Test terminals start with 00100.
+    HYP_KEY=...        API key       (Hyp portal → Settings → API / Payment Page → Verification)
+    HYP_PASSP=...      API password  (same place; not the portal login password)
 
-  How HYP's "Pay Protocol" works (check every parameter against HYP's own documentation first):
-  1. paymentUrl(): ask HYP to sign the payment details (action=APISign, What=SIGN, with Masof, KEY,
-     PassP, Amount, Order = our order id, Info = product name, Coin=1 for shekels, UTF8=True, Sign=True)
-     and send the player to the payment page that comes back (action=pay&... with the signature).
-  2. verify(): when the player comes back to /api/store/hyp/return, HYP adds the result to the address
-     (Id, CCode, Amount, Order, Sign, ...). Ask HYP to check that signature (action=APISign, What=VERIFY).
-     Only CCode=0 with a valid signature AND the right amount means the order is paid.
-  Nothing is ever given to the player before verify() says yes, and a paid order is only given once.
+  In the Hyp portal (Settings → API / Payment Page), once per terminal:
+    - Post-transaction address → Successful transaction → custom link:
+        https://jumpigames.com/api/store/hyp/return
+    - Failed transaction: leave the default (Hyp shows the error on its own page, the player can try again).
+    - "Verify by signature in the payment page" ON (usually on by default).
+
+  The flow:
+  1. paymentUrl(): our server asks Hyp to sign the payment (action=APISign, What=SIGN, Sign=True). The answer is a
+     query string with action=pay and a signature; the player is sent to https://pay.hyp.co.il/p/?<that answer>.
+     The amount and our order id are inside the signed string, so the player can't change them.
+  2. The player pays on Hyp's page (we never see the card) and comes back to /api/store/hyp/return with
+     Id, CCode, Amount, ACode, Order, ... and Sign.
+  3. verify(): our server sends ALL those parameters, in the same order, back to Hyp (action=APISign, What=VERIFY).
+     Only when Hyp answers CCode=0 (the signature is real) AND the payment's own CCode is 0 is the order paid.
+     routes/store.js then also checks the amount against the order, and gives the goods only once.
 */
+const PAY = "https://pay.hyp.co.il/p/";
+const env = () => ({ masof: process.env.HYP_MASOF || "", key: process.env.HYP_KEY || "", passp: process.env.HYP_PASSP || "" });
+
+// Hyp answers with a query string (HTTP 200 even on errors): read its CCode
+const ccodeOf = (text) => new URLSearchParams(String(text).trim().replace(/^\?/, "")).get("CCode");
+
+async function call(params) {
+  const r = await fetch(PAY + "?" + params.toString(), { method: "GET", signal: AbortSignal.timeout(15_000), headers: { "User-Agent": "JumpiStore/1.0" } });
+  const text = await r.text();
+  if (!r.ok) throw new Error(`Hyp answered HTTP ${r.status}`);
+  return text.trim();
+}
+
 export const hyp = {
-  // true only when every setting is filled in AND the code below is finished
+  // true only when all three settings are in .env
   ready() {
-    return false; // switch to: Boolean(process.env.HYP_MASOF && process.env.HYP_KEY && process.env.HYP_PASSP)
+    const e = env();
+    return Boolean(e.masof && e.key && e.passp);
   },
-  // returns the address of HYP's payment page for this order
-  async paymentUrl(order, user, product) {
-    throw new Error("HYP payments are not connected yet.");
+
+  // the address of Hyp's payment page for this order
+  async paymentUrl(order, user, product, lang = "en") {
+    const e = env();
+    const p = new URLSearchParams();
+    p.set("action", "APISign"); p.set("What", "SIGN");
+    p.set("KEY", e.key); p.set("PassP", e.passp); p.set("Masof", e.masof);
+    p.set("Order", order._id.toString());                       // comes back to us on the return address
+    p.set("Info", `Jumpi Games - ${product.name.en}`);          // what the payment is for (shown on the page and the receipt)
+    p.set("Amount", Number(order.amount).toFixed(2));
+    p.set("Coin", "1");                                         // 1 = shekels
+    p.set("Tash", "1"); p.set("FixTash", "True");               // one payment, no installments
+    p.set("PageLang", lang === "he" ? "HEB" : "ENG");
+    p.set("UTF8", "True"); p.set("UTF8out", "True");
+    p.set("Sign", "True");                                      // the return address gets a signature we can verify
+    p.set("MoreData", "True");
+    // no name / email / phone of the player is sent: the grown-up types what Hyp asks for on Hyp's own page
+    const signed = await call(p);
+    const cc = ccodeOf(signed);
+    if (cc !== null && cc !== "0") throw new Error(`Hyp refused to sign the payment (CCode ${cc})`);
+    if (!/(^|&)action=pay(&|$)/.test(signed) || !/signature=/.test(signed)) throw new Error("Hyp's answer has no signature");
+    return PAY + "?" + signed;
   },
-  // checks what HYP sent back; returns { ok, orderId, ref, amount }
-  async verify(query) {
-    return { ok: false };
+
+  // checks what Hyp sent back to the return address; `raw` = the query string exactly as it arrived
+  // returns { ok, orderId, ref, amount, code }
+  async verify(raw) {
+    const e = env();
+    const back = new URLSearchParams(String(raw || "").replace(/^\?/, ""));
+    if (!back.get("Sign") || !back.get("Order")) return { ok: false, code: "nosign" };
+    const p = new URLSearchParams();
+    p.set("action", "APISign"); p.set("What", "VERIFY");
+    p.set("KEY", e.key); p.set("PassP", e.passp); p.set("Masof", e.masof);
+    for (const [k, v] of back) if (!["action", "What", "KEY", "PassP", "Masof"].includes(k)) p.append(k, v);   // every return parameter, same order
+    const answer = await call(p);
+    const signOk = ccodeOf(answer) === "0";
+    const paid = back.get("CCode") === "0";
+    return { ok: signOk && paid, orderId: back.get("Order"), ref: back.get("Id") || "", amount: back.get("Amount"), code: signOk ? back.get("CCode") : "badsign" };
   },
 };

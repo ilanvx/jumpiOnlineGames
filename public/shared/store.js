@@ -14,12 +14,15 @@ export const STORE_OPEN = false;
 export const CURRENCY = "ILS";
 
 export const PRODUCTS = [
-  // memberships: one payment, no automatic renewal
-  { id: "member-7", kind: "member", price: 12.9, days: 7, give: { memberDays: 7, coins: 150 }, name: { en: "1 Week", he: "שבוע" } },
-  { id: "member-14", kind: "member", price: 19.9, days: 14, give: { memberDays: 14, coins: 350 }, tag: "popular", name: { en: "2 Weeks", he: "שבועיים" } },
-  { id: "member-30", kind: "member", price: 34.9, days: 30, give: { memberDays: 30, coins: 800 }, tag: "best", name: { en: "1 Month", he: "חודש" } },
+  // memberships: one payment, no automatic renewal. A free player earns about 250-1,000 coins a day;
+  // members get twice the daily gift, mini-game and job caps, so a month is worth far more than its coins.
+  { id: "member-7", kind: "member", price: 9.9, days: 7, give: { memberDays: 7, coins: 100 }, name: { en: "1 Week", he: "שבוע" } },
+  { id: "member-30", kind: "member", price: 24.9, days: 30, give: { memberDays: 30, coins: 500 }, name: { en: "1 Month", he: "חודש" } },
+  { id: "member-90", kind: "member", price: 59.9, days: 90, save: 20, give: { memberDays: 90, coins: 1800 }, tag: "popular", name: { en: "3 Months", he: "3 חודשים" } },
+  { id: "member-365", kind: "member", price: 179.9, days: 365, save: 40, give: { memberDays: 365, coins: 8000 }, tag: "best", name: { en: "1 Year", he: "שנה" } },
 
-  // coin packs
+  // coin packs (the bigger the pack, the more coins per shekel: 51 → 88)
+  { id: "coins-250", kind: "coins", price: 4.9, give: { coins: 250 }, name: { en: "Handful of Coins", he: "חופן מטבעות" } },
   { id: "coins-600", kind: "coins", price: 9.9, give: { coins: 600 }, name: { en: "Pocket of Coins", he: "כיס מטבעות" } },
   { id: "coins-1400", kind: "coins", price: 19.9, bonus: 200, give: { coins: 1400 }, tag: "popular", name: { en: "Bag of Coins", he: "שק מטבעות" } },
   { id: "coins-3200", kind: "coins", price: 39.9, bonus: 600, give: { coins: 3200 }, name: { en: "Chest of Coins", he: "תיבת מטבעות" } },
@@ -50,7 +53,8 @@ export const PRODUCT_BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
 // what members get (shown on the store page and in the game)
 export const MEMBER_PERKS = [
   { en: "Double daily gift", he: "מתנה יומית כפולה" },
-  { en: "Earn twice as many coins in mini-games every day", he: "פי שניים מטבעות ממיני־משחקים בכל יום" },
+  { en: "Twice as many coins from mini-games and jobs every day", he: "פי שניים מטבעות ממיני־משחקים ומעבודות בכל יום" },
+  { en: "Members-only outfits and vehicles", he: "בגדים וכלי רכב רק למנויים" },
   { en: "Welcome coins with every membership", he: "מטבעות מתנה עם כל מנוי" },
   { en: "A golden name everyone can see", he: "שם בצבע זהב שכולם רואים" },
 ];
