@@ -19,13 +19,26 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
 <link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/chrome.css">
 </head>
 <body>
-<header class="lg-top">
-  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
-  <a class="lg-back" href="/" data-en="← Back to Jumpi" data-he="חזרה לג'אמפי →">חזרה לג'אמפי →</a>
-  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" aria-pressed="false">English</button><button type="button" data-l="he" aria-pressed="true">עברית</button></div>
+<header class="hm-top" id="top">
+  <div class="hm-top-in">
+    <a class="hm-brand" href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="118" height="69"></a>
+    <span class="hm-age" tabindex="0" aria-describedby="ageTip"><b dir="ltr">6+</b><span class="hm-age-tip" id="ageTip" role="tooltip"><span data-l="en">Recommended for ages 6 and up</span><span data-l="he">המשחק מומלץ מגיל 6 ומעלה</span></span></span>
+    <nav class="hm-nav" id="nav" aria-label="Main">
+      <a href="/for-parents"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="7" r="3"/><circle cx="16.5" cy="8.5" r="2.5"/><path d="M2.5 19c0-3.3 2.5-6 5.5-6s5.5 2.7 5.5 6z"/><path d="M13 19c.3-2.6 1.6-4.5 3.5-4.5 2.2 0 4 2 4 4.5z"/></svg><span data-l="en">Parents</span><span data-l="he">הורים</span></a>
+      <a href="/help"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path class="cut" d="M9.3 9.4a2.8 2.8 0 1 1 3.9 2.6c-.8.4-1.2.9-1.2 1.8v.6"/><circle class="cut-dot" cx="12" cy="17.3" r="1.1"/></svg><span data-l="en">Help</span><span data-l="he">עזרה</span></a>
+      <a href="/contact"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path class="cut" d="M4 7.5l8 6 8-6"/></svg><span data-l="en">Contact</span><span data-l="he">צור קשר</span></a>
+      <a href="/team"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
+      <a class="hm-nav-play" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
+    </nav>
+    <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" data-set="en" aria-pressed="true">EN</button><button type="button" data-l="he" data-set="he" aria-pressed="false">עב</button></div>
+    <a class="hm-btn orange sm hm-top-play" href="/play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span data-l="en">Play</span><span data-l="he">לשחק</span></a>
+    <button class="hm-menu" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+  </div>
 </header>
+<script src="/site/chrome.js"></script>
 <section class="lg-hero">
   <h1 data-en="Accessibility Statement" data-he="הצהרת נגישות">הצהרת נגישות</h1>
   <p data-en="Last updated: October 10, 2026" data-he="עודכן לאחרונה: 10 באוקטובר 2026">עודכן לאחרונה: 10 באוקטובר 2026</p>
@@ -177,7 +190,52 @@
 
 </main>
 </div>
-<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms" data-en="Terms of Use" data-he="תנאי שימוש">תנאי שימוש</a> · <a href="/privacy" data-en="Privacy Policy" data-he="מדיניות פרטיות">מדיניות פרטיות</a> · <a href="/accessibility" data-en="Accessibility" data-he="נגישות">נגישות</a> · <a href="/contact" data-en="Contact" data-he="צור קשר">צור קשר</a></footer>
+<footer class="hm-foot">
+  <svg class="hm-foot-sand" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 C 160 20 320 110 520 64 C 720 18 900 96 1100 56 C 1260 24 1360 60 1440 44 V140 H0 Z"/></svg>
+  <div class="hm-foot-in">
+    <div class="hm-foot-brand">
+      <img src="/jumpi-logo.png" alt="Jumpi Games" width="150" height="88" loading="lazy">
+      <p data-l="en">A free 3D world for kids. Explore, play, raise pets and make friends, safely.</p>
+      <p data-l="he">עולם תלת־ממדי חינמי לילדים. לחקור, לשחק, לגדל חיות ולהכיר חברים, בבטחה.</p>
+      <a class="hm-btn orange" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
+    </div>
+    <nav class="hm-foot-col" aria-label="Play">
+      <h3><span data-l="en">Play</span><span data-l="he">משחק</span></h3>
+      <a href="/play"><span data-l="en">Play online</span><span data-l="he">לשחק אונליין</span></a>
+      <a class="hm-noapp" href="https://apps.microsoft.com/detail/9N4FZ4DJKMSD" target="_blank" rel="noopener">Microsoft Store</a>
+      <a class="hm-noapp" href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
+      <a href="/trailer"><span data-l="en">Watch the trailer</span><span data-l="he">הטריילר</span></a>
+      <a class="hm-noapp" href="/store"><span data-l="en">Jumpi Store</span><span data-l="he">החנות</span></a>
+    </nav>
+    <nav class="hm-foot-col" aria-label="Help">
+      <h3><span data-l="en">Help</span><span data-l="he">עזרה</span></h3>
+      <a href="/help"><span data-l="en">Help center</span><span data-l="he">מרכז העזרה</span></a>
+      <a href="/for-parents"><span data-l="en">For parents</span><span data-l="he">להורים</span></a>
+      <a href="/parents"><span data-l="en">Parental controls</span><span data-l="he">בקרת הורים</span></a>
+      <a href="/forgot-password"><span data-l="en">Forgot password</span><span data-l="he">שכחתי סיסמה</span></a>
+      <a href="/contact"><span data-l="en">Contact us</span><span data-l="he">צור קשר</span></a>
+    </nav>
+    <nav class="hm-foot-col" aria-label="Jumpi">
+      <h3>Jumpi</h3>
+      <a href="/team"><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
+      <a class="hm-noapp" href="https://discord.gg/dgwsBJgzZS" target="_blank" rel="noopener"><span data-l="en">Discord (13+)</span><span data-l="he">דיסקורד (13+)</span></a>
+      <a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a>
+      <a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a>
+      <a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a>
+      <a href="/delete-account"><span data-l="en">Delete an account</span><span data-l="he">מחיקת חשבון</span></a>
+    </nav>
+  </div>
+  <div class="hm-foot-safe">
+    <span><b data-l="en">Free to play</b><b data-l="he">חינם לשחק</b></span>
+    <span><b data-l="en">Friends-only messages</b><b data-l="he">הודעות רק לחברים</b></span>
+    <span><b data-l="en">A chat filter that protects</b><b data-l="he">מסנן צ'אט שמגן</b></span>
+    <span><b data-l="en">Free parental controls</b><b data-l="he">בקרת הורים בחינם</b></span>
+  </div>
+  <div class="hm-foot-end">
+    <p class="hm-foot-seo" lang="he" dir="rtl">ג'אמפי (Jumpi Games) הוא עולם וירטואלי בתלת־ממד לילדים: יוצרים דמות, מטיילים עם חברים בעיר ענקית, משחקים במיני-משחקים, עובדים בעבודות, מגדלים חיות מחמד ומעצבים בית. משחק אונליין חינמי בדפדפן, עם בקרת הורים.</p>
+    <p>© 2026 Jumpi Games™</p>
+  </div>
+</footer>
 <script src="/site/legal.js"></script>
 </body>
 </html>

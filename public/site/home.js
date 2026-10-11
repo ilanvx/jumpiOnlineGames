@@ -6,12 +6,6 @@ const lang = () => (document.documentElement.lang === "he" ? "he" : "en");
 const L = (en, he) => (lang() === "he" ? he : en);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
-/* ---------- the menu on phones ---------- */
-const nav = $("nav"), menuBtn = $("menuBtn");
-menuBtn.onclick = () => { const open = !nav.classList.contains("open"); nav.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", open); };
-nav.addEventListener("click", (e) => { if (e.target.closest("a")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); } });
-
-addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); menuBtn.focus(); } });
 
 /* ---------- the two friends play catch on the island ----------
    Where their hands and feet are in the picture comes from the 3D scene (studio "islandHero", __islandLayout). */

@@ -33,6 +33,7 @@
 <link rel="preload" href="/site/img/home/island-hero.jpg" as="image" media="(min-width: 900px)">
 <link rel="preload" href="/site/img/home/island-hero-1440.jpg" as="image" media="(max-width: 899px)">
 <link rel="stylesheet" href="/site/home.css">
+<link rel="stylesheet" href="/site/chrome.css">
 </head>
 <body class="hm">
 <!-- ============ top bar ============ -->
@@ -47,11 +48,12 @@
       <a href="/team"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.6l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
       <a class="hm-nav-play" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
     </nav>
-    <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">EN</button><button type="button" data-set="he" aria-pressed="false">עב</button></div>
+    <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" data-set="en" aria-pressed="true">EN</button><button type="button" data-l="he" data-set="he" aria-pressed="false">עב</button></div>
     <a class="hm-btn orange sm hm-top-play" href="/play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span data-l="en">Play</span><span data-l="he">לשחק</span></a>
     <button class="hm-menu" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
   </div>
 </header>
+<script src="/site/chrome.js"></script>
 
 <main>
 <!-- ============ the island ============ -->
@@ -194,10 +196,10 @@
     <nav class="hm-foot-col" aria-label="Play">
       <h3><span data-l="en">Play</span><span data-l="he">משחק</span></h3>
       <a href="/play"><span data-l="en">Play online</span><span data-l="he">לשחק אונליין</span></a>
-      <a href="https://apps.microsoft.com/detail/9N4FZ4DJKMSD" target="_blank" rel="noopener">Microsoft Store</a>
-      <a href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
+      <a class="hm-noapp" href="https://apps.microsoft.com/detail/9N4FZ4DJKMSD" target="_blank" rel="noopener">Microsoft Store</a>
+      <a class="hm-noapp" href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
       <a href="/trailer"><span data-l="en">Watch the trailer</span><span data-l="he">הטריילר</span></a>
-      <a href="/store"><span data-l="en">Jumpi Store</span><span data-l="he">החנות</span></a>
+      <a class="hm-noapp" href="/store"><span data-l="en">Jumpi Store</span><span data-l="he">החנות</span></a>
     </nav>
     <nav class="hm-foot-col" aria-label="Help">
       <h3><span data-l="en">Help</span><span data-l="he">עזרה</span></h3>
@@ -210,7 +212,7 @@
     <nav class="hm-foot-col" aria-label="Jumpi">
       <h3>Jumpi</h3>
       <a href="/team"><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
-      <a href="https://discord.gg/dgwsBJgzZS" target="_blank" rel="noopener"><span data-l="en">Discord (13+)</span><span data-l="he">דיסקורד (13+)</span></a>
+      <a class="hm-noapp" href="https://discord.gg/dgwsBJgzZS" target="_blank" rel="noopener"><span data-l="en">Discord (13+)</span><span data-l="he">דיסקורד (13+)</span></a>
       <a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a>
       <a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a>
       <a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a>

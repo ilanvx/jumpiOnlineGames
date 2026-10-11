@@ -1,0 +1,111 @@
+/* The top bar and the footer of every page on the website (the markup is the same on each page; chrome.js runs the phone menu).
+   Everything is scoped to .hm-top / .hm-foot so the pages' own styles don't change them. Two languages: <x data-l="en"> / <x data-l="he">,
+   shown by the html lang that each page's own language switch sets. */
+.hm-top,.hm-foot{--ink:#1d2b4f;--ink2:#4a5a80;--display:"Lilita One","Secular One","Arial Rounded MT Bold",system-ui,sans-serif;--body:"Fredoka","Rubik",system-ui,sans-serif;
+  font:400 1.05rem/1.6 var(--body);text-align:start}
+.hm-top *,.hm-foot *,.hm-top *::before,.hm-foot *::before{box-sizing:border-box}
+[lang="he"] .hm-top,[lang="he"] .hm-foot{font-family:"Rubik","Fredoka",system-ui,sans-serif}
+[lang="he"] .hm-top .hm-btn,[lang="he"] .hm-foot .hm-btn,[lang="he"] .hm-foot-col h3{font-family:"Secular One","Lilita One",system-ui,sans-serif;letter-spacing:0}
+html[lang="en"] .hm-top [data-l="he"],html[lang="he"] .hm-top [data-l="en"],html[lang="en"] .hm-foot [data-l="he"],html[lang="he"] .hm-foot [data-l="en"]{display:none!important}
+.hm-top .lang-sw button[data-l]{display:inline-block!important}
+.hm-top a,.hm-foot a{color:inherit}
+.hm-top img,.hm-foot img{max-width:100%}
+.hm-top :focus-visible,.hm-foot :focus-visible{outline:3px solid #ffb547;outline-offset:3px;border-radius:8px}
+
+/* buttons: chunky, a darker bottom edge, like the game */
+.hm-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;border:0;border-radius:16px;cursor:pointer;text-decoration:none;
+  font:400 1.18rem/1 var(--display);letter-spacing:.03em;color:#fff;transition:transform .12s,filter .15s;white-space:nowrap}
+.hm-btn:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.hm-btn:active{transform:translateY(2px)}
+.hm-btn svg{width:22px;height:22px}
+.hm-btn.orange{background:linear-gradient(180deg,#ffb04a,#ff8a1c 60%);box-shadow:0 5px 0 #c25e00;text-shadow:0 2px 0 #c25e00}
+.hm-btn.sm{min-height:42px;padding:0 18px;font-size:1.05rem;border-radius:14px}
+
+/* ---------- top bar: one solid blue, the logo with its age badge, the real pages, language and Play ---------- */
+.hm-top{position:sticky;top:0;z-index:30;background:#0d63c9;color:#fff;box-shadow:0 4px 0 #0a4c9c,0 10px 26px rgb(4 34 80 / .28)}
+.hm-top-in{max-width:1240px;margin:0 auto;height:74px;padding:0 18px;display:flex;align-items:center;gap:12px}
+/* the logo sits on a white tab that hangs below the bar */
+.hm-brand{align-self:flex-start;display:block;background:#fff;padding:9px 16px 10px;margin-top:6px;border-radius:18px 18px 22px 22px;
+  box-shadow:0 5px 0 #0a4c9c,0 12px 22px rgb(4 34 80 / .3);transition:transform .2s}
+.hm-brand:hover{transform:translateY(2px) rotate(-2deg)}
+.hm-brand img{display:block;width:108px;height:auto}
+/* 6+: a round yellow badge; hover or focus shows what it means */
+.hm-age{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ffd23a;color:#7a4a00;
+  box-shadow:0 3px 0 #c48a00,inset 0 -3px 0 rgb(0 0 0 / .08);font:400 1.15rem/1 var(--display);cursor:help;outline:none;transition:transform .15s}
+.hm-age:hover,.hm-age:focus-visible{transform:scale(1.08)}
+.hm-age:focus-visible{box-shadow:0 3px 0 #c48a00,0 0 0 3px #fff}
+.hm-age-tip{position:absolute;top:calc(100% + 12px);left:50%;transform:translate(-50%,-4px);white-space:nowrap;background:#fff;color:var(--ink);font:600 .92rem/1.2 var(--body);
+  padding:9px 14px;border-radius:12px;box-shadow:0 4px 0 #9fc4e6,0 10px 24px rgb(4 34 80 / .25);opacity:0;visibility:hidden;transition:opacity .15s,transform .15s,visibility .15s;pointer-events:none}
+.hm-age-tip::before{content:"";position:absolute;bottom:100%;left:50%;margin-left:-8px;border:8px solid transparent;border-bottom-color:#fff}
+.hm-age:hover .hm-age-tip,.hm-age:focus .hm-age-tip{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.hm-nav{display:flex;gap:4px;margin-inline-start:auto}
+.hm-nav a{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:14px;font-weight:600;text-decoration:none;color:#fff;font-size:1rem;transition:background .15s,color .15s}
+.hm-nav a svg{width:20px;height:20px;fill:#8fd0ff;flex:none;transition:fill .15s}
+.hm-nav a svg .cut{fill:none;stroke:#0d63c9;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hm-nav a svg .cut-dot{fill:#0d63c9}
+.hm-nav a:hover,.hm-nav a:focus-visible{background:#ffd23a;color:#3a2a00;outline:none}
+.hm-nav a:hover svg,.hm-nav a:focus-visible svg{fill:#3a2a00}
+.hm-nav a:hover svg .cut{stroke:#ffd23a}.hm-nav a:hover svg .cut-dot{fill:#ffd23a}
+.hm-nav-play{display:none!important}
+.hm-top .lang-sw{display:flex;gap:3px;padding:3px;border-radius:999px;background:#0a4c9c}
+.hm-top .lang-sw button{border:0;border-radius:999px;padding:6px 11px;background:none;font:600 .9rem var(--body);color:#cfe7ff;cursor:pointer}
+.hm-top .lang-sw button[aria-pressed="true"]{background:#fff;color:#0d63c9;box-shadow:0 3px 0 #06356e}
+.hm-top-play svg{width:18px;height:18px;fill:currentColor}
+.hm-menu{display:none;border:0;background:#0a4c9c;width:44px;height:44px;border-radius:14px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.hm-menu span{display:block;width:20px;height:3px;border-radius:3px;background:#fff;transition:transform .2s,opacity .2s}
+.hm-menu[aria-expanded="true"] span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+.hm-menu[aria-expanded="true"] span:nth-child(2){opacity:0}
+.hm-menu[aria-expanded="true"] span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+.hm-nav a[aria-current="page"]{background:#0a4c9c}
+/* a page's own button in the bar (parental controls: Log out) */
+.hm-out{flex:none;border:2px solid rgb(255 255 255 / .55);border-radius:999px;padding:7px 16px;background:none;color:#fff;font:600 .95rem var(--body);cursor:pointer;transition:background .15s}
+.hm-out:hover{background:rgb(255 255 255 / .16)}
+
+/* ---------- the sea floor ---------- */
+.hm-foot{position:relative;background:#e9c98e;color:#4a3410;padding:40px clamp(16px,4vw,40px) 26px;margin-top:-1px}
+.hm-foot-sand{position:absolute;left:0;right:0;top:-80px;width:100%;height:82px;fill:#e9c98e}
+.hm-foot::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 12% 30%,rgb(255 255 255 / .28) 0 3px,transparent 4px),radial-gradient(circle at 70% 60%,rgb(160 110 50 / .25) 0 3px,transparent 4px);background-size:60px 60px,90px 90px;opacity:.7;pointer-events:none}
+.hm-foot-in{position:relative;width:min(1200px,100%);margin:0 auto;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:28px}
+.hm-foot-brand img{width:150px;height:auto;display:block;margin-bottom:10px}
+.hm-foot-brand p{margin:0 0 16px;max-width:34ch;color:#6b4e1f;font-weight:500}
+.hm-foot-col{display:flex;flex-direction:column;gap:6px}
+.hm-foot-col h3{margin:0 0 6px;font:400 1.3rem var(--display);color:#8a4f12}
+.hm-foot-col a{text-decoration:none;font-weight:600;color:#4a3410;padding:2px 0;width:fit-content}
+.hm-foot-col a:hover{color:#c25e00;text-decoration:underline;text-underline-offset:4px}
+.hm-foot-safe{position:relative;width:min(1200px,100%);margin:30px auto 0;display:flex;flex-wrap:wrap;gap:10px}
+.hm-foot-safe span{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgb(255 255 255 / .55);font-size:.92rem}
+.hm-foot-safe span::before{content:"";width:18px;height:18px;border-radius:50%;background:#2fd36b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat}
+.hm-foot-end{position:relative;width:min(1200px,100%);margin:22px auto 0;padding-top:16px;border-top:2px dashed rgb(138 79 18 / .3);font-size:.9rem;color:#6b4e1f}
+.hm-foot-end p{margin:4px 0}
+.hm-foot-end a{font-weight:600}
+.hm-foot-seo{font-size:.82rem;opacity:.8}
+
+.hm-foot p{margin:0}.hm-foot-brand p{margin:0 0 16px}
+.hm-foot-end p{margin:4px 0}
+/* inside the Jumpi app: no Discord, no store, no download links (chrome.js marks the app) */
+.in-app .hm-noapp{display:none!important}
+
+@media (max-width:1080px){
+  .hm-foot-in{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){
+  .hm-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#0d63c9;padding:8px 14px 16px;box-shadow:0 14px 26px rgb(4 34 80 / .3);display:none;border-top:2px solid #0a4c9c}
+  .hm-nav.open{display:flex}
+  .hm-nav a{padding:13px 14px;font-size:1.1rem}
+  .hm-nav-play{display:flex!important;justify-content:center;margin-top:6px;background:linear-gradient(180deg,#ffb347,#ff8a1c 60%);box-shadow:0 5px 0 #c25a00;font:400 1.2rem var(--display)!important}
+  .hm-menu{display:flex}
+  .hm-top .lang-sw{margin-inline-start:auto}
+}
+@media (max-width:560px){
+  .hm-out{padding:6px 10px;font-size:.85rem}
+  .hm-top-in{height:62px;gap:8px;padding:0 10px}
+  .hm-brand{padding:7px 11px 8px;margin-top:5px}
+  .hm-brand img{width:78px}
+  .hm-age{width:36px;height:36px;font-size:1rem}
+  .hm-age-tip{left:-12px;right:auto;transform:translateY(-4px)}.hm-age:hover .hm-age-tip,.hm-age:focus .hm-age-tip{transform:none}
+  .hm-age-tip::before{left:22px;margin:0}
+  [dir="rtl"] .hm-age-tip{left:auto;right:-12px}[dir="rtl"] .hm-age-tip::before{left:auto;right:22px}
+  .hm-top-play{display:none}
+  .hm-foot-in{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.hm-btn,.hm-brand,.hm-age{transition:none}}
