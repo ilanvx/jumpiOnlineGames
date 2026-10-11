@@ -179,7 +179,9 @@ async function start() {
   const gulls = [[-30, 19, -60, .9], [-24, 21, -62, .7], [22, 23, -70, .8]].map(([x, y, z, s], i) => { const g = new THREE.Mesh(gullG, gullM); g.position.set(x, y, z); g.scale.setScalar(s); g.userData = { x, y, z, i }; scene.add(g); return g; });
 
   /* ---------- size, and drawing only while on screen ---------- */
-  const resize = () => { const r = stage.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, r.width > 1400 ? 1.5 : 1.75); renderer.setPixelRatio(dpr); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); };
+  const resize = () => { const r = stage.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, r.width > 1400 ? 1.5 : 1.75); renderer.setPixelRatio(dpr); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height;
+    // a narrow screen (a phone held upright): widen the view so the island and all four friends still fit side to side
+    cam.fov = Math.max(35, 2 * Math.atan(4.9 / 16.6 / cam.aspect) * 180 / Math.PI); cam.updateProjectionMatrix(); };
   resize(); new ResizeObserver(resize).observe(stage);
   let onScreen = true; new IntersectionObserver((es) => { onScreen = es.some((e) => e.isIntersecting); }).observe(stage);
 

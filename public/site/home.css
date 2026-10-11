@@ -178,6 +178,14 @@ a{color:inherit}
 .hm-dc-txt p{margin:0;color:#e4e6ff}
 .hm-btn.dc{background:#fff;color:#4b54d6;text-shadow:none;box-shadow:0 5px 0 #2f37a8}
 
+/* ---------- phones: the scene fills the banner and the 3D camera steps back so all four friends fit (home3d.js);
+   the picture's moving layers are made for the wide view, so here they rest; the side palms stay for wide screens ---------- */
+@media (max-width:700px){
+  .hm-stage{left:0;width:100%;height:100%;aspect-ratio:auto;transform:none}
+  .hm-stage>picture img{object-fit:cover;object-position:50% 50%}
+  .hm-sky,.hm-sea,.hm-ball,.hm-ball-shadow,.hm-light .rays,.hm-light .beams{display:none}
+  .hm-palms{display:none}
+}
 /* ---------- smaller screens ---------- */
 @media (max-width:1080px){
   .hm-cards{grid-template-columns:repeat(2,1fr)}
@@ -188,8 +196,7 @@ a{color:inherit}
   .hm-dc-card{grid-template-columns:1fr;text-align:center;justify-items:center}
 }
 @media (max-width:560px){
-  .hm-hero-pic{--hh:min(110vw,520px)}
-  .hm-stage{transform:translateX(-49%)}
+  .hm-hero-pic{--hh:min(122vw,560px)}
   .hm-cards{grid-template-columns:1fr}
   .hm-btn.xl{width:100%}
   .hm-store{flex:1 1 150px}
