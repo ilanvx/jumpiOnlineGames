@@ -13002,10 +13002,10 @@ function dayPalm(h,lean,yaw=0){const g=new THREE.Group();
   const cocoM=new THREE.MeshStandardMaterial({color:"#6b4424",roughness:.6});
   for(let k=0;k<4;k++){const c=new THREE.Mesh(new THREE.SphereGeometry(.17,14,10),cocoM);c.position.set(top.x+Math.cos(k*1.6)*.2,top.y-.18,Math.sin(k*1.6)*.2);c.castShadow=true;g.add(c);}
   return g;}
-return {name:"Island explorers (home page)",about:"The banner of the home page: four Jumpis exploring a little desert island in the middle of the sea, palms, a treasure chest and a rowboat, the sun shining on them.",round:false,aspect:2.4,
+return {name:"Island explorers (home page)",about:"The banner of the home page: four Jumpis exploring a little desert island in the middle of the sea, palms, a treasure chest and a rowboat, the sun shining on them.",round:false,aspect:2,
 build(){
-  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(27,2.4,.1,900);
-  cam.position.set(0,3.0,16.6);cam.lookAt(0,1.7,0);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(35,2,.1,900);
+  cam.position.set(0,3.0,16.6);cam.lookAt(0,2.55,0);
   // sky: bright day, sun high on the right, fluffy clouds, gulls
   const SKY_W=900,SKY_H=330,SKY_Z=-420,HY=0;   // the sky plane stands behind the horizon
   const sky=stCanvasTex(4096,1500,(c,w,h)=>{const hy=h*(1-(0-(-40))/SKY_H);
@@ -13016,7 +13016,6 @@ build(){
     const cloud=(x,y,s)=>{for(let k=0;k<26;k++){const a=Math.random()*Math.PI,r=s*(.3+Math.random()*.55),px=x+Math.cos(a)*s*1.6*Math.random()*(Math.random()<.5?-1:1),py=y-Math.sin(a)*s*.45*Math.random();
         const cg=c.createRadialGradient(px,py-r*.3,r*.1,px,py,r);cg.addColorStop(0,"rgba(255,255,255,.98)");cg.addColorStop(.7,"rgba(245,250,255,.9)");cg.addColorStop(1,"rgba(200,225,250,0)");c.fillStyle=cg;c.beginPath();c.arc(px,py,r,0,7);c.fill();}
       const base=c.createLinearGradient(0,y-s*.1,0,y+s*.35);base.addColorStop(0,"rgba(190,215,245,0)");base.addColorStop(1,"rgba(190,215,245,.0)");};
-    [[.12,.5,150],[.3,.36,110],[.52,.62,90],[.9,.46,140],[.04,.78,120],[.63,.82,100],[.42,.2,70]].forEach(([x,y,s])=>cloud(x*w,y*hy,s));
     c.strokeStyle="rgba(40,60,100,.75)";c.lineCap="round";[[.38,.42,1.2],[.41,.39,.9],[.35,.38,.8],[.58,.3,1],[.61,.33,.8]].forEach(([x,y,s])=>{c.lineWidth=5*s;c.beginPath();c.moveTo(x*w-22*s,y*hy-8*s);c.quadraticCurveTo(x*w-9*s,y*hy-18*s,x*w,y*hy);c.quadraticCurveTo(x*w+9*s,y*hy-18*s,x*w+22*s,y*hy-8*s);c.stroke();});
     // far islands on the horizon
     const far=(x,wd,ht,col)=>{c.fillStyle=col;c.beginPath();c.moveTo(x-wd,hy);c.bezierCurveTo(x-wd*.6,hy-ht,x+wd*.4,hy-ht*1.1,x+wd,hy);c.fill();};
@@ -13035,6 +13034,7 @@ build(){
   const sandT=stCanvasTex(2048,2048,(c,w,h)=>{c.fillStyle="#f6cf8a";c.fillRect(0,0,w,h);for(let k=0;k<60000;k++){c.fillStyle=Math.random()<.5?"rgba(255,244,210,.35)":"rgba(190,140,80,.16)";c.fillRect(Math.random()*w,Math.random()*h,3,3);}
     for(let k=0;k<40;k++){c.strokeStyle="rgba(200,150,90,.18)";c.lineWidth=4;c.beginPath();const y=Math.random()*h;c.moveTo(0,y);for(let x=0;x<w;x+=40)c.lineTo(x,y+Math.sin(x*.01+k)*10);c.stroke();}});
   sandT.wrapS=sandT.wrapT=THREE.RepeatWrapping;sandT.repeat.set(3,3);
+  const islY=(x,z)=>{const r=Math.hypot(x/1.25,z/.78);if(r<R0)return .42-.06*(r/R0)**2;const t=Math.min(1,(r-R0)/(R1-R0));return .36*(1-t)**1.6-.25*t;};
   const isl=new THREE.Mesh(new THREE.LatheGeometry(prof,96),new THREE.MeshStandardMaterial({map:sandT,roughness:.95,color:"#ffffff",side:THREE.DoubleSide}));isl.receiveShadow=true;isl.scale.set(1.25,1,.78);sc.add(isl);
   // turquoise shallows + foam round the island
   const halo=stCanvasTex(2048,2048,(c,w,h)=>{const cx=w/2,cy=h/2,u=w/2/16;   // 16 units from the middle to the edge
@@ -13043,9 +13043,10 @@ build(){
     ring(7.55,u*.28,.95);ring(7.95,u*.12,.6);ring(8.6,u*.08,.35);ring(9.4,u*.05,.2);});
   const haloM=new THREE.Mesh(new THREE.PlaneGeometry(32,32),new THREE.MeshBasicMaterial({map:halo,transparent:true,depthWrite:false,toneMapped:false}));haloM.rotation.x=-Math.PI/2;haloM.scale.set(1.25,1,1);haloM.position.y=.02;haloM.scale.y=.78;sc.add(haloM);
   // palms
-  const p1=dayPalm(5.3,-.55,.3);p1.position.set(-5.6,.3,-2.4);sc.add(p1);
-  const p2=dayPalm(4.7,.5,1);p2.position.set(5.9,.3,-1.8);sc.add(p2);
-  const p3=dayPalm(3.4,-.35,2);p3.position.set(-7.6,.1,.4);sc.add(p3);
+  const plant=(p,x,z)=>{p.position.set(x,islY(x,z)-.12,z);sc.add(p);const m=new THREE.Mesh(new THREE.CircleGeometry(.55,24),new THREE.MeshStandardMaterial({color:"#d9b06a",roughness:1}));m.rotation.x=-Math.PI/2;m.position.set(x,islY(x,z)+.01,z);sc.add(m);};
+  const p1=dayPalm(5.3,-.55,.3);plant(p1,-5.2,-2.0);
+  const p2=dayPalm(4.7,.5,1);plant(p2,5.5,-1.6);
+  const p3=dayPalm(3.4,-.35,2);plant(p3,-6.6,.2);
   // rocks and shells
   const rockM=new THREE.MeshStandardMaterial({color:"#9a9184",roughness:.85,flatShading:true});
   [[-8.6,1.6,.7],[-9.4,1.2,.45],[8.9,2.2,.55],[9.6,1.6,.35],[-3,-.3,.0]].forEach(([x,z,s])=>{if(!s)return;const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),rockM);r.position.set(x,s*.25,z);r.rotation.set(x,z,1);r.castShadow=true;sc.add(r);});
@@ -13058,11 +13059,15 @@ build(){
   const chest=new THREE.Group(),wood=new THREE.MeshStandardMaterial({color:"#8a4f22",roughness:.7}),gold=new THREE.MeshStandardMaterial({color:"#ffcc33",metalness:.7,roughness:.3});
   const box=new THREE.Mesh(new THREE.BoxGeometry(1.1,.6,.7),wood);box.position.y=.3;chest.add(box);
   [-.38,.38].forEach(x=>{const b=new THREE.Mesh(new THREE.BoxGeometry(.1,.62,.72),gold);b.position.set(x,.3,0);chest.add(b);});
-  const lid=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,1.1,20,1,false,0,Math.PI),wood);lid.rotation.z=Math.PI/2;const lidP=new THREE.Group();lidP.position.set(0,.6,-.35);lid.position.set(0,0,.35);lidP.add(lid);lidP.rotation.x=-1.15;chest.add(lidP);
+  const lidG=new THREE.CylinderGeometry(.35,.35,1.1,24,1,false,-Math.PI/2,Math.PI);lidG.rotateZ(Math.PI/2);   // a half drum lying along x, round side up
+  const lid=new THREE.Mesh(lidG,new THREE.MeshStandardMaterial({color:"#8a4f22",roughness:.7,side:THREE.DoubleSide}));
+  const lidP=new THREE.Group();lidP.position.set(0,.6,-.35);lid.position.set(0,0,.35);lidP.add(lid);
+  [-.38,.38].forEach(x=>{const b=new THREE.Mesh(new THREE.TorusGeometry(.355,.035,8,24,Math.PI),gold);b.rotation.y=Math.PI/2;b.position.set(x,0,.35);lidP.add(b);});
+  lidP.rotation.x=-1.9;chest.add(lidP);
   for(let k=0;k<14;k++){const cn=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.03,14),gold);cn.position.set((Math.random()-.5)*.85,.62+Math.random()*.08,(Math.random()-.5)*.45);cn.rotation.set(Math.random(),0,Math.random());chest.add(cn);}
-  chest.traverse(o=>{if(o.isMesh)o.castShadow=true;});chest.position.set(-3.4,.36,2.6);chest.rotation.y=.5;sc.add(chest);
+  chest.traverse(o=>{if(o.isMesh)o.castShadow=true;});chest.position.set(-5.0,.36,2.3);chest.rotation.y=.62;sc.add(chest);
   const shine=stCanvasTex(256,256,(c,w,h)=>{const g=c.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,"rgba(255,240,150,.9)");g.addColorStop(1,"rgba(255,220,80,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
-  const sh=new THREE.Sprite(new THREE.SpriteMaterial({map:shine,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));sh.position.set(-3.4,1.15,2.6);sh.scale.setScalar(1.8);sc.add(sh);
+  const sh=new THREE.Sprite(new THREE.SpriteMaterial({map:shine,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));sh.position.set(-5.0,1.15,2.3);sh.scale.setScalar(1.8);sc.add(sh);
   // a little rowboat at the water's edge
   const boat=new THREE.Group();
   const hullG=new THREE.SphereGeometry(1,40,16,0,Math.PI*2,Math.PI/2,Math.PI/2);hullG.scale(1.7,.55,.62);
@@ -13087,39 +13092,48 @@ build(){
   const sunT=stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,"rgba(255,255,245,1)");g.addColorStop(.09,"rgba(255,252,225,1)");g.addColorStop(.13,"rgba(255,240,180,.75)");g.addColorStop(.35,"rgba(255,235,170,.25)");g.addColorStop(1,"rgba(255,230,160,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
   const sunS=new THREE.Sprite(new THREE.SpriteMaterial({map:sunT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false}));sunS.position.set(27,13.5,-70);sunS.scale.setScalar(15);sc.add(sunS);
   const rayT=stCanvasTex(1024,1024,(c,w,h)=>{c.translate(w/2,h/2);for(let k=0;k<18;k++){c.rotate(Math.PI*2/18);const g=c.createLinearGradient(0,0,w*.5,0);g.addColorStop(0,"rgba(255,250,215,.55)");g.addColorStop(1,"rgba(255,250,215,0)");c.fillStyle=g;c.beginPath();c.moveTo(0,0);c.lineTo(w*.5,-w*(k%2?.03:.055));c.lineTo(w*.5,w*(k%2?.03:.055));c.closePath();c.fill();}});
-  const rays=new THREE.Sprite(new THREE.SpriteMaterial({map:rayT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,opacity:.32}));rays.position.set(27,13.5,-71);rays.scale.setScalar(64);sc.add(rays);
+  const rays=null&&new THREE.Sprite(new THREE.SpriteMaterial({map:rayT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,opacity:.32}));
   // the four explorers
   const add=(look,x,z,ry)=>{const J=stJumpi(look);if(J.eyeL)J.eyeL.scale.y=1;if(J.eyeR)J.eyeR.scale.y=1;J.root.position.set(x,.42,z);J.root.rotation.y=ry;sc.add(J.root);stShadow(sc,x,z,1.5);return J;};
-  const A=add({color:0,eyes:1,hair:9,shirt:39,pants:2,hat:23,neck:37},-3.1,.6,.55);
-  const B=add({color:3,eyes:5,hair:25,shirt:1,pants:17,neck:20},-1.05,1.2,.15);
-  const C=add({color:2,eyes:5,hair:-1,shirt:41,pants:41,hat:49},1.05,1.2,-.15);
-  const D=add({color:1,eyes:1,hair:45,shirt:82,pants:46,glasses:0,hat:14},3.1,.6,-.55);
+  const A=add({color:0,eyes:1,hair:9,shirt:39,pants:2,hat:23,neck:37},-3.2,.6,-.62);
+  const B=add({color:3,eyes:5,hair:25,shirt:1,pants:17,neck:20},-1.2,1.25,.3);
+  const C=add({color:2,eyes:5,hair:-1,shirt:41,pants:41,hat:49},1.0,1.15,.95);
+  const D=add({color:1,eyes:1,hair:45,shirt:82,pants:46,glasses:0,hat:14},3.7,.75,-.95);
+  window.__J={A,B,C,D};
   // poses
   // A looks out to sea with binoculars
   A.armL.rotation.set(-2.35,0,.75);A.armR.rotation.set(-2.35,0,-.75);
   const bino=new THREE.Group(),bM=new THREE.MeshStandardMaterial({color:"#2b2f3a",roughness:.4,metalness:.3}),lens=new THREE.MeshStandardMaterial({color:"#7fd6ff",roughness:.1,metalness:.6,emissive:"#1a6fa8",emissiveIntensity:.4});
   [-.16,.16].forEach(x=>{const t=new THREE.Mesh(new THREE.CylinderGeometry(.12,.135,.34,20),bM);t.rotation.x=Math.PI/2;t.position.set(x,0,0);bino.add(t);
     const l=new THREE.Mesh(new THREE.CircleGeometry(.105,20),lens);l.position.set(x,0,.171);bino.add(l);});
-  const brg=new THREE.Mesh(new THREE.BoxGeometry(.18,.08,.12),bM);bino.add(brg);bino.position.set(0,.3,.68);A.head.add(bino);A.head.rotation.x=-.12;
+  const brg=new THREE.Mesh(new THREE.BoxGeometry(.18,.08,.12),bM);bino.add(brg);bino.position.set(0,.3,.68);A.head.add(bino);A.head.rotation.set(-.06,-.5,0);
   // B holds up the treasure map for us to see
-  B.armL.rotation.set(-1.35,0,-.3);B.armR.rotation.set(-1.35,0,.3);
+  B.armL.rotation.set(-1.25,0,-.25);B.armR.rotation.set(-1.25,0,.25);B.head.rotation.set(.32,0,.06);
   const mapT=stCanvasTex(768,560,(c,w,h)=>{c.fillStyle="#f3dfae";c.fillRect(0,0,w,h);const e=c.createRadialGradient(w/2,h/2,h*.3,w/2,h/2,w*.62);e.addColorStop(0,"rgba(150,100,40,0)");e.addColorStop(1,"rgba(150,100,40,.55)");c.fillStyle=e;c.fillRect(0,0,w,h);
     c.fillStyle="#9fd3a3";c.beginPath();c.moveTo(w*.18,h*.62);c.bezierCurveTo(w*.12,h*.25,w*.48,h*.12,w*.62,h*.3);c.bezierCurveTo(w*.86,h*.32,w*.9,h*.7,w*.6,h*.8);c.bezierCurveTo(w*.4,h*.9,w*.22,h*.85,w*.18,h*.62);c.fill();
     c.strokeStyle="#7a4f2a";c.lineWidth=7;c.setLineDash([16,14]);c.beginPath();c.moveTo(w*.26,h*.7);c.bezierCurveTo(w*.38,h*.4,w*.52,h*.75,w*.68,h*.45);c.stroke();c.setLineDash([]);
     c.strokeStyle="#e8423b";c.lineWidth=14;c.lineCap="round";c.beginPath();c.moveTo(w*.66,h*.37);c.lineTo(w*.74,h*.51);c.moveTo(w*.74,h*.37);c.lineTo(w*.66,h*.51);c.stroke();
     c.fillStyle="#7a4f2a";c.font="bold 60px Georgia, serif";c.fillText("N",w*.08,h*.2);});
   const mg=new THREE.PlaneGeometry(1.15,.84,8,1),mp=mg.attributes.position;for(let i=0;i<mp.count;i++){const x=mp.getX(i);mp.setZ(i,-Math.abs(x)*.12);}
-  const mapM=new THREE.Mesh(mg,new THREE.MeshStandardMaterial({map:mapT,side:THREE.DoubleSide,roughness:.9}));mapM.position.set(0,.66,.8);mapM.rotation.x=-.32;mapM.scale.setScalar(.92);B.root.add(mapM);
+  const mapM=new THREE.Mesh(mg,new THREE.MeshStandardMaterial({map:mapT,side:THREE.DoubleSide,roughness:.9}));mapM.position.set(0,.74,.78);mapM.rotation.x=-1.0;mapM.scale.setScalar(.92);B.root.add(mapM);
   // C points up at the sun, D waves hello
-  C.armR.rotation.set(-1.9,0,1.05);C.armL.rotation.set(.2,0,-.35);C.head.rotation.set(0,0,-.08);
-  D.armR.rotation.set(.3,0,2.55);D.armL.rotation.set(.1,0,-.3);D.head.rotation.z=-.06;
+  C.armR.rotation.set(-2.3,0,.35);C.armL.rotation.set(-2.3,0,-.35);C.head.rotation.set(-.22,0,0);
+  D.armR.rotation.set(-2.1,0,.45);D.armL.rotation.set(-2.1,0,-.45);D.head.rotation.set(-.18,0,0);
   // lights: the sun from the front right, sky light, a soft rim from behind
   sc.add(new THREE.HemisphereLight(0xdff2ff,0xe8c890,1.2));
   const sun=new THREE.DirectionalLight(0xfff1d6,3.4);sun.position.set(6,10,9);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);
   Object.assign(sun.shadow.camera,{left:-12,right:12,top:10,bottom:-10,near:1,far:40});sun.shadow.bias=-.0004;sun.shadow.radius=4;sc.add(sun);
   const rim2=new THREE.DirectionalLight(0xbfe8ff,1.4);rim2.position.set(-5,4,-8);sc.add(rim2);
   sc.traverse(o=>{if(o.isMesh&&o!==seaM&&o!==skyM&&o!==haloM&&o!==glM&&!o.isSprite){o.castShadow=true;o.receiveShadow=true;}});
+  skyM.userData.sky=true;seaM.userData.sea=true;haloM.userData.sea=true;glM.userData.sea=true;   // (for the sea mask of the home page)
   sc.fog=new THREE.Fog(0xcdeeff,140,420);
+  cam.aspect=2;cam.updateProjectionMatrix();cam.updateMatrixWorld();sc.updateMatrixWorld(true);
+  const P=(v)=>{const p=v.clone().project(cam);return [+((p.x+1)/2).toFixed(4),+((1-p.y)/2).toFixed(4)];};
+  const hand=(J)=>{const a=new THREE.Vector3(),b=new THREE.Vector3();J.armL.getWorldPosition(a);J.armR.getWorldPosition(b);return a.add(b).multiplyScalar(.5).add(new THREE.Vector3(0,.75,0));};
+  const ground=(J)=>{const v=new THREE.Vector3();J.root.getWorldPosition(v);return v;};
+  window.__islandLayout={sun:P(sunS.position),horizon:P(new THREE.Vector3(0,0,-400))[1],
+    island:{c:P(new THREE.Vector3(0,.3,0)),l:P(new THREE.Vector3(-10.6,0,0)),r:P(new THREE.Vector3(10.6,0,0)),f:P(new THREE.Vector3(0,0,6.7)),b:P(new THREE.Vector3(0,0,-6.7))},
+    ball:{from:P(hand(C)),to:P(hand(D)),g1:P(ground(C)),g2:P(ground(D))}};
   return {scene:sc,camera:cam,glow:.12,vignette:0};}};})(L);})(),
   welcomeCard:{name:"Welcome card (Discord, background)",about:"The background of the picture Pip posts in #welcome for every new member: the server writes their avatar into the ring and their name on the plate (discord/card.js).",round:false,aspect:2.4,
     build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(25,2.4,.1,200);

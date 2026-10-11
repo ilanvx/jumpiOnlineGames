@@ -53,15 +53,24 @@
 <main>
 <!-- ============ the island ============ -->
 <section class="hm-hero" aria-labelledby="heroTitle">
+  <h1 class="sr" id="heroTitle"><span data-l="en">Jumpi Games: a free 3D world for kids</span><span data-l="he">ג'אמפי גיימס: עולם תלת־ממדי חינמי לילדים</span></h1>
   <div class="hm-hero-pic">
-    <picture>
-      <source media="(max-width: 899px)" srcset="/site/img/home/island-hero-1440.jpg">
-      <img src="/site/img/home/island-hero.jpg" width="2880" height="1440" alt="Four Jumpi friends exploring a little island in the middle of the sea: one with binoculars, one with a treasure map, a pirate and a cowboy, with palm trees, a treasure chest and a red rowboat in the sun." fetchpriority="high">
-    </picture>
-    <div class="hm-hero-copy">
-      <h1 id="heroTitle"><span data-l="en">Jump into a world of friends!</span><span data-l="he">קפצו לעולם מלא חברים!</span></h1>
-      <p data-l="en">A free 3D world for kids: explore, raise pets, work fun jobs and make new friends.</p>
-      <p data-l="he">עולם תלת־ממדי חינמי לילדים: לחקור, לגדל חיות, לעבוד בעבודות כיפיות ולהכיר חברים חדשים.</p>
+    <!-- the picture and its living layers share one 2:1 stage, so they stay lined up at every screen size -->
+    <div class="hm-stage" id="stage">
+      <picture>
+        <source media="(max-width: 899px)" srcset="/site/img/home/island-hero-1440.jpg">
+        <img src="/site/img/home/island-hero.jpg" width="2880" height="1440" alt="Four Jumpi friends on a little island in the middle of the sea: one looks out to sea with binoculars, one reads a treasure map, and two play catch, with palm trees, an open treasure chest and a red rowboat in the sun." fetchpriority="high">
+      </picture>
+      <div class="hm-sky" aria-hidden="true">
+        <img class="hm-cloud c1" src="/site/img/home/cloud-1.webp" alt="" width="900" height="360">
+        <img class="hm-cloud c2" src="/site/img/home/cloud-2.webp" alt="" width="700" height="300">
+        <img class="hm-cloud c3" src="/site/img/home/cloud-3.webp" alt="" width="1100" height="380">
+        <img class="hm-cloud c4" src="/site/img/home/cloud-2.webp" alt="" width="700" height="300">
+      </div>
+      <div class="hm-sea" aria-hidden="true"><i class="far"></i><i class="near"></i><i class="glint"></i></div>
+      <div class="hm-light" aria-hidden="true"><i class="wash"></i><i class="rays"></i><i class="beams"></i></div>
+      <div class="hm-ball-shadow" id="ballShadow" aria-hidden="true"></div>
+      <div class="hm-ball" id="ball" aria-hidden="true"></div>
     </div>
   </div>
   <div class="hm-get">
@@ -212,7 +221,7 @@
   </div>
   <div class="hm-foot-end">
     <p class="hm-foot-seo" lang="he" dir="rtl">ג'אמפי (Jumpi Games) הוא עולם וירטואלי בתלת־ממד לילדים: יוצרים דמות, מטיילים עם חברים בעיר ענקית, משחקים במיני-משחקים, עובדים בעבודות, מגדלים חיות מחמד ומעצבים בית. משחק אונליין חינמי בדפדפן, עם בקרת הורים.</p>
-    <p>© 2026 Jumpi Games™ · <span data-l="en">Made with lots of jumps by</span><span data-l="he">נבנה באהבה ובהרבה קפיצות על ידי</span> <a href="https://ilanvx.com" target="_blank" rel="noopener">Ilan Vexlender</a></p>
+    <p>© 2026 Jumpi Games™</p>
   </div>
 </footer>
 

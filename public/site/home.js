@@ -11,6 +11,43 @@ const nav = $("nav"), menuBtn = $("menuBtn");
 menuBtn.onclick = () => { const open = !nav.classList.contains("open"); nav.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", open); };
 nav.addEventListener("click", (e) => { if (e.target.closest("a")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); } });
 
+/* ---------- the top bar lets the sky through at the top of the page ---------- */
+const top = $("top");
+const paintTop = () => top.classList.toggle("atop", scrollY < 40 && !nav.classList.contains("open"));
+addEventListener("scroll", paintTop, { passive: true }); paintTop();
+menuBtn.addEventListener("click", paintTop);
+
+/* ---------- the two friends play catch on the island ----------
+   Where their hands and feet are in the picture comes from the 3D scene (studio "islandHero", __islandLayout). */
+const BALL = { from: [55.4, 51.6], to: [68.3, 51.2], g1: [55.11, 72.08], g2: [68.43, 71.42], arc: 11, secs: 1.45, rest: .4 };
+const ball = $("ball"), shadow = $("ballShadow");
+const still = () => !!window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches;
+function ballAt(k, dir) {   // k 0..1 along the throw, dir 1 = to the right
+  const a = dir > 0 ? BALL.from : BALL.to, b = dir > 0 ? BALL.to : BALL.from, ga = dir > 0 ? BALL.g1 : BALL.g2, gb = dir > 0 ? BALL.g2 : BALL.g1;
+  const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;   // a little slower at the hands
+  const up = 4 * e * (1 - e) * BALL.arc;
+  ball.style.left = a[0] + (b[0] - a[0]) * e + "%";
+  ball.style.top = a[1] + (b[1] - a[1]) * e - up + "%";
+  ball.style.transform = `rotate(${(dir > 0 ? 1 : -1) * e * 540}deg)`;
+  shadow.style.left = ga[0] + (gb[0] - ga[0]) * e + "%";
+  shadow.style.top = ga[1] + (gb[1] - ga[1]) * e + "%";
+  const s = 1 - up / BALL.arc * .45; shadow.style.transform = `scale(${s})`; shadow.style.opacity = .35 + .65 * s;
+}
+let t0 = performance.now(), seen = true;
+new IntersectionObserver((es) => { seen = es.some((x) => x.isIntersecting); }).observe($("stage"));
+function ballLoop(now) {
+  if (seen) {
+    if (still()) ballAt(.5, 1);
+    else {
+      const cycle = (BALL.secs + BALL.rest) * 2, t = ((now - t0) / 1000) % cycle, half = BALL.secs + BALL.rest;
+      const dir = t < half ? 1 : -1, tt = t < half ? t : t - half;
+      ballAt(Math.min(1, tt / BALL.secs), dir);
+    }
+  }
+  requestAnimationFrame(ballLoop);
+}
+requestAnimationFrame(ballLoop);
+
 // "stop animations" in the accessibility menu (public/shared/a11y.js)
 const motion = () => document.body.classList.toggle("no-motion", !!window.JUMPI_REDUCE_MOTION);
 motion(); addEventListener("a11y:change", motion); setInterval(motion, 2000);
