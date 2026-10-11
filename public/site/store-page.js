@@ -149,7 +149,7 @@ function paintCart(focus) {
     if (!CART.length) body.innerHTML = `<div class="st-empty"><img src="/site/img/store/coins-800.webp" alt=""><p>${T("Your cart is empty. Pick some coins, a membership or a bundle!", "הסל ריק. בחרו מטבעות, מנוי או חבילה!")}</p><button class="st-buy big" type="button" data-cclose>${T("Back to the store", "חזרה לחנות")}</button></div>`;
     else body.innerHTML = `${msg}<ul class="st-lines">${CART.map((l) => line(l)).join("")}</ul>
       <div class="st-cfoot">${total(T("Total", "סה״כ"))}
-        <p class="st-cnote">${T("One payment, nothing renews by itself. Memberships add up.", "תשלום אחד, שום דבר לא מתחדש לבד. מנויים מצטברים.")}</p>
+        <p class="st-cnote">${T("One payment, nothing renews by itself. Memberships add up. All purchases are final.", "תשלום אחד, שום דבר לא מתחדש לבד. מנויים מצטברים. כל הרכישות סופיות.")}</p>
         <button class="st-buy big" type="button" id="stGo">${T("Continue to checkout", "המשך לרכישה")}</button>
         <button class="st-link" type="button" data-cclose>${T("Keep shopping", "להמשיך לקנות")}</button></div>`;
   } else if (S.step === "login") {
@@ -168,7 +168,7 @@ function paintCart(focus) {
       ${me.open === false && me.admin ? `<p class="st-note sm">${T("The store is closed to players. You can buy because you're an admin, and payments here are real (or pretend, in test mode).", "החנות סגורה לשחקנים. אפשר לקנות כי אתם מנהלים, והתשלומים כאן אמיתיים (או מדומים, במצב בדיקה).")}</p>` : ""}
       <ul class="st-lines small">${CART.map((l) => line(l, true)).join("")}</ul>
       <form id="stPay" class="st-cfoot" novalidate>${total(T("To pay", "לתשלום"))}
-        <label class="st-agree"><input type="checkbox" id="stOk"> <span>${T("I'm the parent or guardian of this player, or over 18, and I agree to the", "אני ההורה או האפוטרופוס של השחקן, או מעל גיל 18, ואני מסכים/ה ל")} <a href="/terms#t-purchases" target="_blank">${T("purchase terms and refund rules", "תנאי הרכישה וכללי ההחזרים")}</a>.</span></label>
+        <label class="st-agree"><input type="checkbox" id="stOk"> <span>${T("I'm the parent or guardian of this player, or over 18, and I agree to the", "אני ההורה או האפוטרופוס של השחקן, או מעל גיל 18, ואני מסכים/ה ל")} <a href="/terms#t-purchases" target="_blank">${T("purchase terms", "תנאי הרכישה")}</a>. ${T("I understand that the purchase is added to the account right away and is <b>final, with no refund</b>.", "ידוע לי שהרכישה מתווספת לחשבון מיד והיא <b>סופית, ללא החזר כספי</b>.")}</span></label>
         ${msg}
         <button class="st-buy big" type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? T("One moment…", "רגע…") : T(`Pay ${ils(cartTotal())}`, `לתשלום ${ils(cartTotal())}`)}</button>
         <p class="st-secure">${ICON.lock}${T("Secure payment by HYP. The card is typed only on HYP's page.", "תשלום מאובטח של HYP. את הכרטיס מקלידים רק בעמוד של HYP.")}</p>
