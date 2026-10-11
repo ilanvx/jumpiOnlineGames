@@ -38,7 +38,7 @@ function tick() {
   const left = Math.max(0, LAUNCH_AT - (Date.now() + off)), s = Math.floor(left / 1000);
   const v = { d: Math.floor(s / 86400), h: Math.floor(s / 3600) % 24, m: Math.floor(s / 60) % 60, s: s % 60 };
   for (const k in v) { const t = pad(v[k]); if (el[k].textContent !== t) { el[k].textContent = t; el[k].classList.remove("tick"); void el[k].offsetWidth; el[k].classList.add("tick"); } }
-  if (left <= 0 && !opened) { opened = true; document.getElementById("gsOpen").hidden = false; setTimeout(() => location.reload(), 2500); }
+  if (left <= 0 && !opened && !new URLSearchParams(location.search).has("soon")) { opened = true; document.getElementById("gsOpen").hidden = false; setTimeout(() => location.reload(), 2500); }
 }
 tick(); setInterval(tick, 250);
 

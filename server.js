@@ -135,13 +135,14 @@ app.get("/", page("site/index.html"));
 // localhost / other hosts always get the game, and admins who are already logged in can play
 const gameGate = async (req, res, next) => {
   const inApp = /JumpiApp\//.test(String(req.headers["user-agent"] || ""));   // the Android app always gets the game itself
+  // "/play?soon" always shows the "coming soon" page, on any server and also after the opening (a preview for the team)
+  if ("soon" in req.query) { res.set("Cache-Control", "no-store"); return sendPage(req, res, "site/game-soon.html"); }
   if (isPublic(req) && Date.now() < LAUNCH_AT && !inApp) {
     let admin = false;
     try { admin = (await currentUser(req))?.role === "admin"; } catch {}
     res.set("Cache-Control", "no-store");
     // "?staff" opens the game anyway so an admin can log in (players who log in there are refused by the socket)
-    // "?soon" shows the countdown page to anyone (so an admin can see it too)
-    if ((!admin && !("staff" in req.query)) || "soon" in req.query) return sendPage(req, res, "site/game-soon.html");
+    if (!admin && !("staff" in req.query)) return sendPage(req, res, "site/game-soon.html");
   }
   res.set("Cache-Control", "no-cache");   // the Android app opens this page: always check for the newest version
   sendGame(res, next);
@@ -199,7 +200,7 @@ app.get("/download/android", (req, res, next) => {
 });
 app.get(["/forgot-password", "/reset-password"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/reset.html")(req, res, next); });   // forgot password (routes/auth.js /forgot, /reset)   // the trailer video (public/site/trailer/)
 // while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
-app.get("/store", (req, res, next) => page(STORE_OPEN ? "site/store.html" : "site/store-soon.html")(req, res, next));
+app.get("/store", (req, res, next) => page(STORE_OPEN && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));   // "/store?soon": a preview of the closed-store page
 app.get("/site/store.html", (req, res) => res.redirect(302, "/store"));
 // the admin panel: signed-in players who aren't admins get "Not found"; the page itself checks the rest with the server
 app.get(["/admin", "/admin/"], async (req, res, next) => {
