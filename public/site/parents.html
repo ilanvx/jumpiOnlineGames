@@ -80,9 +80,26 @@
     </nav>
 
     <div class="pa-panel" data-p="chat" role="tabpanel">
-      <p class="pa-lead" data-en="Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked." data-he="כל מה שהילד כתב: הצ'אט במשחק (נשמר 30 יום) והודעות פרטיות לחברים ב-JumpiChat. הודעות שהמסנן שלנו עצר מסומנות.">Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked.</p>
-      <ol class="pa-list" id="chatList"></ol>
-      <button class="pa-more" id="chatMore" type="button" hidden data-en="Show older" data-he="הצגת ישנות יותר">Show older</button>
+      <div class="pa-seg" role="group">
+        <button type="button" data-c="dms" aria-pressed="true" data-en="JumpiChat conversations" data-he="שיחות JumpiChat">JumpiChat conversations</button>
+        <button type="button" data-c="sent" aria-pressed="false" data-en="Messages your child sent" data-he="הודעות שהילד שלח">Messages your child sent</button>
+      </div>
+      <div data-cv="dms">
+        <div id="dmIndex">
+          <p class="pa-lead" data-en="Private chats on the phone in the game (JumpiChat), only with friends. Open a chat to see both sides." data-he="שיחות פרטיות בטלפון שבמשחק (JumpiChat), רק עם חברים. פתחו שיחה כדי לראות את שני הצדדים.">Private chats on the phone in the game (JumpiChat), only with friends. Open a chat to see both sides.</p>
+          <ul class="pa-convs" id="dmList"></ul>
+        </div>
+        <div id="dmThread" hidden>
+          <div class="pa-thread-top"><button class="pa-back" id="dmBack" type="button" data-en="← All chats" data-he="→ כל השיחות">← All chats</button><b id="dmWith" dir="ltr"></b></div>
+          <button class="pa-more" id="dmMore" type="button" hidden data-en="Show older" data-he="הצגת ישנות יותר">Show older</button>
+          <ol class="pa-bubbles" id="dmMsgs"></ol>
+        </div>
+      </div>
+      <div data-cv="sent" hidden>
+        <p class="pa-lead" data-en="Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked." data-he="כל מה שהילד כתב: הצ'אט במשחק (נשמר 30 יום) והודעות פרטיות לחברים ב-JumpiChat. הודעות שהמסנן שלנו עצר מסומנות.">Everything your child wrote: the chat in the game (kept for 30 days) and private messages to friends in JumpiChat. Messages stopped by our filter are marked.</p>
+        <ol class="pa-list" id="chatList"></ol>
+        <button class="pa-more" id="chatMore" type="button" hidden data-en="Show older" data-he="הצגת ישנות יותר">Show older</button>
+      </div>
     </div>
     <div class="pa-panel" data-p="trades" role="tabpanel" hidden>
       <p class="pa-lead" data-en="Every trade: who with, what your child gave and what they got." data-he="כל החלפה: עם מי, מה הילד נתן ומה הוא קיבל.">Every trade: who with, what your child gave and what they got.</p>
@@ -118,6 +135,20 @@
       <h3 data-en="The ready-made messages" data-he="ההודעות המוכנות">The ready-made messages</h3>
       <ul class="pa-chips" id="quick"></ul>
       <p class="pa-msg" id="lMsg" role="status"></p>
+    </div>
+
+    <!-- a problem or a question: the contact page, with the subject already chosen -->
+    <div class="pa-help">
+      <div>
+        <h2 data-en="A problem or a question?" data-he="יש תקלה או שאלה?">A problem or a question?</h2>
+        <p data-en="Write to us and a real person from the Jumpi team will answer by email." data-he="כתבו לנו ומישהו אמיתי מצוות ג'אמפי יענה לכם במייל.">Write to us and a real person from the Jumpi team will answer by email.</p>
+      </div>
+      <div class="pa-help-links">
+        <a class="pa-help-btn" data-topic="bug" href="/contact?topic=bug" data-en="Something isn't working" data-he="משהו לא עובד">Something isn't working</a>
+        <a class="pa-help-btn" data-topic="privacy" href="/contact?topic=privacy" data-en="A question about my child's account" data-he="שאלה על החשבון של הילד">A question about my child's account</a>
+        <a class="pa-help-btn warn" data-topic="safety" href="/contact?topic=safety" data-en="Report a player" data-he="דיווח על שחקן">Report a player</a>
+        <a class="pa-help-btn plain" href="/contact" data-en="All contact options" data-he="כל דרכי הפנייה">All contact options</a>
+      </div>
     </div>
   </section>
 </main>

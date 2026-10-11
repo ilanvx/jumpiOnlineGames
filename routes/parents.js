@@ -191,6 +191,53 @@ router.get("/playtime", requireParent, async (req, res, next) => {
   }
 });
 
+// JumpiChat: everyone the child wrote to or got messages from, newest conversation first
+router.get("/dms", requireParent, async (req, res, next) => {
+  try {
+    const id = req.child._id;
+    const rows = await Message.aggregate([
+      { $match: { $or: [{ from: id }, { to: id }] } },
+      { $sort: { at: -1 } },
+      { $group: {
+        _id: { $cond: [{ $eq: ["$from", id] }, "$to", "$from"] },
+        at: { $first: "$at" }, text: { $first: "$text" }, mine: { $first: { $eq: ["$from", id] } },
+        sent: { $sum: { $cond: [{ $eq: ["$from", id] }, 1, 0] } }, got: { $sum: { $cond: [{ $eq: ["$from", id] }, 0, 1] } },
+      } },
+      { $sort: { at: -1 } },
+      { $limit: 100 },
+    ]);
+    const users = new Map((await User.find({ _id: { $in: rows.map((r) => r._id) } }).select("username").lean()).map((x) => [String(x._id), x.username]));
+    const friends = new Set((req.child.friends || []).map(String));
+    res.set("Cache-Control", "no-store");
+    res.json({ list: rows.map((r) => ({ id: String(r._id), name: users.get(String(r._id)) || "(deleted player)", friend: friends.has(String(r._id)), at: new Date(r.at).getTime(), last: r.text, mine: !!r.mine, sent: r.sent, got: r.got })) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// one JumpiChat conversation, both sides, newest first (60 at a time); messages the filter stopped are in it too
+router.get("/dm/:with", requireParent, async (req, res, next) => {
+  try {
+    const me = req.child._id, w = String(req.params.with || "");
+    if (!mongoose.isValidObjectId(w)) return res.status(400).json({ error: "Bad request." });
+    const other = new mongoose.Types.ObjectId(w);
+    const before = Number(req.query.before), at = Number.isFinite(before) ? { $lt: new Date(before) } : { $lte: new Date() };
+    const otherUser = await User.findById(other).select("username").lean();
+    const [msgs, stopped] = await Promise.all([
+      Message.find({ $or: [{ from: me, to: other }, { from: other, to: me }], at }).sort({ at: -1 }).limit(60).lean(),
+      otherUser ? ChatLog.find({ userId: me, room: "dm:" + otherUser.username, blocked: true, at }).sort({ at: -1 }).limit(60).lean() : [],
+    ]);
+    const list = [
+      ...msgs.map((m) => ({ at: m.at, mine: String(m.from) === String(me), text: m.text, blocked: false })),
+      ...stopped.map((c) => ({ at: c.at, mine: true, text: c.text, blocked: true })),
+    ].sort((a, b) => b.at - a.at).slice(0, 60);
+    res.set("Cache-Control", "no-store");
+    res.json({ name: otherUser?.username || "(deleted player)", list: list.map((x) => ({ ...x, at: new Date(x.at).getTime() })), more: msgs.length === 60 });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // the child's trades: who with, what they gave and what they got
 router.get("/trades", requireParent, async (req, res, next) => {
   try {

@@ -11,7 +11,8 @@ function setLang(l) {
   document.documentElement.lang = lang; document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
   document.querySelectorAll("[data-en]").forEach((el) => (el.textContent = lang === "he" ? el.dataset.he : el.dataset.en));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
-  if (kid) { paintKid(); paintRules(); paintQuick(); paintChat(); paintTrades(); paintPlay(); }
+  document.querySelectorAll(".pa-help-btn[data-topic]").forEach((a) => (a.href = `/contact?topic=${a.dataset.topic}&lang=${lang}`));
+  if (kid) { paintKid(); paintRules(); paintQuick(); paintChat(); paintTrades(); paintPlay(); paintDms(); paintThread(); }
 }
 btns.forEach((b) => (b.onclick = () => setLang(b.dataset.l)));
 
@@ -87,7 +88,7 @@ async function openDash() {
   $("gate").hidden = true; $("dash").hidden = false; $("logout").hidden = false;
   paintKid(); paintRules(); paintQuick();
   $("lockOn").checked = kid.settings.chatLock;
-  loadChat(); loadTrades(); loadPlay();
+  loadChat(); loadTrades(); loadPlay(); loadDms();
 }
 function paintKid() {
   $("kAva").textContent = (kid.username[0] || "?").toUpperCase();
@@ -125,6 +126,55 @@ function paintChat() {
   $("chatMore").hidden = !chatMore;
 }
 $("chatMore").onclick = () => loadChat(true);
+
+// JumpiChat conversations
+let dms = null, thread = null;
+document.querySelectorAll(".pa-seg [data-c]").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll(".pa-seg [data-c]").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  document.querySelectorAll("[data-cv]").forEach((v) => (v.hidden = v.dataset.cv !== b.dataset.c));
+}));
+async function loadDms() { const r = await api("dms"); if (r.ok) { dms = r.data.list; paintDms(); } }
+function paintDms() {
+  if (!dms) return;
+  const box = $("dmList");
+  if (!dms.length) return box.replaceChildren(el("li", "pa-empty", L("No JumpiChat messages yet.", "עוד אין הודעות ב-JumpiChat.")));
+  box.replaceChildren(...dms.map((c) => {
+    const li = el("li"), b = el("button", "pa-conv"); b.type = "button";
+    const mid = el("div"), name = el("b", null, c.name); name.dir = "ltr";
+    if (!c.friend) { const nf = el("span", "pa-badge nf", L("Not a friend now", "כבר לא חבר")); name.append(" ", nf); }
+    const last = el("span", "pa-last", (c.mine ? L("Your child: ", "הילד: ") : c.name + ": ") + c.last); last.dir = "auto";
+    mid.append(name, last);
+    const side = el("div", "pa-side"); side.append(el("div", null, fmtDate(c.at)), el("div", null, L(`${c.sent} sent · ${c.got} got`, `${c.sent} נשלחו · ${c.got} התקבלו`)));
+    b.append(el("span", "pa-mini", (c.name[0] || "?").toUpperCase()), mid, side);
+    b.onclick = () => openThread(c.id);
+    li.append(b); return li;
+  }));
+}
+async function openThread(id, more) {
+  const before = more && thread?.list.length ? "?before=" + thread.list[thread.list.length - 1].at : "";
+  const r = await api("dm/" + encodeURIComponent(id) + before);
+  if (!r.ok) return;
+  thread = more && thread ? { ...thread, list: [...thread.list, ...r.data.list], more: r.data.more } : { id, ...r.data };
+  $("dmIndex").hidden = true; $("dmThread").hidden = false;
+  paintThread();
+  if (!more) { const box = $("dmMsgs"); box.scrollTop = box.scrollHeight; }
+}
+function paintThread() {
+  if (!thread) return;
+  $("dmWith").textContent = thread.name;
+  const box = $("dmMsgs");
+  if (!thread.list.length) { box.replaceChildren(el("li", "pa-empty", L("No messages.", "אין הודעות."))); $("dmMore").hidden = true; return; }
+  box.replaceChildren(...[...thread.list].reverse().map((m) => {
+    const li = el("li", "pa-bubble" + (m.mine ? " mine" : "") + (m.blocked ? " blk" : ""));
+    li.append(el("span", "who", m.mine ? kid.username : thread.name));
+    const t = el("span", null, m.text); t.dir = "auto"; li.append(t);
+    li.append(el("small", null, fmtDate(m.at) + " · " + fmtTime(m.at) + (m.blocked ? " · " + L("stopped by the filter, not sent", "נעצר במסנן, לא נשלח") : "")));
+    return li;
+  }));
+  $("dmMore").hidden = !thread.more;
+}
+$("dmMore").onclick = () => openThread(thread.id, true);
+$("dmBack").onclick = () => { thread = null; $("dmThread").hidden = true; $("dmIndex").hidden = false; };
 
 // trades
 async function loadTrades() { const r = await api("trades"); if (r.ok) { trades = r.data.list; paintTrades(); } }

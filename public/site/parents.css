@@ -76,6 +76,36 @@ body.pa main{flex:1;width:min(1080px,100%);margin:0 auto;padding:28px clamp(16px
 .pa-bar span{display:block;width:100%;background:linear-gradient(180deg,#5fbaff,#1f9bff);border-radius:12px 12px 0 0;min-height:0}
 .pa-day.now .pa-bar span{background:linear-gradient(180deg,#5fe08a,#2fd36b)}
 .pa-day small{font-weight:600;color:#6a7a9a}
+.pa-seg{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:#eef4ff;margin-bottom:16px;flex-wrap:wrap}
+.pa-seg button{border:0;border-radius:999px;padding:9px 16px;background:none;font:600 .95rem var(--body);color:#3a4a6a;cursor:pointer}
+.pa-seg button[aria-pressed="true"]{background:#fff;color:#1d2b4f;box-shadow:0 2px 0 #c9dcf2}
+.pa-convs{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pa-conv{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border:2px solid #e3ecf7;border-radius:16px;background:#f7faff;cursor:pointer;text-align:start;font:inherit;color:inherit}
+.pa-conv:hover{background:#eef4ff;border-color:#c9dcf2}
+.pa-conv .pa-mini{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#a98bff,#7a4dff);color:#fff;display:grid;place-items:center;font:400 1.3rem var(--display)}
+.pa-conv b{display:block;color:#1d2b4f;font-size:1.05rem}
+.pa-conv .pa-last{display:block;color:#4a5a80;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52ch}
+.pa-conv .pa-side{text-align:end;font-size:.82rem;color:#6a7a9a;white-space:nowrap}
+.pa-badge.nf{background:#ffe9c7;color:#8a5200}
+.pa-thread-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.pa-thread-top b{font:400 1.4rem var(--display);color:#1d2b4f}
+.pa-back{border:0;border-radius:999px;padding:8px 14px;background:#eef4ff;font:600 .95rem var(--body);color:#1d2b4f;cursor:pointer}
+.pa-bubbles{list-style:none;margin:0;padding:14px;display:flex;flex-direction:column;gap:8px;background:#f3f7fd;border-radius:16px;max-height:560px;overflow-y:auto}
+.pa-bubble{max-width:78%;align-self:flex-start;padding:8px 12px 6px;border-radius:16px 16px 16px 4px;background:#fff;box-shadow:0 2px 0 #dbe7f6;color:#1d2b4f}
+.pa-bubble.mine{align-self:flex-end;border-radius:16px 16px 4px 16px;background:#d9f0ff}
+.pa-bubble.blk{background:#ffe3e3}
+.pa-bubble small{display:block;font-size:.75rem;color:#6a7a9a;margin-top:2px}
+.pa-bubble .who{display:block;font-size:.75rem;font-weight:600;color:#1f7fd1;margin-bottom:2px}
+.pa-help{margin-top:22px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between;padding:22px;border-radius:22px;background:#1d2b4f;color:#fff;box-shadow:0 6px 0 #0a1430}
+.pa-help h2{margin:0 0 4px;font:400 1.6rem var(--display)}
+.pa-help p{margin:0;color:#c9d8f0}
+.pa-help-links{display:flex;flex-wrap:wrap;gap:8px}
+.pa-help-btn{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;border-radius:999px;background:#fff;color:#1d2b4f;font:600 .95rem var(--body);text-decoration:none;box-shadow:0 3px 0 #0a1430}
+.pa-help-btn:hover{background:#eaf3ff}
+.pa-help-btn.warn{background:#ffdede;color:#9a1c1c}
+.pa-help-btn.plain{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px #4a5f8f}
+.pa-help-btn:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+[lang="he"] .pa-help h2,[lang="he"] .pa-thread-top b{font-family:"Secular One",var(--display)}
 .pa-swap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pa-swap div{font-size:.95rem}
 .pa-swap small{display:block;font-weight:600;color:#6a7a9a}

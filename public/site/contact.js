@@ -43,6 +43,12 @@
   let start = "en";
   try { start = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jumpi-lang") || "en"; } catch (e) {}
   setLang(start);
+  // a link can choose the subject: /contact?topic=bug (the parents' page does)
+  try {
+    const want = new URLSearchParams(location.search).get("topic");
+    const r = want && form.querySelector(`input[name="topic"][value="${CSS.escape(want)}"]`);
+    if (r) { r.checked = true; $("#safetyTip").hidden = want !== "safety"; }
+  } catch (e) {}
 
   form.addEventListener("change", (e) => {
     if (e.target.name !== "topic") return;
