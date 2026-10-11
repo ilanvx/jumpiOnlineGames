@@ -182,7 +182,8 @@ app.get(["/accessibility", "/accessibility-statement", "/negishut"], page("site/
 app.get("/delete-account", page("site/delete-account.html"));   // Google Play: how to delete a JUMPI account
 app.get("/contact", page("site/contact.html"));
 app.get(["/parents", "/parent", "/horim"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/parents.html")(req, res, next); });   // parental controls
-app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.html"));   // Jumpi for parents: what kids learn, safety, controls, purchases
+app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.html"));
+app.get(["/safety", "/online-safety", "/betihut"], page("site/safety.html"));   // online safety tips for kids   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
 app.get("/trailer", page("site/trailer.html"));
