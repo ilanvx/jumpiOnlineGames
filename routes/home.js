@@ -3,13 +3,14 @@ import { User } from "../models/User.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { FURNITURE_COUNT, placeProblem } from "../catalog.js";
-import { notifyHome, notifyCoins } from "../realtime/plaza.js";
+import { notifyHome, notifyCoins, mayVisit, visitRefusal, evictHome } from "../realtime/plaza.js";
 import { houseShape, cleanHouse, UPGRADE_BY_ID } from "../public/shared/houses.js";
 import { petsOf } from "./pets.js";
 
 /*
   The player's home. Only furniture the player owns can be placed (doubles count),
-  everything has to stand inside the room, and anyone can look at anyone's home.
+  everything has to stand inside the room. Who may visit is the owner's choice (everyone / friends / nobody,
+  friends by default); blocked players and players who were sent out can't come in (realtime/plaza.js mayVisit).
 */
 const router = express.Router();
 export const HOME = { walls: 8, floors: 6, halfW: 7.4, halfD: 5.6, maxItems: 60 };
@@ -32,13 +33,30 @@ export function pruneHome(user) {
   user.markModified("home");
 }
 
-router.get("/home", requireUser, (req, res) => res.json({ home: homeView(req.user), owner: req.user.username, mine: true, ...petsOf(req.user) }));
+router.get("/home", requireUser, (req, res) => res.json({ home: homeView(req.user), owner: req.user.username, mine: true, access: req.user.homeAccess || "friends", ...petsOf(req.user) }));
+
+// who may visit my home: "all", "friends" or "closed". Visitors who may not stay any more are sent out.
+const ACCESS = ["all", "friends", "closed"];
+router.post("/home/access", requireJson, requireUser, async (req, res, next) => {
+  try {
+    const access = String(req.body?.access || "");
+    if (!ACCESS.includes(access)) return res.status(400).json({ error: "Pick who can visit." });
+    const owner = await User.findOneAndUpdate({ _id: req.user._id }, { $set: { homeAccess: access } }, { new: true }).select("username usernameLower friends blocked homeAccess");
+    if (!owner) return res.status(401).json({ error: "Please log in first." });
+    evictHome(owner);
+    res.json({ access });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.get("/home/of/:username", requireUser, async (req, res, next) => {
   try {
     const name = String(req.params.username || "").toLowerCase().slice(0, 32);
     const user = await User.findOne({ usernameLower: name });
     if (!user) return res.status(404).json({ error: "That player doesn't exist." });
+    if (!mayVisit(user, { id: req.user._id.toString(), role: req.user.role }) || (req.user.role !== "admin" && (req.user.blocked || []).some((b) => b.equals(user._id))))
+      return res.status(403).json({ error: (user.blocked || []).some((b) => b.equals(req.user._id)) || (req.user.blocked || []).some((b) => b.equals(user._id)) ? "That player doesn't exist." : visitRefusal(user) });
     res.json({ home: homeView(user), owner: user.username, mine: user._id.equals(req.user._id), ...petsOf(user) });
   } catch (err) {
     next(err);
@@ -78,8 +96,7 @@ router.post("/home", requireJson, requireUser, async (req, res, next) => {
       items.push(piece);
     }
     req.user.home = { wall, floor, items };
-    req.user.markModified("home");
-    await req.user.save();
+    await User.updateOne({ _id: req.user._id }, { $set: { home: { wall, floor, items } } });   // one field, no version check (saves can overlap while decorating)
     res.json({ home: homeView(req.user) });
     notifyHome(req.user.usernameLower, homeView(req.user));
   } catch (err) {
@@ -90,7 +107,7 @@ router.post("/home", requireJson, requireUser, async (req, res, next) => {
 // buy a house upgrade (bigger room, garden, pool, second floor). Coins are taken in one atomic update.
 router.post("/home/upgrade", requireJson, requireUser, async (req, res, next) => {
   try {
-    const up = UPGRADE_BY_ID[String(req.body?.id || "")];
+    const upId = String(req.body?.id || ""), up = Object.hasOwn(UPGRADE_BY_ID, upId) ? UPGRADE_BY_ID[upId] : null;
     if (!up) return res.status(400).json({ error: "Unknown upgrade." });
     const have = cleanHouse(req.user.house);
     if (have[up.id]) return res.status(409).json({ error: "You already have that!" });

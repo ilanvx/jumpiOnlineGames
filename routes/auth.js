@@ -1,4 +1,5 @@
 import express from "express";
+import { isHttps } from "./ip.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User, LOOK_LIMITS } from "../models/User.js";
@@ -9,6 +10,7 @@ import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { welcomeEmail } from "../mail/welcome.js";
 import { resetEmail } from "../mail/reset.js";
 import { PUBLIC_URL } from "../mail/send.js";
+import { Revoked } from "../models/Revoked.js";
 
 const router = express.Router();
 
@@ -17,7 +19,8 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 const USERNAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD = 8;
-const MAX_PASSWORD = 128;
+const MAX_PASSWORD = 72;   // bcrypt only looks at the first 72 bytes: longer passwords are refused instead of cut short
+const pwTooLong = (pw) => typeof pw === "string" && (pw.length > MAX_PASSWORD || Buffer.byteLength(pw, "utf8") > 72);
 // used when a username doesn't exist, so a failed login takes the same time either way
 const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 12);
 
@@ -29,17 +32,18 @@ export function banMessage(user) {
   return `This account is banned ${when}.${user.banReason ? " Reason: " + user.banReason : ""}`;
 }
 function clearAuthCookie(res) {
-  res.clearCookie(COOKIE, { path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production", httpOnly: true });
+  res.clearCookie(COOKIE, { path: "/", sameSite: "lax", secure: isHttps(res.req), httpOnly: true });
 }
 const clean = (v) => (typeof v === "string" ? v.trim() : "");
 
 function validateAccount({ username, email, password }) {
   if (!USERNAME_RE.test(username)) return { field: "username", error: "Username must be 3–16 letters, numbers or _." };
   if (!checkName(username).ok) return { field: "username", error: "Please pick a friendlier username." };
-  if (!EMAIL_RE.test(email) || email.length > 254) return { field: "email", error: "That email doesn't look right." };
+  if (email.length > 254 || !EMAIL_RE.test(email)) return { field: "email", error: "That email doesn't look right." };
   if (typeof password !== "string" || password.length < MIN_PASSWORD)
     return { field: "password", error: `Password needs at least ${MIN_PASSWORD} characters.` };
-  if (password.length > MAX_PASSWORD) return { field: "password", error: "That password is too long." };
+  if (pwTooLong(password)) return { field: "password", error: "That password is too long (72 characters at most)." };
+  if (password.toLowerCase() === String(username).toLowerCase()) return { field: "password", error: "Your password can't be your username." };
   return null;
 }
 
@@ -52,12 +56,42 @@ function cleanLook(look) {
   return out;
 }
 
+/* ---------- tokens ----------
+   Every token says what it is (typ): "login" (the cookie), "tab" (one game tab), "verify" (waiting for the email code),
+   "acc" (the saved accounts list); the admin unlock is "admin". A token is only accepted where its own kind belongs.
+   Login and tab tokens have an id (jti): logging out puts it on the Revoked list so a copied token stops working. */
+const REVOKED = new Set();
+export async function loadRevoked() {
+  const list = await Revoked.find({ exp: { $gt: new Date() } }).select("jti").lean();
+  for (const r of list) REVOKED.add(r.jti);
+}
+const kindOf = (p) => p.typ || (p.p === "verify" ? "verify" : p.k ? "admin" : p.a ? "acc" : p.tab ? "tab" : "login");   // tokens from before "typ"
+// the payload of a valid token of this kind, or null
+export function readToken(token, kind) {
+  try {
+    const p = jwt.verify(String(token || ""), process.env.JWT_SECRET);
+    if (kindOf(p) !== kind || (p.jti && REVOKED.has(p.jti))) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+// end one login token (log out). Returns its id, or null.
+async function revokeToken(token, kind) {
+  const p = readToken(token, kind);
+  if (!p || !p.jti) return null;
+  REVOKED.add(p.jti);
+  try { await Revoked.updateOne({ jti: p.jti }, { $set: { jti: p.jti, exp: new Date(p.exp * 1000) } }, { upsert: true }); } catch (err) { console.error("[auth] revoke", err.message); }
+  return p.jti;
+}
+const newId = () => crypto.randomUUID();
+
 function setAuthCookie(res, userId, remember, version = 0) {
-  const token = jwt.sign({ sub: userId, v: version }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  const token = jwt.sign({ sub: userId, v: version, typ: "login" }, process.env.JWT_SECRET, { expiresIn: "30d", jwtid: newId() });
   res.cookie(COOKIE, token, {
     httpOnly: true, // page scripts can't read it
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isHttps(res.req),
     path: "/",
     ...(remember ? { maxAge: THIRTY_DAYS } : {}), // without maxAge it ends when the browser closes
   });
@@ -75,6 +109,7 @@ function rateLimit({ windowMs, max }) {
   return (req, res, next) => {
     const now = Date.now();
     const key = req.ip;
+    if (hits.size > 20000) for (const [k, e] of hits) if (e.reset < now) hits.delete(k);   // forget old addresses
     const entry = hits.get(key);
     if (!entry || entry.reset < now) {
       hits.set(key, { count: 1, reset: now + windowMs });
@@ -88,22 +123,52 @@ function rateLimit({ windowMs, max }) {
   };
 }
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
+// wrong passwords for one account: 8 in 15 minutes from one address, or 40 from all addresses together (guessing from many
+// places), and that account waits. Per address first, so one person can't easily lock someone else out.
+const badLogins = new Map();
+const LOGIN_FAILS = 8, LOGIN_FAILS_ALL = 40, LOGIN_WINDOW = 15 * 60 * 1000;
+function accountLocked(name, ip) {
+  const now = Date.now(), one = badLogins.get(name + "|" + ip), all = badLogins.get(name);
+  return (!!one && one.reset > now && one.n >= LOGIN_FAILS) || (!!all && all.reset > now && all.n >= LOGIN_FAILS_ALL);
+}
+function loginFailed(name, ip) {
+  const now = Date.now();
+  for (const k of [name, name + "|" + ip]) {
+    const e = badLogins.get(k);
+    if (!e || e.reset < now) badLogins.set(k, { n: 1, reset: now + LOGIN_WINDOW });
+    else e.n++;
+  }
+  if (badLogins.size > 40000) for (const [k, x] of badLogins) if (x.reset < now) badLogins.delete(k);
+}
 const signupLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 const checkLimiter = rateLimit({ windowMs: 60 * 1000, max: 30 });
+// "is this email already used?" answers only a few times per address (so nobody can test a long list of emails)
+const emailChecks = new Map();
+function mayCheckEmail(ip) {
+  const now = Date.now(), e = emailChecks.get(ip);
+  if (emailChecks.size > 20000) for (const [k, x] of emailChecks) if (x.reset < now) emailChecks.delete(k);
+  if (!e || e.reset < now) { emailChecks.set(ip, { n: 1, reset: now + 10 * 60_000 }); return true; }
+  return ++e.n <= 10;
+}
 
 /* Tab tokens: one browser has one login cookie, but every game tab keeps its own account. The game gets a
    token for its tab on login / switch / me and sends it back (x-jumpi-tab, kept in the tab's sessionStorage);
    when it is there it decides who you are, so two tabs can play two accounts side by side. */
-export const tabToken = (user) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, tab: 1 }, process.env.JWT_SECRET, { expiresIn: "30d" });
-export async function currentUser(req) {
-  const tab = req.get?.("x-jumpi-tab");
+// a game tab's token lasts 12 hours, and every call renews it (x-jumpi-tab-new, see requireUser in shop.js)
+export const TAB_HOURS = 12;
+export const tabToken = (user) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, tab: 1, typ: "tab" }, process.env.JWT_SECRET, { expiresIn: TAB_HOURS + "h", jwtid: newId() });
+export async function currentUser(req, { cookieOnly = false } = {}) {
+  const tab = cookieOnly ? "" : req.get?.("x-jumpi-tab");
   const token = tab || req.cookies?.[COOKIE];
   if (!token) return null;
   try {
-    const { sub, v, tab: isTab } = jwt.verify(token, process.env.JWT_SECRET);
-    if (tab && !isTab) return null;
-    const user = await User.findById(sub);
-    if (!user || (v || 0) !== (user.tokenVersion || 0)) return null;   // logged out everywhere by an admin
+    let p = readToken(token, tab ? "tab" : "login"), viaTab = !!tab;
+    // this tab's token ran out (a sleeping laptop): the browser's login still works; the game checks it's the same account (x-jumpi-as)
+    if (!p && tab && req.cookies?.[COOKIE]) { p = readToken(req.cookies[COOKIE], "login"); viaTab = false; }
+    if (!p) return null;
+    const user = await User.findById(p.sub);
+    if (!user || (p.v || 0) !== (user.tokenVersion || 0)) return null;   // logged out everywhere by an admin
+    if (tab && (!viaTab || Date.now() / 1000 - (p.iat || 0) > 3600)) req.freshTab = tabToken(user);   // older than an hour (or ran out): a new one comes back
     return user;
   } catch {
     return null;
@@ -120,16 +185,16 @@ function readSaved(req) {
   const raw = req.cookies?.[ACC_COOKIE];
   if (!raw) return [];
   try {
-    const { a } = jwt.verify(raw, process.env.JWT_SECRET);
+    const { a } = readToken(raw, "acc") || {};
     return Array.isArray(a) ? a.filter((x) => x && typeof x.s === "string").slice(0, MAX_SAVED) : [];
   } catch {
     return [];
   }
 }
 function writeSaved(res, list) {
-  const opts = { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/" };
+  const opts = { httpOnly: true, sameSite: "lax", secure: isHttps(res.req), path: "/" };
   if (!list.length) return res.clearCookie(ACC_COOKIE, opts);
-  res.cookie(ACC_COOKIE, jwt.sign({ a: list.map(({ s, v }) => ({ s, v })) }, process.env.JWT_SECRET, { expiresIn: "30d" }), { ...opts, maxAge: THIRTY_DAYS });
+  res.cookie(ACC_COOKIE, jwt.sign({ a: list.map(({ s, v }) => ({ s, v })), typ: "acc" }, process.env.JWT_SECRET, { expiresIn: "30d" }), { ...opts, maxAge: THIRTY_DAYS });
 }
 // add (or refresh) accounts; new ones go at the end, and the oldest other one drops off when there are too many
 function saveAccounts(req, res, users) {
@@ -158,12 +223,13 @@ async function savedUsers(req) {
 export const needsVerify = (user) => EMAIL_ON() && user && user.emailVerified !== true;
 const CODE_MIN = 15, SEND_GAP = 55_000, SENDS_PER_HOUR = 6, MAX_TRIES = 5;
 const codeHash = (user, code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(user._id.toString() + ":" + code).digest("hex");
-const pendingToken = (user, remember) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, p: "verify", r: !!remember }, process.env.JWT_SECRET, { expiresIn: "2h" });
+const pendingToken = (user, remember) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, p: "verify", r: !!remember, typ: "verify" }, process.env.JWT_SECRET, { expiresIn: "2h" });
 const maskEmail = (e) => { const [a, d] = String(e).split("@"); return (a.length <= 2 ? a[0] + "•" : a.slice(0, 2) + "•".repeat(Math.min(6, a.length - 2))) + "@" + d; };
 async function pendingUser(token) {
   try {
-    const { sub, v, p, r } = jwt.verify(String(token || ""), process.env.JWT_SECRET);
-    if (p !== "verify") return null;
+    const pl = readToken(token, "verify");
+    if (!pl) return null;
+    const { sub, v, r } = pl;
     const user = await User.findById(sub);
     return user && (v || 0) === (user.tokenVersion || 0) ? { user, remember: !!r } : null;
   } catch { return null; }
@@ -199,10 +265,10 @@ const verifyLimiter = (() => { const hits = new Map(); return (req, res, next) =
 router.post("/check", requireJson, checkLimiter, async (req, res, next) => {
   try {
     const username = clean(req.body.username);
-    const email = clean(req.body.email).toLowerCase();
+    const email = clean(req.body.email).toLowerCase().slice(0, 255);
     const [u, e] = await Promise.all([
       USERNAME_RE.test(username) ? User.exists({ usernameLower: username.toLowerCase() }) : null,
-      EMAIL_RE.test(email) ? User.exists({ email }) : null,
+      EMAIL_RE.test(email) && mayCheckEmail(req.ip) ? User.exists({ email }) : null,   // over the limit: sign-up itself still says it at the end
     ]);
     res.json({ usernameTaken: !!u, emailTaken: !!e, usernameNotAllowed: USERNAME_RE.test(username) && !checkName(username).ok });
   } catch (err) {
@@ -223,7 +289,7 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
 
     const bd = /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.birthDate || "")) ? new Date(req.body.birthDate + "T12:00:00Z") : null;
     const ageYears = bd ? (Date.now() - bd.getTime()) / (365.25 * 86_400_000) : NaN;
-    if (!bd || isNaN(ageYears) || ageYears < 3 || ageYears > 120) return res.status(400).json({ field: "birthDate", error: "Please enter your real date of birth." });
+    if (!bd || isNaN(ageYears) || ageYears < 3 || ageYears > 120 || bd.toISOString().slice(0, 10) !== String(req.body.birthDate)) return res.status(400).json({ field: "birthDate", error: "Please enter your real date of birth." });
     const look = cleanLook(req.body.look);
     const passwordHash = await bcrypt.hash(password, 12);
     const now = new Date();
@@ -267,17 +333,20 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
     const id = clean(req.body.username);
     const password = typeof req.body.password === "string" ? req.body.password : "";
     if (!id || !password) return res.status(400).json({ error: "Enter your username and password." });
+    const who = id.toLowerCase();
+    if (accountLocked(who, req.ip)) return res.status(429).json({ error: "Too many wrong passwords for this account. Please wait 15 minutes, or reset the password." });
 
     // accept either the username or the email address
-    const user = await User.findOne(id.includes("@") ? { email: id.toLowerCase() } : { usernameLower: id.toLowerCase() });
+    const user = await User.findOne(id.includes("@") ? { email: who } : { usernameLower: who });
     const ok = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
-    if (!user || !ok) return res.status(401).json({ error: "Wrong username or password." });
+    if (!user || !ok) { loginFailed(who, req.ip); return res.status(401).json({ error: "Wrong username or password." }); }
+    badLogins.delete(who + "|" + req.ip);
     if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
 
     if (needsVerify(user))
       return res.status(403).json({ needVerify: true, pending: pendingToken(user, req.body.remember === true), email: maskEmail(user.email), error: "Please check your email first." });
     user.lastLoginAt = new Date();
-    await user.save();
+    await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: user.lastLoginAt } });
     const prev = req.body.addAccount === true ? await currentUser(req) : null;
     setAuthCookie(res, user._id.toString(), req.body.remember === true || !!prev, user.tokenVersion || 0);
     // "Remember me" (or adding an account with "+") keeps it on the start screen
@@ -303,9 +372,12 @@ router.get("/me", async (req, res, next) => {
 });
 
 // log out: the account also leaves this device's saved list; if another saved account is left, it takes over
-router.post("/logout", async (req, res, next) => {
+router.post("/logout", requireJson, async (req, res, next) => {
   try {
     const me = await currentUser(req);
+    // this login and this tab's token stop working right away (a copy of them is useless now), and their game windows close
+    const ended = [await revokeToken(req.cookies?.[COOKIE], "login"), await revokeToken(req.get("x-jumpi-tab"), "tab")].filter(Boolean);
+    if (ended.length) import("../realtime/plaza.js").then((m) => m.endSessions(ended)).catch(() => {});
     const { users } = await savedUsers(req);
     const rest = users.filter(({ x }) => !me || x.s !== me._id.toString());
     writeSaved(res, rest.map(({ x }) => x));
@@ -359,7 +431,7 @@ router.post("/switch", requireJson, async (req, res, next) => {
     if (!hit) return res.status(404).json({ error: "That account isn't saved on this device any more. Please log in again." });
     const user = hit.u;
     user.lastLoginAt = new Date();
-    await user.save();
+    await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: user.lastLoginAt } });
     setAuthCookie(res, user._id.toString(), true, user.tokenVersion || 0);
     res.json({ user: user.toPublic(), tab: tabToken(user) });
   } catch (err) {
@@ -409,14 +481,11 @@ router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
       const code = String(req.body.code || "").replace(/\D/g, "");
       const V = user.verify || {};
       if (!V.hash || Date.now() > V.expires) return res.status(400).json({ error: "That code has run out. Send a new one." , expired: true });
-      if ((V.tries || 0) >= MAX_TRIES) return res.status(429).json({ error: "Too many wrong codes. Send a new one.", expired: true });
+      // every try is counted in the database first, in one step (many tries sent at the same moment are all counted)
+      const counted = await User.findOneAndUpdate({ _id: user._id, "verify.hash": V.hash, "verify.tries": { $not: { $gte: MAX_TRIES } } }, { $inc: { "verify.tries": 1 } }, { new: true }).select("verify");
+      if (!counted) return res.status(429).json({ error: "Too many wrong codes. Send a new one.", expired: true });
       const ok = code.length === 6 && crypto.timingSafeEqual(Buffer.from(codeHash(user, code)), Buffer.from(V.hash));
-      if (!ok) {
-        user.verify = { ...V, tries: (V.tries || 0) + 1 };
-        user.markModified("verify");
-        await user.save();
-        return res.status(400).json({ error: `That code isn't right. ${Math.max(0, MAX_TRIES - user.verify.tries)} tries left.` });
-      }
+      if (!ok) return res.status(400).json({ error: `That code isn't right. ${Math.max(0, MAX_TRIES - (counted.verify?.tries || MAX_TRIES))} tries left.` });
       user.emailVerified = true;
       user.verify = undefined;
     }
@@ -507,7 +576,7 @@ router.post("/reset", requireJson, resetLimiter, async (req, res, next) => {
     if (!user) return res.status(400).json({ code: "bad", error: "This link doesn't work any more." });
     const pw = req.body.password;
     if (typeof pw !== "string" || pw.length < MIN_PASSWORD) return res.status(400).json({ code: "short", error: `Password needs at least ${MIN_PASSWORD} characters.` });
-    if (pw.length > MAX_PASSWORD) return res.status(400).json({ code: "long", error: "That password is too long." });
+    if (pwTooLong(pw)) return res.status(400).json({ code: "long", error: "That password is too long (72 characters at most)." });
     if (pw.toLowerCase() === user.username.toLowerCase()) return res.status(400).json({ code: "name", error: "Your password can't be your username." });
     user.passwordHash = await bcrypt.hash(pw, 12);
     user.tokenVersion = (user.tokenVersion || 0) + 1;   // signed out on every device
@@ -515,6 +584,7 @@ router.post("/reset", requireJson, resetLimiter, async (req, res, next) => {
     user.emailVerified = true;                            // they opened the email, so it's theirs
     user.verify = undefined;
     await user.save();
+    import("../realtime/plaza.js").then((m) => m.moderation.kick(user._id.toString(), "kicked:password")).catch(() => {});   // open game windows close too
     res.json({ ok: true, username: user.username });
   } catch (err) {
     next(err);

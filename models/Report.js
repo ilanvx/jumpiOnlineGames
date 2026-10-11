@@ -18,9 +18,9 @@ const reportSchema = new mongoose.Schema({
   from: { type: String, required: true },
   targetId: { type: ObjectId, required: true },
   target: { type: String, required: true },
-  reason: { type: String, enum: REPORT_REASONS, required: true },
+  reason: { type: String, enum: [...REPORT_REASONS, "flagged"], required: true },   // "flagged": the chat filter noticed something (not a player's report)
   details: { type: String, default: "", maxlength: 500 },
-  where: { type: String, enum: ["card", "chat", "friends"], default: "card" },
+  where: { type: String, enum: ["card", "chat", "friends", "filter"], default: "card" },   // "filter": made by the chat filter (realtime/plaza.js flagChat)
   room: { type: String, default: "" },
   context: { type: [{ from: String, text: String, at: Date, room: String }], default: [] },
   status: { type: String, enum: ["open", "done"], default: "open" },

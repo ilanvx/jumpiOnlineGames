@@ -4,10 +4,10 @@ import { User } from "../models/User.js";
 import { Message } from "../models/Message.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
-import { onlineWhere, onlinePlayers, emitToUser, strike, phoneBits, ghostUpdate, emitToAdmins } from "../realtime/plaza.js";
+import { onlineWhere, onlinePlayers, emitToUser, strike, phoneBits, ghostUpdate, emitToAdmins, flagChat } from "../realtime/plaza.js";
 import { setPair } from "../realtime/blocks.js";
 import { Report, REPORT_REASONS, URGENT_REASONS } from "../models/Report.js";
-import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
+import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
 import { ChatLog, logQuietly } from "../models/Logs.js";
 
 /*
@@ -144,7 +144,8 @@ router.get("/online", requireUser, (req, res) => {
   const me = req.user, mine = new Set((me.friends || []).map(idStr)), asked = new Set((me.friendReqIn || []).map(idStr));
   const list = onlinePlayers(me.role === "admin", idStr(me._id))
     .slice(0, 300)
-    .map((p) => ({ username: p.username, look: p.look, role: p.role, where: p.where, me: p.userId === idStr(me._id), friend: mine.has(p.userId), askedMe: asked.has(p.userId) }))
+    // where someone is (which home, which shop) only for friends: everyone else just sees "online" (kids' safety)
+    .map((p) => ({ username: p.username, look: p.look, role: p.role, where: p.userId === idStr(me._id) || mine.has(p.userId) || me.role === "admin" ? p.where : "online", me: p.userId === idStr(me._id), friend: mine.has(p.userId), askedMe: asked.has(p.userId) }))
     .sort((a, b) => b.me - a.me || b.friend - a.friend || a.username.localeCompare(b.username));
   res.json({ players: list });
 });
@@ -219,6 +220,7 @@ router.post("/dm", requireJson, requireUser, async (req, res, next) => {
     if (chk.kind === "private" || sp.hit) {
       phoneBits(me._id, "");
       logQuietly(ChatLog, { userId: me._id, username: me.username, room: "dm:" + nameOf(req.body.to), text, blocked: true });
+      if (chk.info === "unsafe") flagChat(me._id, me.username, text, "dm:" + nameOf(req.body.to), true);
       return res.status(400).json({ error: PRIVATE_MESSAGE[chk.info || "phone"], private: chk.info || "phone", blocked: true });
     }
     phoneBits(me._id, sp.digits);
@@ -233,6 +235,7 @@ router.post("/dm", requireJson, requireUser, async (req, res, next) => {
     // both sides must still be friends
     if (!isFriend(me, other._id) || !isFriend(other, me._id)) return fail(res, 403, `You can only chat with friends. Add ${other.username} as a friend first!`);
     const m = await Message.create({ from: me._id, to: other._id, text });
+    if (riskText(text)) flagChat(me._id, me.username, text, "dm:" + other.username, false);
     const view = msgView(m, new Map([[idStr(me._id), me.username], [idStr(other._id), other.username]]));
     emitToUser(idStr(other._id), "dm", view);
     emitToUser(idStr(me._id), "dm", view); // my other windows
@@ -337,7 +340,7 @@ router.post("/report", requireJson, requireUser, async (req, res, next) => {
       ...said.map((c) => ({ from: other.username, text: c.text, at: c.at, room: c.room + (c.blocked ? " (stopped by the filter)" : "") })),
     ].sort((a, b) => a.at - b.at);
     const r = await Report.create({ fromId: me._id, from: me.username, targetId: other._id, target: other.username, reason, details, where, room: onlineWhere(idStr(other._id)) || "", context });
-    emitToAdmins("admin:report", { id: idStr(r._id), from: me.username, target: other.username, reason, urgent: URGENT_REASONS.has(reason) });
+    emitToAdmins("admin:report", { id: idStr(r._id), target: other.username, reason, urgent: URGENT_REASONS.has(reason) }, { except: idStr(other._id) });
     res.json({ ok: true, message: "Thank you for telling us! The Jumpi team will check it.", blocked: blocks(me, other._id), canBlock: other.role !== "admin" && other.role !== "mod" });
   } catch (err) {
     next(err);

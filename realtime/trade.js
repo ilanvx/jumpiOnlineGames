@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { ghosts } from "./blocks.js";
 import mongoose from "mongoose";
 import { User } from "../models/User.js";
-import { ITEMS, LOOK_SLOTS } from "../catalog.js";
+import { ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
 import { pruneHome } from "../routes/home.js";
 import { TradeLog, logQuietly } from "../models/Logs.js";
 
@@ -79,7 +79,7 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
     const fromId = String(d?.from || ""), key = `${fromId}>${socket.id}`, at = invites.get(key);
     invites.delete(key);
     const asker = players.get(fromId), meP = players.get(socket.id);
-    if (!asker || !meP) return fail("That player isn't here any more.");
+    if (!asker || !meP || (asker.role !== "admin" && meP.role !== "admin" && ghosts(asker.userId, meP.userId))) return fail("That player isn't here any more.");
     if (!at || Date.now() - at > INVITE_MS) return fail("That trade request has expired.");
     if (d?.accept !== true) return sock(fromId)?.emit("trade:declined", { username: meP.username });
     if (bySocket.has(socket.id) || bySocket.has(fromId) || io.__duel?.bySocket.has(socket.id) || io.__duel?.bySocket.has(fromId)) return fail("One of you is busy right now.");
@@ -113,6 +113,7 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
     try {
       const u = await User.findById(t[mine].userId);
       if (!u) return closeTrade(t, "gone");
+      if (items.length && tooNew(u)) return refuse(t, `Your account is new: you can trade items ${TRADE_AFTER_DAYS} days after joining.`);
       const problem = offerProblem(u, items, "You");
       if (problem) return refuse(t, problem);
       if (!trades.has(t.id) || t.busy) return;
@@ -160,8 +161,11 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
         [ua, ub] = await Promise.all([User.findById(t.a.userId).session(session), User.findById(t.b.userId).session(session)]);
         if (!ua || !ub) throw publicError("One of the players is gone.");
         if (ua.isBanned() || ub.isBanned()) throw publicError("This trade can't happen.");
+        for (const u of [ua, ub]) if (tooNew(u)) throw publicError(`${u.username}'s account is new: trading opens ${TRADE_AFTER_DAYS} days after joining.`);
         check(ua, ub, t.a.items, t.a.username);
         check(ub, ua, t.b.items, t.b.username);
+        roomFor(ub, t.a.items, t.b.items, t.b.username);
+        roomFor(ua, t.b.items, t.a.items, t.a.username);
         move(ua, ub, t.a.items);
         move(ub, ua, t.b.items);
         await ua.save({ session });
@@ -190,6 +194,9 @@ export function attachTrading(io, socket, { players, me, notifyLook, limiter, se
   }
 }
 
+// new accounts wait a little before trading (a second account made just to pass items on)
+const TRADE_AFTER_DAYS = 2;
+const tooNew = (u) => u.role !== "admin" && !!u.createdAt && Date.now() - new Date(u.createdAt).getTime() < TRADE_AFTER_DAYS * 86400_000;
 function publicError(msg) {
   return Object.assign(new Error(msg), { publicMessage: msg });
 }
@@ -199,6 +206,7 @@ function offerProblem(user, items, who) {
   for (const id of items) want.set(id, (want.get(id) || 0) + 1);
   for (const [id, n] of want) {
     if (ITEMS.get(id)?.gift) return `${ITEMS.get(id).name} is a special item, it can't be traded.`;
+    if (ITEMS.get(id)?.exclusive) return `${ITEMS.get(id).name} comes from the Jumpi Store, it can't be traded.`;
     if (ITEMS.get(id)?.member) return `${ITEMS.get(id).name} is a Members Club item, it can't be traded.`;
     const have = counts.get(id) || 0;
     if (have < n) return have ? `${who === "You" ? "You only have" : who + " only has"} ${have} × ${ITEMS.get(id)?.name || "that item"}.` : `${who === "You" ? "You don't" : who + " doesn't"} have ${ITEMS.get(id)?.name || "that item"}.`;
@@ -210,6 +218,11 @@ function offerProblem(user, items, who) {
     if (giving && total - giving < 1) return slot === "color" ? "Keep at least one body colour for yourself." : "Keep at least one pair of eyes for yourself.";
   }
   return null;
+}
+// the furniture limit (catalog.js MAX_FURNITURE) counts for what a trade brings in too
+function roomFor(to, getting, giving, toName) {
+  const fur = (list) => list.filter((id) => String(id).startsWith("furniture:")).length;
+  if (fur(getting) && fur(to.inventory || []) + fur(getting) - fur(giving) > MAX_FURNITURE) throw publicError(`${toName}'s home is full (up to ${MAX_FURNITURE} pieces of furniture).`);
 }
 function check(from, to, items, fromName) {
   const problem = offerProblem(from, items, fromName);

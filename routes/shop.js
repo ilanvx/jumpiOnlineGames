@@ -20,6 +20,7 @@ export async function requireUser(req, res, next) {
     const as = req.get("x-jumpi-as");
     if (as && as !== user._id.toString()) return res.status(409).json({ error: "You switched account in another tab.", code: "account-changed", now: user.username });
     req.user = user;
+    if (req.freshTab) res.set("x-jumpi-tab-new", req.freshTab);   // a renewed token for this game tab (routes/auth.js TAB_HOURS)
     next();
   } catch (err) {
     next(err);
@@ -37,6 +38,9 @@ function slowDown(req, res, next) {
   recent.set(key, list);
   next();
 }
+
+// how many pieces of furniture are in the inventory (checked inside the buy itself, so many clicks at once can't pass the limit)
+const furnitureCount = { $size: { $filter: { input: { $ifNull: ["$inventory", []] }, as: "it", cond: { $eq: [{ $indexOfCP: ["$$it", "furniture:"] }, 0] } } } };
 
 // the price list (public)
 router.get("/shop/catalog", (req, res) => {
@@ -61,12 +65,14 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
 
     // one atomic update: only succeeds if there are enough coins (and, for clothes, the item isn't owned yet)
     const updated = await User.findOneAndUpdate(
-      { _id: req.user._id, coins: { $gte: item.price }, ...(isFurniture ? {} : { inventory: { $ne: item.id } }) },
-      { $inc: { coins: -item.price }, $push: { inventory: item.id } },
+      { _id: req.user._id, coins: { $gte: item.price }, ...(isFurniture ? { $expr: { $lt: [furnitureCount, MAX_FURNITURE] } } : { inventory: { $ne: item.id } }) },
+      { $inc: { coins: -item.price, __v: 1 }, $push: { inventory: item.id } },
       { new: true }
     );
     if (!updated) {
       const fresh = await User.findById(req.user._id);
+      if (fresh && isFurniture && (fresh.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX_FURNITURE)
+        return res.status(409).json({ error: `Your home is full! You can have up to ${MAX_FURNITURE} pieces of furniture.` });
       if (fresh && !isFurniture && fresh.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });
       return res.status(402).json({ error: `You need ${(item.price - (fresh?.coins || 0)).toLocaleString("en-US")} more coins.` });
     }
@@ -82,19 +88,30 @@ router.post("/inventory/equip", requireJson, requireUser, slowDown, async (req, 
   try {
     const slot = String(req.body.slot || "");
     const index = Number(req.body.index);
-    const info = LOOK_SLOTS[slot];
+    const info = Object.hasOwn(LOOK_SLOTS, slot) ? LOOK_SLOTS[slot] : null;
     if (!info || !Number.isInteger(index) || index < -1 || index > info.max)
       return res.status(400).json({ error: "That isn't something you can wear." });
     if (index === -1 && !info.optional) return res.status(400).json({ error: "You can't take that off." });
-    if (index >= 0 && !req.user.ownedItems().has(`${slot}:${index}`))
-      return res.status(403).json({ error: "You don't own that yet." });
-
-    // keep what they were wearing in the inventory before swapping it out
-    req.user.normalizeInventory();
-    req.user.look = { ...req.user.publicLook(), [slot]: index };
-    await req.user.save();
-    notifyLook(req.user._id.toString(), req.user.publicLook());
-    res.json({ user: req.user.toPublic() });
+    // the save only goes through if nothing changed since the player was loaded (a trade or a purchase at the same
+    // moment): then load again and check again, so wearing something can never bring back an item that was traded away
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const user = attempt ? await User.findById(req.user._id) : req.user;
+      if (!user) return res.status(401).json({ error: "Please log in first." });
+      if (index >= 0 && !user.ownedItems().has(`${slot}:${index}`))
+        return res.status(403).json({ error: "You don't own that yet." });
+      // keep what they were wearing in the inventory before swapping it out
+      user.normalizeInventory();
+      user.look = { ...user.publicLook(), [slot]: index };
+      try {
+        await user.save();
+      } catch (err) {
+        if (err.name === "VersionError") continue;
+        throw err;
+      }
+      notifyLook(user._id.toString(), user.publicLook());
+      return res.json({ user: user.toPublic() });
+    }
+    res.status(409).json({ error: "Something got in the way. Try again." });
   } catch (err) {
     next(err);
   }

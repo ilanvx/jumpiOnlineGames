@@ -72,6 +72,20 @@ export function vehiclePlayerLeft(io, socketId, p) {
     if (![...S.players.values()].some((q) => q.userId === p.userId && q.room === ROOM) && S.byOwner.get(p.userId) === v) v.offSince = Date.now();
   }, 3000);
 }
+// two players blocked each other (on) or not any more: their vehicles vanish from / come back into each other's game
+export function vehiclesGhost(io, aId, bId, on) {
+  const S = io.__veh;
+  if (!S || !S.players) return;
+  for (const [owner, other] of [[String(aId), String(bId)], [String(bId), String(aId)]]) {
+    const v = S.byOwner.get(owner);
+    if (!v) continue;
+    for (const p of S.players.values()) {
+      if (p.userId !== other || p.room !== ROOM || p.role === "admin") continue;
+      if (on) S.io.to(p.id).emit("veh:gone", { o: v.owner, why: "swap" });
+      else if (seesVeh(p, v)) S.io.to(p.id).emit("veh:set", view(v));
+    }
+  }
+}
 export function vehiclePlayerBack(io, p) {
   const v = io.__veh?.byOwner.get(p.userId);
   if (v) v.offSince = 0;

@@ -1,13 +1,15 @@
 import { activeEvent } from "./events.js";
-import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { User } from "../models/User.js";
-import { banMessage, needsVerify } from "../routes/auth.js";
+import { banMessage, needsVerify, readToken } from "../routes/auth.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
-import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack } from "./vehicles.js";
+import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
-import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
+import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
+import { Report } from "../models/Report.js";
+import { socketIp } from "../routes/ip.js";
 import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
@@ -247,8 +249,11 @@ export function attachPlaza(io) {
       const tab = typeof socket.handshake.auth?.tab === "string" ? socket.handshake.auth.tab : "";
       const token = tab || readCookie(socket.handshake.headers.cookie, COOKIE);
       if (!token) return next(new Error("not-logged-in"));
-      const { sub, v, tab: isTab } = jwt.verify(token, process.env.JWT_SECRET);
-      if (tab && !isTab) return next(new Error("not-logged-in"));
+      let pl = readToken(token, tab ? "tab" : "login");   // the right kind of token, not logged out (routes/auth.js)
+      if (!pl && tab) pl = readToken(readCookie(socket.handshake.headers.cookie, COOKIE), "login");   // this tab's token ran out: the browser's login (the game checks "whoami")
+      if (!pl) return next(new Error("not-logged-in"));
+      const { sub, v } = pl;
+      socket.data.jti = pl.jti || "";
       const user = await User.findById(sub);
       if (!user || (v || 0) !== (user.tokenVersion || 0)) return next(new Error("not-logged-in"));
       if (user.isBanned()) return next(new Error("banned"));
@@ -295,6 +300,16 @@ export function attachPlaza(io) {
   });
 
   io.on("connection", (socket) => {
+    // every handler is guarded: a mistake or a database hiccup in one event is logged, it never stops the server
+    const on0 = socket.on.bind(socket);
+    socket.on = (ev, fn) => on0(ev, (...args) => {
+      try {
+        const r = fn(...args);
+        if (r && typeof r.catch === "function") r.catch((err) => console.error(`[socket ${ev}]`, err));
+      } catch (err) {
+        console.error(`[socket ${ev}]`, err);
+      }
+    });
     const me = socket.data.user;
     socket.emit("whoami", { id: String(me.id || me._id || "") });
     socket.emit("event", { event: activeEvent() });   // the holiday event that is on (public/shared/events.js)   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
@@ -303,6 +318,7 @@ export function attachPlaza(io) {
     const canAdmin = limiter(20, 10000);
     const canEmote = limiter(4, 4000);
     const canPhone = limiter(12, 10000);
+    const canType = limiter(20, 5000), canHop = limiter(8, 2000), canJoin = limiter(12, 10000), canLeave = limiter(12, 10000);   // one window can't flood the room
     // "trade" / "duel" badge above a player, seen by everyone
     const setStatus = (sid, status) => {
       const p = players.get(sid);
@@ -315,6 +331,7 @@ export function attachPlaza(io) {
     attachVehicles(io, socket, { players, limiter, emitToUser });
 
     socket.on("join", async (pos) => {
+      if (!canJoin()) return;
       // which room: the Plaza, or someone's home (that player has to exist)
       let room = ROOM;
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
@@ -330,8 +347,9 @@ export function attachPlaza(io) {
       }
       else if (homeOf) {
         try {
-          const owner = await User.findOne({ usernameLower: homeOf }, { house: 1 }).lean();
-          if (!owner || (me.role !== "admin" && ghosts(me.id, owner._id))) return socket.emit("home:gone");
+          const owner = await User.findOne({ usernameLower: homeOf }, { house: 1, username: 1, friends: 1, blocked: 1, homeAccess: 1 }).lean();
+          if (!owner) return socket.emit("home:gone");
+          if (!mayVisit(owner, { id: me.id, role: me.role })) return socket.emit("home:gone", { message: visitRefusal(owner) });
           homeBounds.set("home:" + homeOf, houseShape(owner.house).bounds);
         } catch {
           return;
@@ -339,8 +357,10 @@ export function attachPlaza(io) {
         room = "home:" + homeOf;
       }
       // fresh look / coins / role from the database (they may have shopped since connecting)
+      let jobsOf = {};
       try {
         const fresh = await User.findById(me.id);
+        jobsOf = (fresh && fresh.jobs) || {};
         if (!fresh || fresh.isBanned()) return socket.disconnect(true);
         Object.assign(me, fresh.toPublic());
         needsOnline(me.id, fresh.needs);
@@ -367,7 +387,7 @@ export function attachPlaza(io) {
         room,
         status: players.get(socket.id)?.status || null,
         phone: pos?.phone === true || !!players.get(socket.id)?.phone,
-        uniform: UNIFORMS.has(pos?.uniform) ? pos.uniform : players.get(socket.id)?.uniform || null,
+        uniform: UNIFORMS.has(pos?.uniform) && jobsOf[pos.uniform]?.hired ? pos.uniform : before?.uniform || null,   // only a job they have
         hold: cleanHold(pos?.hold),   // the food in your hand (only for show; eating is checked by food:bite)   // holding the phone (also after moving to another room)
         userId: me.id,
         username: me.username,
@@ -383,6 +403,8 @@ export function attachPlaza(io) {
         invisible: !!me.invisible,
         bday: !!me.bday,
         lv: me.lv || 1,
+        warpAt: Date.now(),   // just arrived (see "move")
+        movedAt: Date.now(),
       };
       const already = players.has(socket.id);
       players.set(socket.id, player);
@@ -394,6 +416,19 @@ export function attachPlaza(io) {
       sendNeeds(me.id);
     });
 
+    // the owner sends a visitor out of their home (they can't come back for 15 minutes)
+    socket.on("home:kick", (d, ack) => {
+      const r = typeof ack === "function" ? ack : () => {};
+      const p = players.get(socket.id), t = players.get(String(d?.id || ""));
+      if (!p || p.room !== "home:" + String(me.username).toLowerCase()) return r({ error: "You can only do that in your own home." });
+      if (!t || t.room !== p.room || t.userId === p.userId) return r({ error: "That player isn't in your home." });
+      if (t.role === "admin") return r({ error: "Admins can't be sent out." });
+      KICKED.set(p.userId + "|" + t.userId, Date.now() + KICK_MS);
+      if (KICKED.size > 20000) for (const [k, until] of KICKED) if (until < Date.now()) KICKED.delete(k);
+      sendOut(t, `${p.username} asked you to leave their home.`);
+      r({ ok: true, message: `${t.username} left your home.` });
+    });
+
     // patting a pet (yours or someone else's): everyone around sees the hearts, and it's fun
     const canPat = limiter(6, 10_000);
     let lastPatFun = 0;
@@ -403,7 +438,7 @@ export function attachPlaza(io) {
       const owner = typeof d?.owner === "string" ? players.get(d.owner) : null;   // a pet walking with someone
       const pid = typeof d?.pid === "string" && /^[a-f0-9]{10}$/.test(d.pid) ? d.pid : null; // a pet at home
       if (owner ? owner.room !== p.room || !owner.pet : !pid) return;
-      if (owner && owner.invisible && !sees(p, owner)) return;
+      if (owner && !sees(p, owner)) return;   // invisible admins, and players who blocked each other
       roomSend(p.invisible ? p : owner || p, "pet:pat", owner ? { owner: owner.id, by: p.id } : { pid, by: p.id });
       if (Date.now() - lastPatFun > 20_000) {
         lastPatFun = Date.now();
@@ -492,8 +527,13 @@ export function attachPlaza(io) {
       const p = players.get(socket.id);
       if (!p || !canMove()) return;
       const B = boundsOf(p.room);
-      p.x = clamp(num(d?.x, p.x), B.x0, B.x1);
-      p.z = clamp(num(d?.z, p.z), B.z0, B.z1);
+      const nx = clamp(num(d?.x, p.x), B.x0, B.x1), nz = clamp(num(d?.z, p.z), B.z0, B.z1), now = Date.now();
+      // faster than any vehicle: the position jumped (a city teleport, or a changed game). Treasure waits a little after a jump.
+      const dt = Math.min(5, Math.max(0, (now - (p.movedAt || now)) / 1000));
+      if (Math.hypot(nx - p.x, nz - p.z) > 30 * dt + 6) p.warpAt = now;
+      p.movedAt = now;
+      p.x = nx;
+      p.z = nz;
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
       p.pose = cleanPose(d?.pose, p.room === ROOM); // outside only sitting and lying down (benches, sun loungers)
@@ -508,11 +548,13 @@ export function attachPlaza(io) {
       if (until > Date.now()) return socket.emit("chat:muted", { until });
       const text = cleanText(raw);
       if (!text) return;
+      if (!canChat()) return socket.emit("chat:slow");   // before anything is checked or written down
       // phone numbers, addresses and emails never go out (not a strike: the player gets a "never share this" window)
       const chk = checkText(text), sp = splitPhone(phoneBits(me.id), text);
       if (chk.kind === "private" || sp.hit) {
         phoneBits(me.id, "");
         logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text, blocked: true });
+        if (chk.info === "unsafe") flagChat(me.id, me.username, text, p.room, true);   // asking for pictures / secrets / meeting: the team sees it
         return socket.emit("chat:private", { info: chk.info || "phone", message: PRIVATE_MESSAGE[chk.info || "phone"] });
       }
       phoneBits(me.id, sp.digits);
@@ -522,9 +564,9 @@ export function attachPlaza(io) {
         const s = await strike(me.id);
         return socket.emit("chat:blocked", { message: FRIENDLY_MESSAGE, left: s.left ?? 0, muted: !!s.muted });
       }
-      if (!canChat()) return socket.emit("chat:slow");
       roomSend(p, "chat", { id: p.id, username: p.username, role: p.role, text });
       logQuietly(ChatLog, { userId: me.id, username: me.username, room: p.room, text });
+      if (riskText(text)) flagChat(me.id, me.username, text, p.room, false);   // "how old are you", "which school"…: allowed, but the team takes a look
     });
 
     // taking the phone out / putting it away: everyone around sees the character hold it
@@ -536,16 +578,22 @@ export function attachPlaza(io) {
     });
 
     // put on / take off a work uniform (the police uniform on patrol)
-    socket.on("uniform", (job) => {
+    socket.on("uniform", async (job) => {
       const p = players.get(socket.id);
       if (!p || !canPhone()) return;
-      p.uniform = UNIFORMS.has(job) ? job : null;
+      let wear = UNIFORMS.has(job) ? job : null;
+      if (wear) {   // only players who have that job (routes/jobs.js)
+        const u = await User.findById(me.id).select("jobs").lean();
+        if (!u?.jobs?.[wear]?.hired) wear = null;
+      }
+      if (!players.has(socket.id)) return;
+      p.uniform = wear;
       roomSend(p, "player:uniform", { id: p.id, job: p.uniform }, { self: false });
     });
 
     socket.on("typing", (on) => {
       const p = players.get(socket.id);
-      if (!p) return;
+      if (!p || !canType()) return;
       if (on === true && (mutedUntil.get(me.id) || 0) > Date.now()) return;
       roomSend(p, "typing", { id: p.id, on: on === true }, { self: false });
     });
@@ -568,7 +616,8 @@ export function attachPlaza(io) {
       }
       if (!players.has(socket.id)) return;
       roomSend(p, "emote", { id: p.id, e });
-      const seen = (io.sockets.adapter?.rooms?.get(p.room)?.size || 1) - 1;
+      let seen = 0;   // the players around who see it (an invisible admin isn't counted: that would give them away)
+      for (const q of players.values()) if (q.room === p.room && q.id !== p.id && sees(q, p) && sees(p, q)) seen++;
       console.log(`[emote] ${p.username} ${e} in ${p.room} -> seen by ${seen} other player(s)`);
       reply({ ok: true, seen });
     });
@@ -576,17 +625,18 @@ export function attachPlaza(io) {
     // Space: a jump with a flip (dir 1 = forwards, -1 = backwards), or a small hop in the water
     socket.on("hop", (d) => {
       const p = players.get(socket.id);
-      if (!p) return;
+      if (!p || !canHop()) return;
       roomSend(p, "hop", { id: p.id, dir: d?.dir === 1 ? 1 : -1, small: d?.small === true }, { self: false });
     });
 
-    socket.on("leave", () => removePlayer(socket.id, socket));
+    socket.on("leave", () => { if (canLeave()) removePlayer(socket.id, socket); });
     socket.on("disconnect", () => removePlayer(socket.id, socket));
 
     /* ---------------- admin actions ---------------- */
     // every action re-checks the database, so a stale or forged role can't be used
     // { mods: true } = moderators may use it too (with their limits: see findTarget, ban and coins below)
-    function adminAction(name, handler, { mods = false } = {}) {
+    // heavy = big actions (coins, gift codes, permanent bans): an admin types their password first (once per 30 minutes in this window)
+    function adminAction(name, handler, { mods = false, heavy = null } = {}) {
       socket.on(name, async (data, ack) => {
         const reply = typeof ack === "function" ? ack : () => {};
         try {
@@ -594,6 +644,8 @@ export function attachPlaza(io) {
           const admin = await User.findById(me.id);
           const allowed = admin && (admin.role === "admin" || (mods && admin.role === "mod"));
           if (!allowed || admin.isBanned()) return reply({ ok: false, error: mods ? "Only moderators and admins can do that." : "Only admins can do that." });
+          if (heavy && admin.role === "admin" && heavy(data || {}) && !((socket.data.adminUnlock || 0) > Date.now() && socket.data.adminUnlockV === (admin.tokenVersion || 0)))
+            return reply({ ok: false, code: "password", error: "Type your password to do this." });
           const result = await handler(data || {}, admin);
           console.log(`[admin] ${admin.username} ${name}`, JSON.stringify(data || {}).slice(0, 200));
           reply({ ok: true, ...result });
@@ -604,6 +656,20 @@ export function attachPlaza(io) {
       });
     }
     const fail = (msg) => Object.assign(new Error(msg), { publicMessage: msg });
+    // the admin's password unlocks the heavy actions in this window for 30 minutes
+    const canUnlock = limiter(5, 15 * 60_000);
+    socket.on("admin:unlock", async (d, ack) => {
+      const reply = typeof ack === "function" ? ack : () => {};
+      if (!canUnlock()) return reply({ ok: false, error: "Too many tries. Wait 15 minutes." });
+      const admin = await User.findById(me.id);
+      if (!admin || admin.role !== "admin" || admin.isBanned()) return reply({ ok: false, error: "Only admins can do that." });
+      const ok = typeof d?.password === "string" && d.password.length <= 200 && (await bcrypt.compare(d.password, admin.passwordHash));
+      logQuietly(AdminLog, { adminId: admin._id, admin: admin.username, action: ok ? "unlock" : "unlock-failed", details: "in the game", via: "game", ip: socketIp(socket) });
+      if (!ok) return reply({ ok: false, error: "Wrong password." });
+      socket.data.adminUnlock = Date.now() + 30 * 60_000;
+      socket.data.adminUnlockV = admin.tokenVersion || 0;
+      reply({ ok: true });
+    });
     async function findTarget(username, admin, { allowSelf = false, allowAdmin = false } = {}) {
       const name = cleanText(username, 32).toLowerCase();
       if (!name) throw fail("Enter a username.");
@@ -617,7 +683,7 @@ export function attachPlaza(io) {
     }
 
     const audit = (admin, action, user, details = "") => {
-      logQuietly(AdminLog, { adminId: admin._id, admin: admin.username, action, targetId: user?._id, target: user?.username || "", details, via: "game", ip: socket.handshake.address || "" });
+      logQuietly(AdminLog, { adminId: admin._id, admin: admin.username, action, targetId: user?._id, target: user?.username || "", details, via: "game", ip: socketIp(socket) });
       modLog({ by: admin.username, byRole: admin.role, action, target: user?.username, details, via: "game" });   // #mod-log in Discord (moderation actions only)
     };
 
@@ -634,7 +700,7 @@ export function attachPlaza(io) {
       const how = await moderation.ban(user, minutes, reason);
       audit(admin, "ban", user, `${how}${user.banReason ? " · " + user.banReason : ""}`);
       return { message: `${user.username} is banned ${how}.` };
-    }, { mods: true });
+    }, { mods: true, heavy: (d) => !(num(d.minutes) > 0) });
 
     adminAction("admin:unban", async ({ username }, admin) => {
       const user = await findTarget(username, admin);
@@ -676,7 +742,7 @@ export function attachPlaza(io) {
       const coins = await moderation.addCoins(user, delta);
       audit(admin, "coins", user, `${delta > 0 ? "+" : ""}${delta} → ${coins}`);
       return { message: `${user.username} now has ${coins.toLocaleString("en-US")} coins.` };
-    }, { mods: true });
+    }, { mods: true, heavy: () => true });
 
     // a moderator's coin budget for this month
     adminAction("mod:budget", async (_d, admin) => ({ budget: admin.role === "mod" ? modBudgetInfo(modBudgetLeft(admin)) : null }), { mods: true });
@@ -695,7 +761,7 @@ export function attachPlaza(io) {
       catch (err) { throw err.publicMessage ? fail(err.publicMessage) : err; }
       audit(admin, "code-create", null, `${c.code} · ${c.coins} coins · ${c.maxUses || "no limit"} uses`);
       return { code: c.code, message: `Code ${c.code} is ready: ${c.coins.toLocaleString("en-US")} coins${c.maxUses ? ` for ${c.maxUses} player(s)` : ""}.` };
-    });
+    }, { heavy: () => true });
 
     adminAction("admin:announce", async ({ text }, admin) => {
       const msg = moderation.announce(text, admin.username);
@@ -761,9 +827,10 @@ export function onlineWhere(userId, seeHidden = true) {
   return null;
 }
 // where this player stands in the open world right now (the newest window), or null (for routes that need a position: the secret cave)
+// steady = how long (ms) since the position last jumped or the player arrived
 export function worldPos(userId) {
   let out = null;
-  for (const p of players.values()) if (p.userId === userId && (p.room || ROOM) === ROOM) out = { x: p.x, z: p.z };
+  for (const p of players.values()) if (p.userId === userId && (p.room || ROOM) === ROOM) out = { x: p.x, z: p.z, steady: Date.now() - (p.warpAt || 0) };
   return out;
 }
 export function onlinePlayers(seeHidden = true, selfId = "") {
@@ -788,7 +855,8 @@ export function ghostUpdate(a, b, on) {   // a, b: { id, username, role }
   // visiting the other one's home (even when they're not online): back to the Plaza
   if (on && a.role !== "admin" && b.role !== "admin")
     for (const [X, y] of [[A, b], [B, a]])
-      for (const x of X) if (x.room === "home:" + String(y.username).toLowerCase()) ioRef.to(x.id).emit("home:gone");
+      for (const x of X) if (x.room === "home:" + String(y.username).toLowerCase()) sendOut(x, "That home isn't there any more.");
+  if (a.role !== "admin" && b.role !== "admin") vehiclesGhost(ioRef, a.id, b.id, on);
   for (const a of A)
     for (const b of B) {
       if (a.room !== b.room) continue;
@@ -798,15 +866,90 @@ export function ghostUpdate(a, b, on) {   // a, b: { id, username, role }
       }
     }
 }
-// to every admin / moderator playing right now (a new report)
-export function emitToAdmins(event, data) {
+// these logins were ended (log out): their game windows close
+export function endSessions(jtis) {
   if (!ioRef) return;
-  for (const p of players.values()) if (p.role === "admin" || p.role === "mod") ioRef.to(p.id).emit(event, data);
+  const set = new Set(jtis);
+  for (const s of ioRef.sockets.sockets.values()) {
+    if (!s.data?.jti || !set.has(s.data.jti)) continue;
+    s.emit("kicked:logout");
+    dropPlayer(s.id, s);
+    s.disconnect(true);
+  }
+}
+// to every admin playing right now (a new report). Only admins (not moderators: a moderator could be the one reported),
+// never to the player the report is about, and it never says who reported
+export function emitToAdmins(event, data, { except = "" } = {}) {
+  if (!ioRef) return;
+  for (const p of players.values()) if (p.role === "admin" && p.userId !== String(except)) ioRef.to(p.id).emit(event, data);
 }
 // send something to every window this player has open in the game
 export function emitToUser(userId, event, data) {
   if (!ioRef) return;
   for (const p of players.values()) if (p.userId === userId) ioRef.to(p.id).emit(event, data);
+}
+
+/* ---------- homes: who may come in (kids' safety) ----------
+   The owner picks everyone / friends only (default) / nobody (User.homeAccess), and can send a visitor out
+   (they can't come back for 15 minutes). Admins can always come in; blocked players never. */
+const KICKED = new Map();   // "<owner id>|<visitor id>" -> until (ms)
+const KICK_MS = 15 * 60_000;
+export function homeKicked(ownerId, userId) {
+  const k = String(ownerId) + "|" + String(userId), t = KICKED.get(k);
+  if (t && t < Date.now()) KICKED.delete(k);
+  return !!t && t > Date.now();
+}
+// may this visitor ({ id, role }) come into this owner's home (a User with friends / blocked / homeAccess)?
+export function mayVisit(owner, visitor) {
+  const oid = String(owner._id), vid = String(visitor.id || visitor._id);
+  if (oid === vid || visitor.role === "admin") return true;
+  if (ghosts(oid, vid) || (owner.blocked || []).some((b) => String(b) === vid)) return false;
+  if (homeKicked(oid, vid)) return false;
+  const access = owner.homeAccess || "friends";
+  if (access === "all") return true;
+  if (access === "closed") return false;
+  return (owner.friends || []).some((f) => String(f) === vid);
+}
+export const visitRefusal = (owner) => (owner.homeAccess === "closed" ? `${owner.username}'s home is locked right now.` : `Only ${owner.username}'s friends can visit this home.`);
+// send everyone out of this home who may not be there any more (after the owner changed who can visit)
+export function evictHome(owner) {
+  if (!ioRef) return;
+  const room = "home:" + String(owner.usernameLower || owner.username).toLowerCase();
+  for (const p of [...players.values()]) {
+    if (p.room !== room || mayVisit(owner, { id: p.userId, role: p.role })) continue;
+    sendOut(p, visitRefusal(owner));
+  }
+}
+// throw one player out of the home they are in: the server takes them out of the room (their game goes back to the Plaza)
+function sendOut(p, message) {
+  const s = ioRef?.sockets.sockets.get(p.id);
+  ioRef?.to(p.id).emit("home:gone", { message });
+  dropPlayer(p.id, s);
+}
+
+/* ---------- the chat filter tells the team (kids' safety) ----------
+   unsafe = a message that was stopped because it asks a child for pictures, secrets, being alone or meeting (urgent);
+   otherwise a question worth a look (age, school, city, dating) that was allowed. One open report per player
+   collects them (/admin → Player reports), with the player's chat from the last day. */
+export async function flagChat(userId, username, text, room, unsafe) {
+  try {
+    const uid = String(userId), reason = unsafe ? "grooming" : "flagged";
+    const line = { from: username, text: String(text).slice(0, 300), at: new Date(), room: String(room || "") };
+    const open = await Report.findOne({ targetId: uid, where: "filter", reason, status: "open", at: { $gt: new Date(Date.now() - 6 * 3600_000) } }).select("_id context").lean();
+    if (open) {
+      if ((open.context || []).length < 80) await Report.updateOne({ _id: open._id }, { $push: { context: line } });
+      return;
+    }
+    const said = await ChatLog.find({ userId: uid, at: { $gt: new Date(Date.now() - 86400_000) } }).sort({ at: -1 }).limit(15).lean();
+    const context = [...said.reverse().map((c) => ({ from: username, text: c.text, at: c.at, room: c.room + (c.blocked ? " (stopped by the filter)" : "") })), line];
+    const r = await Report.create({
+      fromId: uid, from: "Jumpi filter", targetId: uid, target: username, reason, where: "filter", room: line.room, context,
+      details: unsafe ? "The chat filter stopped a message asking for pictures, secrets, being alone or meeting." : "The chat filter noticed a question about age, school, city or dating. It was sent; just worth a look.",
+    });
+    emitToAdmins("admin:report", { id: String(r._id), target: username, reason, urgent: !!unsafe, filter: true }, { except: uid });
+  } catch (err) {
+    console.error("[filter] flag", err.message);
+  }
 }
 
 /* ---------- bad words: 3 tries in 10 minutes = muted for 5 minutes ---------- */

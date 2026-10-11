@@ -36,7 +36,7 @@ router.get("/pets", requireUser, (req, res) => res.json(petsOf(req.user)));
 
 router.post("/pets/adopt", requireJson, requireUser, slowDown, async (req, res, next) => {
   try {
-    const kind = PET_BY_ID[String(req.body.kind || "")];
+    const kindId = String(req.body.kind || ""), kind = Object.hasOwn(PET_BY_ID, kindId) ? PET_BY_ID[kindId] : null;
     if (!kind) return res.status(400).json({ error: "That pet doesn't exist." });
     const color = Number(req.body.color);
     if (!Number.isInteger(color) || color < 0 || color >= kind.colors.length) return res.status(400).json({ error: "Pick a colour." });
@@ -70,7 +70,7 @@ router.post("/pets/out", requireJson, requireUser, slowDown, async (req, res, ne
     const id = String(req.body.id || "");
     if (id && !(req.user.pets || []).some((p) => p.id === id)) return res.status(404).json({ error: "That pet isn't yours." });
     req.user.petOut = id;
-    await req.user.save();
+    await User.updateOne({ _id: req.user._id }, { $set: { petOut: id } });
     notifyPet(req.user._id.toString(), outPet(req.user));
     res.json(petsOf(req.user));
   } catch (err) {

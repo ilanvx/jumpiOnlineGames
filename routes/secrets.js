@@ -21,8 +21,9 @@ router.post("/secret/cave", requireJson, requireUser, async (req, res, next) => 
     const pos = worldPos(req.user._id.toString());
     if (!pos || Math.hypot(pos.x - CAVE.chest[0], pos.z - CAVE.chest[1]) > CHEST_REACH) return res.status(400).json({ error: "Walk up to the treasure chest first." });
     if ((req.user.secrets || []).includes("cave")) return res.json({ already: true, user: req.user.toPublic() });
+    if (pos.steady < 10_000) return res.status(400).json({ error: "Catch your breath for a few seconds, then open the chest!" });   // jumped here (realtime/plaza.js "move")
     const hasCrown = CROWN && (req.user.inventory || []).includes(CROWN);
-    const update = { $addToSet: { secrets: "cave" }, $inc: { coins: CAVE_COINS } };
+    const update = { $addToSet: { secrets: "cave" }, $inc: { coins: CAVE_COINS, __v: 1 } };
     if (CROWN && !hasCrown) update.$push = { inventory: CROWN };
     // only one claim wins if two arrive together
     const ok = await User.findOneAndUpdate({ _id: req.user._id, secrets: { $ne: "cave" } }, update, { new: true });

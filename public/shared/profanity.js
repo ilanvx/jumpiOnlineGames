@@ -147,10 +147,47 @@ const ADDRESS_RES = [
   /\bi live (in|at|on|near|next to|by)\b/, /\bwe live (in|at|on|near)\b/, /\bmy (home |house |)(address|adress|adres)\b/, /\bmy (house|home|place) is (at|on|in|near)\b/,
   /\b(apartment|apt|flat|floor|unit|suite)( number| no| #)? ?\d/, /\b(zip|zipcode|zip code|postal code|postcode)\b/, /\bcome (to|over to) my (house|home|place)\b/,
 ];
-const EMAIL_RES = [/[a-z0-9._%+-]+ ?@ ?[a-z0-9.-]+\.[a-z]{2,}/, /\b(gmail|hotmail|yahoo|walla|outlook|icloud|protonmail)( ?(\.|dot) ?(com|co|net|org|il))?\b/, /(ג[׳']?ימייל|גימייל|הוטמייל|וואלה מייל)/];
+const EMAIL_RES = [/[a-z0-9._%+-]+ ?@ ?[a-z0-9.-]+\.[a-z]{2,}/, /\b(gmail|hotmail|yahoo|walla|outlook|icloud|protonmail|proton|gmx|aol|yandex|mail\.ru)( ?(\.|dot) ?(com|co|net|org|il|me|ru))?\b/, /(ג[׳']?ימייל|גימייל|הוטמייל|וואלה מייל|שטרודל)/,
+  // "kid at proton dot me", "kid (at) mail (dot) com"
+  /\b[a-z0-9._-]{2,} ?[([]?(at|@)[)\]]? ?[a-z0-9-]{2,} ?[([]?(dot|\.)[)\]]? ?(com|net|org|me|il|co|io|ru|de|uk)\b/, /\bat [a-z0-9-]{2,} dot (com|net|org|me|il|co|io)\b/];
+// links: other websites and invite links (kids' safety: nobody gets taken out of the game)
+const LINK_RES = [/\b(https?|hxxps?) ?: ?\/\//, /\bwww ?\./, /\b[a-z0-9-]{2,}\.(com|net|org|gg|io|il|ly|xyz|tv|ru|info|biz|site|online)\b/, /\b[a-z0-9-]{2,}\.(co|me)\.[a-z]{2,3}\b/,
+  /\b[a-z0-9-]{2,} ?(dot|\(dot\)|\[dot\]) ?(com|net|org|gg|me|io|co|il|tv|app|ru)\b/, /\b(discord ?\.? ?gg|bit ?\. ?ly|t ?\. ?me|wa ?\. ?me|tinyurl|linktr ?\.? ?ee)\b/];
+// other apps where a stranger could talk to a child alone (English and Hebrew)
+const APP_RE = /\b(snap ?chat|snapchat|(my|ur|your|on|add me on|follow me on) snap|snep|insta|instagram|insta ?gram|telegram|tele ?gram|tik ?tok|tiktok|kik|whats ?app|watsapp|watsap|facebook|messenger|discord|skype|wechat|signal app|omegle|yubo|houseparty)\b|(סנאפ|סנפצ|סנאפצ|אינסטה|אינסטגרמ|טלגרמ|טיקטוק|טיק טוק|דיסקורד|פייסבוק|מסנגר|סקייפ|וואטסאפ|ווטסאפ|ווצאפ|וצאפ|וואצאפ)/;
+// asking a child for pictures, secrets, to be alone or to meet: never allowed (they get the "keep safe" window)
+const UNSAFE_RES = [
+  /\b(send|show|give) me (a |some |ur |your )?(pic|pics|picture|pictures|photo|photos|selfie|selfies|nudes|vid|video|face|body)\b/, /\b(send|show) (ur|your) (pic|pics|picture|pictures|photo|photos|selfie|face|body)\b/,
+  /\b(pic|pics|photo|photos|selfie) of (you|u|yourself|urself)\b/, /\bnudes?\b/,
+  /\b(dont|do not|never) tell (your|ur) (mom|mum|mommy|dad|daddy|parents|mother|father|family|teacher)\b/, /\bour (little )?secret\b/, /\b(just )?between (you and me|us two)\b/,
+  /\b(are|r) (you|u) (home alone|alone (at|in) (home|the house|your room|ur room)|alone right now)\b/, /\b(is|are) (your|ur) (mom|mum|dad|parents) (home|there|around|out)\b/,
+  /\bmeet (me |up )?(irl|in real life|in person|outside|after school)\b/, /\b(irl|in real life|in person) (meet|meetup|meet up|hang out)\b/,
+  /(^| )(תשלח|תשלחי|שלח|שלחי|תראה|תראי)( לי) (תמונה|תמונות|סלפי|צילומ|סרטונ)/, /(^| )(אל|לא) (תספר|תספרי|תגיד|תגידי|לספר|להגיד) (להורימ|להורימ שלכ|לאמא שלכ|לאבא שלכ|למורה שלכ)/,
+  /(^| )(זה )?(סוד|הסוד) (בינינו|שלנו|רק שלנו)/, /(^| )(אתה|את|אתמ) (לבד|לבדכ|לבדכמ) (בבית|בחדר)/, /(^| )(ההורימ|אמא|אבא) שלכ (בבית|לא בבית)( |$)/,
+  /(^| )(ניפגש|נפגש|להיפגש|להפגש|ניפגשימ)( מחר| היומ)? (בחוצ|במציאות|באמת|בעולמ האמיתי|אחרי בית ספר|אחרי בית הספר)/,
+];
+// worth a look by the team, but not blocked (questions many kids ask each other): realtime/plaza.js and routes/social.js flag these
+const RISK_RES = [
+  /\b(how old (are|r) (you|u)|what is (your|ur) age|whats (your|ur) age|asl)\b/, /(^| )(בנ|בת) כמה (אתה|את)( |$)/, /(^| )מה הגיל שלכ/,
+  /\b(what|which) school (do|are|r) (you|u)\b/, /\bwhere do (you|u) go to school\b/, /(^| )(באיזה|איזה) (בית ספר|ביספ|ביס) (אתה|את)/, /(^| )(מאיפה|מאיזו עיר) (אתה|את)( |$)/, /\bwhat city (do|are) (you|u)\b/,
+  /\b(be my|wanna be my|you are my|ur my) (girlfriend|boyfriend|gf|bf)\b/, /(^| )(תהיה|תהיי|רוצה להיות) (החבר|החברה) שלי/,
+  /\b(you are|ur|you r) (so |really |very )?(hot|sexy|cute|pretty|beautiful)( girl| boy)?$/, /\b(kiss|cuddle|touch) (me|you|u)\b/, /\b(older|grown up|adult) (friend|guy|man)\b/,
+  /\b(are|r) (you|u) alone$/, /\b(dont|do not|never) tell (anyone|anybody|nobody) about (me|us|this)\b/,
+];
 const PHONE_WORDS = /\b(phone|fone|number|cell|mobile|whatsapp|whats app|watsap|call me|text me|sms|tel)\b|(טלפונ|פלאפונ|נייד|מספר|וואטסאפ|ווטסאפ|ווצאפ|וצאפ|תתקשר|תסמס)/;
+// digits in any script (Arabic ٠٥٤, Persian ۰۵۴, Devanagari, full-width…) → 0-9, and invisible characters out
+const DIGIT_ZEROS = [0x660, 0x6f0, 0x7c0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xde6, 0xe50, 0xed0, 0xf20, 0x1040, 0x1090, 0x17e0, 0x1810, 0x1946, 0x19d0, 0x1a80, 0x1a90, 0x1b50, 0x1bb0, 0x1c40, 0x1c50, 0xa620, 0xa8d0, 0xa900, 0xa9d0, 0xa9f0, 0xaa50, 0xabf0, 0xff10];
+const INVISIBLE = /[\u00ad\u034f\u061c\u115f\u1160\u17b4\u17b5\u180b-\u180e\u200b-\u200f\u202a-\u202e\u2060-\u206f\u20d0-\u20ff\u3164\ufe00-\ufe0f\ufeff\uffa0]|\udb40[\udc00-\udcff]/g;
+export function plainText(text) {
+  return String(text ?? "").normalize("NFKC").replace(INVISIBLE, "").replace(/\p{Nd}/gu, (ch) => {
+    const c = ch.codePointAt(0);
+    if (c >= 48 && c <= 57) return ch;
+    for (const z of DIGIT_ZEROS) if (c >= z && c <= z + 9) return String(c - z);
+    return ch;
+  });
+}
 export function privateInfo(text) {
-  const raw = String(text ?? "").normalize("NFKC");
+  const raw = plainText(text);
   const p = raw.toLowerCase().replace(/[֑-ׇ]/g, "").replace(/[םןץףך]/g, (ch) => FINALS[ch]).replace(/[׳'`´’"״]/g, "").replace(/\s+/g, " ");
   // phone numbers: 9+ digits, or 7+ starting with 0 / +, or 5+ next to a word like "phone" / "טלפון"
   for (const r of digitsOf(p)) {
@@ -161,26 +198,82 @@ export function privateInfo(text) {
     }
   }
   if (EMAIL_RES.some((re) => re.test(p))) return "email";
+  if (LINK_RES.some((re) => re.test(p))) return "link";
   const words = " " + p.replace(/[^a-zא-ת0-9 ]+/g, " ").replace(/\s+/g, " ").trim() + " ";
   if (ADDRESS_RES.some((re) => re.test(words.trim()) || re.test(words))) return "address";
+  if (APP_RE.test(p) || APP_RE.test(words)) return "app";
+  if (UNSAFE_RES.some((re) => re.test(words.trim()) || re.test(words))) return "unsafe";
   return null;
 }
 // a phone number sent in pieces ("054", "123", "4567"): the server keeps the last digits of each player for a while
+// prevDigits keeps the pieces of the last minute ("<time>:054|<time>:123"); a phone number can start at any of them.
+// Only short messages that are mostly digits (or say "phone" / "מספר") count as pieces, so "I got 1000 coins" doesn't.
 export function splitPhone(prevDigits, text) {
-  const d = digitsOf(String(text ?? "").toLowerCase()).map((r) => r.d).join("");
-  if (!d) return { digits: "", hit: false };
-  const all = (prevDigits || "") + d;
-  return { digits: all.slice(-16), hit: all.length >= 9 && (all[0] === "0" || all.startsWith("972")) };
+  const p = plainText(text).toLowerCase().replace(/[םןץףך]/g, (ch) => FINALS[ch]);
+  const now = Date.now();
+  const kept = String(prevDigits || "").split("|").map((x) => x.split(":")).filter(([t, d]) => /^\d+$/.test(d || "") && now - Number(t) < 60_000);
+  const d = digitsOf(p).map((r) => r.d).join("");
+  const letters = p.replace(/[^a-zא-ת]/g, "").length;
+  const piece = d && (d.length >= letters || PHONE_WORDS.test(p));
+  const pieces = (piece ? [...kept, [String(now), d]] : kept).slice(-8);
+  let hit = false;
+  if (piece)
+    for (let i = 0; i < pieces.length && !hit; i++) {
+      const all = pieces.slice(i).map(([, x]) => x).join("");
+      hit = all.length >= 9 && all.length <= 16 && (all[0] === "0" || all.startsWith("972"));
+    }
+  return { digits: pieces.map(([t, x]) => t + ":" + x).join("|"), hit, changed: !!piece };
+}
+/** Something the team should look at (asking a child's age, school, "be my girlfriend"…): a reason, or null. Not blocked. */
+export function riskText(text) {
+  const p = " " + plainText(text).toLowerCase().replace(/[֑-ׇ]/g, "").replace(/[םןץףך]/g, (ch) => FINALS[ch]).replace(/[׳'`´’"״]/g, "").replace(/[^a-zא-ת0-9 ]+/g, " ").replace(/\s+/g, " ").trim() + " ";
+  return RISK_RES.some((re) => re.test(p) || re.test(p.trim())) ? "risk" : null;
 }
 export const PRIVATE_MESSAGE = {
   phone: "Never share a phone number in Jumpi, not even with friends!",
   address: "Never share where you live or your address in Jumpi!",
   email: "Never share an email address in Jumpi!",
+  link: "Links to other websites can't be sent in Jumpi.",
+  app: "Let's keep chatting here in Jumpi! Other apps can't be shared.",
+  unsafe: "That isn't safe to ask or share. If someone asks you this, tell a grown-up and report them.",
 };
+
+/* ---------- Russian (Cyrillic or Latin letters) and Arabic swear words ---------- */
+const CYR = { а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "kh", ц: "ts", ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya", і: "i", ї: "i", є: "e", ґ: "g" };
+// these start a Russian swear word (written with Russian letters, or in Latin letters: "blyat", "pizdec")
+const RU_STEMS = ["blya", "blyad", "blyat", "bljad", "suchk", "pizd", "pezd", "khuy", "khuj", "khue", "nakhuy", "nahuy", "nakhuj",
+  "ebat", "eban", "ebal", "ebla", "eblo", "ebuch", "yeba", "yebl", "zaeb", "vyeb", "pidor", "pidar", "pidr", "mudak", "mudil", "zalup", "gandon", "shlyukh", "shluh", "dolboe", "dolboy", "govn"];
+const RU_EXACT = new Set(["suka", "cyka", "huy", "huj", "hui", "xuy", "khui", "chmo", "debil", "debily", "debila"]);
+const RU_SAFE = ["govnyashk"];
+const AR_EXACT = new Set(["كس", "كسمك", "كسامك", "كسختك", "كسك", "شرموط", "شرموطه", "شراميط", "منيوك", "منيوكه", "متناك", "متناكه", "عرص", "عرصه", "قحبه", "قحاب", "زب", "زبي", "زبك", "طيز", "طيزك", "نيك", "نيكك", "انيك", "انيكك", "خول", "لوطي", "عاهره", "يلعن", "ملعون"]);
+const AR_STEMS = ["شرموط", "منيوك", "متناك", "كسم", "كسخ", "قحب", "عاهر", "يلعن"];
+function foreignBad(text) {
+  const t = plainText(text).toLowerCase();
+  // Russian: Cyrillic letters → Latin sounds ("блядь" → "blyad"), then the same check for words typed in Latin letters
+  const ru = t.replace(/[\u0400-\u04ff]/g, (ch) => (ch in CYR ? CYR[ch] : ""));
+  for (const w of ru.split(/[^a-z]+/)) {
+    if (w.length < 3 || RU_SAFE.some((s) => w.startsWith(s))) continue;
+    const sq = w.replace(/(.)\1+/g, "$1");
+    if (RU_EXACT.has(w) || RU_EXACT.has(sq) || RU_STEMS.some((s) => w.startsWith(s) || sq.startsWith(s))) return "ru";
+  }
+  // Arabic: no vowel marks or stretching, one form of each letter, then the word with and without "و" / "ال" / "يا" in front
+  if (/[\u0600-\u06ff]/.test(t)) {
+    const ar = t.replace(/[\u064b-\u065f\u0670\u0640]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").replace(/ؤ/g, "و").replace(/ئ/g, "ي");
+    for (const w0 of ar.split(/[^\u0621-\u064a]+/)) {
+      if (!w0) continue;
+      for (const w of [w0, w0.replace(/^و/, ""), w0.replace(/^(و?ال|يا|و?ب)/, ""), w0.replace(/(.)\1{2,}/g, "$1")]) {
+        if (AR_EXACT.has(w) || (w.length > 3 && AR_STEMS.some((s) => w.startsWith(s)))) return "ar";
+      }
+    }
+  }
+  return null;
+}
 
 export function checkText(text) {
   const priv = privateInfo(text);
   if (priv) return { ok: false, word: priv, kind: "private", info: priv };
+  const foreign = foreignBad(text);
+  if (foreign) return { ok: false, word: foreign };
   const p = prep(text);
   if (!p.trim()) return { ok: true };
   const chunks = p.split(/[\s,.;:?/\\()[\]{}<>~_=\-–—]+|(?<=[a-z])(?=[א-ת])|(?<=[א-ת])(?=[a-z])/).filter(Boolean);

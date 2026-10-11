@@ -96,7 +96,7 @@ router.post("/wheel/spin", requireJson, requireUser, async (req, res, next) => {
     const W = WHEEL[slice], item = W.kind === "item" ? wheelItem() : null;
     const hasItem = item && (req.user.inventory || []).includes(item);
     const coins = W.kind === "coins" ? W.amount : W.kind === "item" && (hasItem || !item) ? 500 : 0;
-    const update = { $set: { wheelAt: new Date(now) }, $inc: { coins } };
+    const update = { $set: { wheelAt: new Date(now) }, $inc: { coins, __v: 1 } };
     if (item && !hasItem) update.$push = { inventory: item };
     // only one spin wins if two arrive together ({wheelAt: null} also matches accounts that never spun)
     const filter = { _id: req.user._id, wheelAt: req.user.wheelAt || null };
@@ -118,12 +118,14 @@ router.post("/birthday/claim", requireJson, requireUser, async (req, res, next) 
   try {
     if (!isBirthdayOn(req.user.birthDate)) return res.status(400).json({ error: "It's not your birthday today." });
     const year = israelDay().y, hasHat = BDAY_HAT && (req.user.inventory || []).includes(BDAY_HAT);
-    const update = { $set: { birthdayGiftYear: year }, $inc: { coins: BIRTHDAY_COINS } };
+    // the coins only for accounts older than 30 days (a new account made "on its birthday" just for the coins gets the hat and the party)
+    const coinsNow = req.user.createdAt && Date.now() - new Date(req.user.createdAt).getTime() >= 30 * 86400_000 ? BIRTHDAY_COINS : 0;
+    const update = { $set: { birthdayGiftYear: year }, $inc: { coins: coinsNow, __v: 1 } };
     if (BDAY_HAT && !hasHat) update.$push = { inventory: BDAY_HAT };
     const ok = await User.findOneAndUpdate({ _id: req.user._id, birthdayGiftYear: { $ne: year } }, update, { new: true });
     if (!ok) return res.json({ already: true, user: req.user.toPublic() });
-    notifyCoins(ok._id.toString(), ok.coins);
-    res.json({ coins: BIRTHDAY_COINS, item: BDAY_HAT && !hasHat ? BDAY_HAT : null, hat: BDAY_HAT, user: ok.toPublic() });
+    if (coinsNow) notifyCoins(ok._id.toString(), ok.coins);
+    res.json({ coins: coinsNow, item: BDAY_HAT && !hasHat ? BDAY_HAT : null, hat: BDAY_HAT, user: ok.toPublic() });
   } catch (err) {
     next(err);
   }

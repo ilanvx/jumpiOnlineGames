@@ -1,4 +1,5 @@
 import express from "express";
+import { isHttps } from "./ip.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -68,7 +69,7 @@ function audit(req, action, user, details = "") {
 router.use(async (req, res, next) => {
   res.set({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex" });
   try {
-    const user = await currentUser(req);
+    const user = await currentUser(req, { cookieOnly: true });   // the protected login cookie only (a game tab's token can't open the panel)
     if (!user || user.role !== "admin" || user.isBanned()) return fail(res, 404, "Not found.");
     const as = req.get("x-jumpi-as");   // the game window plays another account (see requireUser in shop.js)
     if (as && as !== user._id.toString()) return res.status(409).json({ error: "You switched account in another tab.", code: "account-changed", now: user.username });
@@ -108,7 +109,7 @@ function unlockedUntil(req) {
 }
 function setUnlock(req, res) {
   const token = jwt.sign({ sub: req.admin._id.toString(), v: req.admin.tokenVersion || 0, k: "admin" }, process.env.JWT_SECRET, { expiresIn: UNLOCK_MS / 1000 });
-  res.cookie(UNLOCK, token, { httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", path: "/api/admin", maxAge: UNLOCK_MS });
+  res.cookie(UNLOCK, token, { httpOnly: true, sameSite: "strict", secure: isHttps(res.req), path: "/api/admin", maxAge: UNLOCK_MS });
   return Date.now() + UNLOCK_MS;
 }
 
@@ -130,7 +131,7 @@ router.post("/unlock", async (req, res, next) => {
 });
 
 router.post("/lock", (req, res) => {
-  res.clearCookie(UNLOCK, { path: "/api/admin", sameSite: "strict", httpOnly: true, secure: process.env.NODE_ENV === "production" });
+  res.clearCookie(UNLOCK, { path: "/api/admin", sameSite: "strict", httpOnly: true, secure: isHttps(res.req) });
   res.json({ ok: true });
 });
 
@@ -420,6 +421,8 @@ const ACTIONS = {
   async "remove-admin"(req, res) {
     const u = await target(req, res, { allowAdmin: true }); if (!u) return;
     if (u.role !== "admin") return fail(res, 409, `${u.username} isn't an admin.`);
+    // an admin can only take the role from admins whose account is newer than their own (nobody can remove the founder)
+    if (u.createdAt && req.admin.createdAt && u.createdAt <= req.admin.createdAt) return fail(res, 403, `${u.username} has been here longer than you, so only they (or the server computer) can change their role.`);
     if (!(await passwordOk(req))) return fail(res, 401, "Wrong password. The role wasn't changed.");
     u.role = "player";
     await u.save();
@@ -430,6 +433,7 @@ const ACTIONS = {
   async delete(req, res) {
     const u = await target(req, res); if (!u) return;
     if (req.body.confirm !== u.username) return fail(res, 400, `Type the username "${u.username}" to confirm.`);
+    if (!(await passwordOk(req))) return fail(res, 401, "Wrong password. Nothing was deleted.");
     moderation.kick(u._id.toString(), "kicked:admin");
     await Promise.all([
       Message.deleteMany({ $or: [{ from: u._id }, { to: u._id }] }),
@@ -439,7 +443,7 @@ const ACTIONS = {
       User.updateMany({}, { $pull: { friends: u._id, friendReqIn: u._id } }),
     ]);
     await User.deleteOne({ _id: u._id });
-    audit(req, "delete-account", u, `deleted (${u.email})`);
+    audit(req, "delete-account", u, "deleted with all their data");   // no email kept: the account is gone
     return `${u.username}'s account and data were deleted.`;
   },
 };

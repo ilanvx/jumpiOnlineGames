@@ -15,6 +15,7 @@
 */
 import { Worker } from "node:worker_threads";
 import { PUBLIC_URL } from "../mail/send.js";
+import { checkName, privateInfo } from "../public/shared/profanity.js";
 
 const API = "https://discord.com/api/v10";
 export const FRIEND_ROLE = "Jumpi Friend";   // given by the ✅ in #rules; made by tools/discord
@@ -85,6 +86,8 @@ const ts = (d) => `<t:${Math.floor(new Date(d).getTime() / 1000)}:R>`;
 // hides anything that looks like an email or a phone number before it goes to Discord
 const hidePrivate = (t) => String(t || "").replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, "[email hidden]").replace(/\+?\d[\d\s\-().]{6,}\d/g, "[number hidden]");
 const cut = (t, n) => (t.length > n ? t.slice(0, n - 1) + "…" : t);
+// text someone typed on the website, shown in Discord as plain text: no [hidden](links), no working web addresses, no formatting
+const plainMd = (t) => String(t || "").replace(/https?:\/\//gi, (m) => m.replace(/t/gi, "x")).replace(/\bwww\./gi, "www[.]").replace(/([\\`*_~|>\[\]()#<@])/g, "\\$1");
 
 /* ---------- gift codes → #gift-codes ---------- */
 export async function postGiftCode(c) {
@@ -131,7 +134,7 @@ export function teamAlert({ role, name, age, account }) {
     color: hex(role === "manager" ? "#e0262f" : role === "guide" ? "#1f5fe0" : "#8a4dff"),
     title: `🙋 New team application · ${TEAM_ROLE[role] || role}`,
     fields: [
-      { name: "From", value: cut(String(name || "—").split(/\s+/)[0], 40) || "—", inline: true },
+      { name: "From", value: cut(plainMd(String(name || "—").split(/\s+/)[0]), 40) || "—", inline: true },
       { name: "Age", value: age >= 18 ? "18+" : "under 18", inline: true },
       { name: "Player", value: account || "not logged in", inline: true },
     ],
@@ -143,9 +146,9 @@ export function staffAlert({ topic, name, username, message, lang }) {
   return send("staff-chat", { embeds: [{
     color: hex(topic === "safety" ? "#ff4545" : topic === "bug" ? "#ff8a1c" : "#1fb6ff"),
     title: `📬 New message · ${TOPIC[topic] || topic}`,
-    description: cut(hidePrivate(message), 700),
+    description: cut(plainMd(hidePrivate(message)), 700),
     fields: [
-      { name: "From", value: cut(String(name || "—").split(/\s+/)[0], 40) || "—", inline: true },
+      { name: "From", value: cut(plainMd(String(name || "—").split(/\s+/)[0]), 40) || "—", inline: true },
       { name: "Player", value: username || "not logged in", inline: true },
       { name: "Language", value: lang === "he" ? "Hebrew" : "English", inline: true },
     ],
@@ -177,7 +180,9 @@ async function postWelcomeCard(user) {
   cardMade.set(user.id, Date.now());
   if (cardMade.size > 5000) cardMade.clear();
   const [avatar, g, chatId, wave] = await Promise.all([avatarPng(user), api("GET", `/guilds/${env().guild}?with_counts=true`).catch(() => null), channelId("chat").catch(() => null), emojiTag("pip_hi")]);
-  const png = await makeCard({ displayName: user.global_name || "", username: user.username, avatar, number: g?.approximate_member_count || 0 });
+  // the name goes on a picture everyone sees: only if it passes the word filter
+  const okName = (n) => (n && checkName(n).ok && !privateInfo(n) ? n : "");
+  const png = await makeCard({ displayName: okName(user.global_name || ""), username: okName(user.username) || "friend", avatar, number: g?.approximate_member_count || 0 });
   const c = await channel("welcome");
   if (!c) return;
   const form = new FormData();

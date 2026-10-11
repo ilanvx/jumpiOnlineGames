@@ -299,8 +299,8 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
       bumpNeeds(updated._id.toString(), { fun: 20 }); // playing is fun!
-      addSeasonXp(updated._id, SEASON_XP.minigame);
-      addLevelXp(updated._id, LEVEL_XP.minigame, { why: "minigame" });
+      if (score > 0) addSeasonXp(updated._id, SEASON_XP.minigame);
+      if (score > 0) addLevelXp(updated._id, LEVEL_XP.minigame, { why: "minigame" });   // a round with no points gives no XP
       if (score > 0) questEvent(updated._id, "minigame", 1);   // quests: "play N mini-games"
       return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap, best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
     }

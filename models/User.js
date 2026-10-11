@@ -83,6 +83,8 @@ const userSchema = new mongoose.Schema(
       ),
       default: () => ({}),
     },
+    // who may come into this player's home: everyone, friends only (the default, kids' safety) or nobody (routes/home.js)
+    homeAccess: { type: String, enum: ["all", "friends", "closed"], default: "friends" },
     // house upgrades bought with coins (public/shared/houses.js)
     house: {
       type: new mongoose.Schema(
@@ -144,7 +146,9 @@ const userSchema = new mongoose.Schema(
       default: () => ({}),
     },
   },
-  { timestamps: true }
+  // optimisticConcurrency: every save() checks that nobody changed the player in between (a stale save can't undo a trade
+  // or a purchase); updates that add items also bump __v so a stale save after them fails too
+  { timestamps: true, optimisticConcurrency: true }
 );
 
 userSchema.methods.publicLook = function () {

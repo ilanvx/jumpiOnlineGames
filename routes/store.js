@@ -55,17 +55,16 @@ router.get("/store/me", requireUser, async (req, res, next) => {
 router.post("/store/checkout", requireJson, requireUser, slowDown, async (req, res, next) => {
   try {
     if (!STORE_OPEN) return res.status(503).json({ error: "The store is closed for now.", comingSoon: true });
-    const P = PRODUCT_BY_ID[String(req.body.product || "")];
+    const pid = String(req.body.product || ""), P = Object.hasOwn(PRODUCT_BY_ID, pid) ? PRODUCT_BY_ID[pid] : null;
     if (!P) return res.status(400).json({ error: "That isn't in the store." });
     if (req.user.isBanned()) return res.status(403).json({ error: "This account is banned." });
     if (P.once && (await Order.exists({ user: req.user._id, product: P.id, status: "paid" })))
       return res.status(409).json({ error: "You already have this bundle!" });
     const live = hyp.ready(), test = !live && testMode() && req.user.role === "admin";
     if (!live && !test) return res.status(503).json({ error: "The store opens soon! Payments aren't switched on yet.", comingSoon: true });
-    const order = await Order.create({
-      user: req.user._id, username: req.user.username, product: P.id, kind: P.kind, amount: P.price,
-      provider: live ? "hyp" : "test", give: P.give,
-    });
+    // a double click (or a second tab) uses the same waiting order instead of making a second one (no paying twice)
+    const order = (await Order.findOne({ user: req.user._id, product: P.id, status: "pending", provider: live ? "hyp" : "test", createdAt: { $gt: new Date(Date.now() - 15 * 60_000) } }).sort({ createdAt: -1 }))
+      || (await Order.create({ user: req.user._id, username: req.user.username, product: P.id, kind: P.kind, amount: P.price, provider: live ? "hyp" : "test", give: P.give }));
     if (test) return res.json({ orderId: order._id.toString(), test: true });
     res.json({ orderId: order._id.toString(), url: await hyp.paymentUrl(order, req.user, P) });
   } catch (err) {
@@ -107,7 +106,17 @@ router.get("/store/hyp/return", async (req, res, next) => {
   Give the player what they paid for. Safe to call twice: only the call that moves the order
   from "pending" to "paid" gives anything.
 */
+// one order at a time for each player (two paid orders checked at the same moment could both look like "the second one")
+const fulfilling = new Map();   // user id -> the promise of the order being given now
 export async function fulfillOrder(orderId, ref) {
+  const o = await Order.findById(orderId).select("user").lean();
+  if (!o) return { ok: false };
+  const key = String(o.user), before = fulfilling.get(key) || Promise.resolve();
+  const run = before.catch(() => {}).then(() => fulfillOne(orderId, ref));
+  fulfilling.set(key, run);
+  try { return await run; } finally { if (fulfilling.get(key) === run) fulfilling.delete(key); }
+}
+async function fulfillOne(orderId, ref) {
   const order = await Order.findOneAndUpdate({ _id: orderId, status: "pending" }, { $set: { status: "paid", paidAt: new Date(), providerRef: ref } }, { new: true });
   if (!order) return { ok: true, already: true };
   const P = PRODUCT_BY_ID[order.product], give = order.give || P?.give || {};
@@ -121,6 +130,7 @@ export async function fulfillOrder(orderId, ref) {
     coins: { $add: [{ $ifNull: ["$coins", 0] }, give.coins || 0] },
     inventory: { $concatArrays: [inv, { $filter: { input: give.items || [], as: "it", cond: { $not: [{ $in: ["$$it", inv] }] } } }] },
   };
+  set.__v = { $add: [{ $ifNull: ["$__v", 0] }, 1] };   // a stale save() elsewhere can't wipe what was just given
   if (give.memberDays) set.memberUntil = { $add: [{ $cond: [{ $gt: [{ $ifNull: ["$memberUntil", now] }, now] }, "$memberUntil", now] }, give.memberDays * DAY] };
   const user = await User.findOneAndUpdate({ _id: order.user }, [{ $set: set }], { new: true });
   await Order.updateOne({ _id: order._id }, { $set: { grantedAt: new Date() } });

@@ -9,6 +9,12 @@ import { PUBLIC_URL } from "./send.js";
 export const ANSWER_SLOT = "JUMPIANSWERSLOT";
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const para = (s) => esc(s).replace(/\r?\n/g, "<br>");
+// what the sender wrote comes back in our email: links and web addresses in it are broken on purpose ("hxxps://", "site[.]com"),
+// so nobody can use our real address to send someone a link (phishing)
+const defang = (s) => String(s || "").replace(/\bhttp(s?):\/\//gi, "hxxp$1://").replace(/\bwww\./gi, "www[.]")
+  .replace(/\b([a-z0-9-]+)\.(com|net|org|io|co|me|il|ly|gg|xyz|info|app|link|ru|biz|site|online|live)\b/gi, "$1[.]$2");
+// only the first name, short (the name is typed by whoever sent the form)
+const firstName = (n) => defang(String(n || "").trim().split(/\s+/)[0] || "").slice(0, 20);
 const TOPIC = {
   en: { general: "Question", safety: "Report a player", privacy: "Privacy / parents", account: "My account", bug: "Something's broken", idea: "An idea!" },
   he: { general: "שאלה", safety: "דיווח על שחקן", privacy: "פרטיות / הורים", account: "החשבון שלי", bug: "משהו לא עובד", idea: "יש לי רעיון!" },
@@ -19,7 +25,7 @@ export function contactReplyEmail({ name, message, topic, sentAt, answer, lang =
   const T = (en, h) => (he ? h : en);
   const H = he ? "'Secular One','Arial Black',Arial,sans-serif;font-weight:900" : "'Lilita One','Arial Black','Arial Rounded MT Bold',Arial,sans-serif;font-weight:900";
   const B = he ? "'Rubik','Fredoka',Arial,sans-serif" : "'Fredoka','Trebuchet MS',Arial,sans-serif";
-  const nm = esc(String(name || "").trim()), hello = nm ? `${T("Hi", "היי")} <b>${nm}</b>,` : T("Hi there,", "שלום,");
+  const nm = esc(firstName(name)), hello = nm ? `${T("Hi", "היי")} <b>${nm}</b>,` : T("Hi there,", "שלום,");
   const when = new Date(sentAt || Date.now()).toLocaleDateString(he ? "he-IL" : "en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jerusalem" });
   const body = answer === ANSWER_SLOT ? ANSWER_SLOT : para(answer);
   // an airmail edge along the top of the letter
@@ -51,7 +57,7 @@ export function contactReplyEmail({ name, message, topic, sentAt, answer, lang =
     <tr><td class="pad" style="padding:26px 46px 0;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f6fd;border-radius:16px;"><tr><td dir="${dir}" style="padding:14px 18px;text-align:${al};border-${he ? "right" : "left"}:5px solid #b9cbe6;border-radius:16px;">
         <div style="font-family:${B};font-size:13px;line-height:18px;color:#7a89a8;font-weight:600;">${T("You wrote to us on " + esc(when), "כתבת לנו ב-" + esc(when))} · ${esc((TOPIC[he ? "he" : "en"] || {})[topic] || topic || "")}</div>
-        <div style="font-family:${B};font-size:14px;line-height:21px;color:#5a6a8a;padding-top:6px;">${para(String(message || "").slice(0, 1500))}${String(message || "").length > 1500 ? "…" : ""}</div>
+        <div style="font-family:${B};font-size:14px;line-height:21px;color:#5a6a8a;padding-top:6px;">${para(defang(String(message || "").slice(0, 1500)))}${String(message || "").length > 1500 ? "…" : ""}</div>
       </td></tr></table>
     </td></tr>
     <!-- don't reply -->
@@ -68,6 +74,6 @@ export function contactReplyEmail({ name, message, topic, sentAt, answer, lang =
   </td></tr></table>
 </td></tr></table>
 </body></html>`;
-  const text = `${String(name || "").trim() ? T("Hi", "היי") + " " + String(name).trim() + "," : T("Hi there,", "שלום,")}\n\n${answer}\n\n${T("Big hugs,\nThe Jumpi Team", "חיבוקים,\nצוות ג'אמפי")}\n\n---\n${T("Please don't reply to this email. To write to us again, open a new message on the Contact page:", "אין להשיב לאימייל זה. כדי להשיב יש לפתוח פנייה חדשה בעמוד צור קשר:")} ${site}/contact`;
+  const text = `${firstName(name) ? T("Hi", "היי") + " " + firstName(name) + "," : T("Hi there,", "שלום,")}\n\n${answer}\n\n${T("Big hugs,\nThe Jumpi Team", "חיבוקים,\nצוות ג'אמפי")}\n\n---\n${T("Please don't reply to this email. To write to us again, open a new message on the Contact page:", "אין להשיב לאימייל זה. כדי להשיב יש לפתוח פנייה חדשה בעמוד צור קשר:")} ${site}/contact`;
   return { subject: T("Re: your message to Jumpi", "תשובה להודעה שלך לג'אמפי"), html, text };
 }

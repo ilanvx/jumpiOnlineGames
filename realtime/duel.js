@@ -16,6 +16,11 @@ import { DuelLog, logQuietly } from "../models/Logs.js";
 */
 export const ENTRY = 100;
 const MOVE_MS = 30_000;
+// the same two accounts can play at most this many games a day (stops passing coins from a second account by losing on purpose)
+const PAIR_DAY = 8;
+const pairGames = new Map();   // "<day>|<id>|<id>" -> games
+const dayNow = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jerusalem" }).format(new Date());
+const pairKey = (a, b) => dayNow() + "|" + [String(a), String(b)].sort().join("|");
 const INVITE_MS = 20_000;
 const GAMES = {
   ttt: { name: "Tic-Tac-Toe", cols: 3, rows: 3, need: 3, gravity: false },
@@ -34,7 +39,7 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
   socket.on("duel:request", async (d) => {
     if (!canAsk()) return fail("Slow down a little before asking again.");
     const game = String(d?.game || "");
-    if (!GAMES[game]) return fail("That game doesn't exist.");
+    if (!Object.hasOwn(GAMES, game)) return fail("That game doesn't exist.");
     const from = players.get(socket.id), target = players.get(String(d?.to || ""));
     if (!from) return;
     if (!target || (from.role !== "admin" && target.role !== "admin" && ghosts(from.userId, target.userId))) return fail("That player isn't here any more.");
@@ -53,10 +58,16 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
     const fromId = String(d?.from || ""), key = `${fromId}>${socket.id}`, inv = invites.get(key);
     invites.delete(key);
     const asker = players.get(fromId), meP = players.get(socket.id);
-    if (!asker || !meP) return fail("That player isn't here any more.");
+    if (!asker || !meP || (asker.role !== "admin" && meP.role !== "admin" && ghosts(asker.userId, meP.userId))) return fail("That player isn't here any more.");
     if (!inv || Date.now() - inv.at > INVITE_MS) return fail("That invite has expired.");
     if (d?.accept !== true) return sock(fromId)?.emit("duel:declined", { username: meP.username });
     if (busy(socket.id) || busy(fromId)) return fail("One of you is busy right now.");
+    const pk = pairKey(asker.userId, meP.userId);
+    if ((pairGames.get(pk) || 0) >= PAIR_DAY) {
+      const msg = "You two played a lot today! Play together again tomorrow, or with someone else.";
+      fail(msg); sock(fromId)?.emit("duel:error", { message: msg });
+      return;
+    }
     // reserve both players before the database step so nothing else can start
     const m = {
       id: crypto.randomUUID(),
@@ -82,6 +93,8 @@ export function attachDuels(io, socket, { players, limiter, notifyCoins, setStat
       for (const p of m.p) sock(p.sid)?.emit("duel:error", { message: msg });
       return;
     }
+    pairGames.set(pk, (pairGames.get(pk) || 0) + 1);
+    if (pairGames.size > 20000) for (const k of pairGames.keys()) if (!k.startsWith(dayNow())) pairGames.delete(k);
     startTurn(m);
     for (const p of m.p) setStatus(p.sid, "duel");
     for (let i = 0; i < 2; i++) sock(m.p[i].sid)?.emit("duel:start", view(m, i));

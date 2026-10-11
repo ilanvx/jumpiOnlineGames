@@ -42,7 +42,7 @@ router.get("/jobs", requireUser, (req, res) => res.json(view(req.user)));
 router.post("/jobs/hire", requireJson, requireUser, async (req, res, next) => {
   try {
     const job = String(req.body?.job || "");
-    if (!JOBS[job]) return res.status(400).json({ error: "Unknown job." });
+    if (!Object.hasOwn(JOBS, job)) return res.status(400).json({ error: "Unknown job." });
     if (recOf(req.user, job)?.hired) return res.json({ ...view(req.user), hired: false });
     const updated = await User.findByIdAndUpdate(req.user._id, { $set: { [`jobs.${job}.hired`]: true, [`jobs.${job}.since`]: new Date() } }, { new: true });
     res.json({ ...view(updated), hired: true });
@@ -53,7 +53,7 @@ router.post("/jobs/hire", requireJson, requireUser, async (req, res, next) => {
 
 router.post("/jobs/start", requireJson, requireUser, (req, res) => {
   const job = String(req.body?.job || "");
-  if (!JOBS[job]) return res.status(400).json({ error: "Unknown job." });
+  if (!Object.hasOwn(JOBS, job)) return res.status(400).json({ error: "Unknown job." });
   const rec = recOf(req.user, job);
   if (!rec?.hired) return res.status(403).json({ error: "You need to get the job first." });
   const uid = req.user._id.toString();
@@ -96,7 +96,7 @@ router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => 
       // top level reached: every piece of the job's uniform goes into the inventory as a gift (only once)
       const missing = after.level >= maxLevel(s.job) ? (JOB_GIFTS[s.job] || []).filter((id) => !(updated.inventory || []).includes(id)) : [];
       if (missing.length) {
-        const got = await User.findOneAndUpdate({ _id: updated._id, inventory: { $nin: missing } }, { $push: { inventory: { $each: missing } } }, { new: true });
+        const got = await User.findOneAndUpdate({ _id: updated._id, inventory: { $nin: missing } }, { $push: { inventory: { $each: missing } }, $inc: { __v: 1 } }, { new: true });
         if (got) { gift = missing; owner = got; }
       }
       return res.json({

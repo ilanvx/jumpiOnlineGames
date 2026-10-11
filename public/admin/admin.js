@@ -263,8 +263,8 @@
             "Set password", (v) => act(u.id, "password", { password: v.password }))) : null,
           !isAdmin ? A("Sign out everywhere", "b-ghost", () => act(u.id, "logout", {}, `Sign ${u.username} out on every device?`)) : null,
           !isAdmin ? A("Change username", "b-ghost", () => modal(`Rename ${u.username}`, [{ name: "username", label: "New username (3–16 letters, numbers or _)", max: 16 }], "Rename", (v) => act(u.id, "rename", { username: v.username }))) : null,
-          !isAdmin ? A("Delete account", "b-red", () => modal(`Delete ${u.username}?`, [{ text: "This deletes the account, items, friends, messages and history. It can't be undone. Use it for deletion requests from players or parents." }, { name: "confirm", label: `Type ${u.username} to confirm` }],
-            "Delete forever", async (v) => { await act(u.id, "delete", { confirm: v.confirm }, null, true); location.hash = "#players"; }, true)) : null)));
+          !isAdmin ? A("Delete account", "b-red", () => modal(`Delete ${u.username}?`, [{ text: "This deletes the account, items, friends, messages and history. It can't be undone. Use it for deletion requests from players or parents." }, { name: "confirm", label: `Type ${u.username} to confirm` }, { name: "password", label: "Your password (to confirm it's you)", type: "password", max: 128 }],
+            "Delete forever", async (v) => { await act(u.id, "delete", { confirm: v.confirm, password: v.password }, null, true); location.hash = "#players"; }, true)) : null)));
       // items
       main.append(panel(`Items (${u.items.reduce((n, i) => n + i.n, 0)})`, u.items.length ? h("div", { class: "chips" }, u.items.map((it) =>
         h("span", { class: "chip" }, h("span", { class: "muted small" }, it.category), it.name + (it.n > 1 ? ` ×${it.n}` : ""),
@@ -428,8 +428,8 @@
 
     /* ---------- player reports from the game (routes/social.js → models/Report.js) ---------- */
     async reports(arg) {
-      const REASON = { grooming: "Asked to meet / for photos / personal details", sexual: "Sexual or inappropriate talk", bullying: "Bullying or harassment", language: "Bad language or hate", scam: "Scam or stealing items", other: "Something else" };
-      const WHERE = { card: "player card", chat: "JumpiChat", friends: "Friends app" };
+      const REASON = { grooming: "Asked to meet / for photos / personal details", sexual: "Sexual or inappropriate talk", bullying: "Bullying or harassment", language: "Bad language or hate", scam: "Scam or stealing items", other: "Something else", flagged: "Flagged by the chat filter (worth a look)" };
+      const WHERE = { card: "player card", chat: "JumpiChat", friends: "Friends app", filter: "chat filter" };
       page("Player reports", h("button", { class: "b b-sm b-ghost", onclick: () => load().catch(oops) }, "Refresh"));
       const sel = h("select", { class: "inp" }, [["", "To check"], ["done", "Checked"], ["all", "All"]].map(([v, t]) => h("option", { value: v }, t)));
       const box = h("div");
