@@ -568,7 +568,7 @@
             h("div", { class: "tile", style: "--c:#c8263c;--e:#7a1020" }, h("b", null, fmtNum(sum("duplicate").n)), h("span", null, "paid twice: refund by hand"))),
           panel(null, table([
             ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.createdAt))], ["Player", (r) => userLink(r.username, r.user)],
-            ["Product", (r) => r.product], ["Price", (r) => ils(r.amount)],
+            ["Product", (r) => (r.items && r.items.length ? r.items.map((l) => (l.qty > 1 ? l.qty + "× " : "") + l.product).join(", ") : r.product)], ["Price", (r) => ils(r.amount)],
             ["Status", (r) => h("span", { class: "tag " + ({ paid: "green", pending: "", duplicate: "red", failed: "red", refunded: "" }[r.status] || "") }, r.status)],
             ["Payment", (r) => h("span", { class: "small muted" }, r.provider === "test" ? "test (pretend)" : r.providerRef || "–")],
           ], d.list)));

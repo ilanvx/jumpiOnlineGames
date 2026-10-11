@@ -34,6 +34,7 @@ a{color:var(--sky-lo)}
 .doc h2{font:400 1.7rem/1.2 var(--display);margin:42px 0 12px;color:var(--ink);letter-spacing:.01em;scroll-margin-top:96px}
 .doc h2:first-of-type{margin-top:8px}
 .doc h3{font:600 1.12rem/1.4 var(--body);margin:22px 0 6px}
+.doc h4{font:600 1.02rem/1.4 var(--body);margin:16px 0 4px;color:var(--ink)}
 .doc p,.doc li{color:#2c3a5f}
 .doc ul,.doc ol{padding-inline-start:24px}
 .doc li{margin:6px 0}

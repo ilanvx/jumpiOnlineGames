@@ -148,6 +148,21 @@ function loginFailed(name, ip) {
   }
   if (badLogins.size > 40000) for (const [k, x] of badLogins) if (x.reset < now) badLogins.delete(k);
 }
+// the store's own login (routes/store.js): the same password check and the same lock against guessing as the game,
+// but it makes no cookie and no game session. Returns { user } or { status, error }.
+export const storeLoginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
+export async function checkPassword(id, password, ip) {
+  id = clean(id); password = typeof password === "string" ? password : "";
+  if (!id || !password || password.length > MAX_PASSWORD) return { status: 400, error: "Enter your username and password." };
+  const who = id.toLowerCase();
+  if (accountLocked(who, ip)) return { status: 429, error: "Too many wrong passwords for this account. Please wait 15 minutes, or reset the password." };
+  const user = await User.findOne(id.includes("@") ? { email: who } : { usernameLower: who });
+  const ok = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
+  if (!user || !ok) { loginFailed(who, ip); return { status: 401, error: "Wrong username or password." }; }
+  badLogins.delete(who + "|" + ip);
+  if (user.isBanned()) return { status: 403, error: banMessage(user) };
+  return { user };
+}
 const signupLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 const checkLimiter = rateLimit({ windowMs: 60 * 1000, max: 30 });
 // "is this email already used?" answers only a few times per address (so nobody can test a long list of emails)

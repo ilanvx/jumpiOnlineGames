@@ -16,34 +16,34 @@ export const CURRENCY = "ILS";
 export const PRODUCTS = [
   // memberships: one payment, no automatic renewal. A free player earns about 250-1,000 coins a day;
   // members get twice the daily gift, mini-game and job caps, so a month is worth far more than its coins.
-  { id: "member-7", kind: "member", price: 9.9, days: 7, give: { memberDays: 7, coins: 100 }, name: { en: "1 Week", he: "שבוע" } },
-  { id: "member-30", kind: "member", price: 24.9, days: 30, give: { memberDays: 30, coins: 500 }, name: { en: "1 Month", he: "חודש" } },
-  { id: "member-90", kind: "member", price: 59.9, days: 90, save: 20, give: { memberDays: 90, coins: 1800 }, tag: "popular", name: { en: "3 Months", he: "3 חודשים" } },
-  { id: "member-365", kind: "member", price: 179.9, days: 365, save: 40, give: { memberDays: 365, coins: 8000 }, tag: "best", name: { en: "1 Year", he: "שנה" } },
+  { id: "member-7", kind: "member", price: 9.9, days: 7, give: { memberDays: 7, coins: 300 }, name: { en: "1 Week", he: "שבוע" } },
+  { id: "member-30", kind: "member", price: 24.9, days: 30, give: { memberDays: 30, coins: 1500 }, name: { en: "1 Month", he: "חודש" } },
+  { id: "member-90", kind: "member", price: 59.9, days: 90, save: 20, give: { memberDays: 90, coins: 5000 }, tag: "popular", name: { en: "3 Months", he: "3 חודשים" } },
+  { id: "member-365", kind: "member", price: 179.9, days: 365, save: 40, give: { memberDays: 365, coins: 20000 }, tag: "best", name: { en: "1 Year", he: "שנה" } },
 
-  // coin packs (the bigger the pack, the more coins per shekel: 51 → 88)
-  { id: "coins-250", kind: "coins", price: 4.9, give: { coins: 250 }, name: { en: "Handful of Coins", he: "חופן מטבעות" } },
-  { id: "coins-600", kind: "coins", price: 9.9, give: { coins: 600 }, name: { en: "Pocket of Coins", he: "כיס מטבעות" } },
-  { id: "coins-1400", kind: "coins", price: 19.9, bonus: 200, give: { coins: 1400 }, tag: "popular", name: { en: "Bag of Coins", he: "שק מטבעות" } },
-  { id: "coins-3200", kind: "coins", price: 39.9, bonus: 600, give: { coins: 3200 }, name: { en: "Chest of Coins", he: "תיבת מטבעות" } },
-  { id: "coins-7000", kind: "coins", price: 79.9, bonus: 1500, give: { coins: 7000 }, tag: "best", name: { en: "Mountain of Coins", he: "הר של מטבעות" } },
+  // coin packs (the bigger the pack, the more coins per shekel: 163 → 250)
+  { id: "coins-800", kind: "coins", price: 4.9, give: { coins: 800 }, name: { en: "Handful of Coins", he: "חופן מטבעות" } },
+  { id: "coins-1800", kind: "coins", price: 9.9, give: { coins: 1800 }, name: { en: "Pocket of Coins", he: "כיס מטבעות" } },
+  { id: "coins-4000", kind: "coins", price: 19.9, bonus: 500, give: { coins: 4000 }, tag: "popular", name: { en: "Bag of Coins", he: "שק מטבעות" } },
+  { id: "coins-9000", kind: "coins", price: 39.9, bonus: 1500, give: { coins: 9000 }, name: { en: "Chest of Coins", he: "תיבת מטבעות" } },
+  { id: "coins-20000", kind: "coins", price: 79.9, bonus: 4000, give: { coins: 20000 }, tag: "best", name: { en: "Mountain of Coins", he: "הר של מטבעות" } },
 
   // special bundles (one time each)
   {
     id: "bundle-starter", kind: "bundle", price: 14.9, once: true, color: "#1fb6ff",
-    give: { coins: 1000, items: ["hair:4", "shirt:4", "glasses:5"] },
+    give: { coins: 2500, items: ["hair:4", "shirt:4", "glasses:5"] },
     name: { en: "Starter Pack", he: "חבילת פתיחה" },
     blurb: { en: "A fresh new look and a pile of coins to start your adventure.", he: "לוק חדש וערימת מטבעות כדי להתחיל את ההרפתקה." },
   },
   {
     id: "bundle-sakura", kind: "bundle", price: 29.9, once: true, color: "#ff5fa8",
-    give: { coins: 500, items: ["aura:8", "hair:6", "pants:4", "glasses:4"] },
+    give: { coins: 1500, items: ["aura:8", "hair:6", "pants:4", "glasses:4"] },
     name: { en: "Sakura Dream", he: "חלום הסאקורה" },
     blurb: { en: "The store-only Sakura Breeze aura with pink petals, plus a matching outfit.", he: "הילת סאקורה עם עלי כותרת ורודים, שיש רק בחנות, ותלבושת מתאימה." },
   },
   {
     id: "bundle-royal", kind: "bundle", price: 49.9, once: true, color: "#ffb21f",
-    give: { coins: 1500, items: ["aura:9", "shirt:7", "pants:7", "tag:8"], memberDays: 7 },
+    give: { coins: 4000, items: ["aura:9", "shirt:7", "pants:7", "tag:8"], memberDays: 7 },
     name: { en: "Royal Star", he: "כוכב מלכותי" },
     blurb: { en: "The store-only Crown of Stars aura, a royal outfit, the Crown tag and a week of membership.", he: "הילת כתר הכוכבים שיש רק בחנות, תלבושת מלכותית, תג הכתר ושבוע מנוי." },
   },

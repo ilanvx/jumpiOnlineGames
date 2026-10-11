@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
 <link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
-<link rel="preload" href="/site/img/store/coins-1400.webp" as="image">
+<link rel="preload" href="/site/img/store/coins-4000.webp" as="image">
 <link rel="stylesheet" href="/site/legal.css">
 <link rel="stylesheet" href="/site/chrome.css">
 <link rel="stylesheet" href="/site/store.css">
@@ -37,6 +37,7 @@
       <a href="/team"><img src="/site/img/nav/team.png" alt="" width="30" height="30"><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
       <a class="hm-nav-play" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
     </nav>
+    <button class="hm-cart" id="cartBtn" type="button" aria-label="Cart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 1.9-1.4L21 8H6.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="19.5" r="1.6" fill="currentColor"/><circle cx="17" cy="19.5" r="1.6" fill="currentColor"/></svg><span class="hm-cart-n" id="cartN" hidden>0</span></button>
     <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" data-set="en" aria-pressed="true">EN</button><button type="button" data-l="he" data-set="he" aria-pressed="false">עב</button></div>
     <a class="hm-btn orange sm hm-top-play" href="/play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span data-l="en">Play</span><span data-l="he">לשחק</span></a>
     <button class="hm-menu" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
@@ -50,7 +51,7 @@
     <h1 data-en="Jumpi Store" data-he="החנות של ג'אמפי">Jumpi Store</h1>
     <p class="st-lead" data-en="Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi." data-he="צוללים לים של מטבעות! חבילות מטבעות, מנויים וחבילות מיוחדות לג'אמפי שלכם.">Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi.</p>
     <div class="st-cta">
-      <a class="st-chip gold" href="#coins"><img src="/site/img/store/coins-600.webp" alt="" width="44" height="44"><span data-en="Coins" data-he="מטבעות">Coins</span></a>
+      <a class="st-chip gold" href="#coins"><img src="/site/img/store/coins-1800.webp" alt="" width="44" height="44"><span data-en="Coins" data-he="מטבעות">Coins</span></a>
       <a class="st-chip purple" href="#membership"><img src="/site/img/store/member-30.webp" alt="" width="44" height="44"><span data-en="Membership" data-he="מנוי">Membership</span></a>
       <a class="st-chip pink" href="#bundles"><img src="/site/img/bundle-sakura.png" alt="" width="44" height="44"><span data-en="Bundles" data-he="חבילות">Bundles</span></a>
     </div>
@@ -58,8 +59,6 @@
   <svg class="st-hero-edge" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 180 90 360 0 560 34 C 760 70 940 10 1140 38 C 1280 58 1380 30 1440 34 V90 H0 Z"/></svg>
 </section>
 
-<div class="st-who-wrap"><div class="st-who" id="stWho" aria-live="polite"></div></div>
-<div class="st-note" id="stNote" hidden></div>
 
 <main class="st-main">
   <section class="st-sec" id="coins">
@@ -93,7 +92,20 @@
   </section>
 </main>
 
-<!-- buying: a grown-up check, then payment -->
+<!-- the cart: a panel on the right (cart → log in for this purchase → pay) -->
+<div class="st-cart" id="stCart" hidden>
+  <div class="st-cart-shade" data-cclose></div>
+  <section class="st-cart-panel" role="dialog" aria-modal="true" aria-labelledby="stCartTitle">
+    <header class="st-cart-head">
+      <button class="st-x st-back" id="stCartBack" type="button" aria-label="Back" hidden><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 L6.5 10 L12.5 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <h2 id="stCartTitle">Your cart</h2>
+      <button class="st-x" id="stCartX" type="button" aria-label="Close" data-cclose><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    </header>
+    <div class="st-cart-body" id="stCartBody" aria-live="polite"></div>
+  </section>
+</div>
+
+<!-- messages after paying -->
 <div class="st-modal" id="stModal" hidden>
   <div class="st-dialog" role="dialog" aria-modal="true" aria-labelledby="stDlgTitle">
     <button class="st-x" id="stClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>

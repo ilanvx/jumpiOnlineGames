@@ -9,8 +9,11 @@ const orderSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     username: { type: String, default: "" },
-    product: { type: String, required: true },
-    kind: { type: String, enum: ["member", "coins", "bundle"], required: true },
+    product: { type: String, required: true },   // the product id, or "cart" when the order has several
+    kind: { type: String, enum: ["member", "coins", "bundle", "cart"], required: true },
+    // what is in the cart: one line per product (bundles are always 1); amount = the sum of price × qty
+    items: { type: [{ _id: false, product: String, qty: Number, price: Number }], default: [] },
+    cartKey: { type: String, default: "" },   // the same cart again within 15 minutes reuses this order (no paying twice)
     amount: { type: Number, required: true }, // shekels
     currency: { type: String, default: "ILS" },
     status: { type: String, enum: ["pending", "paid", "failed", "cancelled", "duplicate", "refunded"], default: "pending", index: true },
@@ -23,6 +26,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 orderSchema.index({ user: 1, product: 1, status: 1 });
+orderSchema.index({ user: 1, "items.product": 1, status: 1 });
 orderSchema.index({ createdAt: -1 });
 
 export const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);
