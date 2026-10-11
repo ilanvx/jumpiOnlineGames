@@ -2289,6 +2289,42 @@ body.land .btn .rt-bars{width:20px;height:16px}body.land .rt-bars i{height:3px}b
 body.land .side-rail:not(.shut) .rt-bars i:nth-child(1),body.land .side-rail:not(.shut) .rt-bars i:nth-child(3){top:6px}
 .btn .rail-dot{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 0 3px #fff;display:none;animation:phPop .4s cubic-bezier(.2,1.8,.4,1)}
 .side-rail.shut.alert .btn .rail-dot{display:block}
+/* ---------- the side menu, new look: a glass dock; the buttons fly in one after another; on hover the picture
+   jumps out of its frame and a name tag slides out ---------- */
+.side-rail{gap:0;padding:7px;border-radius:26px;background:linear-gradient(180deg,rgb(24 48 104 / .62),rgb(14 28 70 / .7));
+  box-shadow:inset 0 0 0 2px rgb(255 255 255 / .2),inset 0 2px 0 rgb(255 255 255 / .18),0 12px 26px rgb(0 0 0 / .28);
+  transition:background .3s,box-shadow .3s}
+.side-rail.shut{background:rgb(14 28 70 / 0);box-shadow:none}
+.rail-tog{width:62px;height:48px;border-radius:18px}
+.rail-items{display:flex;flex-direction:column;align-items:center;gap:12px;max-height:420px;padding-top:12px;transform:none;opacity:1;visibility:visible;
+  transition:max-height .4s cubic-bezier(.3,1.15,.4,1),padding .3s,visibility 0s}
+.side-rail.shut .rail-items{max-height:0;padding-top:0;transform:none;opacity:1;visibility:hidden;transition:max-height .3s ease-in .08s,padding .3s .08s,visibility 0s .38s}
+.rail-items>.btn{width:62px;height:62px;border-radius:20px;overflow:visible;opacity:1;transform:none;
+  box-shadow:inset 0 3px 0 rgb(255 255 255 / .5),inset 0 -5px 0 rgb(0 0 0 / .18),0 5px 0 var(--edge),0 9px 14px rgb(0 0 0 / .3);
+  transition:transform .42s cubic-bezier(.2,1.55,.4,1) calc(var(--i,0) * 55ms),opacity .25s calc(var(--i,0) * 55ms),filter .2s,box-shadow .12s}
+.rail-items>.btn{background:radial-gradient(circle at 30% 22%,rgb(255 255 255 / .45),rgb(255 255 255 / 0) 42%),linear-gradient(180deg,var(--hi) 0%,var(--c) 48%,var(--lo) 100%)}
+.rail-items>.btn::after{content:"";position:absolute;inset:5px;border-radius:15px;border:2px solid rgb(255 255 255 / .32);background:radial-gradient(circle at 50% 60%,rgb(255 255 255 / .22),rgb(255 255 255 / 0) 62%);pointer-events:none}
+.side-rail.shut .rail-items>.btn{opacity:0;transform:translateY(-26px) scale(.3);pointer-events:none;transition:transform .22s ease-in,opacity .18s}
+.rail-items>.btn svg{width:40px;height:40px;z-index:1;transition:transform .38s cubic-bezier(.2,1.7,.4,1),filter .25s}
+.rail-items .rail-tip{position:absolute;left:calc(100% + 16px);top:50%;translate:-10px -50%;opacity:0;z-index:3;white-space:nowrap;padding:8px 15px;border-radius:999px;
+  background:#fff;color:#1d2b4f;font:600 1rem/1 "Fredoka",system-ui,sans-serif;letter-spacing:0;text-shadow:none;box-shadow:0 4px 0 rgb(0 0 0 / .15),0 8px 18px rgb(0 0 0 / .2);
+  pointer-events:none;transition:translate .28s cubic-bezier(.2,1.5,.4,1),opacity .18s}
+.rail-items .rail-tip::before{content:"";position:absolute;left:-6px;top:50%;width:12px;height:12px;background:#fff;border-radius:2px;transform:translateY(-50%) rotate(45deg)}
+@media (hover:hover){
+  .rail-items>.btn:hover{transform:translateY(-3px);filter:brightness(1.1) saturate(1.15);z-index:5}
+  .rail-items>.btn:hover svg{transform:translate(-3px,-14px) scale(1.6) rotate(-10deg);filter:drop-shadow(0 10px 6px rgb(0 0 0 / .35));animation:none}
+  .rail-items>.btn:hover .rail-tip{translate:0 -50%;opacity:1}
+  .rail-tog:hover .rt-bars{transform:scale(1.15)}
+}
+.rail-items>.btn:active svg,.rail-items>.btn.pressed svg{transform:scale(.9)}
+.btn .rt-bars{transition:transform .25s cubic-bezier(.2,1.6,.4,1)}
+body.land .side-rail{padding:5px;border-radius:18px}
+body.land .rail-tog{width:var(--lb);height:34px;border-radius:12px}
+body.land .rail-items{gap:7px;padding-top:7px}body.land .side-rail.shut .rail-items{padding-top:0}
+body.land .rail-items>.btn{border-radius:14px;box-shadow:inset 0 2px 0 rgb(255 255 255 / .5),inset 0 -4px 0 rgb(0 0 0 / .18),0 4px 0 var(--edge),0 6px 10px rgb(0 0 0 / .3)}
+body.land .rail-items>.btn::after{inset:3px;border-radius:11px;border-width:1.5px}
+body.land .rail-items .rail-tip{display:none}
+@media (prefers-reduced-motion:reduce){.rail-items,.rail-items>.btn,.rail-items>.btn svg{transition:none}}
 /* the food bar goes up, next to MENU */
 body.land .fbar-wrap{top:calc(env(safe-area-inset-top,0px) + var(--lg));bottom:auto;left:calc(env(safe-area-inset-left,0px) + 118px)}
 body.land .fbar{gap:5px;padding:4px;border-radius:15px}
@@ -8621,7 +8657,8 @@ function closeDiscord(){if(dcOv.hidden)return;dcOv.hidden=true;sfx.close();disco
 discordBtn.onclick=openDiscord;
 /* ---------- RAIL: the side menu (gift, home, phone, season) opens and closes with the button on top; remembered per device ---------- */
 const sideRail=document.getElementById("sideRail"),railTog=document.getElementById("railTog");
-["giftBtn","homeBtn","phoneBtn","seasonBtn"].forEach(id=>document.getElementById("railItems").appendChild(document.getElementById(id)));
+["giftBtn","homeBtn","phoneBtn","seasonBtn"].forEach((id,i)=>{const b=document.getElementById(id);document.getElementById("railItems").appendChild(b);
+  b.style.setProperty("--i",i);const t=document.createElement("span");t.className="rail-tip";t.setAttribute("aria-hidden","true");t.textContent=b.getAttribute("aria-label");b.appendChild(t);});   // a name tag that slides out on hover
 function railSet(open,save){sideRail.classList.toggle("shut",!open);railTog.setAttribute("aria-expanded",open);railTog.setAttribute("aria-label",open?"Close the menu":"Open the menu");
   if(save)try{localStorage.setItem("jumpi-rail",open?"open":"shut");}catch(e){}}
 {let saved=null;try{saved=localStorage.getItem("jumpi-rail");}catch(e){}railSet(saved!=="shut",false);}
