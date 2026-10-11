@@ -424,7 +424,7 @@ body.login-mode .site-btn{display:none}
 @keyframes dcWiggle{30%{rotate:-10deg}60%{rotate:8deg}}
 body.in-game .disc-btn,body.login-mode .disc-btn{display:none}
 body.app .disc-btn{display:none!important}   /* the Android app: no Discord link */
-@media (max-width:640px){.disc-btn{right:86px!important;top:calc(env(safe-area-inset-top,0px) + 86px);width:58px;padding:0}.disc-btn span{display:none}}
+@media (max-width:640px){.disc-btn{right:18px!important;top:calc(env(safe-area-inset-top,0px) + 86px);width:58px;padding:0}.disc-btn span{display:none}}
 #dcOv{z-index:60}
 .dc-card{padding-top:92px}
 .dc-face{border-radius:50%;width:140px;height:140px;top:-66px;border:6px solid #fff;box-shadow:0 8px 0 #b9c9e6;background:#7b5cff;filter:none}
@@ -3312,10 +3312,7 @@ body.land .npc-card .idle-face{display:none}
   </div>
 </div>
 
-<a class="btn site-btn" id="siteBtn" href="/" target="_blank" rel="noopener" aria-label="Jumpi website" title="Jumpi website">
-  <svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)" fill="#3a1192"><circle cx="16" cy="16" r="11"/></g>
-    <circle cx="16" cy="16" r="11" fill="none" stroke="#fff" stroke-width="2.8"/><path d="M5 16 H27 M16 5 Q9.5 16 16 27 M16 5 Q22.5 16 16 27" fill="none" stroke="#fff" stroke-width="2.4"/></svg>
-</a>
+
 <button class="btn disc-btn" id="discordBtn" type="button" aria-haspopup="dialog" aria-label="Join our Discord community">
   <svg viewBox="0 0 40 40" aria-hidden="true"><g transform="translate(0 2.5)" fill="#2a2f9e"><path d="M6 8 H25 Q29 8 29 12 V21 Q29 25 25 25 H14 L8 30 V25 H6 Q2 25 2 21 V12 Q2 8 6 8 Z"/><path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z"/></g>
     <path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z" fill="#ffd23a"/>
@@ -8612,12 +8609,11 @@ document.getElementById("byeGo").onclick=async()=>{
 byeOverlay.addEventListener("click",e=>{if(e.target===byeOverlay)closeBye();});
 byeOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")closeBye();
   if(e.key==="Tab"){const f=[document.getElementById("byeStay"),document.getElementById("byeGo")],i=f.indexOf(document.activeElement);e.preventDefault();f[(i+(e.shiftKey?-1:1)+2)%2].focus();}});
-// the website button sits just left of the language button
-const siteBtn=document.getElementById("siteBtn");
+// the Discord button sits just left of the top-right buttons
+
 function placeSiteBtn(){let r=0;
   for(const id of ["settingsBtn","langBtn","coins","lvChip"]){const el=document.getElementById(id);if(el&&el.offsetWidth){const b=el.getBoundingClientRect();r=Math.max(r,innerWidth-b.left+10);}}
-  siteBtn.style.right=(r?Math.round(r):88)+"px";
-  discordBtn.style.right=(parseFloat(siteBtn.style.right)+siteBtn.offsetWidth+10)+"px";}   // the Discord button: left of it (phones: CSS puts it on the 2nd row)
+  discordBtn.style.right=(r?Math.round(r):88)+"px";}   // the Discord button: left of the top-right buttons (phones: CSS puts it on the 2nd row)
 // "JOIN OUR COMMUNITY!": the Discord button on the start screen
 const discordBtn=document.getElementById("discordBtn"),dcOv=document.getElementById("dcOv");
 function openDiscord(){dcOv.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("dcJoin").focus(),60);}
