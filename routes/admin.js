@@ -20,6 +20,7 @@ import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MO
 import { MOD_ITEMS } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
 import { eventInfo, setEvent } from "../realtime/events.js";
+import { pollView } from "./poll.js";
 import { EVENTS, isEvent } from "../public/shared/events.js";
 
 /*
@@ -477,6 +478,10 @@ router.post("/announce", (req, res) => {
   if (!msg) return fail(res, 400, "Write a message first.");
   audit(req, "announce", null, msg);
   res.json({ ok: true, message: `Sent to ${onlinePlayers().length} player(s) online.` });
+});
+/* ---------- the weekly poll on the home page (polls.js): only this week's question and its answers ---------- */
+router.get("/poll", async (req, res, next) => {
+  try { res.json(await pollView(null)); } catch (err) { next(err); }
 });
 /* ---------- holiday events (public/shared/events.js): one switch decorates the whole game and opens its shop ---------- */
 router.get("/event", (req, res) => {

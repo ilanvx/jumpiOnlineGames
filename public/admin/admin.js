@@ -355,6 +355,24 @@
       await load();
     },
 
+    // the poll on the home page: this week's question and the answers so far (older weeks aren't kept)
+    async poll() {
+      const d = await api("/poll");
+      page("Weekly poll", h("span", { class: "muted" }, `${d.week} · a new question on ${fmtDate(d.endsAt)}`), h("button", { class: "b b-sm b-ghost", onclick: route }, "Refresh"));
+      const top = Math.max(1, ...d.counts);
+      const rows = d.options.map((o, i) => {
+        const n = d.counts[i], pct = d.total ? Math.round((n / d.total) * 100) : 0;
+        return h("div", { class: "pl-row" + (n === top && n ? " top" : "") },
+          h("div", { class: "pl-txt" }, h("b", null, o.en), h("span", { dir: "rtl" }, o.he)),
+          h("div", { class: "pl-bar" }, h("i", { style: `width:${d.total ? (n / top) * 100 : 0}%` })),
+          h("div", { class: "pl-n" }, h("b", null, fmtNum(n)), h("span", null, `${pct}%`)));
+      });
+      main.append(panel(null,
+        h("div", { class: "pl-q" }, h("h3", null, d.question.en), h("p", { dir: "rtl" }, d.question.he), h("span", { class: "tag blue" }, `${fmtNum(d.total)} vote${d.total === 1 ? "" : "s"}`)),
+        h("div", { class: "pl-list" }, rows),
+        h("p", { class: "muted small" }, "Players vote once a week (by account, or by browser for visitors). The question changes by itself every Sunday; votes are kept for 8 weeks, and only this week is shown here.")));
+    },
+
     async events() {
       page("Events");
       const box = h("div", { class: "ev-grid" });

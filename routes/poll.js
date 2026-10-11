@@ -2,7 +2,8 @@ import express from "express";
 import crypto from "node:crypto";
 import { PollVote } from "../models/PollVote.js";
 import { currentUser, requireJson } from "./auth.js";
-import { weekInfo, pollFor } from "../polls.js";
+import { isHttps } from "./ip.js";
+import { weekInfo, pollFor, voteKey } from "../polls.js";
 
 /* The weekly poll on the website: anyone can vote once a week (players by account, visitors by a browser cookie). */
 const router = express.Router();
@@ -15,7 +16,7 @@ async function voterOf(req, res, create) {
   if (!/^[a-f0-9]{32}$/.test(id || "")) {
     if (!create) return null;
     id = crypto.randomBytes(16).toString("hex");
-    res.cookie(VOTER_COOKIE, id, { httpOnly: true, sameSite: "lax", secure: req.secure, maxAge: 365 * 864e5 });
+    res.cookie(VOTER_COOKIE, id, { httpOnly: true, sameSite: "lax", secure: isHttps(req), maxAge: 365 * 864e5 });
   }
   return "a:" + id;
 }
@@ -31,19 +32,24 @@ async function countsFor(key, n) {
   return counts;
 }
 
+// this week's poll: the question and answers in English and Hebrew, the counts, and what this voter picked
+export async function pollView(myVote) {
+  const info = weekInfo(), poll = pollFor(info), key = voteKey(info, poll);
+  const counts = await countsFor(key, poll.options.length);
+  return { week: info.key, id: poll.id, endsAt: info.endsAt, question: { en: poll.question[0], he: poll.question[1] },
+    options: poll.options.map(([en, he]) => ({ en, he })), counts, total: counts.reduce((a, b) => a + b, 0), myVote: myVote ?? null };
+}
 async function view(req, res, myVote) {
-  const info = weekInfo(), poll = pollFor(info);
   if (myVote === undefined) {
-    const voter = await voterOf(req, res, false);
-    const v = voter ? await PollVote.findOne({ week: info.key, voter }).select("option") : null;
+    const info = weekInfo(), voter = await voterOf(req, res, false);
+    const v = voter ? await PollVote.findOne({ week: voteKey(info, pollFor(info)), voter }).select("option") : null;
     myVote = v ? v.option : null;
   }
-  const counts = await countsFor(info.key, poll.options.length);
-  return { week: info.key, endsAt: info.endsAt, question: poll.question, options: poll.options.map(([label, icon]) => ({ label, icon })), counts, total: counts.reduce((a, b) => a + b, 0), myVote };
+  return pollView(myVote);
 }
 
 router.get("/poll", async (req, res, next) => {
-  try { res.json(await view(req, res)); } catch (err) { next(err); }
+  try { res.set("Cache-Control", "no-store"); res.json(await view(req, res)); } catch (err) { next(err); }
 });
 
 const recent = new Map();
@@ -56,10 +62,10 @@ router.post("/poll/vote", requireJson, async (req, res, next) => {
     if (!Number.isInteger(option) || option < 0 || option >= poll.options.length) return res.status(400).json({ error: "Pick one of the answers." });
     const voter = await voterOf(req, res, true);
     try {
-      await PollVote.create({ week: info.key, option, voter });
+      await PollVote.create({ week: voteKey(info, poll), option, voter });
     } catch (err) {
       if (err.code !== 11000) throw err;
-      const had = await PollVote.findOne({ week: info.key, voter }).select("option");
+      const had = await PollVote.findOne({ week: voteKey(info, poll), voter }).select("option");
       return res.status(409).json({ error: "You already voted this week! Come back next week for a new poll.", poll: await view(req, res, had ? had.option : null) });
     }
     cache.at = 0;

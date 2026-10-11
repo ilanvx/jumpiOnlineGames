@@ -12514,7 +12514,8 @@ function stLights(sc,rimCols=[0x8fe8ff,0xffe0f4]){sc.add(new THREE.HemisphereLig
   [[-4,2.5,-3,rimCols[0],2.6],[4,2,-3,rimCols[1],2.2],[0,4,-4,0xffffff,1.4]].forEach(([x,y,z,col,i])=>{const r=new THREE.DirectionalLight(col,i);r.position.set(x,y+1,z);sc.add(r);});}
 const stShadow=(sc,x,z,s=1)=>{const t=stCanvasTex(256,256,(c,w,h)=>{const g=c.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,"rgba(10,10,50,.45)");g.addColorStop(1,"rgba(10,10,50,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
   const m=new THREE.Mesh(new THREE.PlaneGeometry(1.6*s,1.6*s),new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false}));m.rotation.x=-Math.PI/2;m.position.set(x,.01,z);m.scale.y=.55;sc.add(m);};
-const stJumpi=(look)=>{const J=makeCharacter({hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1,...look},"");J.root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return J;};
+const stJumpi=(look)=>{const J=makeCharacter({hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1,...look},"");if(J.eyeL)J.eyeL.scale.y=1;if(J.eyeR)J.eyeR.scale.y=1;   // eyes wide open (a copy can catch the model mid-blink)
+J.root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});return J;};
 // 3D props for the safety cards
 function stPadlock(){const g=new THREE.Group();const s=new THREE.Shape(),W=.95,H=.78,r=.16;
   s.moveTo(-W/2+r,-H/2);s.lineTo(W/2-r,-H/2);s.quadraticCurveTo(W/2,-H/2,W/2,-H/2+r);s.lineTo(W/2,H/2-r);s.quadraticCurveTo(W/2,H/2,W/2-r,H/2);s.lineTo(-W/2+r,H/2);s.quadraticCurveTo(-W/2,H/2,-W/2,H/2-r);s.lineTo(-W/2,-H/2+r);s.quadraticCurveTo(-W/2,-H/2,-W/2+r,-H/2);
@@ -12978,6 +12979,148 @@ const STUDIO_SCENES={
         const t="עולם משחק תלת־ממדי לילדים";c.save();c.direction="rtl";c.textAlign="center";c.textBaseline="middle";c.font=`700 ${Math.round(H*.068)}px "RubikStudio", sans-serif`;
         c.fillStyle="rgba(8,30,100,.45)";c.fillText(t,W/2,H*.8+H*.008);c.fillStyle="#ffffff";c.fillText(t,W/2,H*.8);c.restore();};
       return {scene:sc,camera:cam,glow:.16,vignette:.18,overlay};}},
+  // the home page banner (public/site/img/home/island-hero.jpg, 2880 wide): render at 4K and save as JPG
+  islandHero:(()=>{const L={THREE,stJumpi,stCanvasTex,stShadow,stCoin};return ((L)=>{const {THREE,stJumpi,stCanvasTex,stShadow,stCoin}=L;
+const SEA_NEAR="#0b86d4";   // the sea at the bottom of the picture = the page colour under the banner
+function dayPalm(h,lean,yaw=0){const g=new THREE.Group();
+  const pts=[];for(let i=0;i<=14;i++){const k=i/14;pts.push(new THREE.Vector3(Math.sin(k*1.25)*lean*h*.55,k*h,0));}
+  const barkT=stCanvasTex(256,1024,(c,w,h2)=>{c.fillStyle="#9b6a3c";c.fillRect(0,0,w,h2);for(let y=0;y<h2;y+=38){c.fillStyle="#7a4f2a";c.fillRect(0,y,w,9);c.fillStyle="rgba(255,220,170,.25)";c.fillRect(0,y+11,w,6);}
+    for(let k=0;k<900;k++){c.fillStyle=`rgba(${Math.random()<.5?"60,35,15":"200,160,110"},.15)`;c.fillRect(Math.random()*w,Math.random()*h2,3,2);}});
+  barkT.wrapS=barkT.wrapT=THREE.RepeatWrapping;barkT.repeat.set(2,h*1.4);
+  const trunk=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.2,12),new THREE.MeshStandardMaterial({map:barkT,roughness:.9}));trunk.castShadow=true;g.add(trunk);
+  const top=pts[pts.length-1];
+  const greens=["#2fae4a","#3fc45a","#259a3f","#4fcf63"];
+  for(let k=0;k<11;k++){const len=2.4+(k%3)*.45,shape=new THREE.Shape();shape.moveTo(0,0);
+    const N=16;for(let j=0;j<=N;j++){const t=j/N,wd=Math.sin(Math.pi||Math.PI*Math.min(1,t*1.15))*.42*(1-t*.35)*(j%2?1:.6);shape.lineTo(t*len,wd);}
+    for(let j=N;j>=0;j--){const t=j/N,wd=Math.sin(Math.PI*Math.min(1,t*1.15))*.42*(1-t*.35)*(j%2?1:.6);shape.lineTo(t*len,-wd);}
+    const geo=new THREE.ShapeGeometry(shape,6),p=geo.attributes.position;
+    const droop=.12+(k%4)*.035;
+    for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);p.setXYZ(i,x,.35*x-droop*x*x,y);}
+    geo.computeVertexNormals();
+    const lf=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:greens[k%4],side:THREE.DoubleSide,roughness:.7}));lf.castShadow=true;
+    const piv=new THREE.Group();piv.position.copy(top);piv.rotation.y=yaw+k/11*Math.PI*2+(k%2)*.2;piv.add(lf);g.add(piv);}
+  const cocoM=new THREE.MeshStandardMaterial({color:"#6b4424",roughness:.6});
+  for(let k=0;k<4;k++){const c=new THREE.Mesh(new THREE.SphereGeometry(.17,14,10),cocoM);c.position.set(top.x+Math.cos(k*1.6)*.2,top.y-.18,Math.sin(k*1.6)*.2);c.castShadow=true;g.add(c);}
+  return g;}
+return {name:"Island explorers (home page)",about:"The banner of the home page: four Jumpis exploring a little desert island in the middle of the sea, palms, a treasure chest and a rowboat, the sun shining on them.",round:false,aspect:2.4,
+build(){
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(27,2.4,.1,900);
+  cam.position.set(0,3.0,16.6);cam.lookAt(0,1.7,0);
+  // sky: bright day, sun high on the right, fluffy clouds, gulls
+  const SKY_W=900,SKY_H=330,SKY_Z=-420,HY=0;   // the sky plane stands behind the horizon
+  const sky=stCanvasTex(4096,1500,(c,w,h)=>{const hy=h*(1-(0-(-40))/SKY_H);
+    const g=c.createLinearGradient(0,0,0,hy);g.addColorStop(0,"#1774d8");g.addColorStop(.45,"#46a8f2");g.addColorStop(.8,"#9ad8ff");g.addColorStop(1,"#d9f4ff");c.fillStyle=g;c.fillRect(0,0,w,h);
+    const sx=w*.72,sy=hy*.3;
+    let gl=c.createRadialGradient(sx,sy,0,sx,sy,h*.9);gl.addColorStop(0,"rgba(255,252,225,.95)");gl.addColorStop(.12,"rgba(255,246,200,.6)");gl.addColorStop(.4,"rgba(255,240,200,.18)");gl.addColorStop(1,"rgba(255,240,200,0)");c.fillStyle=gl;c.fillRect(0,0,w,h);
+    c.fillStyle="#fffdf0";c.beginPath();c.arc(sx,sy,h*.045,0,7);c.fill();
+    const cloud=(x,y,s)=>{for(let k=0;k<26;k++){const a=Math.random()*Math.PI,r=s*(.3+Math.random()*.55),px=x+Math.cos(a)*s*1.6*Math.random()*(Math.random()<.5?-1:1),py=y-Math.sin(a)*s*.45*Math.random();
+        const cg=c.createRadialGradient(px,py-r*.3,r*.1,px,py,r);cg.addColorStop(0,"rgba(255,255,255,.98)");cg.addColorStop(.7,"rgba(245,250,255,.9)");cg.addColorStop(1,"rgba(200,225,250,0)");c.fillStyle=cg;c.beginPath();c.arc(px,py,r,0,7);c.fill();}
+      const base=c.createLinearGradient(0,y-s*.1,0,y+s*.35);base.addColorStop(0,"rgba(190,215,245,0)");base.addColorStop(1,"rgba(190,215,245,.0)");};
+    [[.12,.5,150],[.3,.36,110],[.52,.62,90],[.9,.46,140],[.04,.78,120],[.63,.82,100],[.42,.2,70]].forEach(([x,y,s])=>cloud(x*w,y*hy,s));
+    c.strokeStyle="rgba(40,60,100,.75)";c.lineCap="round";[[.38,.42,1.2],[.41,.39,.9],[.35,.38,.8],[.58,.3,1],[.61,.33,.8]].forEach(([x,y,s])=>{c.lineWidth=5*s;c.beginPath();c.moveTo(x*w-22*s,y*hy-8*s);c.quadraticCurveTo(x*w-9*s,y*hy-18*s,x*w,y*hy);c.quadraticCurveTo(x*w+9*s,y*hy-18*s,x*w+22*s,y*hy-8*s);c.stroke();});
+    // far islands on the horizon
+    const far=(x,wd,ht,col)=>{c.fillStyle=col;c.beginPath();c.moveTo(x-wd,hy);c.bezierCurveTo(x-wd*.6,hy-ht,x+wd*.4,hy-ht*1.1,x+wd,hy);c.fill();};
+    far(w*.14,w*.07,h*.03,"#7fb7cf");far(w*.2,w*.035,h*.018,"#8cc2d8");far(w*.86,w*.05,h*.02,"#8cc2d8");});
+  const skyM=new THREE.Mesh(new THREE.PlaneGeometry(SKY_W,SKY_H),new THREE.MeshBasicMaterial({map:sky,fog:false,toneMapped:false}));skyM.position.set(0,-40+SKY_H/2,SKY_Z);sc.add(skyM);
+  // the sea: pale at the horizon, deep blue towards us; little wave strokes; the sun's glitter
+  const sea=stCanvasTex(512,4096,(c,w,h)=>{const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,"#bfe9ff");g.addColorStop(.06,"#6fcdf5");g.addColorStop(.25,"#29aee8");g.addColorStop(.6,"#1597dd");g.addColorStop(1,SEA_NEAR);c.fillStyle=g;c.fillRect(0,0,w,h);
+    for(let k=0;k<2600;k++){const v=Math.random(),y=v*h;c.fillStyle=`rgba(255,255,255,${.05+Math.random()*.12})`;c.fillRect(Math.random()*w,y,4+v*30,1+v*3);c.fillStyle=`rgba(0,60,140,${.05+Math.random()*.08})`;c.fillRect(Math.random()*w,y+3,4+v*26,1+v*2);}});
+  const seaM=new THREE.Mesh(new THREE.PlaneGeometry(1200,440),new THREE.MeshBasicMaterial({map:sea,toneMapped:false}));seaM.rotation.x=-Math.PI/2;seaM.position.set(0,0,-420+220+16);sc.add(seaM);
+  const glit=stCanvasTex(512,2048,(c,w,h)=>{for(let k=0;k<2200;k++){const v=Math.random(),y=v*h,spread=.1+.9*v,x=w/2+(Math.random()+Math.random()-1)*w*.5*spread,len=6+v*26,a=(.45+.5*Math.random())*(1-v*.7);
+      c.fillStyle=`rgba(255,${235+Math.random()*20|0},${200+Math.random()*55|0},${a})`;c.beginPath();c.ellipse(x,y,len/2,.8+v*2.5,0,0,7);c.fill();}});
+  const glM=new THREE.Mesh(new THREE.PlaneGeometry(60,400),new THREE.MeshBasicMaterial({map:glit,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));glM.rotation.x=-Math.PI/2;glM.rotation.z=-.42;glM.position.set(95,.01,-215);sc.add(glM);
+  // the island: a flat sandy top, a beach sloping into the water
+  const prof=[];const R0=4.6,R1=8.4;prof.push(new THREE.Vector2(0,.42));
+  for(let i=1;i<=24;i++){const r=R1*i/24;let y;if(r<R0)y=.42-.06*(r/R0)**2;else{const t=(r-R0)/(R1-R0);y=.36*(1-t)**1.6-.25*t;}prof.push(new THREE.Vector2(r,y));}
+  const sandT=stCanvasTex(2048,2048,(c,w,h)=>{c.fillStyle="#f6cf8a";c.fillRect(0,0,w,h);for(let k=0;k<60000;k++){c.fillStyle=Math.random()<.5?"rgba(255,244,210,.35)":"rgba(190,140,80,.16)";c.fillRect(Math.random()*w,Math.random()*h,3,3);}
+    for(let k=0;k<40;k++){c.strokeStyle="rgba(200,150,90,.18)";c.lineWidth=4;c.beginPath();const y=Math.random()*h;c.moveTo(0,y);for(let x=0;x<w;x+=40)c.lineTo(x,y+Math.sin(x*.01+k)*10);c.stroke();}});
+  sandT.wrapS=sandT.wrapT=THREE.RepeatWrapping;sandT.repeat.set(3,3);
+  const isl=new THREE.Mesh(new THREE.LatheGeometry(prof,96),new THREE.MeshStandardMaterial({map:sandT,roughness:.95,color:"#ffffff",side:THREE.DoubleSide}));isl.receiveShadow=true;isl.scale.set(1.25,1,.78);sc.add(isl);
+  // turquoise shallows + foam round the island
+  const halo=stCanvasTex(2048,2048,(c,w,h)=>{const cx=w/2,cy=h/2,u=w/2/16;   // 16 units from the middle to the edge
+    let g=c.createRadialGradient(cx,cy,7.4*u,cx,cy,12.5*u);g.addColorStop(0,"rgba(90,226,214,.85)");g.addColorStop(.35,"rgba(60,205,222,.5)");g.addColorStop(1,"rgba(30,170,230,0)");c.fillStyle=g;c.beginPath();c.arc(cx,cy,12.5*u,0,7);c.fill();
+    const ring=(r,wd,a)=>{c.strokeStyle=`rgba(255,255,255,${a})`;c.lineWidth=wd;c.beginPath();for(let k=0;k<=720;k++){const t=k/720*Math.PI*2,rr=r*u+Math.sin(t*23)*u*.06+Math.sin(t*7+1)*u*.09;const x=cx+Math.cos(t)*rr,y=cy+Math.sin(t)*rr;k?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();};
+    ring(7.55,u*.28,.95);ring(7.95,u*.12,.6);ring(8.6,u*.08,.35);ring(9.4,u*.05,.2);});
+  const haloM=new THREE.Mesh(new THREE.PlaneGeometry(32,32),new THREE.MeshBasicMaterial({map:halo,transparent:true,depthWrite:false,toneMapped:false}));haloM.rotation.x=-Math.PI/2;haloM.scale.set(1.25,1,1);haloM.position.y=.02;haloM.scale.y=.78;sc.add(haloM);
+  // palms
+  const p1=dayPalm(5.3,-.55,.3);p1.position.set(-5.6,.3,-2.4);sc.add(p1);
+  const p2=dayPalm(4.7,.5,1);p2.position.set(5.9,.3,-1.8);sc.add(p2);
+  const p3=dayPalm(3.4,-.35,2);p3.position.set(-7.6,.1,.4);sc.add(p3);
+  // rocks and shells
+  const rockM=new THREE.MeshStandardMaterial({color:"#9a9184",roughness:.85,flatShading:true});
+  [[-8.6,1.6,.7],[-9.4,1.2,.45],[8.9,2.2,.55],[9.6,1.6,.35],[-3,-.3,.0]].forEach(([x,z,s])=>{if(!s)return;const r=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),rockM);r.position.set(x,s*.25,z);r.rotation.set(x,z,1);r.castShadow=true;sc.add(r);});
+  // the flag on top
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.04,.05,3.2,10),new THREE.MeshStandardMaterial({color:"#8a5a32"}));pole.position.set(.3,1.9,-2.6);sc.add(pole);
+  const flagT=stCanvasTex(512,320,(c,w,h)=>{c.fillStyle="#ff5a4a";c.fillRect(0,0,w,h);c.fillStyle="#ffd23a";c.fillRect(0,h*.78,w,h*.1);c.font="900 220px Arial Black, sans-serif";c.textAlign="center";c.textBaseline="middle";c.fillStyle="#fff";c.fillText("J",w*.45,h*.44);});
+  const fg=new THREE.PlaneGeometry(1.3,.8,12,1),fp=fg.attributes.position;for(let i=0;i<fp.count;i++){const x=fp.getX(i);fp.setZ(i,Math.sin((x+.65)*3.5)*.09);}fg.translate(.65,0,0);
+  const flag=new THREE.Mesh(fg,new THREE.MeshStandardMaterial({map:flagT,side:THREE.DoubleSide,roughness:.8}));flag.position.set(.34,3.1,-2.6);sc.add(flag);
+  // treasure chest, open, glowing with gold
+  const chest=new THREE.Group(),wood=new THREE.MeshStandardMaterial({color:"#8a4f22",roughness:.7}),gold=new THREE.MeshStandardMaterial({color:"#ffcc33",metalness:.7,roughness:.3});
+  const box=new THREE.Mesh(new THREE.BoxGeometry(1.1,.6,.7),wood);box.position.y=.3;chest.add(box);
+  [-.38,.38].forEach(x=>{const b=new THREE.Mesh(new THREE.BoxGeometry(.1,.62,.72),gold);b.position.set(x,.3,0);chest.add(b);});
+  const lid=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,1.1,20,1,false,0,Math.PI),wood);lid.rotation.z=Math.PI/2;const lidP=new THREE.Group();lidP.position.set(0,.6,-.35);lid.position.set(0,0,.35);lidP.add(lid);lidP.rotation.x=-1.15;chest.add(lidP);
+  for(let k=0;k<14;k++){const cn=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.03,14),gold);cn.position.set((Math.random()-.5)*.85,.62+Math.random()*.08,(Math.random()-.5)*.45);cn.rotation.set(Math.random(),0,Math.random());chest.add(cn);}
+  chest.traverse(o=>{if(o.isMesh)o.castShadow=true;});chest.position.set(-3.4,.36,2.6);chest.rotation.y=.5;sc.add(chest);
+  const shine=stCanvasTex(256,256,(c,w,h)=>{const g=c.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,"rgba(255,240,150,.9)");g.addColorStop(1,"rgba(255,220,80,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
+  const sh=new THREE.Sprite(new THREE.SpriteMaterial({map:shine,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));sh.position.set(-3.4,1.15,2.6);sh.scale.setScalar(1.8);sc.add(sh);
+  // a little rowboat at the water's edge
+  const boat=new THREE.Group();
+  const hullG=new THREE.SphereGeometry(1,40,16,0,Math.PI*2,Math.PI/2,Math.PI/2);hullG.scale(1.7,.55,.62);
+  const hull=new THREE.Mesh(hullG,new THREE.MeshStandardMaterial({color:"#e8423b",roughness:.55,side:THREE.DoubleSide}));hull.position.y=.5;boat.add(hull);
+  const inner=new THREE.Mesh(new THREE.CircleGeometry(1,40),new THREE.MeshStandardMaterial({color:"#a8692f",roughness:.8}));inner.rotation.x=-Math.PI/2;inner.scale.set(1.62,.56,1);inner.position.y=.36;boat.add(inner);
+  const rimG=new THREE.TorusGeometry(1,.05,8,60);rimG.scale(1.7,.62,1);const rimM=new THREE.Mesh(rimG,new THREE.MeshStandardMaterial({color:"#fff6e6",roughness:.5}));rimM.rotation.x=Math.PI/2;rimM.position.y=.5;boat.add(rimM);
+  [-.45,.45].forEach(x=>{const seat=new THREE.Mesh(new THREE.BoxGeometry(.16,.06,1.05),new THREE.MeshStandardMaterial({color:"#c98a4a"}));seat.position.set(x,.44,0);boat.add(seat);});
+  const oar=new THREE.Group(),oM=new THREE.MeshStandardMaterial({color:"#d9a066"});const sh2=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,2.2,8),oM);sh2.rotation.z=Math.PI/2;oar.add(sh2);const bl=new THREE.Mesh(new THREE.BoxGeometry(.5,.03,.22),oM);bl.position.x=1.2;oar.add(bl);
+  oar.position.set(.1,.55,.55);oar.rotation.set(0,.5,-.15);boat.add(oar);
+  boat.traverse(o=>{if(o.isMesh)o.castShadow=true;});boat.position.set(6.1,-.12,4.6);boat.rotation.set(0,-.55,.05);sc.add(boat);
+  // bushes and little plants on the island
+  const bushM=["#2f9a45","#3ab456","#27863c"].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.8}));
+  const bush=(x,z,s)=>{const g=new THREE.Group();for(let k=0;k<6;k++){const b=new THREE.Mesh(new THREE.SphereGeometry(s*(.55+Math.random()*.35),16,12),bushM[k%3]);b.position.set((Math.random()-.5)*s*1.4,s*(.35+Math.random()*.4),(Math.random()-.5)*s*.8);g.add(b);}g.position.set(x,.36,z);sc.add(g);};
+  bush(-4.6,-2.4,.8);bush(-6.3,-1.2,.6);bush(4.8,-2.2,.7);bush(6.6,-.9,.5);bush(-2.3,-3.1,.5);bush(2.6,-3,.55);
+  const flowerM=["#ff5fa8","#ffd23a","#ffffff"].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.6}));
+  [[-5.2,-1.6],[-4,-2.6],[5.3,-1.3],[4.2,-2.6],[-6.1,-.4],[6.2,-.3]].forEach(([x,z],k)=>{const f=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),flowerM[k%3]);f.position.set(x,.95,z);sc.add(f);});
+  // shells and a starfish on the sand
+  const starS=new THREE.Shape();for(let k=0;k<10;k++){const a=Math.PI/2+k*Math.PI/5,r=k%2?.12:.3;const x=Math.cos(a)*r,y=Math.sin(a)*r;k?starS.lineTo(x,y):starS.moveTo(x,y);}starS.closePath();
+  const star=new THREE.Mesh(new THREE.ExtrudeGeometry(starS,{depth:.05,bevelEnabled:true,bevelSize:.03,bevelThickness:.03,bevelSegments:2}),new THREE.MeshStandardMaterial({color:"#ff7a3a",roughness:.6}));star.rotation.x=-Math.PI/2;star.position.set(1.8,.37,3.7);sc.add(star);
+  [[-1.6,4.1,"#ffc2d6"],[3.4,3.9,"#fff1d6"],[-5.6,3.6,"#ffd6b8"]].forEach(([x,z,c])=>{const sh=new THREE.Mesh(new THREE.SphereGeometry(.14,14,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:c,roughness:.4}));sh.scale.set(1,.6,1.2);sh.position.set(x,.3,z);sc.add(sh);});
+  // the sun, up in the sky on the right, with soft rays
+  const sunT=stCanvasTex(512,512,(c,w,h)=>{const g=c.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,"rgba(255,255,245,1)");g.addColorStop(.09,"rgba(255,252,225,1)");g.addColorStop(.13,"rgba(255,240,180,.75)");g.addColorStop(.35,"rgba(255,235,170,.25)");g.addColorStop(1,"rgba(255,230,160,0)");c.fillStyle=g;c.fillRect(0,0,w,h);});
+  const sunS=new THREE.Sprite(new THREE.SpriteMaterial({map:sunT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false}));sunS.position.set(27,13.5,-70);sunS.scale.setScalar(15);sc.add(sunS);
+  const rayT=stCanvasTex(1024,1024,(c,w,h)=>{c.translate(w/2,h/2);for(let k=0;k<18;k++){c.rotate(Math.PI*2/18);const g=c.createLinearGradient(0,0,w*.5,0);g.addColorStop(0,"rgba(255,250,215,.55)");g.addColorStop(1,"rgba(255,250,215,0)");c.fillStyle=g;c.beginPath();c.moveTo(0,0);c.lineTo(w*.5,-w*(k%2?.03:.055));c.lineTo(w*.5,w*(k%2?.03:.055));c.closePath();c.fill();}});
+  const rays=new THREE.Sprite(new THREE.SpriteMaterial({map:rayT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,fog:false,toneMapped:false,opacity:.32}));rays.position.set(27,13.5,-71);rays.scale.setScalar(64);sc.add(rays);
+  // the four explorers
+  const add=(look,x,z,ry)=>{const J=stJumpi(look);if(J.eyeL)J.eyeL.scale.y=1;if(J.eyeR)J.eyeR.scale.y=1;J.root.position.set(x,.42,z);J.root.rotation.y=ry;sc.add(J.root);stShadow(sc,x,z,1.5);return J;};
+  const A=add({color:0,eyes:1,hair:9,shirt:39,pants:2,hat:23,neck:37},-3.1,.6,.55);
+  const B=add({color:3,eyes:5,hair:25,shirt:1,pants:17,neck:20},-1.05,1.2,.15);
+  const C=add({color:2,eyes:5,hair:-1,shirt:41,pants:41,hat:49},1.05,1.2,-.15);
+  const D=add({color:1,eyes:1,hair:45,shirt:82,pants:46,glasses:0,hat:14},3.1,.6,-.55);
+  // poses
+  // A looks out to sea with binoculars
+  A.armL.rotation.set(-2.35,0,.75);A.armR.rotation.set(-2.35,0,-.75);
+  const bino=new THREE.Group(),bM=new THREE.MeshStandardMaterial({color:"#2b2f3a",roughness:.4,metalness:.3}),lens=new THREE.MeshStandardMaterial({color:"#7fd6ff",roughness:.1,metalness:.6,emissive:"#1a6fa8",emissiveIntensity:.4});
+  [-.16,.16].forEach(x=>{const t=new THREE.Mesh(new THREE.CylinderGeometry(.12,.135,.34,20),bM);t.rotation.x=Math.PI/2;t.position.set(x,0,0);bino.add(t);
+    const l=new THREE.Mesh(new THREE.CircleGeometry(.105,20),lens);l.position.set(x,0,.171);bino.add(l);});
+  const brg=new THREE.Mesh(new THREE.BoxGeometry(.18,.08,.12),bM);bino.add(brg);bino.position.set(0,.3,.68);A.head.add(bino);A.head.rotation.x=-.12;
+  // B holds up the treasure map for us to see
+  B.armL.rotation.set(-1.35,0,-.3);B.armR.rotation.set(-1.35,0,.3);
+  const mapT=stCanvasTex(768,560,(c,w,h)=>{c.fillStyle="#f3dfae";c.fillRect(0,0,w,h);const e=c.createRadialGradient(w/2,h/2,h*.3,w/2,h/2,w*.62);e.addColorStop(0,"rgba(150,100,40,0)");e.addColorStop(1,"rgba(150,100,40,.55)");c.fillStyle=e;c.fillRect(0,0,w,h);
+    c.fillStyle="#9fd3a3";c.beginPath();c.moveTo(w*.18,h*.62);c.bezierCurveTo(w*.12,h*.25,w*.48,h*.12,w*.62,h*.3);c.bezierCurveTo(w*.86,h*.32,w*.9,h*.7,w*.6,h*.8);c.bezierCurveTo(w*.4,h*.9,w*.22,h*.85,w*.18,h*.62);c.fill();
+    c.strokeStyle="#7a4f2a";c.lineWidth=7;c.setLineDash([16,14]);c.beginPath();c.moveTo(w*.26,h*.7);c.bezierCurveTo(w*.38,h*.4,w*.52,h*.75,w*.68,h*.45);c.stroke();c.setLineDash([]);
+    c.strokeStyle="#e8423b";c.lineWidth=14;c.lineCap="round";c.beginPath();c.moveTo(w*.66,h*.37);c.lineTo(w*.74,h*.51);c.moveTo(w*.74,h*.37);c.lineTo(w*.66,h*.51);c.stroke();
+    c.fillStyle="#7a4f2a";c.font="bold 60px Georgia, serif";c.fillText("N",w*.08,h*.2);});
+  const mg=new THREE.PlaneGeometry(1.15,.84,8,1),mp=mg.attributes.position;for(let i=0;i<mp.count;i++){const x=mp.getX(i);mp.setZ(i,-Math.abs(x)*.12);}
+  const mapM=new THREE.Mesh(mg,new THREE.MeshStandardMaterial({map:mapT,side:THREE.DoubleSide,roughness:.9}));mapM.position.set(0,.66,.8);mapM.rotation.x=-.32;mapM.scale.setScalar(.92);B.root.add(mapM);
+  // C points up at the sun, D waves hello
+  C.armR.rotation.set(-1.9,0,1.05);C.armL.rotation.set(.2,0,-.35);C.head.rotation.set(0,0,-.08);
+  D.armR.rotation.set(.3,0,2.55);D.armL.rotation.set(.1,0,-.3);D.head.rotation.z=-.06;
+  // lights: the sun from the front right, sky light, a soft rim from behind
+  sc.add(new THREE.HemisphereLight(0xdff2ff,0xe8c890,1.2));
+  const sun=new THREE.DirectionalLight(0xfff1d6,3.4);sun.position.set(6,10,9);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);
+  Object.assign(sun.shadow.camera,{left:-12,right:12,top:10,bottom:-10,near:1,far:40});sun.shadow.bias=-.0004;sun.shadow.radius=4;sc.add(sun);
+  const rim2=new THREE.DirectionalLight(0xbfe8ff,1.4);rim2.position.set(-5,4,-8);sc.add(rim2);
+  sc.traverse(o=>{if(o.isMesh&&o!==seaM&&o!==skyM&&o!==haloM&&o!==glM&&!o.isSprite){o.castShadow=true;o.receiveShadow=true;}});
+  sc.fog=new THREE.Fog(0xcdeeff,140,420);
+  return {scene:sc,camera:cam,glow:.12,vignette:0};}};})(L);})(),
   welcomeCard:{name:"Welcome card (Discord, background)",about:"The background of the picture Pip posts in #welcome for every new member: the server writes their avatar into the ring and their name on the plate (discord/card.js).",round:false,aspect:2.4,
     build(){const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(25,2.4,.1,200);
       const bg=new THREE.Mesh(new THREE.PlaneGeometry(60,26),new THREE.MeshBasicMaterial({map:stGlowBg(["#a8e8ff","#5fbfff","#3d7cf0","#3a3bc8","#24186e"],.5,.45),toneMapped:false}));bg.position.set(0,1.4,-12);sc.add(bg);
@@ -13163,6 +13306,7 @@ function studioAtlas(style){const name=style==="name",size=name?104:40,font=`${n
   const glyphs={};cells.forEach(g=>{glyphs[g.ch]={x:g.x,y:g.y,w:g.w,h:g.h,adv:Math.round(g.adv*100)/100};});
   return {png:out.toDataURL("image/png"),meta:{size,pad,base,height:CH,glyphs}};}
 if(STUDIO_ON)window.__studio={render:(id,size,type="image/jpeg",q=.9)=>studioRender(id||STUDIO.cur,size||1024).toDataURL(type,q),scenes:STUDIO_SCENES,
+  lib:{THREE,stJumpi,stCanvasTex,stShadow,stLights,stConfetti,stGlowBg,stPalm,stSurfboard,stCoin,stGift,stStar3,stHeart,stBubble,stTipCard,makeCharacter},   // for trying new pictures from a test script
   atlas:(style)=>studioAtlas(style),layout:WELCOME_LAYOUT,emoji:(name,size)=>studioEmoji(name,size).toDataURL("image/png"),emojiList:Object.keys(ST_EMOJI)};
 function giveChips(P){const g=P.give,out=[];
   (g.items||[]).forEach(id=>{const [slot,i]=id.split(":");out.push(`<span class="of-it${slot==="aura"?" aura":""}" title="${esc(itemName(slot,+i))}"><span class="pic">${itemPic(slot,+i)}</span><b>${esc(itemName(slot,+i))}</b></span>`);});
