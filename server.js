@@ -131,18 +131,30 @@ function sendPage(req, res, file, status = 200) {
 }
 const page = (file) => (req, res, next) => { try { sendPage(req, res, file); } catch (err) { next(err); } };
 app.get("/", page("site/index.html"));
-// before the grand opening (LAUNCH_AT in public/shared/launch.js) the game on jumpigames.com shows the countdown page instead;
-// localhost / other hosts always get the game, and admins who are already logged in can play
+// /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
+// middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps
+// ("JumpiApp/" = Android/iPhone, "JumpiDesktop/" = the computer program) and /studio always get the game itself.
+// Before the grand opening (LAUNCH_AT in public/shared/launch.js) players on jumpigames.com get the game with "?soon": its
+// loading screen ends in a "testers only" note instead of the game (and the socket refuses non-admins anyway).
+// localhost / other hosts are never gated, nor are admins who are already logged in, nor the Android app.
 const gameGate = async (req, res, next) => {
-  const inApp = /JumpiApp\//.test(String(req.headers["user-agent"] || ""));   // the Android app always gets the game itself
-  // "/play?soon" always shows the "coming soon" page, on any server and also after the opening (a preview for the team)
-  if ("soon" in req.query) { res.set("Cache-Control", "no-store"); return sendPage(req, res, "site/game-soon.html"); }
+  const ua = String(req.headers["user-agent"] || "");
+  const inApp = /JumpiApp\//.test(ua), inDesk = /JumpiDesktop\//.test(ua);
+  if (req.path.startsWith("/play") && !inApp && !inDesk && !("game" in req.query)) {
+    res.set("Cache-Control", "no-cache");
+    return sendPage(req, res, "site/play.html");
+  }
+  // "?soon": the game in "closed" mode, on any server and at any time (also a preview for the team)
+  if ("soon" in req.query) { res.set("Cache-Control", "no-store"); return sendGame(res, next); }
   if (isPublic(req) && Date.now() < LAUNCH_AT && !inApp) {
     let admin = false;
     try { admin = (await currentUser(req))?.role === "admin"; } catch {}
     res.set("Cache-Control", "no-store");
     // "?staff" opens the game anyway so an admin can log in (players who log in there are refused by the socket)
-    if (!admin && !("staff" in req.query)) return sendPage(req, res, "site/game-soon.html");
+    if (!admin && !("staff" in req.query)) {
+      const q = new URLSearchParams(req.query); q.set("soon", "");
+      return res.redirect(302, `${req.path}?${q.toString().replace(/=(&|$)/g, "$1")}`);
+    }
   }
   res.set("Cache-Control", "no-cache");   // the Android app opens this page: always check for the newest version
   sendGame(res, next);

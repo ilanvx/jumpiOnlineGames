@@ -2143,6 +2143,23 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
 .ph-blocked{text-align:center;color:#6a7c94;font-size:.85rem;font-weight:500;padding:6px}
 .pc-btn.friend{background:linear-gradient(180deg,#5ee08f,#25c36a);box-shadow:0 4px 0 #13813f}
 /* ---------- loading screen (main page only) ---------- */
+/* the "testers only" note that ends the loading screen when the game is closed (?soon) */
+.loader.closed .ld-tips{visibility:hidden}
+.ld-closed{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:20px;background:rgb(6 30 70 / .5);animation:ldcIn .35s ease-out}
+.ld-closed-card{width:min(460px,100%);background:#fff;border-radius:28px;padding:26px 26px 24px;text-align:center;border:5px solid #1f9bff;box-shadow:0 10px 0 #0b5fa8,0 30px 60px rgb(0 20 60 / .4);animation:ldcPop .45s cubic-bezier(.2,1.6,.4,1)}
+.ld-closed-logo{width:150px;height:auto;display:block;margin:-6px auto 6px}
+.ld-closed h2{margin:0 0 8px;font:400 2rem/1.1 "Lilita One","Secular One",system-ui,sans-serif;color:#1d2b4f}
+.ld-closed p{margin:0 0 20px;color:#3a4a6a;font:500 1.08rem/1.6 "Fredoka","Rubik",system-ui,sans-serif}
+.ld-closed[dir="rtl"] h2{font-family:"Secular One","Lilita One",system-ui,sans-serif}
+.ld-closed[dir="rtl"] p{font-family:"Rubik","Fredoka",system-ui,sans-serif}
+.ld-closed-btns{display:flex;flex-direction:column;align-items:center;gap:12px}
+.ld-closed-ok{min-width:180px;min-height:54px;padding:0 28px;border:0;border-radius:16px;cursor:pointer;color:#fff;font:400 1.35rem/1 "Lilita One","Secular One",system-ui,sans-serif;letter-spacing:.03em;
+  background:linear-gradient(180deg,#ffb04a,#ff8a1c 60%);box-shadow:0 5px 0 #c25e00;text-shadow:0 2px 0 #c25e00}
+.ld-closed-ok:hover{filter:brightness(1.06)}.ld-closed-ok:active{transform:translateY(3px);box-shadow:0 2px 0 #c25e00}
+.ld-closed-ok:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
+.ld-closed-dc{color:#5865f2;font:600 .98rem "Fredoka","Rubik",system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px}
+@keyframes ldcIn{from{opacity:0}}
+@keyframes ldcPop{from{transform:scale(.7);opacity:0}}
 .loader{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,34px);padding:24px;
   background:radial-gradient(ellipse at 50% 40%,#3fb4ff 0%,#0a8cff 45%,#0656c9 100%);overflow:hidden;
   clip-path:circle(150% at 50% 50%);transition:clip-path .75s cubic-bezier(.6,0,.35,1)}
@@ -3115,12 +3132,24 @@ body.land .npc-card .idle-face{display:none}
   if(logo.complete)drop();else{logo.onload=drop;logo.onerror=drop;}
   var tips=["Warming up the Plaza…","Filling the fountain…","Teaching Jumpi to wave…","Polishing the coins…","Almost there!"];
   window.Loader={set:function(p){target=Math.max(target,Math.min(100,p));},finish:function(){target=100;done=true;}};
+  // "?soon" (the game is closed to this player, server.js gameGate): the loading screen ends in a note instead of the game, and OK goes to the home page
+  var CLOSED=/[?&]soon(=|&|$)/.test(location.search);
+  function closedNote(){var he=window.I18N&&window.I18N.lang==="he",ua=navigator.userAgent,desk=/JumpiDesktop\//.test(ua),app=/JumpiApp\//.test(ua);
+    txt.textContent=he?"מוכן!":"READY!";L.classList.add("closed");
+    var d=document.createElement("div");d.className="ld-closed";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-labelledby","ldcT");d.setAttribute("aria-describedby","ldcP");if(he)d.dir="rtl";
+    d.innerHTML='<div class="ld-closed-card"><img class="ld-closed-logo" src="/jumpi-logo.png" alt="Jumpi Games"><h2 id="ldcT"></h2><p id="ldcP"></p><div class="ld-closed-btns"><button type="button" class="ld-closed-ok"></button></div></div>';
+    d.querySelector("h2").textContent=he?"בקרוב!":"Coming soon!";
+    d.querySelector("p").textContent=he?"המשחק פתוח כרגע לטסטרים בלבד. עדכונים נוספים יפורסמו בשרת הדיסקורד שלנו.":"Jumpi is open to testers only right now. More updates will be posted on our Discord server.";
+    var ok=d.querySelector(".ld-closed-ok");ok.textContent=he?"אישור":"OK";
+    if(!desk&&!app){var dc=document.createElement("a");dc.className="ld-closed-dc";dc.href="https://discord.gg/dgwsBJgzZS";dc.target="_blank";dc.rel="noopener";dc.textContent=he?"לשרת הדיסקורד (13+)":"Our Discord (13+)";d.querySelector(".ld-closed-btns").appendChild(dc);}
+    ok.onclick=function(){if(desk){window.close();return;}try{(window.top||window).location.href="/";}catch(e){location.href="/";}};
+    L.appendChild(d);setTimeout(function(){ok.focus();},60);}
   function frame(now){
     var creep=Math.min(18,(now-t0)/180);if(!done&&target<creep)target=creep;   // keep moving while the 3D engine downloads
     shown+=(target-shown)*.12;if(target-shown<.4)shown=target;
     fill.style.width=shown.toFixed(1)+"%";blob.style.left="calc(5px + (100% - 10px) * "+(shown/100)+")";
     var n=Math.floor(shown);txt.textContent=tr("LOADING {n}%",{n:n});L.setAttribute("aria-valuenow",n);tip.textContent=tr(tips[Math.min(tips.length-1,Math.floor(n/22))]);
-    if(done&&shown>=100){if(!doneAt)doneAt=now;if(now-doneAt>350){txt.textContent="LET'S GO!";L.classList.add("done");setTimeout(function(){L.remove();},900);return;}}
+    if(done&&shown>=100){if(!doneAt)doneAt=now;if(now-doneAt>350){if(CLOSED){closedNote();return;}txt.textContent="LET'S GO!";L.classList.add("done");setTimeout(function(){L.remove();},900);return;}}
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -7305,7 +7334,7 @@ function netJoin(){
     socket.on("whoami",d=>{if(!me||!d||!d.id||String(d.id)===String(me.id))return;console.warn("[socket] connected as another account, reconnecting");
       const s0=socket;socket=null;try{s0.disconnect();}catch(e){}clearRemotes();if(NET_RETRY++<2)setTimeout(netJoin,300);else toast("Couldn't connect as "+me.username+". Please reload the game.");});    socket.on("connect",()=>{updateOnline();if(inGame)socket.emit("join",netState());loadFoodBag();});
     socket.on("disconnect",()=>{clearRemotes();updateOnline();});
-    socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}
+    socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play?game&soon";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}
       if(err&&err.message==="parent-time"){exitGame();toast("Your parents set a no-Jumpi time. See you later!");socket.disconnect();socket=null;}});
     socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
     socket.on("player:join",p=>{addRemote(p);});
@@ -8439,6 +8468,7 @@ document.getElementById("sxPwForm").onsubmit=async e=>{e.preventDefault();
   else{msg.textContent=r.data.error||"Something went wrong. Try again.";sfx.error();if(r.data.code==="wrong"){inp.select();}}};
 // EXIT: the Android app closes, the computer program closes, in a web browser it goes to the Jumpi home page
 const IS_DESK=/JumpiDesktop\//.test(navigator.userAgent);
+if(window.top!==window)document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest("a[href]");if(a&&!a.target&&!a.getAttribute("href").startsWith("#"))a.target="_top";},true);   // in the website's frame (site/play.html)
 function exitMode(){const B=window.JumpiAppBridge;
   if(IS_DESK)return "quit";
   if(/JumpiApp\//.test(navigator.userAgent))return B&&typeof B.quit==="function"?"quit":"start";   // the iPhone app and older Android apps can't close themselves: back to the start screen
@@ -8451,7 +8481,7 @@ document.getElementById("sxExitNo").onclick=()=>{sfx.tick(false);paintExit();doc
 document.getElementById("sxExitYes").onclick=()=>{const m=exitMode();sfx.close();
   if(m==="quit"){if(IS_DESK)window.close();else window.JumpiAppBridge.quit();return;}   // the computer program quits when its window closes
   if(m==="start"){closeSettings();if(inGame)exitGame();return;}
-  location.href="/";};
+  try{(window.top||window).location.href="/";}catch(e){location.href="/";}};
 let lastFocus=null;
 function openSettings(){lastFocus=document.activeElement;document.getElementById("zoomRow").hidden=!inGame;document.getElementById("sxZoomNote").hidden=inGame;
   paintSound();paintAccount();paintExit();document.getElementById("sxPwMsg").textContent="";
