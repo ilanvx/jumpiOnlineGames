@@ -11,6 +11,7 @@ import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } fr
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { Report } from "../models/Report.js";
 import { socketIp } from "../routes/ip.js";
+import { playOn, playOff, deviceOf, startPlaytime } from "./playtime.js";
 import { needsOnline, needsOffline, sendNeeds, moodNow, ateMeal, startNeeds, bumpNeeds } from "./needs.js";
 import { outPet } from "../routes/pets.js";
 import { houseShape } from "../public/shared/houses.js";
@@ -284,10 +285,11 @@ export function attachPlaza(io) {
     // the last game window of this player closed: stop counting their needs
     // (wait a moment: moving to another room or reloading the page removes and adds the player again)
     setTimeout(() => {
-      if (![...players.values()].some((p) => p.userId === userId)) needsOffline(userId);
+      if (![...players.values()].some((p) => p.userId === userId)) { needsOffline(userId); playOff(userId); }
     }, 5000);
   }
 
+  startPlaytime();
   // hunger, energy, stamina and fun go down while playing
   startNeeds({
     playersOf: (userId) => [...players.values()].filter((p) => p.userId === userId),
@@ -420,6 +422,7 @@ export function attachPlaza(io) {
       if (!already) roomSend(player, "player:join", publicView(player), { self: false });
       if (room === ROOM) { sendVehicles(io, socket, player); vehiclePlayerBack(io, player); }
       sendNeeds(me.id);
+      playOn(me.id, deviceOf(socket.handshake.headers["user-agent"]));   // play time for the parents' page
     });
 
     // the owner sends a visitor out of their home (still friends: they may come back if the home's setting allows it)

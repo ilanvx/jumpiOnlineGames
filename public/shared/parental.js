@@ -47,6 +47,12 @@ function israelNow(d = new Date()) {
   return { day, min: Number(parts.hour) * 60 + Number(parts.minute) };
 }
 
+// midnight (Israel time) of the day d is in
+export function israelDayStart(d = new Date()) {
+  const { min } = israelNow(d);
+  return new Date(d.getTime() - min * 60000 - d.getUTCSeconds() * 1000 - d.getUTCMilliseconds());
+}
+
 // the quiet-hours rule in force right now (or null). A rule past midnight belongs to the day it starts on.
 export function quietNow(parental, d = new Date()) {
   const rules = parental && Array.isArray(parental.quiet) ? parental.quiet : [];

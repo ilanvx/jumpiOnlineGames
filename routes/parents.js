@@ -10,7 +10,9 @@ import { isHttps } from "./ip.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { parentCodeEmail } from "../mail/parentCode.js";
 import { ITEMS } from "../catalog.js";
-import { cleanParental, quietNow } from "../public/shared/parental.js";
+import { cleanParental, quietNow, israelDayStart } from "../public/shared/parental.js";
+import { PlaySession } from "../models/PlaySession.js";
+import { isPlaying } from "../realtime/playtime.js";
 import { levelOf, MAX_LEVEL } from "../public/shared/levels.js";
 
 /*
@@ -122,12 +124,21 @@ router.get("/me", requireParent, async (req, res, next) => {
     username: u.username, look: u.publicLook(), coins: u.coins || 0, level: u.role === "admin" ? MAX_LEVEL : levelOf(u.levelXp || 0),
     createdAt: u.createdAt, lastLoginAt: u.lastLoginAt || null, member: u.isMember(), banned: u.isBanned(),
     online: !!onlineWhere(String(u._id)), friends: (u.friends || []).length, pets: (u.pets || []).length,
-    settings: settingsOf(u), quietNow: !!quietNow(u.parental),
+    settings: settingsOf(u), quietNow: !!quietNow(u.parental), todayMin: await playedToday(u._id),
   });
   } catch (err) {
     next(err);
   }
 });
+
+// play time: a session's minutes inside [from, to) (a session that is still on counts until now)
+const sessionEnd = (s, playing, now) => (s.end ? s.end.getTime() : playing ? now : s.last.getTime());
+const minutesIn = (s, playing, now, from, to) => Math.max(0, Math.min(sessionEnd(s, playing, now), to) - Math.max(s.start.getTime(), from)) / 60000;
+async function playedToday(userId) {
+  const now = Date.now(), from = israelDayStart(new Date(now)).getTime(), playing = isPlaying(userId);
+  const list = await PlaySession.find({ userId, $or: [{ last: { $gte: new Date(from) } }, { end: null }] }).lean();
+  return Math.round(list.reduce((sum, s) => sum + minutesIn(s, playing && !s.end, now, from, now), 0));
+}
 
 // what the child wrote: public chat (the last 30 days) and the private messages they sent, newest first
 router.get("/chat", requireParent, async (req, res, next) => {
@@ -145,6 +156,36 @@ router.get("/chat", requireParent, async (req, res, next) => {
     ].sort((a, b) => b.at - a.at).slice(0, 60);
     res.set("Cache-Control", "no-store");
     res.json({ list: list.map((x) => ({ ...x, at: new Date(x.at).getTime() })), more: list.length === 60 });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// when the child played: minutes per day for the last 7 days (Israel time), and the sessions, newest first
+router.get("/playtime", requireParent, async (req, res, next) => {
+  try {
+    const id = req.child._id, now = Date.now(), playing = isPlaying(id);
+    const days = [];
+    let dayEnd = now;
+    for (let i = 0; i < 7; i++) {
+      const s = israelDayStart(new Date(dayEnd - 1)).getTime();
+      days.push({ at: s, to: dayEnd, min: 0 });
+      dayEnd = s;
+    }
+    const weekFrom = days[6].at;
+    const week = await PlaySession.find({ userId: id, $or: [{ last: { $gte: new Date(weekFrom) } }, { end: null }] }).lean();
+    for (const s of week) for (const d of days) d.min += minutesIn(s, playing && !s.end, now, d.at, d.to);
+    const before = Number(req.query.before);
+    const list = await PlaySession.find({ userId: id, start: Number.isFinite(before) ? { $lt: new Date(before) } : { $lte: new Date(now) } }).sort({ start: -1 }).limit(40).lean();
+    res.set("Cache-Control", "no-store");
+    res.json({
+      days: days.reverse().map((d) => ({ at: d.at, min: Math.round(d.min) })),
+      list: list.map((s) => {
+        const on = playing && !s.end, end = sessionEnd(s, on, now);
+        return { start: s.start.getTime(), end: on ? null : end, min: Math.round((end - s.start.getTime()) / 60000), device: s.device || "computer" };
+      }),
+      more: list.length === 40,
+    });
   } catch (err) {
     next(err);
   }

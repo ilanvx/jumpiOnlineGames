@@ -65,6 +65,17 @@ body.pa main{flex:1;width:min(1080px,100%);margin:0 auto;padding:28px clamp(16px
 .pa-text{word-break:break-word;color:#1d2b4f}
 .pa-badge{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:999px;margin-inline-end:6px;background:#e3ecf7;color:#3a4a6a}
 .pa-badge.dm{background:#e6dcff;color:#4a2a9a}.pa-badge.blk{background:#ffd6d6;color:#9a1c1c}
+.pa-today{display:block;margin-top:2px;color:#e6f4ff}
+.pa-today b{color:#fff}
+.pa-list li.live{background:#eafff1}
+.pa-badge.on{background:#c9f7d8;color:#17663a}
+.pa-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;margin-bottom:6px}
+.pa-day{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.pa-day b{font-size:.78rem;font-weight:600;color:#3a4a6a;min-height:2.2em;display:flex;align-items:flex-end;line-height:1.1}
+.pa-bar{width:100%;max-width:56px;height:120px;border-radius:12px;background:#eef4ff;display:flex;align-items:flex-end;overflow:hidden}
+.pa-bar span{display:block;width:100%;background:linear-gradient(180deg,#5fbaff,#1f9bff);border-radius:12px 12px 0 0;min-height:0}
+.pa-day.now .pa-bar span{background:linear-gradient(180deg,#5fe08a,#2fd36b)}
+.pa-day small{font-weight:600;color:#6a7a9a}
 .pa-swap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pa-swap div{font-size:.95rem}
 .pa-swap small{display:block;font-weight:600;color:#6a7a9a}

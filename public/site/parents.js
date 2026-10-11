@@ -11,7 +11,7 @@ function setLang(l) {
   document.documentElement.lang = lang; document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
   document.querySelectorAll("[data-en]").forEach((el) => (el.textContent = lang === "he" ? el.dataset.he : el.dataset.en));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
-  if (kid) { paintKid(); paintRules(); paintQuick(); paintChat(); paintTrades(); }
+  if (kid) { paintKid(); paintRules(); paintQuick(); paintChat(); paintTrades(); paintPlay(); }
 }
 btns.forEach((b) => (b.onclick = () => setLang(b.dataset.l)));
 
@@ -29,7 +29,7 @@ const ERR = {
   busy: () => L("Too many tries. Please wait a few minutes.", "יותר מדי ניסיונות. חכו כמה דקות."),
   bad: () => L("That code isn't right, or it ran out. Ask for a new one.", "הקוד לא נכון או שפג תוקפו. בקשו קוד חדש."),
   send: () => L("We couldn't send the email right now. Please try again in a minute.", "לא הצלחנו לשלוח את המייל כרגע. נסו שוב בעוד דקה."),
-  times: () => L("Some of the times aren't right: each one needs at least one day, and different start and end times.", "חלק מהזמנים לא תקינים: לכל זמן צריך לפחות יום אחד, ושעת התחלה וסיום שונות."),
+  times: () => L("Some of the times aren't right: each one needs at least one day.", "חלק מהזמנים לא תקינים: לכל זמן צריך לפחות יום אחד."),
 };
 const errText = (r) => (ERR[r.data.code] ? ERR[r.data.code]() : r.status === 429 ? ERR.busy() : r.data.error || ERR.net());
 function oops(form, el, text) { el.className = "pa-msg"; el.textContent = text; form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake"); }
@@ -63,7 +63,17 @@ $("cBack").onclick = () => view("email");
 $("logout").onclick = async () => { await api("logout", {}); location.reload(); };
 
 /* ---------- the dashboard ---------- */
-let kid = null, chat = [], chatMore = false, trades = [], rules = [];
+let kid = null, chat = [], chatMore = false, trades = [], rules = [], play = null;
+// "1 h 35 min" / "שעה ו-35 דקות"
+function fmtDur(m) {
+  m = Math.max(0, Math.round(m));
+  const h = Math.floor(m / 60), r = m % 60;
+  if (lang !== "he") return h ? `${h} h${r ? ` ${r} min` : ""}` : `${r} min`;
+  const hh = h === 1 ? "שעה" : h === 2 ? "שעתיים" : `${h} שעות`, mm = r === 1 ? "דקה" : `${r} דקות`;
+  return h ? (r ? `${hh} ו-${mm}` : hh) : m === 0 ? "0 דקות" : mm;
+}
+const fmtShort = (m) => { m = Math.round(m); const h = Math.floor(m / 60); return h ? `${h}:${String(m % 60).padStart(2, "0")}` : L(`${m} min`, `${m} דק׳`); };
+const DEVICE = { app: ["Jumpi app", "אפליקציית ג'אמפי"], phone: ["Phone", "טלפון"], tablet: ["Tablet", "טאבלט"], computer: ["Computer", "מחשב"] };
 const DAYS = () => (lang === "he" ? ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
 const fmtDate = (ms) => new Date(ms).toLocaleDateString(lang === "he" ? "he-IL" : "en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jerusalem" });
 const fmtTime = (ms) => new Date(ms).toLocaleTimeString(lang === "he" ? "he-IL" : "en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jerusalem" });
@@ -77,13 +87,15 @@ async function openDash() {
   $("gate").hidden = true; $("dash").hidden = false; $("logout").hidden = false;
   paintKid(); paintRules(); paintQuick();
   $("lockOn").checked = kid.settings.chatLock;
-  loadChat(); loadTrades();
+  loadChat(); loadTrades(); loadPlay();
 }
 function paintKid() {
   $("kAva").textContent = (kid.username[0] || "?").toUpperCase();
   $("kName").textContent = kid.username;
   const st = $("kStatus"); st.textContent = "";
   st.append(el("i", kid.online ? "on" : ""), document.createTextNode(kid.online ? L("Playing now", "משחק עכשיו") : kid.lastLoginAt ? L("Last played ", "שיחק לאחרונה ב-") + fmtDate(kid.lastLoginAt) : L("Not online", "לא מחובר")));
+  const today = el("span", "pa-today"); today.append(L("Played today: ", "שיחק היום: "), el("b", null, fmtDur(kid.todayMin || 0)));
+  st.append(today);
   const facts = [[L("Level", "רמה"), kid.level], [L("Coins", "מטבעות"), Number(kid.coins).toLocaleString("en-US")], [L("Friends", "חברים"), kid.friends],
     [L("Joined", "הצטרף"), fmtDate(kid.createdAt)], [L("Membership", "מנוי"), kid.member ? L("Yes", "כן") : L("No", "לא")], [L("Pets", "חיות"), kid.pets]];
   $("kFacts").replaceChildren(...facts.map(([k, v]) => { const d = el("div"); d.append(el("dt", null, k), el("dd", null, String(v))); return d; }));
@@ -130,6 +142,42 @@ function paintTrades() {
     sw.append(gave, got); body.append(sw); li.append(w, body); return li;
   }));
 }
+
+// logins and play time
+async function loadPlay(more) {
+  const before = more && play?.list.length ? "?before=" + play.list[play.list.length - 1].start : "";
+  const r = await api("playtime" + before);
+  if (!r.ok) return;
+  play = more && play ? { ...r.data, days: play.days, list: [...play.list, ...r.data.list] } : r.data;
+  paintPlay();
+}
+function paintPlay() {
+  if (!play) return;
+  const top = Math.max(60, ...play.days.map((d) => d.min));
+  $("week").replaceChildren(...play.days.map((d, i) => {
+    const col = el("div", "pa-day" + (i === play.days.length - 1 ? " now" : ""));
+    const bar = el("div", "pa-bar"); const fill = el("span"); fill.style.height = Math.round((d.min / top) * 100) + "%"; bar.append(fill);
+    const day = DAYS()[new Date(d.at + 12 * 3600e3).getUTCDay()];
+    const v = el("b", null, d.min ? fmtShort(d.min) : "—");
+    col.append(v, bar, el("small", null, i === play.days.length - 1 ? L("Today", "היום") : day));
+    col.title = fmtDate(d.at) + (d.min ? " · " + fmtDur(d.min) : "");
+    return col;
+  }));
+  const list = $("playList");
+  if (!play.list.length) { list.replaceChildren(el("li", "pa-empty", L("No logins yet.", "עוד אין התחברויות."))); $("playMore").hidden = true; return; }
+  list.replaceChildren(...play.list.map((s) => {
+    const li = el("li", s.end ? "" : "live");
+    const w = el("div", "pa-when"); w.append(el("b", null, fmtDate(s.start)));
+    const span = el("span", null, fmtTime(s.start) + " – " + (s.end ? fmtTime(s.end) : L("now", "עכשיו"))); w.append(span);
+    const t = el("div", "pa-text");
+    t.append(el("span", "pa-badge", L(...DEVICE[s.device] || DEVICE.computer)));
+    if (!s.end) t.append(el("span", "pa-badge on", L("Playing now", "משחק עכשיו")));
+    t.append(el("b", null, fmtDur(s.min)));
+    li.append(w, t); return li;
+  }));
+  $("playMore").hidden = !play.more;
+}
+$("playMore").onclick = () => loadPlay(true);
 
 // play times
 function paintRules() {

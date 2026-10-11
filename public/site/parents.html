@@ -74,6 +74,7 @@
     <nav class="pa-tabs" role="tablist">
       <button type="button" role="tab" data-t="chat" aria-selected="true" data-en="Chat" data-he="צ'אט">Chat</button>
       <button type="button" role="tab" data-t="trades" aria-selected="false" data-en="Trades" data-he="החלפות">Trades</button>
+      <button type="button" role="tab" data-t="history" aria-selected="false" data-en="Logins" data-he="התחברויות">Logins</button>
       <button type="button" role="tab" data-t="time" aria-selected="false" data-en="Play times" data-he="זמני משחק">Play times</button>
       <button type="button" role="tab" data-t="lock" aria-selected="false" data-en="Chat settings" data-he="הגדרות צ'אט">Chat settings</button>
     </nav>
@@ -86,6 +87,14 @@
     <div class="pa-panel" data-p="trades" role="tabpanel" hidden>
       <p class="pa-lead" data-en="Every trade: who with, what your child gave and what they got." data-he="כל החלפה: עם מי, מה הילד נתן ומה הוא קיבל.">Every trade: who with, what your child gave and what they got.</p>
       <ol class="pa-list" id="tradeList"></ol>
+    </div>
+    <div class="pa-panel" data-p="history" role="tabpanel" hidden>
+      <p class="pa-lead" data-en="When your child played and for how long (Israel time). Moving around the game or reloading the page doesn't start a new login." data-he="מתי הילד שיחק וכמה זמן (לפי שעון ישראל). מעבר בין מקומות במשחק או רענון של הדף לא נחשבים כהתחברות חדשה.">When your child played and for how long (Israel time). Moving around the game or reloading the page doesn't start a new login.</p>
+      <h3 data-en="The last 7 days" data-he="7 הימים האחרונים">The last 7 days</h3>
+      <div class="pa-week" id="week"></div>
+      <h3 data-en="Every login" data-he="כל ההתחברויות">Every login</h3>
+      <ol class="pa-list" id="playList"></ol>
+      <button class="pa-more" id="playMore" type="button" hidden data-en="Show older" data-he="הצגת ישנות יותר">Show older</button>
     </div>
     <div class="pa-panel" data-p="time" role="tabpanel" hidden>
       <p class="pa-lead" data-en="Choose times when Jumpi doesn't work for your child. In these times they can't log in, and a game that is open closes by itself. Times are Israel time." data-he="בחרו שעות שבהן ג'אמפי לא עובד לילד. בשעות האלה אי אפשר להתחבר, ומשחק פתוח נסגר מעצמו. השעות לפי שעון ישראל.">Choose times when Jumpi doesn't work for your child. In these times they can't log in, and a game that is open closes by itself. Times are Israel time.</p>
