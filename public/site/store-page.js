@@ -1,4 +1,4 @@
-/* Jumpi Store page: the cards, who is signed in, and buying (a grown-up check first, then payment). */
+/* Jumpi Store page: the cards, who is signed in, and buying (the buyer confirms they're a grown-up and agrees to the terms, then payment). */
 import { PRODUCTS, PRODUCT_BY_ID, MEMBER_PERKS } from "/shared/store.js";
 
 const $ = (id) => document.getElementById(id);
@@ -87,11 +87,9 @@ modal.addEventListener("click", (e) => { if (e.target === modal || e.target.clos
 addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closeModal(); });
 
 function grownUpCheck(p) {
-  const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
-  openModal(`<h2>${T("Grown-ups only", "רק למבוגרים")}</h2>
+  openModal(`<h2>${T("Almost there!", "כמעט שם!")}</h2>
     <div class="st-sum"><img src="${artOf(p)}" alt=""><div><b>${esc(p.name[lang])}</b><span>${money(p)}${p.kind === "member" ? " · " + T("one payment, no renewal", "תשלום אחד, בלי חידוש") : ""}</span></div></div>
     <form id="stGate" novalidate>
-      <label class="st-q"><span>${T(`To continue, a parent please answer: ${a} × ${b} =`, `כדי להמשיך, הורה בבקשה יענה: ${a} × ${b} =`)}</span><input id="stAns" inputmode="numeric" autocomplete="off" maxlength="3" dir="ltr"></label>
       <label class="st-agree"><input type="checkbox" id="stOk"> <span>${T("I'm the parent or guardian (or over 18) and I agree to the", "אני ההורה או האפוטרופוס (או מעל גיל 18) ומסכים/ה ל")} <a href="/terms#t-purchases" target="_blank">${T("purchase terms", "תנאי הרכישה")}</a>.</span></label>
       <p class="st-err" id="stErr" role="alert"></p>
       <button class="st-buy big" type="submit">${T("Continue to payment", "המשך לתשלום")}</button>
@@ -99,7 +97,6 @@ function grownUpCheck(p) {
     </form>`);
   $("stGate").onsubmit = (e) => {
     e.preventDefault();
-    if (+$("stAns").value !== a * b) { $("stErr").textContent = T("That's not right. Please ask a grown-up to help.", "התשובה לא נכונה. בקשו ממבוגר לעזור."); return; }
     if (!$("stOk").checked) { $("stErr").textContent = T("Please tick the box to agree.", "יש לסמן את התיבה כדי להסכים."); return; }
     checkout(p);
   };
