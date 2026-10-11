@@ -6,12 +6,23 @@
 .ab-hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:60px;background:#f3f8ff;z-index:0}
 .ab-hero-in{max-width:780px;margin:0 auto}
 .ab-hero h1{margin:0 0 14px;color:#fff;font-size:clamp(2.4rem,6vw,4rem);line-height:1.02;text-shadow:0 5px 0 #0b5fa8}
-.ab-slogan{display:inline-block;margin:0 0 18px;white-space:nowrap;padding:.26em 1.05em .3em;border-radius:999px;border:4px solid #1b2a6b;
-  background:linear-gradient(180deg,#fff27a 0%,#ffdc4a 48%,#ffc21c 100%);color:#1f3a94;font:400 clamp(16px,2.2vw,26px)/1.1 "Lilita One","Fredoka",system-ui,sans-serif;
-  text-shadow:0 2px 0 rgb(255 255 255 / .6);box-shadow:inset 0 3px 0 rgb(255 255 255 / .75),inset 0 -4px 0 rgb(214 140 0 / .45),0 4px 0 #1b2a6b}
+.ab-slogan{display:inline-block;margin:0 0 18px;white-space:nowrap;padding:.26em 1.05em .3em;border-radius:999px;border:4px solid #0d2a6b;
+  background:linear-gradient(180deg,#7fd0ff 0%,#2f9bff 50%,#1572e0 100%);color:#fff;font:400 clamp(16px,2.2vw,26px)/1.1 "Lilita One","Fredoka",system-ui,sans-serif;
+  text-shadow:0 2px 0 #0d4fa8;box-shadow:inset 0 3px 0 rgb(255 255 255 / .55),inset 0 -4px 0 rgb(8 60 140 / .45),0 4px 0 #0d2a6b}
 .ab-hero p{margin:0 auto;max-width:62ch;font-size:1.16rem;line-height:1.65;color:#eaf6ff}
 .ab-pic{position:relative;z-index:1;width:min(1000px,100%);margin:34px auto 0;border-radius:28px;overflow:hidden;border:6px solid #fff;box-shadow:0 10px 0 #0b5fa8,0 26px 50px rgb(0 40 100 / .25)}
-.ab-pic img{display:block;width:100%;height:auto}
+.ab-pic{aspect-ratio:16/9;background:#0b3f80}
+.ab-pic img{display:block;width:100%;height:100%;object-fit:cover}
+.ab-pic iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+/* the big play button over the picture */
+.ab-play-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:12px;padding:16px 30px 16px 22px;border:0;border-radius:999px;cursor:pointer;
+  background:linear-gradient(180deg,#ffb04a,#ff8a1c 60%);color:#fff;font:400 clamp(1.1rem,2.4vw,1.6rem)/1 var(--display);letter-spacing:.03em;text-shadow:0 2px 0 #c25e00;
+  box-shadow:0 6px 0 #c25e00,0 16px 34px rgb(0 0 0 / .3);transition:transform .15s,filter .15s}
+.ab-play-btn svg{width:clamp(30px,4vw,44px);height:clamp(30px,4vw,44px);fill:currentColor;filter:drop-shadow(0 2px 0 #c25e00)}
+.ab-play-btn:hover{transform:translate(-50%,-50%) scale(1.06);filter:brightness(1.05)}
+[lang="he"] .ab-play-btn{font-family:"Secular One","Lilita One",system-ui,sans-serif}
+/* inside the Jumpi app the trailer stays a picture (no YouTube there) */
+.in-app .ab-play-btn{display:none}
 
 /* the story */
 .ab-story{width:min(780px,calc(100% - 32px));margin:56px auto 0;text-align:center}

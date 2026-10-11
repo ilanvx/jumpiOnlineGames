@@ -116,7 +116,7 @@ function cspFor(html, req) {
   return [
     "default-src 'self'", `script-src 'self' ${[...hashes].join(" ")}`, "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:", "img-src 'self' data: blob:", "media-src 'self' data: blob:",
-    `connect-src 'self' blob:${host ? ` wss://${host} ws://${host}` : ""}`, "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
+    `connect-src 'self' blob:${host ? ` wss://${host} ws://${host}` : ""}`, "worker-src 'self' blob:", "frame-src https://www.youtube-nocookie.com", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
   ].join("; ");
 }
 // a page from public/ with its CSP (read again only when the file changes)

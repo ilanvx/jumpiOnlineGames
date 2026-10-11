@@ -53,7 +53,11 @@
       <p class="ab-slogan" lang="en" dir="ltr">Where Imagination Comes to Life</p>
       <p data-l="en">We are an independent game studio from Israel. We make Jumpi: a free 3D world where kids create their own character, explore with friends, work at fun jobs, raise pets and build a home of their own.</p><p data-l="he">אנחנו סטודיו עצמאי למשחקים מישראל. אנחנו יוצרים את ג'אמפי: עולם תלת-ממדי חינמי שבו ילדים יוצרים דמות משלהם, מטיילים עם חברים, עובדים בעבודות כיפיות, מגדלים חיות מחמד ובונים בית משלהם.</p>
     </div>
-    <figure class="ab-pic"><img src="/site/img/home/island-hero-1440.jpg" width="1440" height="720" alt="Four Jumpi friends on a little island in the sea" loading="eager"></figure>
+    <!-- the Jumpi trailer: YouTube (no-cookie) loads only when someone presses play (about.js) -->
+    <figure class="ab-pic" id="trailer">
+      <img src="/site/img/home/island-hero-1440.jpg" width="1440" height="720" alt="Four Jumpi friends on a little island in the sea" loading="eager">
+      <button class="ab-play-btn" id="trailerPlay" type="button" data-video="vWNaLL8TLDU"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span><span data-l="en">Watch the trailer</span><span data-l="he">לצפייה בטריילר</span></span></button>
+    </figure>
   </section>
 
   <section class="ab-story">
@@ -146,5 +150,6 @@
   </div>
 </footer>
 <script type="module" src="/site/guide-lang.js"></script>
+<script src="/site/about.js" defer></script>
 </body>
 </html>
