@@ -18,8 +18,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
-<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
-<link rel="preload" href="/site/img/store/coins-4000.webp" as="image">
+<link rel="preload" as="image" href="/site/img/store/hero-1600.webp" imagesrcset="/site/img/store/hero-1600.webp 1600w, /site/img/store/hero-2560.webp 2560w" imagesizes="100vw" media="(min-width:761px)">
+<link rel="preload" as="image" href="/site/img/store/hero-tall.webp" media="(max-width:760px)">
 <link rel="stylesheet" href="/site/legal.css">
 <link rel="stylesheet" href="/site/chrome.css">
 <link rel="stylesheet" href="/site/store.css">
@@ -46,17 +46,16 @@
 <script src="/site/chrome.js"></script>
 
 <section class="st-hero">
-  <canvas id="stHero" role="img" aria-label="Jumpis swimming in a sea of gold coins"></canvas>
-  <div class="st-hero-in">
-    <h1 data-en="Jumpi Store" data-he="החנות של ג'אמפי">Jumpi Store</h1>
-    <p class="st-lead" data-en="Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi." data-he="צוללים לים של מטבעות! חבילות מטבעות, מנויים וחבילות מיוחדות לג'אמפי שלכם.">Dive into a sea of coins! Coin packs, memberships and special bundles for your Jumpi.</p>
-    <div class="st-cta">
-      <a class="st-chip gold" href="#coins"><img src="/site/img/store/coins-1800.webp" alt="" width="44" height="44"><span data-en="Coins" data-he="מטבעות">Coins</span></a>
-      <a class="st-chip purple" href="#membership"><img src="/site/img/store/member-30.webp" alt="" width="44" height="44"><span data-en="Membership" data-he="מנוי">Membership</span></a>
-      <a class="st-chip pink" href="#bundles"><img src="/site/img/bundle-sakura.png" alt="" width="44" height="44"><span data-en="Bundles" data-he="חבילות">Bundles</span></a>
-    </div>
-  </div>
-  <svg class="st-hero-edge" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 40 C 180 90 360 0 560 34 C 760 70 940 10 1140 38 C 1280 58 1380 30 1440 34 V90 H0 Z"/></svg>
+  <picture class="st-hero-art">
+    <source media="(max-width:760px)" srcset="/site/img/store/hero-tall.webp">
+    <img src="/site/img/store/hero-1600.webp" srcset="/site/img/store/hero-1600.webp 1600w, /site/img/store/hero-2560.webp 2560w" sizes="100vw" width="2560" height="1100" alt="Two Jumpis next to a golden treasure chest full of coins, crystals and sparkles" fetchpriority="high">
+  </picture>
+  <div class="st-hero-in"><div class="st-hero-box">
+    <h1 data-en="The Official Jumpi Games Store" data-he="החנות הרשמית של ג'אמפי גיימס">The Official Jumpi Games Store</h1>
+    <p class="st-motto" data-en="A little magic for every adventure!" data-he="קצת קסם לכל הרפתקה!">A little magic for every adventure!</p>
+    <p class="st-lead" data-en="Fill your wallet with coins, discover special items and level up your adventure in the world of Jumpi." data-he="מלאו את הארנק במטבעות, גלו פריטים מיוחדים ושדרגו את החוויה שלכם בעולם של ג'אמפי.">Fill your wallet with coins, discover special items and level up your adventure in the world of Jumpi.</p>
+    <a class="st-hero-btn" href="#coins"><span data-en="Explore our packs" data-he="גלו את החבילות שלנו">Explore our packs</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v11M5 10.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </div></div>
 </section>
 
 
@@ -165,6 +164,5 @@
 
 <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module" src="/site/store-page.js"></script>
-<script type="module" src="/site/store3d.js"></script>
 </body>
 </html>
