@@ -11,6 +11,7 @@ import { welcomeEmail } from "../mail/welcome.js";
 import { resetEmail } from "../mail/reset.js";
 import { PUBLIC_URL } from "../mail/send.js";
 import { Revoked } from "../models/Revoked.js";
+import { PendingSignup } from "../models/PendingSignup.js";
 import { quietNow } from "../public/shared/parental.js";
 
 const router = express.Router();
@@ -232,17 +233,28 @@ const CODE_MIN = 15, SEND_GAP = 55_000, SENDS_PER_HOUR = 6, MAX_TRIES = 5;
 const codeHash = (user, code) => crypto.createHmac("sha256", process.env.JWT_SECRET).update(user._id.toString() + ":" + code).digest("hex");
 const pendingToken = (user, remember) => jwt.sign({ sub: user._id.toString(), v: user.tokenVersion || 0, p: "verify", r: !!remember, typ: "verify" }, process.env.JWT_SECRET, { expiresIn: "2h" });
 const maskEmail = (e) => { const [a, d] = String(e).split("@"); return (a.length <= 2 ? a[0] + "•" : a.slice(0, 2) + "•".repeat(Math.min(6, a.length - 2))) + "@" + d; };
+const signupToken = (p) => jwt.sign({ sub: p._id.toString(), p: "signup", r: true, typ: "verify" }, process.env.JWT_SECRET, { expiresIn: "2h" });
+// a sign-up waiting for its code (no account yet)
+async function pendingSignup(token) {
+  try {
+    const pl = readToken(token, "verify");
+    if (!pl || pl.p !== "signup") return null;
+    return await PendingSignup.findById(pl.sub);
+  } catch { return null; }
+}
+const ageOf = (bd) => (bd ? (Date.now() - new Date(bd).getTime()) / (365.25 * 86_400_000) : NaN);
+const langOf = (req, fallback = "en") => (req.body?.lang === "he" ? "he" : req.body?.lang === "en" ? "en" : fallback);
 async function pendingUser(token) {
   try {
     const pl = readToken(token, "verify");
-    if (!pl) return null;
+    if (!pl || pl.p === "signup") return null;
     const { sub, v, r } = pl;
     const user = await User.findById(sub);
     return user && (v || 0) === (user.tokenVersion || 0) ? { user, remember: !!r } : null;
   } catch { return null; }
 }
 // make a new code, save its hash and email it
-async function sendCode(user, again) {
+async function sendCode(user, again, lang) {
   const now = Date.now(), old = user.verify || {};
   const sends = (old.sends || []).filter((t) => now - t < 3600_000);
   if (old.sentAt && now - old.sentAt < SEND_GAP) return { ok: false, status: 429, error: "We just sent a code. Check your inbox (and the spam folder) or try again in a minute.", wait: Math.ceil((SEND_GAP - (now - old.sentAt)) / 1000) };
@@ -251,7 +263,8 @@ async function sendCode(user, again) {
   user.verify = { hash: codeHash(user, code), expires: now + CODE_MIN * 60_000, tries: 0, sentAt: now, sends: [...sends, now] };
   user.markModified("verify");
   await user.save();
-  const mail = welcomeEmail({ username: user.username, code, minutes: CODE_MIN, again: !!again });
+  // under 18: the email is written to the parents (with a few words about parental controls)
+  const mail = welcomeEmail({ username: user.username, code, minutes: CODE_MIN, again: !!again, kid: ageOf(user.birthDate) < 18, lang: lang || user.lang || "en" });
   const sent = await sendMail({ to: user.email, ...mail });
   if (!sent.ok) return { ok: false, status: 502, error: sent.error };
   return { ok: true, email: maskEmail(user.email), wait: Math.ceil(SEND_GAP / 1000) };
@@ -274,7 +287,7 @@ router.post("/check", requireJson, checkLimiter, async (req, res, next) => {
     const username = clean(req.body.username);
     const email = clean(req.body.email).toLowerCase().slice(0, 255);
     const [u, e] = await Promise.all([
-      USERNAME_RE.test(username) ? User.exists({ usernameLower: username.toLowerCase() }) : null,
+      USERNAME_RE.test(username) ? User.exists({ usernameLower: username.toLowerCase() }).then((x) => x || PendingSignup.exists({ usernameLower: username.toLowerCase(), email: { $ne: email } })) : null,
       EMAIL_RE.test(email) && mayCheckEmail(req.ip) ? User.exists({ email }) : null,   // over the limit: sign-up itself still says it at the end
     ]);
     res.json({ usernameTaken: !!u, emailTaken: !!e, usernameNotAllowed: USERNAME_RE.test(username) && !checkName(username).ok });
@@ -298,6 +311,23 @@ router.post("/register", requireJson, signupLimiter, async (req, res, next) => {
     const ageYears = bd ? (Date.now() - bd.getTime()) / (365.25 * 86_400_000) : NaN;
     if (!bd || isNaN(ageYears) || ageYears < 3 || ageYears > 120 || bd.toISOString().slice(0, 10) !== String(req.body.birthDate)) return res.status(400).json({ field: "birthDate", error: "Please enter your real date of birth." });
     const look = cleanLook(req.body.look);
+    const lang = langOf(req);
+    // with email checks on: no account yet. It is made only when the code from the email is typed (POST /verify)
+    if (EMAIL_ON()) {
+      const usernameLower = username.toLowerCase();
+      const [uTaken, eTaken] = await Promise.all([User.exists({ usernameLower }), User.exists({ email })]);
+      if (eTaken) return res.status(409).json({ field: "email", error: "That email already has an account." });
+      if (uTaken || (await PendingSignup.exists({ usernameLower, email: { $ne: email } })))
+        return res.status(409).json({ field: "username", error: "That username is taken." });
+      const old = await PendingSignup.findOne({ email });   // the same email signing up again: keep its code limits
+      const pending = old || new PendingSignup({ email });
+      const sameName = !!old && old.usernameLower === usernameLower;   // (before it's overwritten below)
+      Object.assign(pending, { username, usernameLower, passwordHash: await bcrypt.hash(password, 12), look, birthDate: bd, lang, createdAt: new Date() });
+      await pending.save();
+      const fresh = old && old.verify?.hash && Date.now() < old.verify.expires && (old.verify.tries || 0) < MAX_TRIES && sameName;
+      const sent = fresh ? { ok: true } : await sendCode(pending, !!old, lang);   // a code that still works isn't replaced
+      return res.status(201).json({ needVerify: true, pending: signupToken(pending), email: maskEmail(email), sent: sent.ok, error: sent.ok ? undefined : sent.error });
+    }
     const passwordHash = await bcrypt.hash(password, 12);
     const now = new Date();
     const user = await User.create({
@@ -346,6 +376,13 @@ router.post("/login", requireJson, loginLimiter, async (req, res, next) => {
     // accept either the username or the email address
     const user = await User.findOne(id.includes("@") ? { email: who } : { usernameLower: who });
     const ok = await bcrypt.compare(password, user ? user.passwordHash : DUMMY_HASH);
+    if (!user && EMAIL_ON()) {   // signed up but didn't type the email code yet: back to the code
+      const p = await PendingSignup.findOne(id.includes("@") ? { email: who } : { usernameLower: who }).sort({ createdAt: -1 });
+      if (p && (await bcrypt.compare(password, p.passwordHash))) {
+        badLogins.delete(who + "|" + req.ip);
+        return res.status(403).json({ needVerify: true, pending: signupToken(p), email: maskEmail(p.email), error: "Please check your email first." });
+      }
+    }
     if (!user || !ok) { loginFailed(who, req.ip); return res.status(401).json({ error: "Wrong username or password." }); }
     badLogins.delete(who + "|" + req.ip);
     if (user.isBanned()) return res.status(403).json({ error: banMessage(user) });
@@ -470,11 +507,17 @@ router.post("/birthday", requireJson, async (req, res, next) => {
 // send (or send again) the email code: for someone between password and code (pending token), or logged in from before
 router.post("/verify/send", requireJson, verifyLimiter, async (req, res, next) => {
   try {
+    const su = req.body.pending ? await pendingSignup(req.body.pending) : null;
+    if (su) {
+      const r = await sendCode(su, true, langOf(req, su.lang));
+      if (!r.ok) return res.status(r.status).json({ error: r.error, wait: r.wait });
+      return res.json(r);
+    }
     const p = req.body.pending ? await pendingUser(req.body.pending) : null;
     const user = p ? p.user : await currentUser(req);
-    if (!user) return res.status(401).json({ error: "Please log in again." });
+    if (!user) return res.status(401).json({ error: "Please sign up or log in again." });
     if (!needsVerify(user)) return res.json({ ok: true, already: true });
-    const r = await sendCode(user, !!(user.verify && user.verify.sentAt));
+    const r = await sendCode(user, !!(user.verify && user.verify.sentAt), langOf(req));
     if (!r.ok) return res.status(r.status).json({ error: r.error, wait: r.wait });
     res.json(r);
   } catch (err) {
@@ -484,6 +527,10 @@ router.post("/verify/send", requireJson, verifyLimiter, async (req, res, next) =
 // check the code; right: the email is checked and you're logged in
 router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
   try {
+    if (req.body.pending) {
+      const pl = readToken(req.body.pending, "verify");
+      if (pl && pl.p === "signup") return await verifySignup(req, res, pl);
+    }
     const p = req.body.pending ? await pendingUser(req.body.pending) : null;
     const user = p ? p.user : await currentUser(req);
     if (!user) return res.status(401).json({ error: "Please log in again." });
@@ -509,6 +556,40 @@ router.post("/verify", requireJson, verifyLimiter, async (req, res, next) => {
     next(err);
   }
 });
+
+// the code of a sign-up: right → the account is made now (and logged in)
+async function verifySignup(req, res, pl) {
+  const su = await PendingSignup.findById(pl.sub);
+  if (!su) return res.status(410).json({ error: "This sign-up ran out. Please sign up again.", expired: true, gone: true });
+  const code = String(req.body.code || "").replace(/\D/g, "");
+  const V = su.verify || {};
+  if (!V.hash || Date.now() > V.expires) return res.status(400).json({ error: "That code has run out. Send a new one.", expired: true });
+  const counted = await PendingSignup.findOneAndUpdate({ _id: su._id, "verify.hash": V.hash, "verify.tries": { $not: { $gte: MAX_TRIES } } }, { $inc: { "verify.tries": 1 } }, { new: true }).select("verify");
+  if (!counted) return res.status(429).json({ error: "Too many wrong codes. Send a new one.", expired: true });
+  const ok = code.length === 6 && crypto.timingSafeEqual(Buffer.from(codeHash(su, code)), Buffer.from(V.hash));
+  if (!ok) return res.status(400).json({ error: `That code isn't right. ${Math.max(0, MAX_TRIES - (counted.verify?.tries || MAX_TRIES))} tries left.` });
+  // only one tab can turn this sign-up into an account
+  const took = await PendingSignup.findOneAndDelete({ _id: su._id, "verify.hash": V.hash });
+  if (!took) return res.status(410).json({ error: "This sign-up was already finished. Log in with your username and password.", gone: true });
+  const now = new Date();
+  let user;
+  try {
+    user = await User.create({
+      username: took.username, usernameLower: took.usernameLower, email: took.email, passwordHash: took.passwordHash,
+      look: took.look, inventory: lookItems(took.look), acceptedTermsAt: took.createdAt, ageConfirmedAt: took.createdAt,
+      lastLoginAt: now, birthDate: took.birthDate, emailVerified: true,
+    });
+  } catch (err) {
+    if (err?.code === 11000) {
+      const field = err.keyPattern?.email ? "email" : "username";
+      return res.status(409).json({ field, gone: true, error: field === "email" ? "That email already has an account. Log in instead." : "Someone just took that username. Please sign up again with another one." });
+    }
+    throw err;
+  }
+  await PendingSignup.deleteMany({ $or: [{ email: took.email }, { usernameLower: took.usernameLower }] }).catch(() => {});
+  await finishLogin(req, res, user, true);
+  res.status(201).json({ user: user.toPublic(), tab: tabToken(user), created: true });
+}
 
 /* ---------- forgot password: a link by email (/forgot-password → email → /reset-password?token=…) ----------
    The answer never says whether an account exists. The link works for 30 minutes and once; only its hash is saved.

@@ -207,6 +207,7 @@ p{margin:0}
 .safe-list{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:10px}
 .parents-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:18px}
 .parents-cta p{margin:0;flex:1;min-width:200px;color:#cfe0f7;font-weight:500}
+.parents-cta p a{color:#fff;font-weight:600}
 .safe-row{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:16px;background:rgb(0 0 0 / .18);transition:background .15s,transform .15s}
 .safe-row:hover{background:rgb(0 0 0 / .26);transform:translateX(4px)}
 .safe-tile{flex:none;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:var(--t);box-shadow:inset 0 -4px 0 var(--t2),0 3px 0 rgb(0 0 0 / .2)}

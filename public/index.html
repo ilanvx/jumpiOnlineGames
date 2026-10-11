@@ -8920,7 +8920,7 @@ function openVerify(o){VF.pending=o.pending||null;VF.onDone=o.onDone;VF.email=o.
   vfOv.hidden=false;sfx.open();if(!(o.sent||o.fresh))setTimeout(()=>document.getElementById("vfSendBtn").focus(),60);}
 function closeVerify(){if(vfOv.hidden)return;vfOv.hidden=true;clearInterval(VF.timer);sfx.close();}
 async function vfSend(){if(VF.busy)return;VF.busy=true;const b=document.getElementById("vfSendBtn");b.disabled=true;vfSay("");
-  const r=await api("verify/send",{pending:VF.pending});VF.busy=false;b.disabled=false;
+  const r=await api("verify/send",{pending:VF.pending,lang:(window.I18N&&I18N.lang==="he")?"he":"en"});VF.busy=false;b.disabled=false;
   if(!r.ok){vfSay(r.data.error||"Couldn't send the code. Try again.");sfx.error();if(r.data.wait){vfCodeStage();vfCountdown(r.data.wait);}return;}
   if(r.data.already){closeVerify();return;}
   document.getElementById("vfText").innerHTML=`We sent a 6-digit code to <b>${esc(r.data.email||VF.email||"your email")}</b>. Type it here. Can't see it? Check the spam folder.`;
@@ -8928,6 +8928,7 @@ async function vfSend(){if(VF.busy)return;VF.busy=true;const b=document.getEleme
 async function vfCheck(){const code=vfIns.map(i=>i.value).join("");if(code.length<6){vfSay("Type all 6 numbers.");vfIns[code.length].focus();return;}
   if(VF.busy)return;VF.busy=true;const go=document.getElementById("vfGo");go.disabled=true;go.textContent="Checking…";
   const r=await api("verify",{pending:VF.pending,code,addAccount:ACC.adding&&!!me});VF.busy=false;go.disabled=false;go.textContent="LET ME IN!";
+  if(!r.ok&&r.data.gone){vfOv.hidden=true;clearInterval(VF.timer);toast(r.data.error);sfx.error();return;}   // the sign-up ran out or the name was taken meanwhile
   if(!r.ok){vfSay(r.data.error||"That code isn't right.");sfx.error();vfBoxes.classList.remove("bad");void vfBoxes.offsetWidth;vfBoxes.classList.add("bad");
     if(r.data.expired){vfIns.forEach(i=>i.value="");document.getElementById("vfAgain").disabled=false;document.getElementById("vfAgain").textContent="Send a new code";clearInterval(VF.timer);}else{vfIns.forEach(i=>i.value="");vfIns[0].focus();}return;}
   vfSay("You're in! Welcome to the family!",true);sfx.success();const done=VF.onDone;setTimeout(()=>{vfOv.hidden=true;clearInterval(VF.timer);if(done)done(r.data.user);},700);}
@@ -9006,7 +9007,7 @@ suForm.addEventListener("submit",async e=>{
   if(step===3){
     suWait(true,"Creating account…");
     const r=await api("register",{username:suUser.value.trim(),email:suEmail.value.trim(),password:suPass.value,birthDate:suBirth(),
-      acceptedTerms:suTerms.checked,ageConfirmed:suAge.checked,addAccount:ACC.adding&&!!me,
+      acceptedTerms:suTerms.checked,ageConfirmed:suAge.checked,addAccount:ACC.adding&&!!me,lang:(window.I18N&&I18N.lang==="he")?"he":"en",
       look:{color:colorIdx,eyes:eyeIdx,hair:outfit.hair,shirt:outfit.shirt,pants:outfit.pants,glasses:outfit.glasses}});
     suWait(false,"Next");
     if(!r.ok){
@@ -9977,7 +9978,7 @@ function drawWheel(){const c=wheelCv.getContext("2d"),S=wheelCv.width,C=S/2,R=S/
     // a soft shine on the left half of each slice
     c.beginPath();c.moveTo(0,0);c.arc(0,0,R,a,a+seg*.5);c.closePath();c.fillStyle="rgba(255,255,255,.08)";c.fill();
     c.save();c.rotate(a+seg/2);c.translate(R*.64,0);c.rotate(Math.PI/2);c.textAlign="center";c.textBaseline="middle";
-    if(W.kind==="item"&&wheelHatImg){c.drawImage(wheelHatImg,-46,-62,92,92);c.font='400 19px "Lilita One", sans-serif';c.lineWidth=5;c.strokeStyle="#a85f00";c.strokeText("LUCKY HAT",0,44);c.fillStyle="#fff";c.fillText("LUCKY HAT",0,44);}
+    if(W.kind==="item"){if(wheelHatImg)c.drawImage(wheelHatImg,-46,-62,92,92);c.font='400 19px "Lilita One", sans-serif';c.lineWidth=5;c.strokeStyle="#a85f00";c.strokeText("LUCKY HAT",0,wheelHatImg?44:0);c.fillStyle="#fff";c.fillText("LUCKY HAT",0,wheelHatImg?44:0);}   // (the hat picture may still be loading: the words alone, never "undefined")
     else{if(W.kind==="coins"){c.drawImage(coinImg(),-18,-62,36,36);}else{c.drawImage(xpImg(),-19,-63,38,38);}
       c.font='400 42px "Lilita One", sans-serif';c.lineWidth=8;c.strokeStyle="rgba(0,0,0,.28)";c.strokeText(String(W.amount),0,-2);c.fillStyle="#fff";c.fillText(String(W.amount),0,-2);
       c.font='400 18px "Lilita One", sans-serif';c.lineWidth=5;c.strokeText(W.kind==="coins"?"COINS":"SEASON XP",0,34);c.fillText(W.kind==="coins"?"COINS":"SEASON XP",0,34);}

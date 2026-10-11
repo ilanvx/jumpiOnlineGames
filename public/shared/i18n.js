@@ -18,7 +18,14 @@
     "SETTINGS": "הגדרות", "Close settings": "סגירת ההגדרות", "Sound": "צלילים", "Zoom": "זום", "Zoom out": "התרחקות", "Zoom in": "התקרבות",
     "ACCOUNT": "החשבון שלי", "Player": "שחקן", "Account age": "ותק", "Membership": "מנוי", "Coins": "מטבעות", "Member": "מנוי", "Not a member": "בלי מנוי",
     "1 day": "יום אחד", "{n} days": "{n} ימים",
-    // parental controls (/parents)
+    // sign-up: the account is made only after the email code
+    "This sign-up ran out. Please sign up again.": "ההרשמה הזאת פגה. הירשמו שוב, בבקשה.",
+    "This sign-up was already finished. Log in with your username and password.": "ההרשמה הזאת כבר הושלמה. התחברו עם שם המשתמש והסיסמה.",
+    "That email already has an account. Log in instead.": "לאימייל הזה כבר יש חשבון. התחברו במקום להירשם.",
+    "Someone just took that username. Please sign up again with another one.": "מישהו בדיוק תפס את שם המשתמש הזה. הירשמו שוב עם שם אחר.",
+    "Please sign up or log in again.": "הירשמו או התחברו שוב, בבקשה.",
+    "Please check your email first.": "קודם בדקו את האימייל.",
+
     "Your parents set a no-Jumpi time until {t}. See you then!": "ההורים שלך קבעו זמן בלי ג'אמפי עד {t}. נתראה אז!",
     "Your parents set a no-Jumpi time. See you later!": "ההורים שלך קבעו זמן בלי ג'אמפי. נתראה אחר כך!",
     "Your parents turned the chat off. Pick a message!": "ההורים שלך כיבו את הצ'אט. בחרו הודעה!",

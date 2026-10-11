@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jumpi Help Center · Guides and Answers | מרכז העזרה של ג'אמפי</title>
+<meta name="description" content="Guides with pictures for every part of Jumpi Games: getting started, friends and chat, coins and jobs, your home, pets, the shop, quests, safety, parental controls and your account. Search in English or Hebrew.">
+<link rel="canonical" href="https://jumpigames.com/help">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jumpi Games">
+<meta property="og:url" content="https://jumpigames.com/help">
+<meta property="og:title" content="Jumpi Help Center">
+<meta property="og:description" content="Guides with pictures for every part of Jumpi Games, and answers to every question.">
+<meta property="og:image" content="https://jumpigames.com/site/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1fb6ff">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/shared/a11y.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/guide.css">
+<link rel="stylesheet" href="/site/help.css">
+</head>
+<body class="gd hp">
+<header class="lg-top">
+  <a href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="96" height="56"></a>
+  <nav class="gd-nav" aria-label="Pages">
+    <a href="/help" aria-current="page"><span data-l="en">Help center</span><span data-l="he">מרכז עזרה</span></a>
+    <a href="/for-parents"><span data-l="en">For parents</span><span data-l="he">להורים</span></a>
+    <a href="/contact"><span data-l="en">Contact</span><span data-l="he">צור קשר</span></a>
+  </nav>
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">English</button><button type="button" data-set="he" aria-pressed="false">עברית</button></div>
+</header>
+
+<main>
+  <section class="hp-hero">
+    <div class="hp-hero-in">
+      <h1><span data-l="en">How can we help?</span><span data-l="he">איך אפשר לעזור?</span></h1>
+      <p data-l="en">Guides with real pictures from the game for everything in Jumpi. Ask in English or in Hebrew, we'll understand.</p>
+      <p data-l="he">מדריכים עם תמונות אמיתיות מהמשחק לכל דבר בג'אמפי. אפשר לשאול בעברית או באנגלית, נבין.</p>
+      <form class="hp-search" id="searchForm" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M15.5 15.5 L21 21" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>
+        <label class="sr" for="q"><span data-l="en">Search the help center</span><span data-l="he">חיפוש במרכז העזרה</span></label>
+        <input id="q" type="search" autocomplete="off" dir="auto" maxlength="80" enterkeyhint="search">
+        <button type="button" id="qClear" class="hp-clear" aria-label="Clear" hidden>×</button>
+      </form>
+      <div class="hp-try" id="tryRow"></div>
+    </div>
+  </section>
+
+  <!-- search results -->
+  <section class="hp-results" id="results" hidden aria-live="polite">
+    <h2 id="resTitle"></h2>
+    <ol class="hp-res-list" id="resList"></ol>
+    <div class="hp-none" id="resNone" hidden>
+      <p data-l="en">We couldn't find that. Try other words, pick a topic below, or ask us: a real person from the Jumpi team will answer.</p>
+      <p data-l="he">לא מצאנו את זה. נסו מילים אחרות, בחרו נושא למטה, או שאלו אותנו: מישהו אמיתי מצוות ג'אמפי יענה.</p>
+      <a class="gd-btn blue" href="/contact"><span data-l="en">Ask the Jumpi team</span><span data-l="he">לשאול את צוות ג'אמפי</span></a>
+    </div>
+  </section>
+
+  <!-- the topics -->
+  <section class="hp-topics" id="topics" aria-label="Topics"></section>
+
+  <!-- every guide, by topic -->
+  <div class="hp-guides" id="guides"></div>
+
+  <section class="gd-sec hp-end">
+    <div class="hp-contact">
+      <div>
+        <h2><span data-l="en">Didn't find what you need?</span><span data-l="he">לא מצאתם את מה שחיפשתם?</span></h2>
+        <p data-l="en">Write to us. A real person from the Jumpi team reads every message and answers by email.</p>
+        <p data-l="he">כתבו לנו. מישהו אמיתי מצוות ג'אמפי קורא כל הודעה ועונה במייל.</p>
+      </div>
+      <div class="fp-end-links">
+        <a class="gd-btn white" href="/contact"><span data-l="en">Contact us</span><span data-l="he">צרו קשר</span></a>
+        <a class="gd-btn white" href="/contact?topic=bug"><span data-l="en">Something isn't working</span><span data-l="he">משהו לא עובד</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- always there: ask us -->
+<a class="hp-float" id="askFloat" href="/contact"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5 Q4 4 6.5 4 H17.5 Q20 4 20 6.5 V14 Q20 16.5 17.5 16.5 H11 L6.5 20 V16.5 Q4 16.5 4 14Z" fill="#fff"/></svg><span data-l="en">Ask us</span><span data-l="he">שאלו אותנו</span></a>
+
+<!-- a picture, big -->
+<div class="hp-zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-label="Picture">
+  <button type="button" class="hp-zoom-x" id="zoomX" aria-label="Close">×</button>
+  <div class="hp-zoom-in" id="zoomIn"></div>
+</div>
+
+<footer class="lg-foot">© 2026 Jumpi Games™ · <a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a> · <a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a> · <a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a> · <a href="/contact"><span data-l="en">Contact</span><span data-l="he">צור קשר</span></a></footer>
+<script type="module" src="/site/help.js"></script>
+</body>
+</html>
