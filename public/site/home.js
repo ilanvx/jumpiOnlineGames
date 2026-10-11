@@ -11,11 +11,7 @@ const nav = $("nav"), menuBtn = $("menuBtn");
 menuBtn.onclick = () => { const open = !nav.classList.contains("open"); nav.classList.toggle("open", open); menuBtn.setAttribute("aria-expanded", open); };
 nav.addEventListener("click", (e) => { if (e.target.closest("a")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); } });
 
-/* ---------- the top bar lets the sky through at the top of the page ---------- */
-const top = $("top");
-const paintTop = () => top.classList.toggle("atop", scrollY < 40 && !nav.classList.contains("open"));
-addEventListener("scroll", paintTop, { passive: true }); paintTop();
-menuBtn.addEventListener("click", paintTop);
+addEventListener("keydown", (e) => { if (e.key === "Escape" && nav.classList.contains("open")) { nav.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); menuBtn.focus(); } });
 
 /* ---------- the two friends play catch on the island ----------
    Where their hands and feet are in the picture comes from the 3D scene (studio "islandHero", __islandLayout). */

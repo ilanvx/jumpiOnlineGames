@@ -31,31 +31,45 @@ a{color:inherit}
 .hm-btn.xl svg{width:28px;height:28px}
 .hm-btn.sm{min-height:42px;padding:0 18px;font-size:1.05rem;border-radius:14px}
 
-/* ---------- top bar: a white game panel floating over the sky ---------- */
-.hm-top{position:fixed;z-index:30;top:14px;left:50%;transform:translateX(-50%);width:min(1200px,calc(100% - 24px));display:flex;align-items:center;gap:14px;
-  padding:8px 10px 8px 16px;border-radius:22px;background:rgb(255 255 255 / .92);backdrop-filter:blur(10px);box-shadow:0 6px 0 rgb(11 95 168 / .35),0 16px 40px rgb(0 40 100 / .18);border:1.5px solid transparent;
-  transition:background .35s,box-shadow .35s,border-color .35s,backdrop-filter .35s}
-/* at the top of the page it lets the sky through */
-.hm-top.atop{background:rgb(255 255 255 / .14);box-shadow:none;border-color:rgb(255 255 255 / .38);backdrop-filter:blur(4px) saturate(1.15)}
-.hm-top.atop .hm-nav a{color:#fff;text-shadow:0 2px 6px rgb(0 50 120 / .45)}
-.hm-top.atop .hm-nav a:hover{background:rgb(255 255 255 / .2)}
-.hm-top.atop .lang-sw{background:rgb(255 255 255 / .22)}
-.hm-top.atop .lang-sw button{color:#fff}
-.hm-top.atop .hm-menu{background:rgb(255 255 255 / .25)}
-.hm-top.atop .hm-menu span{background:#fff}
-.hm-top.atop .hm-brand img{filter:drop-shadow(0 3px 6px rgb(0 50 120 / .3))}
-.hm-brand img{display:block;width:96px;height:auto}
-.hm-nav{display:flex;gap:2px;margin-inline-start:auto}
-.hm-nav a{padding:9px 14px;border-radius:999px;font-weight:600;text-decoration:none;color:var(--ink);font-size:.98rem}
-.hm-nav a:hover{background:#eaf4ff}
-.lang-sw{display:flex;gap:3px;padding:3px;border-radius:999px;background:#eaf4ff}
-.lang-sw button{border:0;border-radius:999px;padding:6px 11px;background:none;font:600 .9rem var(--body);color:var(--ink2);cursor:pointer}
-.lang-sw button[aria-pressed="true"]{background:#1f9bff;color:#fff;box-shadow:0 3px 0 #06488a}
-.hm-menu{display:none;border:0;background:#eaf4ff;width:44px;height:44px;border-radius:14px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.hm-menu span{display:block;width:20px;height:3px;border-radius:3px;background:var(--ink);transition:transform .2s,opacity .2s}
+/* ---------- top bar: one solid blue, the logo with its age badge, the real pages, language and Play ---------- */
+.hm-top{position:sticky;top:0;z-index:30;background:#0d63c9;color:#fff;box-shadow:0 4px 0 #0a4c9c,0 10px 26px rgb(4 34 80 / .28)}
+.hm-top-in{max-width:1240px;margin:0 auto;height:74px;padding:0 18px;display:flex;align-items:center;gap:12px}
+/* the logo sits on a white tab that hangs below the bar */
+.hm-brand{align-self:flex-start;display:block;background:#fff;padding:9px 16px 10px;margin-top:6px;border-radius:18px 18px 22px 22px;
+  box-shadow:0 5px 0 #0a4c9c,0 12px 22px rgb(4 34 80 / .3);transition:transform .2s}
+.hm-brand:hover{transform:translateY(2px) rotate(-2deg)}
+.hm-brand img{display:block;width:108px;height:auto}
+/* 6+: a round yellow badge; hover or focus shows what it means */
+.hm-age{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ffd23a;color:#7a4a00;
+  box-shadow:0 3px 0 #c48a00,inset 0 -3px 0 rgb(0 0 0 / .08);font:400 1.15rem/1 var(--display);cursor:help;outline:none;transition:transform .15s}
+.hm-age:hover,.hm-age:focus-visible{transform:scale(1.08)}
+.hm-age:focus-visible{box-shadow:0 3px 0 #c48a00,0 0 0 3px #fff}
+.hm-age-tip{position:absolute;top:calc(100% + 12px);left:50%;transform:translate(-50%,-4px);white-space:nowrap;background:#fff;color:var(--ink);font:600 .92rem/1.2 var(--body);
+  padding:9px 14px;border-radius:12px;box-shadow:0 4px 0 #9fc4e6,0 10px 24px rgb(4 34 80 / .25);opacity:0;visibility:hidden;transition:opacity .15s,transform .15s,visibility .15s;pointer-events:none}
+.hm-age-tip::before{content:"";position:absolute;bottom:100%;left:50%;margin-left:-8px;border:8px solid transparent;border-bottom-color:#fff}
+.hm-age:hover .hm-age-tip,.hm-age:focus .hm-age-tip{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.hm-nav{display:flex;gap:4px;margin-inline-start:auto}
+.hm-nav a{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:14px;font-weight:600;text-decoration:none;color:#fff;font-size:1rem;transition:background .15s,color .15s}
+.hm-nav a svg{width:20px;height:20px;fill:#8fd0ff;flex:none;transition:fill .15s}
+.hm-nav a svg .cut{fill:none;stroke:#0d63c9;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.hm-nav a svg .cut-dot{fill:#0d63c9}
+.hm-nav a:hover,.hm-nav a:focus-visible{background:#ffd23a;color:#3a2a00;outline:none}
+.hm-nav a:hover svg,.hm-nav a:focus-visible svg{fill:#3a2a00}
+.hm-nav a:hover svg .cut{stroke:#ffd23a}.hm-nav a:hover svg .cut-dot{fill:#ffd23a}
+.hm-nav-play{display:none!important}
+.lang-sw{display:flex;gap:3px;padding:3px;border-radius:999px;background:#0a4c9c}
+.lang-sw button{border:0;border-radius:999px;padding:6px 11px;background:none;font:600 .9rem var(--body);color:#cfe7ff;cursor:pointer}
+.lang-sw button[aria-pressed="true"]{background:#fff;color:#0d63c9;box-shadow:0 3px 0 #06356e}
+.hm-top-play svg{width:18px;height:18px;fill:currentColor}
+.hm-menu{display:none;border:0;background:#0a4c9c;width:44px;height:44px;border-radius:14px;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.hm-menu span{display:block;width:20px;height:3px;border-radius:3px;background:#fff;transition:transform .2s,opacity .2s}
 .hm-menu[aria-expanded="true"] span:nth-child(1){transform:translateY(8px) rotate(45deg)}
 .hm-menu[aria-expanded="true"] span:nth-child(2){opacity:0}
 .hm-menu[aria-expanded="true"] span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+/* the big logo high in the island's sky */
+.hm-biglogo{position:absolute;z-index:4;left:50%;top:clamp(26px,4.2vw,70px);width:clamp(210px,27vw,470px);height:auto;transform:translateX(-50%);
+  filter:drop-shadow(0 8px 0 rgb(8 63 120 / .25)) drop-shadow(0 18px 30px rgb(4 34 80 / .25));animation:hmLogo 5s ease-in-out infinite;pointer-events:none}
+@keyframes hmLogo{0%,100%{transform:translate(-50%,0) rotate(-1deg)}50%{transform:translate(-50%,-8px) rotate(1deg)}}
 
 /* ---------- the island banner, full width, with living layers ---------- */
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -211,9 +225,10 @@ a{color:inherit}
   .hm-foot-in{grid-template-columns:1fr 1fr}
 }
 @media (max-width:860px){
-  .hm-nav{position:absolute;top:calc(100% + 8px);left:0;right:0;flex-direction:column;background:#fff;border-radius:20px;padding:10px;box-shadow:0 10px 30px rgb(0 40 100 / .2);display:none}
+  .hm-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#0d63c9;padding:8px 14px 16px;box-shadow:0 14px 26px rgb(4 34 80 / .3);display:none;border-top:2px solid #0a4c9c}
   .hm-nav.open{display:flex}
-  .hm-top.atop .hm-nav a{color:var(--ink);text-shadow:none}
+  .hm-nav a{padding:13px 14px;font-size:1.1rem}
+  .hm-nav-play{display:flex!important;justify-content:center;margin-top:6px;background:linear-gradient(180deg,#ffb347,#ff8a1c 60%);box-shadow:0 5px 0 #c25a00;font:400 1.2rem var(--display)!important}
   .hm-menu{display:flex}
   .lang-sw{margin-inline-start:auto}
   .hm-faq-in{grid-template-columns:1fr}
@@ -221,8 +236,13 @@ a{color:inherit}
   .hm-dc-card{grid-template-columns:1fr;text-align:center;justify-items:center}
 }
 @media (max-width:560px){
-  .hm-top{top:8px;gap:8px;padding:6px 8px 6px 12px}
-  .hm-brand img{width:74px}
+  .hm-top-in{height:62px;gap:8px;padding:0 10px}
+  .hm-brand{padding:7px 11px 8px;margin-top:5px}
+  .hm-brand img{width:78px}
+  .hm-age{width:36px;height:36px;font-size:1rem}
+  .hm-age-tip{left:-12px;right:auto;transform:translateY(-4px)}.hm-age:hover .hm-age-tip,.hm-age:focus .hm-age-tip{transform:none}
+  .hm-age-tip::before{left:22px;margin:0}
+  [dir="rtl"] .hm-age-tip{left:auto;right:-12px}[dir="rtl"] .hm-age-tip::before{left:auto;right:22px}
   .hm-top-play{display:none}
   .hm-hero-pic{--hh:min(110vw,520px)}
   .hm-stage{transform:translateX(-49%)}
@@ -231,5 +251,5 @@ a{color:inherit}
   .hm-store{flex:1 1 150px}
   .hm-foot-in{grid-template-columns:1fr}
 }
-@media (prefers-reduced-motion:reduce){.hm-bubbles,.hm-pip img,.hm-dc-art img,.hm-cloud,.hm-sea i,.hm-light i{animation:none}.hm-card,.hm-card-pic img,.hm-btn{transition:none}}
-body.no-motion .hm-bubbles,body.no-motion .hm-pip img,body.no-motion .hm-dc-art img,body.no-motion .hm-cloud,body.no-motion .hm-sea i,body.no-motion .hm-light i{animation:none!important}
+@media (prefers-reduced-motion:reduce){.hm-bubbles,.hm-pip img,.hm-dc-art img,.hm-cloud,.hm-sea i,.hm-light i,.hm-biglogo{animation:none}.hm-card,.hm-card-pic img,.hm-btn{transition:none}}
+body.no-motion .hm-bubbles,body.no-motion .hm-pip img,body.no-motion .hm-dc-art img,body.no-motion .hm-cloud,body.no-motion .hm-sea i,body.no-motion .hm-light i,body.no-motion .hm-biglogo{animation:none!important}
