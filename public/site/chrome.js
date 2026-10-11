@@ -4,6 +4,13 @@
 (() => {
   const html = document.documentElement;
   if (/JumpiApp/.test(navigator.userAgent)) html.classList.add("in-app");
+  // the app downloads are closed for now (APP_DOWNLOADS_OPEN in /shared/app.js): the Android and Microsoft Store buttons do nothing
+  let dlClosed = true;
+  import("/shared/app.js").then((m) => { dlClosed = !m.APP_DOWNLOADS_OPEN; }).catch(() => {});
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (dlClosed && a && /\/download\/android|\.apk(\?|$)|apps\.microsoft\.com/i.test(a.getAttribute("href"))) e.preventDefault();
+  }, true);
   const nav = document.getElementById("nav"), btn = document.getElementById("menuBtn");
   if (!nav || !btn) return;
   const isOpen = () => nav.classList.contains("open");

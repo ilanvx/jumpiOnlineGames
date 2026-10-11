@@ -9,3 +9,7 @@ export const PHONES_NEED_APP = false;
 // /download/android), or the Google Play page once the app is there (then put that link here)
 export const ANDROID_DOWNLOAD = "/download/android";
 export const GOOGLE_PLAY_URL = "";
+// false = the app downloads are closed for now: /download/android and the APK file don't download (server.js sends
+// people to the home page), and the "Download for Android" and "Microsoft Store" buttons on the website do nothing
+// (public/site/chrome.js). Set to true to open them again.
+export const APP_DOWNLOADS_OPEN = false;

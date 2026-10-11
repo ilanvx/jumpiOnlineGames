@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import express from "express";
+import { APP_DOWNLOADS_OPEN } from "./public/shared/app.js";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
@@ -241,6 +242,11 @@ app.use((req, res, next) => {
   next();
 });
 // scripts, styles and pages: the browser may keep them but must check for a newer one each time (cheap: 304 when unchanged)
+// the app downloads are closed for now (APP_DOWNLOADS_OPEN in public/shared/app.js): the APK doesn't download, people go to the home page
+app.use("/download", (req, res, next) => {
+  if (!APP_DOWNLOADS_OPEN && (req.path === "/android" || /\.apk$/i.test(req.path))) { res.set("Cache-Control", "no-store"); return res.redirect(302, "/"); }
+  next();
+});
 // 3D models: send the compressed copy (file.glb.gz, made next to it) when the browser takes gzip and the copy is up to date
 app.get(/\.glb$/i, (req, res, next) => {
   try {
