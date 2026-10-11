@@ -43,8 +43,8 @@ a{color:inherit}
 .hm-palms{position:absolute;inset:0;z-index:6;pointer-events:none}
 .hm-palms i{position:absolute;bottom:0;height:100%;width:min(calc(var(--hh) * .5),30vw);transform-origin:0 100%;animation:hmPalm 8s ease-in-out infinite}
 .hm-palms i::before{content:"";position:absolute;inset:0;background:url(/site/img/home/side-palm.webp) no-repeat 0 100%/contain}
-.hm-palms .l{left:0}
-.hm-palms .r{right:0;transform-origin:100% 100%;animation-name:hmPalmR;animation-delay:-4s}
+.hm-palms .l{left:-28px}
+.hm-palms .r{right:-28px;transform-origin:100% 100%;animation-name:hmPalmR;animation-delay:-4s}
 .hm-palms .r::before{transform:scaleX(-1)}
 @keyframes hmPalm{0%,100%{rotate:0deg}50%{rotate:.8deg}}
 @keyframes hmPalmR{0%,100%{rotate:0deg}50%{rotate:-.8deg}}
