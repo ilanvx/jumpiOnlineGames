@@ -19,6 +19,7 @@ import adminRoutes, { isSenior } from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
 import petRoutes from "./routes/pets.js";
 import storeRoutes from "./routes/store.js";
+import msStoreRoutes from "./routes/msstore.js";
 import jobRoutes from "./routes/jobs.js";
 import seasonRoutes from "./routes/season.js";
 import secretRoutes from "./routes/secrets.js";
@@ -89,6 +90,7 @@ app.use("/api", teamRoutes);
 app.use("/api", needsRoutes);
 app.use("/api", petRoutes);
 app.use("/api", storeRoutes);
+app.use("/api", msStoreRoutes);   // buying inside the Microsoft Store app
 app.use("/api", jobRoutes);
 app.use("/api", seasonRoutes);
 app.use("/api", secretRoutes);

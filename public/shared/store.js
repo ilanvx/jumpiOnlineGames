@@ -52,6 +52,9 @@ export const PRODUCTS = [
     { en: "An orange cap with a smiley, and a tee and pants covered in happy, cool, laughing and heart-eyed faces.", he: "כובע כתום עם סמיילי, וחולצה ומכנסיים מלאים בפרצופים שמחים, מגניבים, צוחקים ומאוהבים." }),
 ];
 export const PRODUCT_BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
+// sold inside the Microsoft Store app too (each is an add-on in Partner Center whose Product ID is this id; routes/msstore.js).
+// Only coins and memberships: costumes and bundles stay on the website.
+export const MS_PRODUCTS = ["coins-800", "coins-1800", "coins-4000", "coins-9000", "coins-20000", "member-7", "member-30", "member-90", "member-365"];
 
 // what members get (shown on the store page and in the game)
 export const MEMBER_PERKS = [

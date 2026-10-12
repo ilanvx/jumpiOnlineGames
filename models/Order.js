@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema(
     currency: { type: String, default: "ILS" },
     // partial = part of the money was given back; refunded = all of it (routes/payments.js)
     status: { type: String, enum: ["pending", "paid", "failed", "cancelled", "duplicate", "partial", "refunded"], default: "pending", index: true },
-    provider: { type: String, enum: ["hyp", "test"], default: "hyp" },
+    provider: { type: String, enum: ["hyp", "test", "msstore"], default: "hyp" },   // msstore = bought in the Microsoft Store app (routes/msstore.js)
     providerRef: { type: String, default: "" }, // the payment company's transaction id
     give: { type: Object, default: {} }, // what this order gives, copied at the time of buying
     paidAt: { type: Date, default: null },
@@ -32,6 +32,7 @@ const orderSchema = new mongoose.Schema(
     refunded: { type: Number, default: 0 },          // shekels given back so far
     busy: { type: Date, default: null },             // a refund is being sent to Hyp right now (stops double clicks)
     notes: { type: String, default: "" },            // the admin's own notes
+    ms: { type: Object, default: undefined },        // Microsoft Store purchases: { itemId, trackingId, country, orderId }
   },
   { timestamps: true }
 );
@@ -39,6 +40,8 @@ orderSchema.index({ user: 1, product: 1, status: 1 });
 orderSchema.index({ user: 1, "items.product": 1, status: 1 });
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paidAt: -1 });
+// a Microsoft transaction makes one order, ever
+orderSchema.index({ provider: 1, providerRef: 1 }, { unique: true, partialFilterExpression: { provider: "msstore" } });
 orderSchema.index({ "refunds.at": -1 });
 
 export const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

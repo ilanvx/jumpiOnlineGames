@@ -423,7 +423,7 @@ body.login-mode .site-btn{display:none}
 .disc-btn:hover svg{animation:dcWiggle .5s ease}
 @keyframes dcWiggle{30%{rotate:-10deg}60%{rotate:8deg}}
 body.in-game .disc-btn,body.login-mode .disc-btn{display:none}
-body.app .disc-btn{display:none!important}   /* the Android app: no Discord link */
+body.app .disc-btn,body.app .sx-discord{display:none!important}   /* the apps (Android, iPhone, computer): no Discord at all (13+), not even "Link Discord" in Settings */
 @media (max-width:640px){.disc-btn{right:18px!important;top:calc(env(safe-area-inset-top,0px) + 86px);width:58px;padding:0}.disc-btn span{display:none}}
 #dcOv{z-index:60}
 .dc-card{padding-top:92px}
@@ -670,6 +670,45 @@ body.in-game .online{display:flex}
 .coins.bump{animation:coinBump .6s cubic-bezier(.2,1.8,.4,1)}
 @keyframes coinBump{40%{transform:scale(1.25)}}
 body.in-game.logged .coins{display:flex}
+/* the Microsoft Store app (body.msbuy): the coins also show on the start screen, with a + that opens the coins window */
+body.msbuy.logged:not(.in-game):not(.login-mode) .coins{display:flex;cursor:pointer}
+body.msbuy .coins{cursor:pointer;padding-right:6px}
+.msb-plus{display:none;place-items:center;width:28px;height:28px;margin-left:4px;padding:0;border:0;border-radius:50%;background:#2fd36b;box-shadow:0 3px 0 #17a24a,inset 0 2px 0 rgb(255 255 255 / .35);color:#fff;font:400 1.35rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer;transition:transform .15s}
+.msb-plus:hover{transform:scale(1.12)}
+body.msbuy .msb-plus{display:grid}
+.msb-overlay{display:flex;overflow-y:auto}
+.idle-card.msb-card{width:min(780px,100%);margin:auto;padding:24px 22px 18px;text-align:left}
+.msb-card .np-x{position:absolute}
+.msb-card h2{margin:0 0 10px;text-align:center;font:400 2.1rem/1 "Lilita One",system-ui,sans-serif;color:#ff9a1c;text-shadow:0 4px 0 #ffe0b5;letter-spacing:.02em}
+.msb-who{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px 10px;margin:0 auto 14px;padding:8px 14px;width:fit-content;max-width:100%;border-radius:999px;background:#eaf3ff;color:#2a3d63;font:500 .95rem "Fredoka",system-ui,sans-serif}
+.msb-who b{color:#0f6fe0}
+.msb-who button{border:0;background:none;padding:0;color:#e2357f;font:600 .95rem "Fredoka",system-ui,sans-serif;text-decoration:underline;cursor:pointer}
+.msb-msg{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fff1d6;color:#8a3a00;font:500 .95rem "Fredoka",system-ui,sans-serif;text-align:center}
+.msb-msg.ok{background:#e3f8ea;color:#17803d}
+.msb-sec{margin-bottom:16px}
+.msb-sec h3{display:flex;align-items:center;gap:8px;margin:0 0 10px;font:400 1.35rem/1 "Lilita One",system-ui,sans-serif;color:#22324a}
+.msb-sec h3 svg{width:26px;height:26px}
+.msb-sec h3 small{margin-left:auto;font:500 .85rem "Fredoka",system-ui,sans-serif;color:#5b6b88}
+.msb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.msb-tile{--c:#ffb21f;--e:#c98a00;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 10px 12px;border:0;border-radius:20px;cursor:pointer;
+  background:linear-gradient(180deg,#fff,color-mix(in srgb,var(--c) 14%,#fff));box-shadow:inset 0 0 0 3px color-mix(in srgb,var(--c) 45%,#fff),0 5px 0 color-mix(in srgb,var(--e) 55%,#fff);
+  color:#22324a;font-family:"Fredoka",system-ui,sans-serif;transition:transform .15s}
+.msb-tile:hover:not(:disabled){transform:translateY(-3px)}
+.msb-tile:disabled{cursor:default;opacity:.6}
+.msb-tile.mb{--c:#8a4dff;--e:#5a22d6}
+.msb-tile img{width:100%;max-width:120px;aspect-ratio:1;object-fit:contain}
+.msb-tile b{font:400 1.25rem/1.05 "Lilita One",system-ui,sans-serif}
+.msb-tile small{font-weight:500;font-size:.8rem;color:#5b6b88;min-height:1.1em}
+.msb-tile .tag{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:999px;background:#ff5fa8;color:#fff;font:600 .7rem "Fredoka",system-ui,sans-serif;text-transform:uppercase}
+.msb-price{margin-top:6px;min-width:84px;padding:6px 12px;border-radius:12px;background:var(--c);box-shadow:0 3px 0 var(--e);color:#fff;font:400 1.05rem/1 "Lilita One",system-ui,sans-serif;text-align:center}
+.msb-spin{display:inline-block;width:14px;height:14px;border:3px solid rgb(255 255 255 / .45);border-top-color:#fff;border-radius:50%;animation:msbSpin .8s linear infinite;vertical-align:-2px}
+@keyframes msbSpin{to{transform:rotate(360deg)}}
+.msb-member{margin:-4px 0 10px;color:#5a22d6;font:600 .9rem "Fredoka",system-ui,sans-serif}
+.msb-member svg{width:18px;height:18px;vertical-align:-3px}
+.msb-empty{margin:20px 0;text-align:center;color:#5b6b88;font:500 1rem "Fredoka",system-ui,sans-serif}
+.msb-foot{margin:4px 0 0;text-align:center;color:#5b6b88;font:500 .82rem/1.4 "Fredoka",system-ui,sans-serif}
+.msb-foot button{border:0;background:none;padding:0;color:#0f6fe0;font:inherit;text-decoration:underline;cursor:pointer}
+@media (prefers-reduced-motion:reduce){.msb-spin{animation-duration:2s}.msb-tile,.msb-plus{transition:none}}
 .admin-btn{--c:#ff5a5a;--hi:#ff9b9b;--lo:#d63333;--edge:#8a1c1c;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 90px);right:18px;width:58px;height:58px;border-radius:16px;padding:0;display:none}
 .admin-btn svg{width:32px;height:32px}
 body.in-game.is-staff .admin-btn:not([hidden]){display:flex}
@@ -3139,7 +3178,7 @@ body.land .npc-card .idle-face{display:none}
     var d=document.createElement("div");d.className="ld-closed";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-labelledby","ldcT");d.setAttribute("aria-describedby","ldcP");if(he)d.dir="rtl";
     d.innerHTML='<div class="ld-closed-card"><img class="ld-closed-logo" src="/jumpi-logo.png" alt="Jumpi Games"><h2 id="ldcT"></h2><p id="ldcP"></p><div class="ld-closed-btns"><button type="button" class="ld-closed-ok"></button></div></div>';
     d.querySelector("h2").textContent=he?"בקרוב!":"Coming soon!";
-    d.querySelector("p").textContent=he?"המשחק פתוח כרגע לטסטרים בלבד. עדכונים נוספים יפורסמו בשרת הדיסקורד שלנו.":"Jumpi is open to testers only right now. More updates will be posted on our Discord server.";
+    d.querySelector("p").textContent=(desk||app)?(he?"המשחק פתוח כרגע לטסטרים בלבד. נעדכן בקרוב!":"Jumpi is open to testers only right now. More news soon!"):he?"המשחק פתוח כרגע לטסטרים בלבד. עדכונים נוספים יפורסמו בשרת הדיסקורד שלנו.":"Jumpi is open to testers only right now. More updates will be posted on our Discord server.";
     var ok=d.querySelector(".ld-closed-ok");ok.textContent=he?"אישור":"OK";
     if(!desk&&!app){var dc=document.createElement("a");dc.className="ld-closed-dc";dc.href="https://discord.gg/dgwsBJgzZS";dc.target="_blank";dc.rel="noopener";dc.textContent=he?"לשרת הדיסקורד (13+)":"Our Discord (13+)";d.querySelector(".ld-closed-btns").appendChild(dc);}
     ok.onclick=function(){if(desk){window.close();return;}try{(window.top||window).location.href="/";}catch(e){location.href="/";}};
@@ -3319,7 +3358,7 @@ body.land .npc-card .idle-face{display:none}
           </form>
           <p class="sx-msg" id="sxPwMsg" role="status"></p>
         </div>
-        <div class="sx-box sx-soon">
+        <div class="sx-box sx-soon sx-discord">
           <h4><i class="dc" aria-hidden="true"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M33 14 Q38 14 38 18 V26 Q38 30 34 30 H33 V35 L27 30 H20 Q16 30 16 27 V25 H25 Q29 25 29 21 V14 Z" fill="#ffd23a"/><path d="M6 8 H25 Q29 8 29 12 V21 Q29 25 25 25 H14 L8 30 V25 H6 Q2 25 2 21 V12 Q2 8 6 8 Z" fill="#fff"/><circle cx="10" cy="16.5" r="2.3" fill="#5865f2"/><circle cx="15.5" cy="16.5" r="2.3" fill="#5865f2"/><circle cx="21" cy="16.5" r="2.3" fill="#5865f2"/></svg></i>Discord account <span class="sx-soon-chip">Coming soon</span></h4>
           <p>Link your Discord account to get your Jumpi role on our server.</p>
           <button class="sx-btn" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="currentColor"/><path d="M8 10.5 V8 Q8 4 12 4 Q16 4 16 8 V10.5" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>Link Discord</button>
@@ -3981,7 +4020,7 @@ body.land .npc-card .idle-face{display:none}
 <button class="wx-clock" id="wxClock" type="button" aria-label="Time and weather" aria-haspopup="dialog"><span class="wx-ico" id="wxIco" aria-hidden="true"></span><span class="wx-time" id="wxTime">12:00 PM</span></button>
 <div class="wx-card" id="wxCardBox" hidden><canvas id="wxcArc" width="240" height="120"></canvas><b class="wxc-name" id="wxcName">Sunny</b><p class="wxc-next" id="wxcNext"></p></div>
 <div class="wx-tint" id="wxTint" aria-hidden="true"></div><div class="wx-flash" id="wxFlash" aria-hidden="true"></div>
-<div class="coins" id="coins" title="Coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="coinsText">0</span></div>
+<div class="coins" id="coins" title="Coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="coinsText">0</span><button class="msb-plus" id="coinsPlus" type="button" aria-label="Get more coins" tabindex="-1">+</button></div>
 <button class="lvchip" id="lvChip" type="button" aria-haspopup="dialog" aria-label="My level"><img id="lvChipBadge" alt="" width="34" height="34"><span class="lvc"><b><span>LEVEL</span> <span id="lvChipNum" data-noi18n>1</span></b><i class="lvc-bar" aria-hidden="true"><i id="lvChipFill"></i></i></span></button>
 <button class="btn spx-btn" id="spxBtn" type="button" aria-label="Special offers" aria-haspopup="dialog"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19.2 6.6 L24.4 5.8 L24.9 11 L29.5 13.5 L27 18 L29 22.8 L24 24.4 L22.6 29.4 L17.6 27.6 L13.6 30.8 L11 26.2 L5.8 26 L6.6 20.8 L2.6 17.4 L6.4 13.8 L5.4 8.6 L10.6 8 L13 3.4 Z" fill="#fff"/><path d="M11.5 20.5 L20.5 11.5" stroke="#d63b8f" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="12.5" r="2.2" fill="#d63b8f"/><circle cx="20" cy="19.5" r="2.2" fill="#d63b8f"/></svg></button>
 <div class="idle-overlay spx-overlay" id="spxOverlay" role="dialog" aria-modal="true" aria-labelledby="spxTitle" hidden>
@@ -3990,6 +4029,17 @@ body.land .npc-card .idle-face{display:none}
     <h2 id="spxTitle">SPECIAL OFFERS</h2>
     <div id="spxBody"></div>
     <p class="of-parent">Real-money purchases happen on the Jumpi website. Always ask a parent first!</p>
+  </div>
+</div>
+<!-- the Microsoft Store version of the computer program: coins and memberships through Microsoft (MSB block) -->
+<div class="idle-overlay msb-overlay" id="msbOv" role="dialog" aria-modal="true" aria-labelledby="msbTitle" hidden>
+  <div class="idle-card msb-card">
+    <button class="np-x" id="msbClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <h2 id="msbTitle">GET MORE COINS</h2>
+    <div class="msb-who" id="msbWho"></div>
+    <p class="msb-msg" id="msbMsg" role="status" hidden></p>
+    <div id="msbBody"></div>
+    <p class="msb-foot" id="msbFoot"></p>
   </div>
 </div>
 <button class="btn admin-btn" id="adminBtn" type="button" aria-label="Admin panel" aria-haspopup="dialog" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)"><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#8a1c1c"/></g><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#fff"/><path d="M16 9 L17.8 13.4 L22.5 13.7 L18.9 16.7 L20 21.3 L16 18.8 L12 21.3 L13.1 16.7 L9.5 13.7 L14.2 13.4 Z" fill="#ff4545"/></svg></button>
@@ -4239,7 +4289,7 @@ import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} 
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
 import {RESIDENTS,RESIDENT_BY_ID,QUESTS,QUEST_BY_ID,NPC_REACH,PICK_REACH,turnInOf} from "/shared/quests.js";
-import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN} from "/shared/store.js";
+import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MS_PRODUCTS} from "/shared/store.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
 import {WHEEL} from "/shared/season.js";
@@ -8719,6 +8769,7 @@ function setAccount(user,quiet){
   if(!quiet)accRefresh();
   document.body.classList.toggle("logged",!!user);
   if(typeof applyRoleUI==="function"){applyRoleUI();paintCoins();}
+  try{msbCheck();}catch(e){}   // the Microsoft Store app: may this account buy there? (MSB block)
   applyColor();applyEyeColor();applyOutfit();
 }
 // "Leaving already?" - the log out button asks first
@@ -13439,6 +13490,99 @@ if(STORE_OPEN&&!IN_APP){const c=document.getElementById("coins");c.setAttribute(
 function storeGranted(d){const P=PRODUCT_BY_ID[d.product];if(d.user&&me){me.coins=d.user.coins;me.inventory=d.user.inventory;me.subscriber=d.user.subscriber;me.memberUntil=d.user.memberUntil;}
   paintCoins(true);refreshMyTag();if(GS.open)renderStoreGrid();OFFERS.me=null;sfx.success();doAction("hop",null,true);
   toast(P?`Thank you! ${P.name.en} is yours.`:"Thank you for your purchase!");if(!spxOverlay.hidden)closeOffers(true);}
+
+/* ---------- MSB: buying coins and memberships inside the Microsoft Store app ----------
+   Only the Store version of the computer program ("JumpiStore/" in the user agent, window.JumpiAppBridge.msStore).
+   Microsoft's own purchase window takes the money; the server checks with Microsoft what was bought and gives it to
+   the account that is logged in (routes/msstore.js). Costumes and bundles stay on the website. */
+const MS_APP=/JumpiStore\//.test(navigator.userAgent)&&!!(window.JumpiAppBridge&&window.JumpiAppBridge.msStore);
+const MSB={on:false,products:null,failed:false,busy:"",uid:""};
+const msbOv=document.getElementById("msbOv"),msbBody=document.getElementById("msbBody"),msbMsgEl=document.getElementById("msbMsg");
+const msbHe=()=>!!(window.I18N&&I18N.lang==="he");
+const msbT=(en,he)=>msbHe()?he:en;
+async function msbCheck(){
+  if(!MS_APP)return;
+  if(!me){MSB.on=false;document.body.classList.remove("msbuy");return;}
+  const id=String(me.id);MSB.uid=id;
+  const r=await api("/api/msstore/status");
+  if(MSB.uid!==id)return;
+  MSB.on=!!(r.ok&&r.data.on);document.body.classList.toggle("msbuy",MSB.on);
+  document.getElementById("coinsPlus").tabIndex=MSB.on?0:-1;
+}
+function msbMsg(text,ok){msbMsgEl.hidden=!text;msbMsgEl.textContent=text||"";msbMsgEl.classList.toggle("ok",!!ok);}
+async function openMsb(){
+  if(!MS_APP||!MSB.on||!me||!msbOv.hidden)return;
+  if(inGame){closePhone(true);closeChat();}G.keys={};G.target=null;
+  msbMsg("");msbOv.hidden=false;sfx.whoosh();msbPaint();
+  setTimeout(()=>{const b=msbOv.querySelector(".msb-tile:not(:disabled)");if(b)b.focus({preventScroll:true});},80);
+  if(!MSB.products){
+    let r=null;try{r=await window.JumpiAppBridge.msStore.products();}catch(e){}
+    MSB.products=r&&r.ok?Object.fromEntries((r.products||[]).filter(p=>p.token).map(p=>[p.token,p])):null;MSB.failed=!(r&&r.ok);
+    if(!msbOv.hidden)msbPaint();}
+  msbClaim(true);   // anything bought before and not given yet (the program closed, no internet…) arrives now
+}
+function closeMsb(quiet){if(msbOv.hidden)return;msbOv.hidden=true;if(!quiet)sfx.close();}
+function msbPaint(){
+  const he=msbHe();
+  document.getElementById("msbTitle").textContent=msbT("GET MORE COINS","עוד מטבעות");
+  document.getElementById("msbWho").innerHTML=`<span>${msbT("Buying for","קונים בשביל")} <b>${esc(me?me.username:"")}</b>.</span><button type="button" class="msb-switch">${msbT("Not you? Switch account","לא אתה? החלפת חשבון")}</button>`;
+  const price=id=>{const mp=MSB.products&&MSB.products[id];return MSB.busy===id?`<span class="msb-spin" aria-label="${msbT("Buying…","קונים…")}"></span>`:mp?esc(mp.price):MSB.failed?"–":`<span class="msb-spin"></span>`;};
+  const shown=id=>!MSB.products||!!MSB.products[id];
+  const tag=P=>P.tag?`<span class="tag">${P.tag==="best"?msbT("Best value","הכי משתלם"):msbT("Popular","פופולרי")}</span>`:"";
+  const can=id=>!!(MSB.products&&MSB.products[id])&&!MSB.busy;
+  const coins=PRODUCTS.filter(P=>P.kind==="coins"&&MS_PRODUCTS.includes(P.id)&&shown(P.id)).map(P=>
+    `<button type="button" class="msb-tile" data-ms="${P.id}"${can(P.id)?"":" disabled"}>${tag(P)}<img src="/site/img/store/${P.id}.webp" alt=""><b>${P.give.coins.toLocaleString("en-US")}</b><small>${msbT("coins","מטבעות")}</small><span class="msb-price">${price(P.id)}</span></button>`).join("");
+  const members=PRODUCTS.filter(P=>P.kind==="member"&&MS_PRODUCTS.includes(P.id)&&shown(P.id)).map(P=>
+    `<button type="button" class="msb-tile mb" data-ms="${P.id}"${can(P.id)?"":" disabled"}>${tag(P)}<img src="/site/img/store/${P.id}.webp" alt=""><b>${he?P.name.he:P.name.en}</b><small>+${P.give.coins.toLocaleString("en-US")} ${msbT("coins","מטבעות")}</small><span class="msb-price">${price(P.id)}</span></button>`).join("");
+  const until=me&&me.memberUntil&&new Date(me.memberUntil)>new Date()?`<p class="msb-member">${GSTAR} ${msbT("You're a member until","אתה חבר מועדון עד")} <b>${new Date(me.memberUntil).toLocaleDateString(he?"he-IL":"en-GB",{day:"numeric",month:"short",year:"numeric"})}</b>. ${msbT("Buying more adds days.","קנייה נוספת מוסיפה ימים.")}</p>`:"";
+  msbBody.innerHTML=MSB.failed?`<p class="msb-empty">${msbT("The Microsoft Store isn't answering right now. Check the internet and try again in a moment.","החנות של מיקרוסופט לא עונה כרגע. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב בעוד רגע.")}</p>`
+    :(!coins&&!members)?`<p class="msb-empty">${msbT("Coming soon!","בקרוב!")}</p>`
+    :(coins?`<section class="msb-sec"><h3>${COIN_SVG}${msbT("Coins","מטבעות")}</h3><div class="msb-grid">${coins}</div></section>`:"")
+     +(members?`<section class="msb-sec"><h3>${GSTAR}${msbT("Membership","מנוי")}<small>${msbT("One payment, never renews by itself","תשלום אחד, לא מתחדש לבד")}</small></h3>${until}<div class="msb-grid">${members}</div></section>`:"");
+  document.getElementById("msbFoot").innerHTML=`${msbT("Paid with the Microsoft account on this computer. Always ask a grown-up first! All purchases are final.","התשלום דרך חשבון מיקרוסופט שבמחשב הזה. תמיד לשאול מבוגר קודם! כל הרכישות סופיות.")} <button type="button" class="msb-terms">${msbT("Terms","תקנון")}</button>`;
+}
+async function msbBuy(id){
+  const mp=MSB.products&&MSB.products[id];if(!mp||MSB.busy||!me)return;
+  const forId=String(me.id);MSB.busy=id;msbMsg("");msbPaint();
+  try{
+    let r=null;try{r=await window.JumpiAppBridge.msStore.buy(mp.storeId);}catch(e){}
+    if(!me||String(me.id)!==forId)return;
+    if(r&&r.ok&&(r.status===0||r.status===1)){msbMsg(msbT("Payment done! Getting it ready…","התשלום עבר! מכינים את זה…"),true);await msbClaim(false);}
+    else if(r&&r.ok&&r.status===2){msbMsg("");}   // closed Microsoft's window: nothing was bought
+    else{sfx.error();msbMsg(msbT("Microsoft couldn't finish the purchase. Check the internet and try again. You weren't charged twice.","מיקרוסופט לא הצליחה לסיים את הרכישה. כדאי לבדוק את האינטרנט ולנסות שוב."));}
+  }finally{MSB.busy="";if(!msbOv.hidden)msbPaint();}
+}
+let msbClaiming=null;
+function msbClaim(quiet){if(!msbClaiming)msbClaiming=msbClaimNow(quiet).finally(()=>{msbClaiming=null;});return msbClaiming;}
+async function msbClaimNow(quiet){
+  if(!MS_APP||!me)return;
+  const forId=String(me.id),fail=t=>{if(!quiet&&!msbOv.hidden){sfx.error();msbMsg(t);}};
+  const later=msbT("We couldn't check the purchase with Microsoft yet. Don't worry: it's saved, and it will arrive the next time you open this window.","עוד לא הצלחנו לבדוק את הרכישה מול מיקרוסופט. אל דאגה: היא שמורה, ותגיע בפעם הבאה שתפתחו את החלון הזה.");
+  const t=await api("/api/msstore/ticket",{});if(!t.ok)return fail(t.data&&t.data.error||later);
+  let k=null;try{k=await window.JumpiAppBridge.msStore.key(t.data.ticket,t.data.uid);}catch(e){}
+  if(!k||!k.ok)return fail(later);
+  const c=await api("/api/msstore/claim",{key:k.key});if(!c.ok)return fail(c.data&&c.data.error||later);
+  if(!me||String(me.id)!==forId)return;
+  const got=c.data.given||[];
+  if(c.data.user){me.coins=c.data.user.coins;me.memberUntil=c.data.user.memberUntil;me.subscriber=c.data.user.subscriber;}
+  if(!got.length){if(!quiet)msbMsg("");return;}
+  paintCoins(true);try{refreshMyTag();}catch(e){}sfx.success();if(inGame)doAction("hop",null,true);
+  const names=got.map(id=>{const P=PRODUCT_BY_ID[id];return P?(P.kind==="coins"?`${P.give.coins.toLocaleString("en-US")} ${msbT("coins","מטבעות")}`:(msbHe()?P.name.he:P.name.en)+" "+msbT("membership","מנוי")):id;});
+  const text=msbT("Thank you! You got ","תודה! קיבלת ")+names.join(", ")+".";
+  if(!msbOv.hidden){msbMsg(text,true);msbPaint();}toast(text);
+}
+document.getElementById("msbClose").onclick=()=>closeMsb();
+msbOv.addEventListener("click",e=>{if(e.target===msbOv)return closeMsb();
+  const t=e.target.closest("[data-ms]");if(t&&!t.disabled){press(t);msbBuy(t.dataset.ms);return;}
+  if(e.target.closest(".msb-switch")){closeMsb(true);if(inGame)exitGame();else toast(msbT("Pick your account on the start screen, or add one.","בחרו את החשבון שלכם במסך הפתיחה, או הוסיפו חשבון."));return;}
+  if(e.target.closest(".msb-terms")){try{window.JumpiAppBridge.openOutside("https://jumpigames.com/terms#t-purchases");}catch(err){}}});
+msbOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeMsb();}});
+if(MS_APP){
+  const chip=document.getElementById("coins");
+  chip.addEventListener("click",e=>{if(MSB.on){e.stopPropagation();openMsb();}});
+  document.getElementById("coinsPlus").addEventListener("click",e=>{e.stopPropagation();press(e.currentTarget);openMsb();});
+  msbCheck().catch(()=>{});
+}
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");

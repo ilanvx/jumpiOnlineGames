@@ -8,6 +8,7 @@ import { Order } from "../models/Order.js";
 import { AdminLog, logQuietly } from "../models/Logs.js";
 import { fulfillOrder } from "./store.js";
 import { hyp } from "../payments/hyp.js";
+import { msReady } from "./msstore.js";
 import { PRODUCT_BY_ID, STORE_OPEN } from "../public/shared/store.js";
 import { ITEMS, LOOK_SLOTS } from "../catalog.js";
 import { moderation, notifyCoins, notifyMember } from "../realtime/plaza.js";
@@ -147,7 +148,7 @@ async function memberPlan({ minAmount = 1, onlyUser = null } = {}) {
   for (const u of members) {
     let daysLeft = Math.floor((new Date(u.memberUntil).getTime() - now) / DAY);
     if (daysLeft <= 0) continue;
-    const orders = await Order.find({ user: u._id, status: { $in: ["paid", "partial"] }, "give.memberDays": { $gt: 0 } }).sort({ paidAt: -1 }).lean();
+    const orders = await Order.find({ user: u._id, status: { $in: ["paid", "partial"] }, provider: { $ne: "msstore" }, "give.memberDays": { $gt: 0 } }).sort({ paidAt: -1 }).lean();
     const rows = [];
     for (const o of orders) {
       if (daysLeft <= 0) break;
@@ -224,6 +225,7 @@ async function moneyBack(orderIn, { amount, reason, how, by, batch = "", days = 
   try {
     if (!["paid", "partial", "duplicate"].includes(order.status)) return { ok: false, error: `This order is "${order.status}": nothing to refund.` };
     if (amount > left(order) + 0.001) return { ok: false, error: `At most ₪${left(order).toFixed(2)} can still be refunded on this order.` };
+    if (order.provider === "msstore") return { ok: false, error: "This was bought through the Microsoft Store: Microsoft gives the money back (Partner Center), not us." };
     if (order.provider === "hyp" && !order.providerRef) return { ok: false, error: "This order has no Hyp transaction number." };
     if (order.provider === "hyp" && !hyp.ready()) return { ok: false, error: "Hyp isn't set up on the server (HYP_MASOF / HYP_KEY / HYP_PASSP)." };
     let kind = "refund", ref = "", code = "0";
@@ -320,7 +322,7 @@ router.get("/summary", async (req, res, next) => {
 function health() {
   return {
     hyp: hyp.ready(), storeOpen: STORE_OPEN, test: process.env.STORE_TEST === "1" || process.env.STORE_TEST === "true",
-    code: codeSet(), returnUrl: "/api/store/hyp/return",
+    code: codeSet(), returnUrl: "/api/store/hyp/return", microsoft: msReady(),
   };
 }
 
@@ -346,7 +348,7 @@ function query(req) {
   if (mongoose.isValidObjectId(req.query.user)) q.user = req.query.user;
   const from = Date.parse(req.query.from), to = Date.parse(req.query.to);
   if (from || to) q.createdAt = { ...(from ? { $gte: new Date(from) } : {}), ...(to ? { $lt: new Date(to + DAY) } : {}) };
-  if (req.query.provider === "hyp" || req.query.provider === "test") q.provider = req.query.provider;
+  if (["hyp", "test", "msstore"].includes(req.query.provider)) q.provider = req.query.provider;
   if (and.length) q.$and = and;
   return q;
 }

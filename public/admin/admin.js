@@ -244,13 +244,14 @@
     const facts = (pairs) => h("dl", { class: "facts" }, pairs.filter(Boolean).map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, v))));
     const acts = h("div", { class: "row pay-acts" });
     if (o.provider === "hyp" && o.ref && o.status !== "pending" && o.status !== "failed") acts.append(h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => openReceipt(o.id) }, "Receipt (PDF)"));
-    if (["paid", "partial", "duplicate"].includes(o.status) && o.left > 0) acts.append(h("button", { class: "b b-red b-sm", type: "button", onclick: () => refundForm(o, done, after) }, "Refund…"));
+    if (o.provider === "msstore") acts.append(h("p", { class: "small muted", style: "margin:0" }, "Bought in the Microsoft Store app: Microsoft holds the receipt and gives refunds (Partner Center → Insights / support). Microsoft keeps 12%."));
+    else if (["paid", "partial", "duplicate"].includes(o.status) && o.left > 0) acts.append(h("button", { class: "b b-red b-sm", type: "button", onclick: () => refundForm(o, done, after) }, "Refund…"));
     if (o.provider === "hyp" && ["pending", "failed"].includes(o.status)) acts.append(h("button", { class: "b b-green b-sm", type: "button", onclick: () => grantForm(o, done) }, "Paid → give"));
     const notes = h("textarea", { rows: 2, maxlength: 500 }); notes.value = o.notes || "";
     const saveNote = h("button", { class: "b b-ghost b-sm", type: "button", onclick: async () => { try { await payApi(`/orders/${o.id}/note`, { notes: notes.value }); toast("Note saved."); } catch (e) { oops(e); } } }, "Save note");
     fill(card,
-      h("h2", null, `Order · ${ils(o.amount)}`), h("div", { class: "row", style: "justify-content:flex-start;gap:8px" }, statusTag(o.status), o.provider === "test" ? h("span", { class: "tag" }, "test (pretend)") : null, o.busy ? h("span", { class: "tag orange" }, "refund being sent") : null),
-      facts([["Created", fmtDate(o.at)], ["Paid", fmtDate(o.paidAt)], ["Hyp transaction", o.ref || "–"], ["Refunded", ils(o.refunded)], ["Can still refund", ils(o.left)], ["Order id", h("span", { class: "mono small" }, o.id)]]),
+      h("h2", null, `Order · ${ils(o.amount)}`), h("div", { class: "row", style: "justify-content:flex-start;gap:8px" }, statusTag(o.status), o.provider === "test" ? h("span", { class: "tag" }, "test (pretend)") : o.provider === "msstore" ? h("span", { class: "tag blue" }, "Microsoft Store") : null, o.busy ? h("span", { class: "tag orange" }, "refund being sent") : null),
+      facts([["Created", fmtDate(o.at)], ["Paid", fmtDate(o.paidAt)], [o.provider === "msstore" ? "Microsoft transaction" : "Hyp transaction", o.ref || "–"], ["Refunded", ils(o.refunded)], ["Can still refund", ils(o.left)], ["Order id", h("span", { class: "mono small" }, o.id)]]),
       h("h3", { class: "pay-h3" }, "What was bought"),
       table([["Product", (l) => l.name], ["Qty", (l) => l.qty], ["Price", (l) => ils(l.price)], ["Total", (l) => ils(l.price * l.qty)]], o.lines),
       h("p", { class: "small muted" }, `Gave: ${fmtNum(o.give.coins)} coins${o.give.memberDays ? ` · ${o.give.memberDays} membership days` : ""}${o.give.items.length ? " · " + o.give.items.join(", ") : ""}${o.grantedAt ? " · given " + fmtDate(o.grantedAt) : " · nothing given yet"}`),
@@ -320,6 +321,7 @@
           panel("Set-up", h("ul", { class: "pay-health" },
             check(hl.hyp, "Hyp is connected", "Hyp isn't connected (HYP_MASOF / HYP_KEY / HYP_PASSP in .env)"),
             check(hl.code, "Payments code is set", "No payments code"),
+            check(hl.microsoft, "Microsoft Store purchases are connected", "Microsoft Store purchases aren't connected (MS_TENANT_ID / MS_CLIENT_ID / MS_CLIENT_SECRET)"),
             check(hl.storeOpen, "The store is open to everyone", "The store is closed (only admins on /store?preview)"),
             hl.test ? h("li", { class: "no" }, "STORE_TEST is on: admins can make pretend payments") : null),
             h("p", { class: "small muted" }, "In the Hyp portal: success page = https://jumpigames.com" + hl.returnUrl + ", default document = Receipt (exempt dealer)."))),
@@ -331,7 +333,7 @@
       const st = h("select", { class: "inp" }, [["", "All"], ["money", "Money in (paid + refunded)"], ["paid", "Paid"], ["partial", "Part refunded"], ["refunded", "Refunded"], ["attention", "Needs a look"], ["pending", "Waiting for payment"], ["failed", "Failed"], ["duplicate", "Paid twice"]].map(([v, t]) => h("option", { value: v }, t)));
       const q = h("input", { class: "inp", type: "search", placeholder: "Player, Hyp number or order id…", maxlength: 40 });
       const from = h("input", { class: "inp pay-date", type: "date", title: "From" }), to = h("input", { class: "inp pay-date", type: "date", title: "To" });
-      const prov = h("select", { class: "inp" }, [["", "Hyp + test"], ["hyp", "Hyp only"], ["test", "Test only"]].map(([v, t]) => h("option", { value: v }, t)));
+      const prov = h("select", { class: "inp" }, [["", "All payments"], ["hyp", "Website (Hyp)"], ["msstore", "Microsoft Store app"], ["test", "Test only"]].map(([v, t]) => h("option", { value: v }, t)));
       const csv = h("button", { class: "b b-sm b-green", type: "button" }, "Download for Excel");
       const list = h("div");
       let pageN = 0;
@@ -347,7 +349,7 @@
           panel(null, table([
             ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => r.username], ["What", (r) => h("span", { class: "small" }, r.what)],
             ["Amount", (r) => h("span", { class: "nowrap" }, ils(r.amount), r.refunded ? h("small", { class: "bad" }, " −" + ils(r.refunded)) : null)],
-            ["Status", (r) => statusTag(r.status)], ["Hyp no.", (r) => h("span", { class: "small muted mono" }, r.provider === "test" ? "test" : r.ref || "–")],
+            ["Status", (r) => statusTag(r.status)], ["Paid with", (r) => h("span", { class: "small muted mono" }, r.provider === "test" ? "test" : r.provider === "msstore" ? "Microsoft" : r.ref || "–")],
             ["", (r) => (r.notes ? h("span", { class: "tag blue", title: r.notes }, "note") : "")],
           ], d.list, (r) => orderCard(r.id, load)), pager));
       };
