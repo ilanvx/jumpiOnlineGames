@@ -87,7 +87,7 @@ function render() {
     <article class="st-pack${p.tag === "best" ? " best" : ""}" id="${p.id}">${tag(p)}
       <img src="${artOf(p)}" alt="${esc(T(`${num(p.give.coins)} coins`, `${num(p.give.coins)} מטבעות`))}" width="520" height="456" loading="lazy">
       <p class="st-pname">${esc(p.name[lang])}</p>
-      <p class="st-bonus">${p.bonus ? `<span>${T(`+${num(p.bonus)} bonus coins`, `+${num(p.bonus)} מטבעות בונוס`)}</span>` : "&nbsp;"}</p>
+      <p class="st-bonus">${p.bonus ? `<span>${T(`Includes ${num(p.bonus)} bonus coins`, `כולל ${num(p.bonus)} מטבעות בונוס`)}</span>` : "&nbsp;"}</p>
       ${addBtn(p)}
     </article>`).join("");
   // membership
