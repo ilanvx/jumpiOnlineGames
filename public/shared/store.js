@@ -10,8 +10,12 @@
   once:  can be bought one time per account (old bundles; costumes can be bought again and again)
 */
 import { OUTFITS } from "./outfits.js";
-// The real-money store is closed for now: false hides it everywhere (website page, game offers button, checkout).
-export const STORE_OPEN = false;
+// The real-money store on the website is open: true shows it everywhere (website page, game offers button, checkout);
+// false hides it again (only admins can buy then, on /store?preview).
+export const STORE_OPEN = true;
+// Buying inside the Microsoft Store app (routes/msstore.js) opens separately, once the add-ons are approved by Microsoft:
+// until then only admins see the "+" there.
+export const MS_STORE_OPEN = false;
 export const CURRENCY = "ILS";
 
 // a costume product (the outfit's items are found by their names in outfits.js, so their numbers never go out of date)

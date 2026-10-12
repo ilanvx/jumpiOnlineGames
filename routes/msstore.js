@@ -5,7 +5,7 @@ import { User } from "../models/User.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { fulfillOrder } from "./store.js";
-import { PRODUCT_BY_ID, STORE_OPEN, MS_PRODUCTS } from "../public/shared/store.js";
+import { PRODUCT_BY_ID, STORE_OPEN, MS_STORE_OPEN, MS_PRODUCTS } from "../public/shared/store.js";
 
 /*
   Buying coins and memberships inside the Microsoft Store version of the computer program (Microsoft's own payment:
@@ -75,7 +75,7 @@ function keyClaims(key) {
   }
 }
 
-const canBuy = (user) => STORE_OPEN || user.role === "admin";
+const canBuy = (user) => (STORE_OPEN && MS_STORE_OPEN) || user.role === "admin";
 const hits = new Map();
 function slow(key, max = 12) {
   const now = Date.now(), list = (hits.get(key) || []).filter((t) => now - t < 60_000);

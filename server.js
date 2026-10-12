@@ -215,9 +215,8 @@ app.get("/download/android", (req, res, next) => {
   res.sendFile(f);
 });
 app.get(["/forgot-password", "/reset-password"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/reset.html")(req, res, next); });   // forgot password (routes/auth.js /forgot, /reset)   // the trailer video (public/site/trailer/)
-// while the store is closed (STORE_OPEN in public/shared/store.js) /store shows the "under renovation" page
-// "/store?soon": a preview of the closed-store page; "/store?preview": the real store while it's closed (only admins can buy there)
-app.get("/store", (req, res, next) => page((STORE_OPEN || "preview" in req.query) && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));
+// the Jumpi Store (STORE_OPEN in public/shared/store.js decides who can buy; while it's false only admins can check out)
+app.get("/store", page("site/store.html"));
 app.get("/site/store.html", (req, res) => res.redirect(302, "/store"));
 // after paying: the pages set in the Hyp portal (success → /success, failed → /fail). Coming from Hyp (with its parameters)
 // both first go through the same check as /api/store/hyp/return (routes/store.js), then land on the clean page:
