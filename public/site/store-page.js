@@ -118,7 +118,7 @@ function render() {
 }
 
 /* ---------- the panel on the right: cart → log in → pay ---------- */
-const S = { step: "cart", token: null, me: null, timer: 0, busy: false, msg: "", flash: null, pay: null };
+const S = { step: "cart", token: null, me: null, timer: 0, busy: false, msg: "", flash: null, pay: null, payer: { name: "", phone: "" }, agree: false };
 const panel = $("stCart"), body = $("stCartBody");
 let lastFocus = null;
 function openCart(step = "cart", flash = null) {
@@ -182,7 +182,12 @@ function paintCart(focus) {
       ${me.open === false && me.admin ? `<p class="st-note sm">${T("The store is closed to players. You can buy because you're an admin, and payments here are real (or pretend, in test mode).", "החנות סגורה לשחקנים. אפשר לקנות כי אתם מנהלים, והתשלומים כאן אמיתיים (או מדומים, במצב בדיקה).")}</p>` : ""}
       <ul class="st-lines small">${CART.map((l) => line(l, true)).join("")}</ul>
       <form id="stPay" class="st-cfoot" novalidate>${total(T("To pay", "לתשלום"))}
-        <label class="st-agree"><input type="checkbox" id="stOk"> <span>${T("I'm the parent or guardian of this player, or over 18, and I agree to the", "אני ההורה או האפוטרופוס של השחקן, או מעל גיל 18, ואני מסכים/ה ל")} <a href="/terms#t-purchases" target="_blank">${T("purchase terms", "תנאי הרכישה")}</a>. ${T("I understand that the purchase is added to the account right away and is <b>final, with no refund</b>.", "ידוע לי שהרכישה מתווספת לחשבון מיד והיא <b>סופית, ללא החזר כספי</b>.")}</span></label>
+        <fieldset class="st-payer"><legend>${T("Who's paying?", "מי משלם?")}</legend>
+          <label class="st-field"><span>${T("Full name (first and last)", "שם מלא (פרטי ומשפחה)")}</span><input id="stPName" name="name" autocomplete="name" maxlength="60" value="${esc(S.payer.name)}" required></label>
+          <label class="st-field"><span>${T("Mobile phone", "טלפון נייד")}</span><input id="stPPhone" name="tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="16" dir="ltr" placeholder="050-1234567" value="${esc(S.payer.phone)}" required></label>
+          <p class="st-pnote">${T("For HYP's payment page and receipt (with the account's email). We don't keep them.", "לעמוד התשלום והקבלה של HYP (יחד עם האימייל של החשבון). אנחנו לא שומרים אותם.")}</p>
+        </fieldset>
+        <label class="st-agree"><input type="checkbox" id="stOk" ${S.agree ? "checked" : ""}> <span>${T("I'm the parent or guardian of this player, or over 18, and I agree to the", "אני ההורה או האפוטרופוס של השחקן, או מעל גיל 18, ואני מסכים/ה ל")} <a href="/terms#t-purchases" target="_blank">${T("purchase terms", "תנאי הרכישה")}</a>. ${T("I understand that the purchase is added to the account right away and is <b>final, with no refund</b>.", "ידוע לי שהרכישה מתווספת לחשבון מיד והיא <b>סופית, ללא החזר כספי</b>.")}</span></label>
         ${msg}
         <button class="st-buy big" type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? T("One moment…", "רגע…") : T(`Pay ${ils(cartTotal())}`, `לתשלום ${ils(cartTotal())}`)}</button>
         <p class="st-secure">${ICON.lock}${T("Secure payment by HYP. The card is typed only on HYP's page.", "תשלום מאובטח של HYP. את הכרטיס מקלידים רק בעמוד של HYP.")}</p>
@@ -203,6 +208,9 @@ function wire() {
   if ($("stSwitch")) $("stSwitch").onclick = () => { forgetLogin(); openCart("login"); };
   if ($("stLogin")) $("stLogin").onsubmit = login;
   if ($("stPay")) $("stPay").onsubmit = pay;
+  if ($("stOk")) $("stOk").onchange = (e) => (S.agree = e.target.checked);
+  if ($("stPName")) $("stPName").oninput = (e) => (S.payer.name = e.target.value);
+  if ($("stPPhone")) $("stPPhone").oninput = (e) => (S.payer.phone = e.target.value);
   if ($("stFake")) $("stFake").onclick = fakePay;
 }
 $("stCartBack").onclick = () => openCart(S.step === "pay" || S.step === "test" || S.step === "login" ? "cart" : "cart");
@@ -233,9 +241,12 @@ async function login(e) {
 }
 async function pay(e) {
   e.preventDefault(); if (S.busy) return;
+  const nm = S.payer.name.replace(/\s+/g, " ").trim(), ph = S.payer.phone.replace(/[^\d+]/g, "").replace(/^\+?972/, "0");
+  if (nm.split(" ").length < 2 || nm.length < 4) { S.msg = T("Please type the first and last name of the person paying.", "הקלידו שם פרטי ושם משפחה של מי שמשלם."); paintCart(); return $("stPName").focus(); }
+  if (!/^05\d{8}$/.test(ph)) { S.msg = T("Please type a mobile number like 050-1234567.", "הקלידו מספר נייד, למשל \u200E050-1234567\u200E."); paintCart(); return $("stPPhone").focus(); }
   if (!$("stOk").checked) { S.msg = T("Please tick the box to agree.", "יש לסמן את התיבה כדי להסכים."); return paintCart(); }
   S.busy = true; S.msg = ""; paintCart();
-  const r = await api("/api/store/checkout", { token: S.token, cart: CART.map((l) => ({ id: l.id, qty: l.qty })), agree: true, lang });
+  const r = await api("/api/store/checkout", { token: S.token, cart: CART.map((l) => ({ id: l.id, qty: l.qty })), agree: true, lang, payer: { name: nm, phone: ph } });
   S.busy = false;
   if (r.status === 401 || r.data.login) { forgetLogin(); S.msg = T("Please log in again to buy.", "התחברו שוב כדי לקנות."); return openCart("login"); }
   if (r.data.comingSoon) { forgetLogin(); return openCart("soon"); }

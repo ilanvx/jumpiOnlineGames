@@ -43,7 +43,8 @@ export const hyp = {
   },
 
   // the address of Hyp's payment page for this order
-  async paymentUrl(order, user, product, lang = "en") {
+  // payer = { first, last, phone } typed by the grown-up in the store just before paying (not saved by us); the email is the account's
+  async paymentUrl(order, user, product, lang = "en", payer = null) {
     const e = env();
     const p = new URLSearchParams();
     p.set("action", "APISign"); p.set("What", "SIGN");
@@ -57,7 +58,12 @@ export const hyp = {
     p.set("UTF8", "True"); p.set("UTF8out", "True");
     p.set("Sign", "True");                                      // the return address gets a signature we can verify
     // no MoreData: the return address then carries no card digits or buyer details (nothing personal in our logs)
-    // no name / email / phone of the player is sent: the grown-up types what Hyp asks for on Hyp's own page
+    // the payer's name and mobile (asked in the store right before paying) and the account's email: Hyp fills them in on its page
+    // and uses them for the receipt, so the grown-up doesn't type them again
+    if (payer?.first) p.set("ClientName", payer.first);
+    if (payer?.last) p.set("ClientLName", payer.last);
+    if (payer?.phone) p.set("cell", payer.phone);
+    if (user?.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) p.set("email", user.email);
     const signed = await call(p);
     const cc = ccodeOf(signed);
     if (cc !== null && cc !== "0") throw new Error(`Hyp refused to sign the payment (CCode ${cc})`);

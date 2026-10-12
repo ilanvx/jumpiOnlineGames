@@ -35,6 +35,18 @@ const MAX_LINES = 12, MAX_QTY = 10;
 // make sure every product only gives things that exist
 for (const p of PRODUCTS) for (const id of p.give.items || []) if (!ITEMS.has(id)) throw new Error(`store: ${p.id} gives unknown item ${id}`);
 
+/* ---------- the grown-up who pays: full name + Israeli mobile, passed to Hyp for the receipt (never saved here) ---------- */
+function readPayer(x) {
+  const name = String(x?.name || "").normalize("NFC").replace(/\s+/g, " ").trim();
+  if (name.length < 2 || name.length > 60 || !/^[\p{L}][\p{L}\p{M}' .\-]*$/u.test(name) || !/\p{L}{2}/u.test(name)) return { error: "Please type the full name of the person paying.", field: "name" };
+  let d = String(x?.phone || "").replace(/[^\d+]/g, "");
+  if (d.startsWith("+972")) d = "0" + d.slice(4); else if (d.startsWith("972")) d = "0" + d.slice(3);
+  if (!/^05\d{8}$/.test(d)) return { error: "Please type a mobile number like 050-1234567.", field: "phone" };
+  const parts = name.split(" ");
+  if (parts.length < 2) return { error: "Please type the first and last name of the person paying.", field: "name" };
+  return { first: parts[0], last: parts.slice(1).join(" "), phone: d };
+}
+
 /* ---------- buy tokens: the store's own short login ---------- */
 const BUY_MINUTES = 20;
 const buyTokens = new Map();   // token -> { uid, v (tokenVersion), exp }
@@ -141,6 +153,8 @@ router.post("/store/checkout", requireJson, async (req, res, next) => {
     if (slowDown(user._id.toString(), res)) return;
     if (!STORE_OPEN && user.role !== "admin") return res.status(503).json({ error: "The store is closed for now.", comingSoon: true });
     if (req.body.agree !== true) return res.status(400).json({ error: "Please tick the box to agree." });
+    const payer = readPayer(req.body.payer);
+    if (payer.error) return res.status(400).json({ error: payer.error, field: payer.field });
     const cart = readCart(req.body.cart, await ownedBundles(user._id));
     if (cart.error) return res.status(409).json({ error: cart.error, owned: cart.owned });
     const live = hyp.ready(), test = !live && testMode() && user.role === "admin";
@@ -160,7 +174,7 @@ router.post("/store/checkout", requireJson, async (req, res, next) => {
       return res.json({ orderId: order._id.toString(), test: true, amount: cart.amount });
     }
     let url;
-    try { url = await hyp.paymentUrl(order, user, { name: { en: info } }, req.body.lang === "he" ? "he" : "en"); }
+    try { url = await hyp.paymentUrl(order, user, { name: { en: info } }, req.body.lang === "he" ? "he" : "en", payer); }
     catch (e) {
       console.error(`[store] HYP payment page for order ${order._id} failed: ${e.message}`);
       return res.status(502).json({ error: "The payment page didn't open. Nothing was charged. Please try again in a minute." });

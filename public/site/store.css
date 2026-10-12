@@ -214,6 +214,12 @@ body.st-cart-on .jacc-root{visibility:hidden}   /* the accessibility button woul
 .st-field{display:flex;flex-direction:column;gap:6px;font-weight:600;color:#1d2b4f}
 .st-field input{height:52px;padding:0 14px;border:0;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 2px #e3d3ad;font:500 1.1rem var(--body)}
 .st-field input:focus{outline:none;box-shadow:inset 0 0 0 3px #1f8fff}
+/* checkout: the grown-up who pays (name + mobile, passed to HYP) */
+.st-payer{margin:14px 0 0;padding:14px;border:0;border-radius:18px;background:#fff7e3;display:grid;gap:10px}
+.st-payer legend{float:left;width:100%;padding:0;margin:0 0 2px;font:400 1.15rem/1.1 var(--display);color:#7a3d00}
+[dir="rtl"] .st-payer legend{float:right}
+.st-payer .st-field input{height:48px}
+.st-pnote{margin:0;font:500 .85rem/1.35 var(--body);color:#8a6a3a}
 [dir="rtl"] .st-field input{text-align:right}
 .st-who2{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:12px 14px;margin-bottom:12px;border-radius:18px;background:#fff;box-shadow:0 4px 0 #f0d9a4;font-weight:600}
 .st-who2 b{color:#d63b8f}.st-who2 .st-link{padding:0;margin-inline-start:auto;font-size:.88rem}
