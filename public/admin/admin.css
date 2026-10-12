@@ -59,6 +59,7 @@ input,select,textarea,button{font:inherit}
 
 /* icons (CSS masks so they inherit the colour) */
 .ic{width:20px;height:20px;flex:none;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.ic-perf{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4a10 10 0 0 0-10 10c0 2 .6 3.9 1.6 5.5l1.7-1A8 8 0 1 1 20 14a8 8 0 0 1-1.3 4.5l1.7 1A10 10 0 0 0 12 4zm4.2 5.4-5 4.3a1.8 1.8 0 1 0 2.4 2.6z'/%3E%3C/svg%3E")}
 .ic-home{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3 2 12h3v9h5v-6h4v6h5v-9h3z'/%3E%3C/svg%3E")}
 .ic-live{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M5 5a10 10 0 0 0 0 14l1.4-1.4a8 8 0 0 1 0-11.2zM19 5l-1.4 1.4a8 8 0 0 1 0 11.2L19 19a10 10 0 0 0 0-14z'/%3E%3C/svg%3E")}
 .ic-users{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='9' cy='8' r='4'/%3E%3Cpath d='M1 21c0-5 4-7 8-7s8 2 8 7zM17 4a4 4 0 0 1 0 8M19 14c2.5.8 4 2.8 4 7h-4'/%3E%3C/svg%3E")}

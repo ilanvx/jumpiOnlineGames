@@ -28,6 +28,7 @@ import tutorialRoutes from "./routes/tutorial.js";
 import questRoutes from "./routes/quests.js";
 import parentRoutes from "./routes/parents.js";
 import pollRoutes from "./routes/poll.js";
+import perfRoutes from "./routes/perf.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
 import { saveAllNeeds } from "./realtime/needs.js";
@@ -98,6 +99,7 @@ app.use("/api", codeRoutes);
 app.use("/api", tutorialRoutes);
 app.use("/api", questRoutes);
 app.use("/api", pollRoutes);   // the weekly poll on the home page
+app.use("/api", perfRoutes);   // anonymous frames-a-second reports from the game (admin panel → Performance)
 app.use("/api/parents", parentRoutes);   // parental controls (the /parents page)
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });

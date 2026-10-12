@@ -14,6 +14,7 @@ import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { discordOn, modLog, postGiftCode } from "../discord/pip.js";
 import { contactReplyEmail, ANSWER_SLOT } from "../mail/contactReply.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
+import { PerfDay } from "../models/PerfDay.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
 import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MOD_BUDGET } from "../realtime/plaza.js";
@@ -187,6 +188,19 @@ router.get("/overview", async (req, res, next) => {
       TeamApplication.countDocuments({ status: "new" }), Report.countDocuments({ status: "open" }),
     ]);
     res.json({ users, new24, new7, banned, muted, online: online.length, rooms, chat24, blocked24, trades24, duels24, contactOpen, recent, rich, teamNew, reportsOpen });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- performance: the anonymous daily totals the game sends (routes/perf.js) ---------- */
+router.get("/perf", async (req, res, next) => {
+  try {
+    const since = new Date(Date.now() - 14 * 864e5).toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+    const rows = await PerfDay.find({ day: { $gte: since } }).sort({ day: -1, device: 1, tier: 1 }).lean();
+    res.json({ rows: rows.map((r) => ({ day: r.day, device: r.device, tier: r.tier, reports: r.reports, minutes: Math.round(r.minutes),
+      fps: r.minutes ? Math.round((r.fpsMinutes / r.minutes) * 10) / 10 : 0, slow: r.minutes ? Math.round((r.slowMinutes / r.minutes) * 100) : 0,
+      stutters: r.minutes ? Math.round((r.longFrames / r.minutes) * 10) / 10 : 0 })) });
   } catch (err) {
     next(err);
   }

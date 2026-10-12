@@ -685,6 +685,17 @@
     duels: () => historyView("Games", "/duels", duelTable, {}),
     log: () => historyView("Admin log", "/logs", logTable, {}),
 
+    // the anonymous daily report from the game: frames a second and stutters per kind of device (last 14 days)
+    async perf() {
+      const d = await api("/perf");
+      page("Performance", h("button", { class: "b b-sm b-ghost", onclick: route }, "Refresh"));
+      const DEV = { "web-computer": "Website, computer", "web-phone": "Website, phone", "android-app": "Android app", "computer-app": "Computer program" };
+      const fpsTag = (f) => h("span", { class: "tag " + (f >= 50 ? "green" : f >= 30 ? "orange" : "red") }, f.toLocaleString("en-US"));
+      main.append(h("p", { class: "muted" }, "Sent by the game every few minutes of play, without any player names. Graphics: what the game guessed for the device (low / mid / high). Slow = share of play time under 30 frames a second. Stutters = frames that took longer than 0.1 s, per minute of play."),
+        panel(null, table([["Day", (r) => r.day], ["Device", (r) => DEV[r.device] || r.device], ["Graphics", (r) => r.tier], ["Reports", (r) => fmtNum(r.reports)],
+          ["Minutes", (r) => fmtNum(r.minutes)], ["Frames / s", (r) => fpsTag(r.fps)], ["Slow", (r) => r.slow + "%"], ["Stutters / min", (r) => r.stutters]], d.rows)));
+    },
+
     async items() {
       const d = await api("/items");
       page("All items", h("span", { class: "muted" }, `${d.items.length} items`));

@@ -139,6 +139,8 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
   display:flex;align-items:center;gap:14px;padding:12px 14px 12px 12px;border-radius:22px;background:#fff;color:#22324a;font-family:"Fredoka",system-ui,sans-serif;
   box-shadow:0 6px 0 #b9c9e6,0 16px 34px rgb(0 0 0 / .25);transition:background .3s,box-shadow .3s}
 .tl-card[hidden]{display:none}
+.perf-meter{position:fixed;z-index:5;left:calc(env(safe-area-inset-left,0px) + 110px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 10px;border-radius:10px;background:rgb(10 20 40 / .78);color:#dbe7f7;font:500 .75rem/1.35 ui-monospace,Menlo,Consolas,monospace;pointer-events:none}
+.perf-meter[hidden]{display:none}.perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
 /* Bobo's card is open (the double-click step): Pip moves to the bottom left, under Bobo, out of the card's way */
 .tl-card.pc-on{left:calc(env(safe-area-inset-left,0px) + 76px);top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;translate:none;width:min(520px,calc(100% - 76px - clamp(280px,36vw,480px)))}
 @media (max-width:760px){.tl-card.pc-on{left:12px;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:calc(100% - 24px)}}
@@ -347,6 +349,7 @@ body.rtl .btn span,body.rtl .tut-body h2,body.rtl .tl-say,body.rtl .idle-card h2
 .set-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgb(0 0 0 / .16);min-height:52px}
 .set-row b{margin-left:auto;font-weight:600;font-size:1.05rem;font-variant-numeric:tabular-nums}
 .set-label{font-weight:500;font-size:1.05rem}
+.set-sub{display:block;margin-top:2px;font-size:.78rem;font-weight:400;opacity:.8;line-height:1.25}
 .vol-row{gap:10px}
 .vol-row .set-label{min-width:64px}
 button.set-icon{border:0;padding:0;cursor:pointer;transition:transform .12s}
@@ -3460,6 +3463,11 @@ body.land .npc-card .idle-face{display:none}
       <span class="set-label" id="gfxLabel">Graphics</span>
       <div class="set-lang set-gfx" id="gfxSeg" role="group" aria-labelledby="gfxLabel"><button type="button" data-gfx="auto">Auto</button><button type="button" data-gfx="low">Low</button><button type="button" data-gfx="medium">Medium</button><button type="button" data-gfx="high">High</button></div>
     </div>
+    <div class="set-row">
+      <span class="set-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="4" y="9" width="21" height="14" rx="3.5" fill="none" stroke="#fff" stroke-width="2.6"/><rect x="25.5" y="13" width="3" height="6" rx="1.2" fill="#fff"/><path d="M15.5 11.5 L10.5 17 H14.5 L13 21 L18.5 15 H14.5 Z" fill="#fff"/></svg></span>
+      <span class="set-label" id="saverLabel">Battery saver<small class="set-sub">No shadows, a shorter view, no effects, 30 frames a second</small></span>
+      <div class="set-lang set-gfx" id="saverSeg" role="group" aria-labelledby="saverLabel"><button type="button" data-saver="0">Off</button><button type="button" data-saver="1">On</button></div>
+    </div>
     <button class="gfx-more-btn" id="gfxMoreBtn" type="button" aria-expanded="false" aria-controls="gfxMore"><span>More graphics options</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 8 L10 13 L15 8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="gfx-more" id="gfxMore">
       <div class="set-row gfx-row"><span class="set-label" id="gfxResL">Sharpness</span><input class="vol" id="gfxRes" type="range" min="40" max="100" step="5" aria-labelledby="gfxResL"><b class="vol-num" id="gfxResN">100%</b></div>
@@ -4154,6 +4162,11 @@ body.land .npc-card .idle-face{display:none}
     </button>
     <h2 id="adminTitle">ADMIN PANEL</h2>
 
+    <section class="adm-sec adm-admin-only">
+      <h3>SPEED METER</h3>
+      <button class="adm-btn wide" id="admMeter" type="button" aria-pressed="false">Show the speed meter</button>
+    </section>
+
     <section class="adm-sec adm-invis adm-admin-only" id="admInvis">
       <h3>INVISIBLE</h3>
       <p class="adm-invis-txt" id="admInvisTxt">Only other admins can see you.</p>
@@ -4740,8 +4753,33 @@ function shadowTick(){if(!renderer.shadowMap.enabled)return;SHD.n++;
   const sun=G.home?HOME.sun:G.sun,sp=sun&&sun.target.position,box=!!sp&&(sp.x!==SHD.sx||sp.z!==SHD.sz);if(sp){SHD.sx=sp.x;SHD.sz=sp.z;}   // (the sun itself creeps along with the real clock: that waits for the next 3rd frame)
   // the box moved (or the sun): now. Walking: every 2nd frame (30 a second, for your own shadow). Standing: every 3rd.
   if(box||SHD.force||!inGame||SHD.n%(moved?2:3)===0){renderer.shadowMap.needsUpdate=true;SHD.force=false;}}
+/* PERF: frames a second while playing. Every 5 minutes of play (and when the tab closes) one short anonymous report
+   goes to the server for the admin panel's daily Performance page; admins can also turn on a live meter (in-game
+   admin panel → SPEED METER) with frames, the slowest frame, draw calls, triangles and shaders. */
+const PERF={t:0,frames:0,ms:0,slowMs:0,long:0,secF:0,secT:0,fps:0,worst:0,worstNow:0,meter:false,el:null,sent:0};
+try{PERF.meter=localStorage.getItem("jumpi-meter")==="1";}catch(e){}
+const PERF_DEVICE=/JumpiApp\//.test(navigator.userAgent)?"android-app":/JumpiDesktop\/|JumpiStore\//.test(navigator.userAgent)?"computer-app":matchMedia("(pointer:coarse)").matches?"web-phone":"web-computer";
+function perfFrame(){const t=performance.now(),dt=PERF.t?t-PERF.t:0;PERF.t=t;
+  if(!inGame||!dt||dt>1500)return;   // (a pause: the tab was in the background)
+  PERF.frames++;PERF.ms+=dt;if(dt>100)PERF.long++;
+  PERF.secF++;PERF.secT+=dt;if(dt>PERF.worstNow)PERF.worstNow=dt;
+  if(PERF.secT>=1000){PERF.fps=PERF.secF*1000/PERF.secT;if(PERF.fps<30)PERF.slowMs+=PERF.secT;PERF.worst=PERF.worstNow;PERF.secF=PERF.secT=PERF.worstNow=0;if(PERF.meter)perfMeterPaint();}
+  if(PERF.ms>=5*60000)perfSend();}
+function perfSend(){if(PERF.ms<30000||!me)return;const min=PERF.ms/60000;
+  const body=JSON.stringify({device:PERF_DEVICE,tier:typeof GFX_TIER==="string"?GFX_TIER:"mid",minutes:+min.toFixed(2),fps:+(PERF.frames/PERF.ms*1000).toFixed(1),slowMinutes:+(PERF.slowMs/60000).toFixed(2),longFrames:PERF.long});
+  PERF.frames=PERF.ms=PERF.slowMs=PERF.long=0;
+  try{if(navigator.sendBeacon&&navigator.sendBeacon("/api/perf",new Blob([body],{type:"application/json"})))return;}catch(e){}
+  fetch("/api/perf",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{});}
+addEventListener("pagehide",perfSend);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)perfSend();});
+function perfMeterPaint(){
+  if(!PERF.el){PERF.el=document.createElement("div");PERF.el.className="perf-meter";PERF.el.setAttribute("aria-hidden","true");document.body.appendChild(PERF.el);}
+  PERF.el.hidden=!PERF.meter||!inGame||!(me&&me.role==="admin");if(PERF.el.hidden)return;const i=renderer.info;
+  PERF.el.innerHTML=`<b class="${PERF.fps>=50?"ok":PERF.fps>=30?"mid":"bad"}">${Math.round(PERF.fps)}</b> fps · slowest ${Math.round(PERF.worst)} ms<br>${i.render.calls} draws · ${(i.render.triangles/1000).toFixed(0)}k triangles · ${i.programs?i.programs.length:0} shaders<br>${PERF.long} stutters · ${GFX_TIER} · ${GFX.saver?"saver":GFX.mode} · x${GFX.pr.toFixed(2)}`;}
+function perfMeter(on){PERF.meter=on;try{localStorage.setItem("jumpi-meter",on?"1":"0");}catch(e){}perfMeterPaint();}
 renderer.setAnimationLoop(()=>{
   if(document.hidden)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
+  perfFrame();
   if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
   if(typeof evMenuTick==="function")evMenuTick(t);
@@ -7644,6 +7682,8 @@ function refreshAdminOnline(){
     b.onclick=()=>{admUser.value=n;refreshAdminOnline();};box.appendChild(b);});
 }
 admUser.addEventListener("input",refreshAdminOnline);
+{const b=document.getElementById("admMeter");const paint=()=>{b.setAttribute("aria-pressed",String(PERF.meter));b.textContent=PERF.meter?"Hide the speed meter":"Show the speed meter";};paint();
+  b.onclick=()=>{if(!(me&&me.role==="admin"))return;perfMeter(!PERF.meter);paint();};}
 function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
 function closeAdmin(){if(adminOverlay.hidden)return;adminOverlay.hidden=true;sfx.close();}
 // big actions (coins, gift codes, permanent bans) ask an admin for their password first; then the action is sent again
@@ -8510,7 +8550,10 @@ function gfxAutoRemember(){if(GFX.mode!=="auto")return;try{localStorage.setItem(
 if(GFX.mode==="auto")gfxAutoStart();
 GFX.fx=GFX.o.fx!=="off";
 function gfxSave(){try{localStorage.setItem("jumpi-gfx2",JSON.stringify({mode:GFX.mode,...GFX.o}));}catch(e){}}
-function gfxApply(){const o=GFX.o;GFX.fx=o.fx!=="off";
+// battery saver: on top of any graphics choice, everything light (kept on this device)
+try{GFX.saver=localStorage.getItem("jumpi-saver")==="1";}catch(e){GFX.saver=false;}
+const gfxEff=()=>GFX.saver?{...GFX.o,shadows:"off",view:"short",fx:"off",fps:"30",res:Math.min(GFX.o.res,.75)}:GFX.o;
+function gfxApply(){const o=gfxEff();GFX.fx=o.fx!=="off";
   const cap=GFX.mode==="auto"?(GFX.prCap||(IS_PHONE?1.25:2)):2;
   GFX.pr=Math.max(.4,Math.min(devicePixelRatio,cap)*o.res);
   renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);
@@ -8526,6 +8569,7 @@ function gfxApply(){const o=GFX.o;GFX.fx=o.fx!=="off";
   if(G.sun){G.sun.castShadow=shOn;if(G.sun.shadow){const sz=o.shadows==="high"?2048:1024;if(G.sun.shadow.mapSize.x!==sz){G.sun.shadow.mapSize.set(sz,sz);if(G.sun.shadow.map){G.sun.shadow.map.dispose();G.sun.shadow.map=null;}}}}
   gfxPaint();}
 function gfxPaint(){const o=GFX.o;
+  document.querySelectorAll("#saverSeg button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.saver==="1")===String(!!GFX.saver)));
   document.querySelectorAll("#gfxSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.gfx===GFX.mode));
   document.querySelectorAll("#gfxMore [data-gk]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(o[g.dataset.gk])===b.dataset.v)));
   const r=document.getElementById("gfxRes");if(r){r.value=Math.round(o.res*100);document.getElementById("gfxResN").textContent=Math.round(o.res*100)+"%";}
@@ -8534,16 +8578,18 @@ function gfxPaint(){const o=GFX.o;
 function gfxSet(m){if(!GFX_PRESETS[m])return;GFX.mode=m;GFX.o={...GFX_PRESETS[m]};if(m==="auto"){if(IS_PHONE)GFX.o.shadows="low";gfxAutoStart();}GFX.acc=GFX.n=0;GFX.autoSteps=0;gfxSave();gfxApply();}
 // one of the extra options: that makes it the player's own mix
 function gfxOpt(k,v){GFX.mode="custom";GFX.o={...GFX.o,[k]:v};gfxSave();gfxApply();}
+document.getElementById("saverSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-saver]");if(!b)return;sfx.click();
+  GFX.saver=b.dataset.saver==="1";try{localStorage.setItem("jumpi-saver",GFX.saver?"1":"0");}catch(err){}gfxApply();});
 document.getElementById("gfxSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-gfx]");if(!b)return;sfx.click();gfxSet(b.dataset.gfx);});
 document.getElementById("gfxMore").addEventListener("click",e=>{const b=e.target.closest("[data-gk] button");if(!b)return;sfx.click();gfxOpt(b.parentElement.dataset.gk,b.dataset.v);});
 {const r=document.getElementById("gfxRes");r.addEventListener("input",()=>{document.getElementById("gfxResN").textContent=r.value+"%";});r.addEventListener("change",()=>gfxOpt("res",+r.value/100));}
 document.getElementById("gfxMoreBtn").addEventListener("click",e=>{const b=e.currentTarget,box=document.getElementById("gfxMore"),open=box.hidden;box.hidden=!open;b.setAttribute("aria-expanded",open);sfx.click();if(open)setTimeout(()=>box.scrollIntoView({block:"nearest",behavior:"smooth"}),30);});
 gfxPaint();
 // the frame-rate cap: true = skip drawing this frame
-function gfxSkip(){const cap=+GFX.o.fps;if(!cap)return false;const t=performance.now();if(t-GFX.lastFrame<1000/cap-2)return true;GFX.lastFrame=t;return false;}
+function gfxSkip(){const cap=+gfxEff().fps;if(!cap)return false;const t=performance.now();if(t-GFX.lastFrame<1000/cap-2)return true;GFX.lastFrame=t;return false;}
 // Auto: if the last 4 seconds ran under ~38 frames a second, step down: fewer pixels first, then lighter shadows, then a shorter view
 function gfxTick(){const t=performance.now();if(!GFX.last){GFX.last=t;return;}const dt=t-GFX.last;GFX.last=t;
-  if(GFX.mode!=="auto"||!inGame||dt>250||document.hidden)return;GFX.acc+=dt;GFX.n++;
+  if(GFX.mode!=="auto"||GFX.saver||!inGame||dt>250||document.hidden)return;GFX.acc+=dt;GFX.n++;
   if(GFX.acc>4000){const fps=GFX.n*1000/GFX.acc;GFX.acc=GFX.n=0;const o=GFX.o;
     // smooth for a long time (12 s at 56+ with no cap in the way): one step back up, never past what this device started with
     if(fps>=56&&+o.fps!==30){GFX.good=(GFX.good||0)+1;if(GFX.good>=3&&t>GFX.cool){GFX.good=0;GFX.cool=t+20000;
@@ -8589,6 +8635,7 @@ function enterGame(){
   checkDaily(!TL.auto);TL.auto=false;
 }
 function exitGame(){
+  if(PERF.el)PERF.el.hidden=true;perfSend();
   if(TL.on)tlStop();tlAsk.hidden=true;document.getElementById("tlDone").hidden=true;
   closePhone(true);closeGameStore(true);patrolExit();
   if(G.home)homeReset();
