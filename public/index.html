@@ -4625,7 +4625,15 @@ const sfx=Sound.sfx;
 const stage=document.getElementById("stage");
 function IS_PHONE_EARLY(){try{return matchMedia("(pointer:coarse)").matches;}catch(e){return false;}}
 const GFX_AA0=(()=>{try{const o=JSON.parse(localStorage.getItem("jumpi-gfx2")||"null");return !o||o.aa!=="off";}catch(e){return true;}})();
-const renderer=new THREE.WebGLRenderer({antialias:GFX_AA0,alpha:true});
+const renderer=new THREE.WebGLRenderer({antialias:GFX_AA0,alpha:true,powerPreference:"high-performance"});
+/* ONE small renderer for every picture made in code (clothes, furniture, vehicles, food, pets, offer shots): each
+   WebGL renderer is a whole graphics context of its own (memory on the graphics card, and a hitch when it's made),
+   and browsers only allow a few. Size and tone mapping are set right before each picture. */
+let ICON_R=null;
+function iconR(w,h,tone){
+  if(!ICON_R){ICON_R=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});ICON_R.setPixelRatio(1);ICON_R.outputColorSpace=THREE.SRGBColorSpace;ICON_R.setClearColor(0x000000,0);}
+  if(ICON_R.domElement.width!==w||ICON_R.domElement.height!==h)ICON_R.setSize(w,h,false);
+  ICON_R.toneMapping=tone?THREE.ACESFilmicToneMapping:THREE.NoToneMapping;return ICON_R;}   // laptops with two graphics cards: use the strong one
 renderer.setPixelRatio(Math.min(devicePixelRatio,IS_PHONE_EARLY()?1.5:2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
 stage.appendChild(renderer.domElement);
 const scene=new THREE.Scene();
@@ -4722,7 +4730,18 @@ function lidScale(a,dur=.28){ // eye closes then opens
 
 const clock=new THREE.Clock();
 let lastT=0;
+/* The shadow map is drawn again only when it can change much: every frame while you move (the sun's shadow box
+   follows you), otherwise every third frame (other players, pets and cars still get moving shadows, at 20 a second).
+   Other pictures drawn with this renderer (portraits, icons) never redraw it. */
+renderer.shadowMap.autoUpdate=false;
+const SHD={n:0,x:NaN,z:NaN,sx:NaN,sy:NaN,sz:NaN,force:true};
+function shadowTick(){if(!renderer.shadowMap.enabled)return;SHD.n++;
+  const moved=Math.abs(G.pos.x-SHD.x)>.002||Math.abs(G.pos.z-SHD.z)>.002;SHD.x=G.pos.x;SHD.z=G.pos.z;
+  const sun=G.home?HOME.sun:G.sun,sp=sun&&sun.target.position,box=!!sp&&(sp.x!==SHD.sx||sp.z!==SHD.sz);if(sp){SHD.sx=sp.x;SHD.sz=sp.z;}   // (the sun itself creeps along with the real clock: that waits for the next 3rd frame)
+  // the box moved (or the sun): now. Walking: every 2nd frame (30 a second, for your own shadow). Standing: every 3rd.
+  if(box||SHD.force||!inGame||SHD.n%(moved?2:3)===0){renderer.shadowMap.needsUpdate=true;SHD.force=false;}}
 renderer.setAnimationLoop(()=>{
+  if(document.hidden)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
   if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
   if(typeof evMenuTick==="function")evMenuTick(t);
@@ -4777,7 +4796,7 @@ renderer.setAnimationLoop(()=>{
   tickAuras(t);gfxTick();vehPreviewTick(t);routeTick(t);
   let flyFog=null;if(window.__fly){const F=window.__fly;cam.position.set(F[0],F[1],F[2]);cam.lookAt(F[3],F[4],F[5]);   // ?beachtest screenshots only
     if(F[6]){cam.fov=F[6];cam.near=F[7];cam.far=F[8];cam.updateProjectionMatrix();flyFog=scene.fog;scene.fog=null;}}
-  renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
+  shadowTick();renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
   if(inGame)renderMap();
 });
 
@@ -5937,8 +5956,7 @@ function renderThumbs(){
   if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
 function thbPump(){
-  THB.raf=0;if(!thumbR){thumbR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});thumbR.setPixelRatio(1);thumbR.setSize(120,120);
-    thumbR.outputColorSpace=THREE.SRGBColorSpace;thumbR.toneMapping=THREE.ACESFilmicToneMapping;thumbR.setClearColor(0x000000,0);}
+  THB.raf=0;
   // never while the character is walking or hopping (that's when a skipped frame shows): wait until it stands still
   if(walk.t0>=0||(act.hop&&now()-act.hop.t<.9)||(act.flip&&now()-act.flip.t<1.4)){THB.raf=requestAnimationFrame(thbPump);return;}
   const tc=THB.cam||(THB.cam=new THREE.PerspectiveCamera(30,1,0.1,20)),n=THB.n,t0=performance.now();let changed=false,slotDone=false;
@@ -5946,7 +5964,7 @@ function thbPump(){
     const [kind,i]=THB.queue.shift(),v=THUMB_VIEW[kind];tc.position.set(...v.pos);tc.lookAt(...v.at);
     // a copy of just this item, hung on the same part of the copy character
     const added=[].concat(OUTFIT_OBJ[kind][i]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);return q;});
-    thumbR.render(thbScene(),tc);THUMBS[kind][i]=thumbR.domElement.toDataURL("image/png");added.forEach(q=>q.removeFromParent());
+    {const R=iconR(120,120,true);R.render(thbScene(),tc);THUMBS[kind][i]=R.domElement.toDataURL("image/png");}added.forEach(q=>q.removeFromParent());
     THB.done.add(kind+":"+i);changed=true;if(kind===storeSlot&&!THB.queue.some(q=>q[0]===storeSlot))slotDone=true;}
   if(changed&&(slotDone||!THB.queue.length)){refreshChipImages();if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
   else if(changed&&THB.queue.length%40===0)refreshChipImages();
@@ -7234,7 +7252,7 @@ function makeCharacter(look,label,tagColor,lv=0){
   const tag=nameTag(label,tagColor,Number.isInteger(look.tag)?look.tag:-1,lv);   // added to the world by whoever creates the character
   const n={root,tag,head:root.getObjectByName("Head"),body:root.getObjectByName("Body"),armL:root.getObjectByName("ArmL"),armR:root.getObjectByName("ArmR"),
     eyeL:root.getObjectByName("EyeL"),eyeR:root.getObjectByName("EyeR"),lookL:root.getObjectByName("LookL"),lookR:root.getObjectByName("LookR"),headY:0,blinkT:0,blinkStart:-9};
-  n.headY=n.head.position.y;
+  n.headY=n.head.position.y;root.userData.isChar=true;
   [n.lookL,n.lookR].forEach(L=>{L.userData.rest=L.position.clone();placeIris(L,L===n.lookL?-1:1,0,0);});
   setAura(n,look.aura);
   return n;
@@ -8320,12 +8338,12 @@ function vehBeforeLeave(){if(VEH.ride)vehDismount();}
 /* thumbnails for the shop and the Garage */
 function vehThumbs(){
   if(VEH.thumbs.length)return;
-  furnThumbR=furnThumbR||new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});furnThumbR.setPixelRatio(1);furnThumbR.setSize(128,128);furnThumbR.outputColorSpace=THREE.SRGBColorSpace;
+
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,2);dl.position.set(3,5,4);sc.add(dl);
   const cm=new THREE.PerspectiveCamera(28,1,.1,50);
   VEHICLES.forEach((d,i)=>{const g=buildBike(d);if(g.userData.glow)g.userData.glow.visible=false;g.rotation.y=-1.05;sc.add(g);
     const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),dd=Math.max(s.x,s.y,s.z)*2.05+.4;
-    cm.position.set(c.x+dd*.22,c.y+dd*.32,c.z+dd*.92);cm.lookAt(c);furnThumbR.render(sc,cm);VEH.thumbs[i]=furnThumbR.domElement.toDataURL("image/png");sc.remove(g);});}
+    cm.position.set(c.x+dd*.22,c.y+dd*.32,c.z+dd*.92);cm.lookAt(c);{const R=iconR(128,128,false);R.render(sc,cm);VEH.thumbs[i]=R.domElement.toDataURL("image/png");}sc.remove(g);});}
 const vehThumb=i=>{vehThumbs();return VEH.thumbs[i]||"";};
 // the shop shows the bike next to the character while you look at it
 function vehPreview(i){
@@ -8435,7 +8453,7 @@ function gameTick(dt,t,hy){
   if(CITY&&!G.home){const f=Math.min(camBlock(G.pos.x,G.pos.z,want.x,want.z),CITY.camClamp(G.pos.x,G.pos.z,want.x,want.z));if(f<1){want.x=G.pos.x+(want.x-G.pos.x)*f;want.z=G.pos.z+(want.z-G.pos.z)*f;want.y=gy+1.6+(want.y-gy-1.6)*Math.max(.35,f);}}   // a building behind me: the camera comes closer instead of going inside it
   G.camPos.lerp(want,Math.min(1,dt*(G.orbiting?14:4)));cam.position.copy(G.camPos);const ahead=dress?0:8*zf-3;cam.lookAt(G.pos.x-sy*ahead+rx,gy+(dress?1.25:1.6),G.pos.z-cy*ahead+rz);   // look further ahead when far away, closer to the player when zoomed in
   // world motion
-  if(G.home&&HOME.sun){HOME.sun.position.set(G.pos.x+5,12,G.pos.z+7);HOME.sun.target.position.set(G.pos.x,0,G.pos.z);HOME.sun.target.updateMatrixWorld();}
+  if(G.home&&HOME.sun){const sx=Math.round(G.pos.x*2)/2,sz=Math.round(G.pos.z*2)/2;HOME.sun.position.set(sx+5,12,sz+7);HOME.sun.target.position.set(sx,0,sz);HOME.sun.target.updateMatrixWorld();}
   weatherTick(t,dt);   // time of day, weather, sun position, lamps and weather sounds
   policeTick(t,dt);    // on patrol: the cases around the Plaza
   updateJets(t);updateAreas(t,dt);if(CITY&&!G.home)CITY.update(t,dt,cam);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home){updateResident(t,dt);updateResidents(t,dt);}updateRemotes(t,dt);if(!G.home)vehTick(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
@@ -8475,18 +8493,36 @@ try{const o=JSON.parse(localStorage.getItem("jumpi-gfx2")||"null");
   if(o&&o.mode){GFX.mode=o.mode;GFX.o={...GFX_PRESETS.auto,...(GFX_PRESETS[o.mode]||{}),...(o.mode==="custom"?o:{})};}
   else{const m=localStorage.getItem("jumpi-gfx");if(m==="fast"){GFX.mode="low";GFX.o={...GFX_PRESETS.low};}else if(m==="best"){GFX.mode="high";GFX.o={...GFX_PRESETS.high};}}}catch(e){}
 if(GFX.mode==="auto"&&IS_PHONE)GFX.o.shadows="low";
+/* Auto starts from what this device can do instead of from the top: a weak computer or phone is smooth from the
+   first second, and then Auto steps up when there's room (or down when it's slow). The level Auto reached is kept
+   on this device ("jumpi-gfx-auto"), so the next visit starts right there. */
+const GFX_TIER=(()=>{let gpu="";try{const gl=renderer.getContext(),x=gl.getExtension("WEBGL_debug_renderer_info");gpu=String(x?gl.getParameter(x.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)||"");}catch(e){}
+  const mem=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||4;
+  if(/swiftshader|llvmpipe|software|Mali-[4T]|Adreno \(TM\) [345]\d\d|PowerVR SGX/i.test(gpu)||mem<=2||cores<=2)return "low";
+  if(IS_PHONE||/Intel|Mali|Adreno|PowerVR|Apple GPU/i.test(gpu)||mem<=4||cores<=4)return "mid";
+  return "high";})();
+GFX.tier=GFX_TIER;
+const GFX_TIER_START={low:{res:.75,shadows:"off",view:"medium",pr:1},mid:{res:1,shadows:"low",view:"far",pr:IS_PHONE?1.25:1.5},high:{res:1,shadows:"high",view:"far",pr:2}};
+function gfxAutoStart(){const t=GFX_TIER_START[GFX_TIER];let k=null;try{k=JSON.parse(localStorage.getItem("jumpi-gfx-auto")||"null");}catch(e){}
+  const src=k&&k.tier===GFX_TIER&&Date.now()-(k.at||0)<30*86400000?k:t;
+  GFX.o={...GFX.o,res:src.res,shadows:src.shadows,view:src.view};GFX.prCap=src.pr;GFX.prMax=GFX_TIER_START[GFX_TIER].pr;}
+function gfxAutoRemember(){if(GFX.mode!=="auto")return;try{localStorage.setItem("jumpi-gfx-auto",JSON.stringify({tier:GFX_TIER,res:GFX.o.res,shadows:GFX.o.shadows,view:GFX.o.view,pr:GFX.prCap,at:Date.now()}));}catch(e){}}
+if(GFX.mode==="auto")gfxAutoStart();
 GFX.fx=GFX.o.fx!=="off";
 function gfxSave(){try{localStorage.setItem("jumpi-gfx2",JSON.stringify({mode:GFX.mode,...GFX.o}));}catch(e){}}
 function gfxApply(){const o=GFX.o;GFX.fx=o.fx!=="off";
-  const cap=GFX.mode==="auto"?(IS_PHONE?1.5:2):2;
+  const cap=GFX.mode==="auto"?(GFX.prCap||(IS_PHONE?1.25:2)):2;
   GFX.pr=Math.max(.4,Math.min(devicePixelRatio,cap)*o.res);
   renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);
   const V={short:[105,38,100,96],medium:[140,48,134,128],far:[185,70,178,175]}[o.view]||[185,70,178,175];
   VIEW_FAR=V[0];FOG_NEAR=V[1];FOG_FAR=V[2];
   if(inGame&&!G.home&&scene.fog){scene.fog.near=FOG_NEAR;scene.fog.far=FOG_FAR;cam.far=VIEW_FAR;cam.updateProjectionMatrix();}
   if(CITY&&CITY.setView)CITY.setView(V[3]);
-  const shOn=o.shadows!=="off";
+  const shOn=o.shadows!=="off",shType=o.shadows==="high"&&!IS_PHONE?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;
+  if(renderer.shadowMap.type!==shType){renderer.shadowMap.type=shType;if(inGame)scene.traverse(q=>{if(q.material){(Array.isArray(q.material)?q.material:[q.material]).forEach(m=>m.needsUpdate=true);}});}
   if(renderer.shadowMap.enabled!==shOn&&G.sun){renderer.shadowMap.enabled=shOn;scene.traverse(q=>{if(q.material){(Array.isArray(q.material)?q.material:[q.material]).forEach(m=>m.needsUpdate=true);}});}
+  SHD.force=true;
+  if(G.sun&&G.sun.shadow){const e=o.shadows==="high"?34:24,c=G.sun.shadow.camera;if(c.right!==e){Object.assign(c,{left:-e,right:e,top:e,bottom:-e});c.updateProjectionMatrix();}}
   if(G.sun){G.sun.castShadow=shOn;if(G.sun.shadow){const sz=o.shadows==="high"?2048:1024;if(G.sun.shadow.mapSize.x!==sz){G.sun.shadow.mapSize.set(sz,sz);if(G.sun.shadow.map){G.sun.shadow.map.dispose();G.sun.shadow.map=null;}}}}
   gfxPaint();}
 function gfxPaint(){const o=GFX.o;
@@ -8495,7 +8531,7 @@ function gfxPaint(){const o=GFX.o;
   const r=document.getElementById("gfxRes");if(r){r.value=Math.round(o.res*100);document.getElementById("gfxResN").textContent=Math.round(o.res*100)+"%";}
   const n=document.getElementById("gfxNote");if(n)n.hidden=(o.aa!=="off")===GFX_AA0;}
 // a preset button
-function gfxSet(m){if(!GFX_PRESETS[m])return;GFX.mode=m;GFX.o={...GFX_PRESETS[m]};if(m==="auto"&&IS_PHONE)GFX.o.shadows="low";GFX.acc=GFX.n=0;GFX.autoSteps=0;gfxSave();gfxApply();}
+function gfxSet(m){if(!GFX_PRESETS[m])return;GFX.mode=m;GFX.o={...GFX_PRESETS[m]};if(m==="auto"){if(IS_PHONE)GFX.o.shadows="low";gfxAutoStart();}GFX.acc=GFX.n=0;GFX.autoSteps=0;gfxSave();gfxApply();}
 // one of the extra options: that makes it the player's own mix
 function gfxOpt(k,v){GFX.mode="custom";GFX.o={...GFX.o,[k]:v};gfxSave();gfxApply();}
 document.getElementById("gfxSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-gfx]");if(!b)return;sfx.click();gfxSet(b.dataset.gfx);});
@@ -8508,21 +8544,38 @@ function gfxSkip(){const cap=+GFX.o.fps;if(!cap)return false;const t=performance
 // Auto: if the last 4 seconds ran under ~38 frames a second, step down: fewer pixels first, then lighter shadows, then a shorter view
 function gfxTick(){const t=performance.now();if(!GFX.last){GFX.last=t;return;}const dt=t-GFX.last;GFX.last=t;
   if(GFX.mode!=="auto"||!inGame||dt>250||document.hidden)return;GFX.acc+=dt;GFX.n++;
-  if(GFX.acc>4000){const fps=GFX.n*1000/GFX.acc;GFX.acc=GFX.n=0;if(t<GFX.cool||fps>=38)return;GFX.cool=t+3000;const o=GFX.o;
-    if(GFX.pr>1){GFX.pr=Math.max(1,GFX.pr-.25);renderer.setPixelRatio(GFX.pr);renderer.setSize(innerWidth,innerHeight);return;}
-    if(o.shadows==="high"){o.shadows="low";gfxApply();return;}
-    if(o.view==="far"){o.view="medium";gfxApply();return;}
-    if(o.shadows==="low"&&fps<28){o.shadows="off";gfxApply();return;}
-    if(o.res>.75&&fps<28){o.res=.75;gfxApply();}}}
+  if(GFX.acc>4000){const fps=GFX.n*1000/GFX.acc;GFX.acc=GFX.n=0;const o=GFX.o;
+    // smooth for a long time (12 s at 56+ with no cap in the way): one step back up, never past what this device started with
+    if(fps>=56&&+o.fps!==30){GFX.good=(GFX.good||0)+1;if(GFX.good>=3&&t>GFX.cool){GFX.good=0;GFX.cool=t+20000;
+      const maxPr=Math.min(devicePixelRatio,GFX.prMax||2);
+      if(o.res<1){o.res=Math.min(1,o.res+.25);gfxApply();gfxAutoRemember();return;}
+      if(o.view!=="far"){o.view=o.view==="short"?"medium":"far";gfxApply();gfxAutoRemember();return;}
+      if(o.shadows==="off"&&GFX_TIER!=="low"){o.shadows="low";gfxApply();gfxAutoRemember();return;}
+      if(GFX.pr<maxPr-.01){GFX.prCap=Math.min(maxPr,(GFX.prCap||1)+.25);gfxApply();gfxAutoRemember();return;}
+      if(o.shadows==="low"&&GFX_TIER==="high"){o.shadows="high";gfxApply();gfxAutoRemember();}}return;}
+    GFX.good=0;
+    if(t<GFX.cool||fps>=38)return;GFX.cool=t+3000;
+    if(GFX.pr>1){GFX.prCap=Math.max(1,GFX.pr-.25);gfxApply();gfxAutoRemember();return;}
+    if(o.shadows==="high"){o.shadows="low";gfxApply();gfxAutoRemember();return;}
+    if(o.view==="far"){o.view="medium";gfxApply();gfxAutoRemember();return;}
+    if(o.shadows==="low"&&fps<28){o.shadows="off";gfxApply();gfxAutoRemember();return;}
+    if(o.res>.75&&fps<28){o.res=.75;gfxApply();gfxAutoRemember();}}}
+// tiny things (pebbles, flowers, little decorations) don't cast a shadow: the shadow map is drawn with a lot fewer objects
+function trimShadows(root,minR=.28){const v=new THREE.Vector3();let n=0;root.updateMatrixWorld(true);
+  const walk=o=>{if(o.userData.isChar)return;   // characters keep every shadow (arms, hats)
+    if(o.isMesh&&o.castShadow&&!o.isSkinnedMesh&&!o.isInstancedMesh&&o.geometry){const g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();
+      o.getWorldScale(v);if(g.boundingSphere.radius*Math.max(Math.abs(v.x),Math.abs(v.y),Math.abs(v.z))<minR){o.castShadow=false;n++;}}
+    for(const c of o.children)walk(c);};
+  walk(root);return n;}
 function enterGame(){
   if(!P)return;
-  if(!gameBuilt)buildPlaza();
+  if(!gameBuilt){buildPlaza();trimShadows(world);}
   inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
   G.menuLights.forEach(l=>l.visible=false);
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;gfxApply();
+  renderer.shadowMap.enabled=true;gfxApply();
   P.root.traverse(o=>{if(o.isMesh){o.castShadow=true;[].concat(o.material).forEach(m=>m.needsUpdate=true);}});
   refreshMyTag();
   myBubble.classList.toggle("admin",!!(me&&me.role==="admin"));myBubble.classList.toggle("mod",!!(me&&me.role==="mod"));
@@ -9815,12 +9868,12 @@ function buildFurniture(f){
 const FURN_THUMB=[];let furnThumbR=null;
 function furnThumbs(){
   if(FURN_THUMB.length)return;
-  furnThumbR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});furnThumbR.setPixelRatio(1);furnThumbR.setSize(128,128);furnThumbR.outputColorSpace=THREE.SRGBColorSpace;
+
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.6));const dl=new THREE.DirectionalLight(0xffffff,1.8);dl.position.set(3,5,4);sc.add(dl);
   const cm=new THREE.PerspectiveCamera(30,1,.1,50);
   for(let f=0;f<FURN_NAMES.length;f++){const g=buildFurniture(f);g.rotation.y=-.5;sc.add(g);
     const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*2.1+.6;
-    cm.position.set(c.x+d*.35,c.y+d*.45,c.z+d*.8);cm.lookAt(c);furnThumbR.render(sc,cm);FURN_THUMB[f]=furnThumbR.domElement.toDataURL("image/png");sc.remove(g);}
+    cm.position.set(c.x+d*.35,c.y+d*.45,c.z+d*.8);cm.lookAt(c);{const R=iconR(128,128,false);R.render(sc,cm);FURN_THUMB[f]=R.domElement.toDataURL("image/png");}sc.remove(g);}
 }
 
 /* ---------- the room ---------- */
@@ -11301,7 +11354,7 @@ function trailerFrame(T,dt=1/30){TRL.T=T;TRL_T=T;
   if(TRL.shot!==S){tResetUI();TRL.flashShot=null;TRL.shot=S;S.enter();Object.values(TRL.actors).forEach(a=>{if(a.n)a.n.root.visible=false;});TRL.actors.pet.g.visible=TRL.actors.kit.g.visible=false;}
   S.run(T-S.a,T,dt);
   if(!G.home){if(G.seaU)G.seaU.value=T;updateJets(T);updateAreas(T,dt);G.boat.position.x=-25+Math.sin(T*.05)*30;}
-  tickAuras(T);renderer.render(scene,cam);}
+  tickAuras(T);shadowTick();renderer.render(scene,cam);}
 
 async function trlStart(){
   document.body.classList.add("trl");trlOverlay();
@@ -11428,7 +11481,9 @@ function weatherTick(t,dt){
   const useMoon=sunDir.y<.06,dir=useMoon?moonDir:sunDir;
   if(G.sun){const sunI=D.sunI*(1-k.cloud*.55-k.dark*.3)*(1+k.heat*.15*day);G.sun.intensity=sunI+WX.flash*1.5;G.sun.color.copy(D.sun);if(k.heat>0)G.sun.color.lerp(_ca.set("#ffcf8a"),k.heat*.5*day);
     if(WX.flash>0)G.sun.color.lerp(_ca.set("#eef3ff"),WX.flash);
-    const yy=Math.max(.35,dir.y);G.sun.position.set(G.pos.x+dir.x*35,yy*35,G.pos.z+dir.z*35);G.sun.target.position.set(G.pos.x,0,G.pos.z);G.sun.target.updateMatrixWorld();}
+    // the shadow box follows you in whole steps of 1: still things keep the very same shadow between steps (no shimmer),
+    // and the shadow map only has to be drawn again when the box moved or something moves (shadowTick)
+    const yy=Math.max(.35,dir.y),sx=Math.round(G.pos.x),sz=Math.round(G.pos.z);G.sun.position.set(sx+dir.x*35,yy*35,sz+dir.z*35);G.sun.target.position.set(sx,0,sz);G.sun.target.updateMatrixWorld();}
   if(G.hemi){const golden=Math.max(0,1-Math.abs(h-6.6)/1.5)+Math.max(0,1-Math.abs(h-18.3)/1.5);
     G.hemi.intensity=D.hemiI*(1-k.dark*.42)+WX.flash*1.6;G.hemi.color.set("#cfeeff").lerp(_ca.set("#6f7fc8"),n*.8).lerp(_ca.set("#ffae7a"),golden*.55*(1-k.cloud*.7)).lerp(_ca.set("#ffd9a0"),k.heat*day*.45).lerp(_ca.set("#a3adbd"),k.cloud*.45);G.hemi.groundColor.set("#6aa35a").lerp(_ca.set("#26324a"),n*.7);}
   // sky objects
@@ -12074,10 +12129,10 @@ function makeFood(kind,i){
   g.scale.setScalar(kind==="diner"?1.25:1.45);return g;}
 const FOOD_THUMB={};let foodR=null;
 function foodThumb(kind,i){const key=kind+i;if(FOOD_THUMB[key])return FOOD_THUMB[key];
-  if(!foodR){foodR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});foodR.setPixelRatio(1);foodR.setSize(160,160);foodR.outputColorSpace=THREE.SRGBColorSpace;}
+
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(3,5,4);sc.add(dl);
   const g=makeFood(kind,i);g.rotation.y=-.4;sc.add(g);const bb=new THREE.Box3().setFromObject(g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*1.75;
-  const cm=new THREE.PerspectiveCamera(30,1,.01,20);cm.position.set(c.x,c.y+d*.55,c.z+d*.95);cm.lookAt(c);foodR.render(sc,cm);return FOOD_THUMB[key]=foodR.domElement.toDataURL("image/png");}
+  const cm=new THREE.PerspectiveCamera(30,1,.01,20);cm.position.set(c.x,c.y+d*.55,c.z+d*.95);cm.lookAt(c);const R=iconR(160,160,false);R.render(sc,cm);return FOOD_THUMB[key]=R.domElement.toDataURL("image/png");}
 const menuOverlay=document.getElementById("menuOverlay"),menuGrid=document.getElementById("menuGrid");
 function openMenu(kind,stand){if(!menuOverlay.hidden)return;G.keys={};G.target=null;
   const bar=kind==="club",park=kind==="park",S=park&&standOf(stand);if(park&&!S)return;
@@ -12599,10 +12654,10 @@ petCard.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")c
 /* ---------- pictures of pets (for the phone and the adoption window) ---------- */
 const PET_THUMB={};let petR=null;
 function petThumb(kind,color){const key=kind+color;if(PET_THUMB[key])return PET_THUMB[key];
-  if(!petR){petR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});petR.setPixelRatio(1);petR.setSize(160,160);petR.outputColorSpace=THREE.SRGBColorSpace;}
+
   const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9fb3d1,1.7));const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(3,5,4);sc.add(dl);
   const P=buildPet(kind,color);P.g.rotation.y=.5;sc.add(P.g);const bb=new THREE.Box3().setFromObject(P.g),c=bb.getCenter(new THREE.Vector3()),s=bb.getSize(new THREE.Vector3()),d=Math.max(s.x,s.y,s.z)*1.9;
-  const cm=new THREE.PerspectiveCamera(30,1,.01,30);cm.position.set(c.x,c.y+d*.25,c.z+d*1.05);cm.lookAt(c);petR.render(sc,cm);return PET_THUMB[key]=petR.domElement.toDataURL("image/png");}
+  const cm=new THREE.PerspectiveCamera(30,1,.01,30);cm.position.set(c.x,c.y+d*.25,c.z+d*1.05);cm.lookAt(c);const R=iconR(160,160,false);R.render(sc,cm);return PET_THUMB[key]=R.domElement.toDataURL("image/png");}
 
 /* ---------- the adoption window ---------- */
 const adopt={open:false,kind:"puppy",color:0,busy:false,R:null,scene:null,cam:null,P:null};
@@ -12668,14 +12723,14 @@ function openStorePage(id){if(IN_APP){toast("Ask a grown-up to visit jumpigames.
 let shotR=null;
 function bundleShot(P){const key=P.id+":"+JSON.stringify(me&&me.look||{});if(OFFERS.shots[key])return OFFERS.shots[key];
   if(!P_READY())return "";
-  if(!shotR){shotR=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});shotR.setPixelRatio(1);shotR.setSize(300,300);shotR.outputColorSpace=THREE.SRGBColorSpace;shotR.toneMapping=THREE.ACESFilmicToneMapping;}
+
   const look={...(me&&me.look||{color:0,eyes:0,hair:0,shirt:0,pants:0,glasses:-1,tag:-1,aura:-1})};
   (P.give.items||[]).forEach(id=>{const [slot,i]=id.split(":");if(slot in look&&slot!=="tag")look[slot]=+i;});
   const C=makeCharacter(look,"");const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0xa0b4d6,1.5));const dl=new THREE.DirectionalLight(0xffffff,1.8);dl.position.set(2,5,4);sc.add(dl);
   sc.add(C.root);C.root.rotation.y=.35;C.root.updateMatrixWorld(true);
   if(C.aura){for(let k=0;k<3;k++)C.aura.tick(1.3+k*.4);}
-  const cm=new THREE.PerspectiveCamera(30,1,.1,50);cm.position.set(0,1.75,7.2);cm.lookAt(0,1.15,0);shotR.render(sc,cm);
-  dropAura(C);return OFFERS.shots[key]=shotR.domElement.toDataURL("image/png");}
+  const cm=new THREE.PerspectiveCamera(30,1,.1,50);cm.position.set(0,1.75,7.2);cm.lookAt(0,1.15,0);const R=iconR(300,300,true);R.render(sc,cm);
+  dropAura(C);return OFFERS.shots[key]=R.domElement.toDataURL("image/png");}
 const P_READY=()=>!!P;
 
 // tool for making the store pictures (open /play?bundleshots): renders a Jumpi in any look, with its aura, on a clear background
