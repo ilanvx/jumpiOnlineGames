@@ -5,7 +5,7 @@ import { banMessage, needsVerify, readToken, parentTime } from "../routes/auth.j
 import { quietNow, isQuickChat } from "../public/shared/parental.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
-import { attachShow, showJoined, showLeft, showIsOpen, showBanner, showTick } from "./show.js";
+import { attachShow, showJoined, showLeft, showIsOpen, showBanner, showTick, initShow, showRefused } from "./show.js";
 import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
@@ -129,7 +129,7 @@ function flushMoves() {
   moveTick++;
   const farTick = moveTick % FAR_EVERY === 0, now = Date.now(), byRoom = new Map();
   for (const p of players.values()) {
-    if (!p.mv && !(farTick && now - (p.movedAt || 0) < 1100)) continue;
+    if (!p.mv && !(farTick && p.farMv)) continue;
     let l = byRoom.get(p.room);
     if (!l) byRoom.set(p.room, (l = []));
     l.push(p);
@@ -146,9 +146,12 @@ function flushMoves() {
       if (near ? !p.mv : !farTick) continue;
       out.push([p.id, r2(p.x), r2(p.z), r2(p.face), (p.moving ? 1 : 0) | (p.run ? 2 : 0), p.pose || 0]);
     }
-    if (out.length) ioRef.to(q.id).volatile.emit("moves", out);
+    if (!out.length) continue;
+    // a game page from before this version (until it reloads) only knows "player:move", one player per message
+    if (ioRef.sockets.sockets.get(q.id)?.data?.v2) ioRef.to(q.id).volatile.emit("moves", out);
+    else for (const m of out) ioRef.to(q.id).volatile.emit("player:move", { id: m[0], x: m[1], z: m[2], face: m[3], moving: !!(m[4] & 1), run: !!(m[4] & 2), pose: m[5] || null });
   }
-  for (const p of players.values()) p.mv = false;
+  for (const p of players.values()) { p.mv = false; if (farTick) p.farMv = false; }
 }
 // a new version is going live: every window shows a note (in: seconds until the restart; 0 = now)
 export function announceUpdate(seconds) {
@@ -333,6 +336,7 @@ export function attachPlaza(io) {
   }
 
   startPlaytime();
+  initShow({ dropPlayer, setInvisible });
   setInterval(flushMoves, MOVE_MS);
   setInterval(showTick, 1000);   // the show notices players who left (their place on the stage is free again)
   // hunger, energy, stamina and fun go down while playing
@@ -360,6 +364,7 @@ export function attachPlaza(io) {
       }
     });
     const me = socket.data.user;
+    socket.data.v2 = socket.handshake.auth?.v === 2;   // the game page knows "moves" (see flushMoves)
     socket.emit("whoami", { id: String(me.id || me._id || "") });
     socket.emit("build", BUILD);
     socket.emit("event", { event: activeEvent() });   // the holiday event that is on (public/shared/events.js)   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
@@ -388,8 +393,8 @@ export function attachPlaza(io) {
       let room = ROOM;
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
       const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
-      if (pos?.show === true) {   // the Jumpi Show (realtime/show.js): only while one is open
-        if (!showIsOpen()) return socket.emit("show:gone");
+      if (pos?.show === true) {   // the Jumpi Show (realtime/show.js): only while one is open (and not for someone the host sent out)
+        if (!showIsOpen() || showRefused(me.id)) return socket.emit("show:gone");
         room = "show";
         homeBounds.set(room, { x0: -40, x1: 40, z0: -40, z1: 40 });
       }
@@ -599,7 +604,7 @@ export function attachPlaza(io) {
       p.moving = d?.moving === true;
       p.pose = cleanPose(d?.pose, p.room === ROOM); // outside only sitting and lying down (benches, sun loungers)
       p.run = p.moving && d?.run === true;
-      p.mv = true;   // sent with the next "moves" round (flushMoves)
+      p.mv = p.farMv = true;   // sent with the next "moves" round (flushMoves)
     });
 
     socket.on("chat", async (raw) => {

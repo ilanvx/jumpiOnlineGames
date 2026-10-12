@@ -7789,7 +7789,7 @@ function resumeAfterUpdate(){let k=null;try{k=sessionStorage.getItem("jumpi-resu
 function netJoin(){
   if(typeof io==="undefined"){updateOnline();return;}   // page opened without our server: play alone
   if(!socket){
-    socket=io({withCredentials:true,transports:["websocket","polling"],auth:cb=>cb({tab:TAB.get()})});   // straight to WebSocket (polling only if that's blocked)
+    socket=io({withCredentials:true,transports:["websocket","polling"],auth:cb=>cb({tab:TAB.get(),v:2})});   // straight to WebSocket (polling only if that's blocked)
     socket._uid=me&&me.id;
     // everyone who moved, 10 times a second in one message: [id, x, z, face, flags (1 moving, 2 running), pose]
     socket.on("moves",list=>{for(const m of list){const c=remotes.get(m[0]);if(!c)continue;c.tx=m[1];c.tz=m[2];c.face=m[3];c.moving=!!(m[4]&1);c.run=!!(m[4]&2);c.pose=m[5]||null;netSample(c);}});

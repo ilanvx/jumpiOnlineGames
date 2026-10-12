@@ -18,9 +18,16 @@ const ROOM = "show";
 const S = fresh();
 function fresh() {
   return { open: false, hostUid: null, hostSid: null, hostName: "", openedAt: 0, seats: Array(SHOW_SEATS).fill(null),
-    poll: null, country: null, hangman: null, wheel: null, leaving: new Set() };
+    poll: null, country: null, hangman: null, wheel: null, leaving: new Set(), kicked: new Set(), hostGoneAt: 0 };
 }
-let ioRef = null, playersRef = null;
+let ioRef = null, playersRef = null, H = { dropPlayer: () => {}, setInvisible: () => {} };
+// plaza.js hands over what the show needs from it (taking a player out of a room, an admin's invisibility)
+export function initShow(helpers) { H = { ...H, ...helpers }; }
+// a player the host sent out can't come back into this show
+export const showRefused = (userId) => S.open && S.kicked.has(String(userId));
+// Hebrew final letters count as their normal form (the kids' keyboard has the 22 normal letters)
+const FINAL = { "ך": "כ", "ם": "מ", "ן": "נ", "ף": "פ", "ץ": "צ" };
+const base = (ch) => FINAL[ch] || ch;
 const isStaff = (u) => u && (u.role === "admin" || u.role === "mod");
 export const showIsOpen = () => S.open;
 export const showBanner = () => (S.open ? { host: S.hostName, at: S.openedAt } : null);
@@ -40,12 +47,12 @@ function viewers() {
 }
 // what every window in the show sees
 function view() {
-  const H = S.hangman;
+  const HM = S.hangman;
   return {
     open: S.open, host: S.hostName, hostSid: S.hostSid, seats: S.seats, viewers: viewers().length,
     poll: S.poll ? { q: S.poll.q, opts: S.poll.opts, ends: S.poll.ends, done: S.poll.done || false, counts: S.poll.done ? counts() : null } : null,
     country: S.country,
-    hangman: H ? { mask: [...H.word].map((ch) => (ch === " " || H.got.has(ch) || H.done ? ch : "_")).join(""), used: [...H.used], wrong: H.wrong, lives: HANGMAN_LIVES, done: H.done || "" } : null,
+    hangman: HM ? { mask: [...HM.word].map((ch) => (ch === " " || HM.got.has(base(ch)) || HM.done ? ch : "_")).join(""), used: [...HM.used], wrong: HM.wrong, lives: HANGMAN_LIVES, done: HM.done || "" } : null,
     wheel: S.wheel ? { sid: S.wheel.sid, state: S.wheel.state, slice: S.wheel.state === "spin" ? S.wheel.slice : null, at: S.wheel.at || 0 } : null,
   };
 }
@@ -57,7 +64,7 @@ function fx(d) { ioRef?.to(ROOM).emit("show:fx", d); }
 export function showJoined(p) {
   if (!S.open) return;
   prune();
-  if (p.userId === S.hostUid) S.hostSid = p.id;
+  if (p.userId === S.hostUid) { S.hostSid = p.id; if (p.invisible) H.setInvisible(p.userId, false); }   // the kids have to see the host
   else if (!S.seats.includes(p.id) && !p.invisible) {
     const free = S.seats.indexOf(null);
     if (free >= 0) S.seats[free] = p.id;   // a place on the stage while there is one; otherwise a viewer
@@ -70,6 +77,7 @@ function closeShow(by) {
   if (!S.open) return;
   ioRef.to(ROOM).emit("show:closed", { by });
   ioRef.emit("show:off");
+  for (const p of [...playersRef.values()]) if (p.room === ROOM) H.dropPlayer(p.id, ioRef.sockets.sockets.get(p.id));   // out of the room on the server too (their windows join the Plaza again)
   clearTimeout(S.pollT);
   Object.assign(S, fresh());
 }
@@ -80,20 +88,24 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
   const self = () => players.get(socket.id);
   const fail = (r, message) => r({ error: message });
   const ack = (cb) => (typeof cb === "function" ? cb : () => {});
-  const isHost = () => S.open && (me.id === S.hostUid || me.role === "admin") && inShow(socket.id);
+  const isHost = () => S.open && isStaff(me) && (me.id === S.hostUid || me.role === "admin") && inShow(socket.id);
+  // the role right now in the database (a moderator who was just removed can't open, give or hand out prizes)
+  const freshStaff = async () => { const u = await User.findById(me.id); if (u) me.role = u.role; return u && isStaff(u) ? u : null; };
   const audit = (action, target, details) => logQuietly(AdminLog, { adminId: me._id || me.id, admin: me.username, action, targetId: target?._id, target: target?.username || "", details, via: "game", ip: socketIp(socket) });
   const userOf = async (sid) => { const p = inShow(sid); return p ? User.findById(p.userId) : null; };
   // a moderator pays prizes and gifts from their monthly budget; admins don't
   const spend = async (n) => {
-    if (me.role !== "mod" || !n) return true;
-    const mod = await User.findById(me.id);
-    return (await spendModBudget(mod, n)) !== null;
+    if (!n) return true;
+    const u = await User.findById(me.id);
+    if (u?.role === "admin") return true;
+    if (u?.role !== "mod") return false;
+    return (await spendModBudget(u, n)) !== null;
   };
 
   // ---- opening and closing ----
   socket.on("show:open", async (_d, cb) => {
     const r = ack(cb);
-    if (!isStaff(me) || !canHost()) return fail(r, "Only moderators and admins can open a show.");
+    if (!canHost() || !(await freshStaff())) return fail(r, "Only moderators and admins can open a show.");
     if (S.open) return fail(r, `${S.hostName} is already running a show.`);
     Object.assign(S, fresh(), { open: true, hostUid: me.id, hostName: me.username, openedAt: Date.now() });
     io.emit("show:on", showBanner());
@@ -137,7 +149,8 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const r = ack(cb);
     if (!isHost() || !canHost()) return fail(r, "Only the host can do that.");
     const sid = String(d?.sid || ""), down = String(d?.swap || "");
-    if (!inShow(sid) || S.seats.includes(sid) || sid === S.hostSid) return fail(r, "That player isn't watching right now.");
+    const t = inShow(sid);
+    if (!t || S.seats.includes(sid) || sid === S.hostSid || t.userId === S.hostUid || t.userId === me.id || t.invisible) return fail(r, "That player isn't watching right now.");
     let i = down && S.seats.includes(down) ? S.seats.indexOf(down) : S.seats.indexOf(null);
     if (i < 0) return fail(r, "The stage is full. Pick someone to swap with.");
     S.seats[i] = sid;
@@ -150,7 +163,9 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const t = inShow(String(d?.sid || ""));
     if (!t || t.id === socket.id || t.role === "admin") return fail(r, "You can't send that player out.");
     S.seats = S.seats.map((sid) => (sid === t.id ? null : sid));
+    S.kicked.add(String(t.userId));
     io.to(t.id).emit("show:removed", { by: me.username });
+    H.dropPlayer(t.id, io.sockets.sockets.get(t.id));
     audit("show:remove", { _id: t.userId, username: t.username }, "");
     push();
     r({ ok: true });
@@ -203,20 +218,22 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     if (d?.clear) { S.hangman = null; push(); return r({ ok: true }); }
     const word = String(d?.word || "").trim().toUpperCase().replace(/\s+/g, " ").slice(0, 20);
     if (!/^[A-Zא-ת ]{2,20}$/.test(word) || !word.replace(/ /g, "")) return fail(r, "Use only letters (2 to 20).");
+    if (/[A-Z]/.test(word) && /[א-ת]/.test(word)) return fail(r, "Use English or Hebrew letters, not both.");
     if (!checkText(word).ok) return fail(r, "Let's keep it friendly: pick another word.");
     S.hangman = { word, got: new Set(), used: new Set(), wrong: 0, done: "" };
     push();
     r({ ok: true });
   });
   socket.on("show:guess", (d) => {
-    const H = S.hangman, l = String(d?.l || "").toUpperCase().slice(0, 1);
+    const H = S.hangman, l = base(String(d?.l || "").toUpperCase().slice(0, 1));
     if (!H || H.done || !inShow(socket.id) || !canGuess() || !/^[A-Zא-ת]$/.test(l) || H.used.has(l)) return;
+    const hit = [...H.word].some((ch) => base(ch) === l);
     H.used.add(l);
-    if (H.word.includes(l)) H.got.add(l); else H.wrong++;
-    const all = [...H.word].every((ch) => ch === " " || H.got.has(ch));
+    if (hit) H.got.add(l); else H.wrong++;
+    const all = [...H.word].every((ch) => ch === " " || H.got.has(base(ch)));
     if (all) { H.done = "win"; fx({ k: "confetti" }); }
     else if (H.wrong >= HANGMAN_LIVES) H.done = "lose";
-    fx({ k: "guess", by: self()?.username || "", l, ok: H.word.includes(l) });
+    fx({ k: "guess", by: self()?.username || "", l, ok: hit });
     push();
   });
 
@@ -224,27 +241,35 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
   socket.on("show:wheel", async (d, cb) => {
     const r = ack(cb);
     if (!isHost() || !canHost()) return fail(r, "Only the host can give the wheel.");
-    const sid = String(d?.sid || "");
-    if (!S.seats.includes(sid)) return fail(r, "Give the wheel to a player on the stage.");
-    if (S.wheel && S.wheel.state === "spin") return fail(r, "The wheel is still turning.");
-    if (me.role === "mod") {   // the biggest prize has to fit in what's left of the month
-      const mod = await User.findById(me.id), most = Math.max(...WHEEL.map((s) => cost(s)));
-      if (modBudgetLeft(mod) < most) return fail(r, `Not enough budget for the wheel (it needs ${most.toLocaleString("en-US")} coins left this month).`);
+    const sid = String(d?.sid || ""), t = inShow(sid);
+    if (!t || !S.seats.includes(sid)) return fail(r, "Give the wheel to a player on the stage.");
+    if (t.userId === me.id || t.userId === S.hostUid) return fail(r, "Not to yourself.");
+    if (S.wheel && S.wheel.state !== "ready") return fail(r, "The wheel is still turning.");
+    const u = await freshStaff();
+    if (!u) return fail(r, "Only moderators and admins can do that.");
+    if (u.role === "mod") {   // the biggest prize has to fit in what's left of the month
+      const most = Math.max(...WHEEL.map((s) => cost(s)));
+      if (modBudgetLeft(u) < most) return fail(r, `Not enough budget for the wheel (it needs ${most.toLocaleString("en-US")} coins left this month).`);
     }
-    S.wheel = { sid, uid: inShow(sid).userId, state: "ready", by: me.username, byRole: me.role, byId: me.id };
+    if (!inShow(sid) || !S.seats.includes(sid)) return fail(r, "That player left the stage.");
+    S.wheel = { sid, uid: t.userId, state: "ready", by: me.username, byRole: u.role, byId: me.id };
     push();
     r({ ok: true });
   });
   socket.on("show:spin", async () => {
     const W = S.wheel;
     if (!W || W.state !== "ready" || W.sid !== socket.id) return;
+    W.state = "picking";   // locked before anything waits: a second press can't spin (or pay) twice
+    if (W.uid === W.byId) { S.wheel = null; return push(); }
     let t = Math.random() * WHEEL.reduce((a, s) => a + s.weight, 0), slice = 0;
     for (; slice < WHEEL.length - 1; slice++) { t -= WHEEL[slice].weight; if (t < 0) break; }
     const prize = WHEEL[slice];
     // a moderator's wheel: the prize comes out of their budget now (if that fails, it lands on "Nothing")
-    if (W.byRole === "mod" && cost(prize)) {
-      const mod = await User.findById(W.byId);
-      if (!mod || (await spendModBudget(mod, cost(prize))) === null) slice = WHEEL.findIndex((s) => s.k === "skull");
+    if (cost(prize)) {   // a moderator pays from the month's budget; someone who isn't staff any more gives nothing
+      try {
+        const giver = await User.findById(W.byId);
+        if (!giver || giver.role === "player" || (giver.role === "mod" && (await spendModBudget(giver, cost(prize))) === null)) slice = WHEEL.findIndex((s) => s.k === "skull");
+      } catch (err) { if (S.wheel === W) S.wheel = null; push(); throw err; }   // the database didn't answer: no spin (the wheel isn't left stuck)
     }
     Object.assign(W, { state: "spin", slice, at: Date.now() });
     push();
@@ -271,7 +296,7 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const n = Math.round(+d?.coins), t = inShow(String(d?.sid || ""));
     if (!t || t.id === socket.id) return fail(r, "Pick a player in the show.");
     if (!(n >= 1 && n <= SHOW_GIFT_MAX)) return fail(r, `Between 1 and ${SHOW_GIFT_MAX.toLocaleString("en-US")} coins.`);
-    if (t.userId === me.id) return fail(r, "Not to yourself.");
+    if (t.userId === me.id || t.userId === S.hostUid) return fail(r, "Not to yourself.");
     if (!(await spend(n))) return fail(r, "Not enough budget left this month.");
     const user = await User.findById(t.userId);
     if (!user) return fail(r, "That player left.");
@@ -282,4 +307,10 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
   });
 }
 const cost = (s) => { const c = WHEEL_BUDGET[s.k]; return typeof c === "function" ? c(s) : c || 0; };
-export function showTick() { if (S.open && prune()) push(); }
+export function showTick() {
+  if (!S.open) return;
+  if (prune()) push();
+  // the host is gone (closed the game, lost the connection): after 3 minutes the show closes by itself
+  if (!S.hostSid) { S.hostGoneAt ||= Date.now(); if (Date.now() - S.hostGoneAt > 3 * 60_000) closeShow(S.hostName); }
+  else S.hostGoneAt = 0;
+}
