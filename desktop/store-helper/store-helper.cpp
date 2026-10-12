@@ -16,6 +16,7 @@
 
 #pragma comment(lib, "windowsapp")
 #pragma comment(lib, "ole32")
+#pragma comment(lib, "user32")
 
 using namespace winrt;
 using namespace winrt::Windows::Services::Store;
