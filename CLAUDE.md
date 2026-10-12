@@ -1,5 +1,8 @@
 # Jumpi Games: notes for Claude
 
+## Talking with Ilan
+- **Always answer Ilan in Hebrew**, every message, even when he writes in English or the work is in English. Anything in English that he needs to read (screen text, buttons, error messages, emails from Microsoft / HYP / Cloudflare, tool output) is translated or explained in Hebrew next to it; code, commands and file names stay as they are.
+
 ## Design rules (from Ilan)
 - **No small "label" chips or kicker tags above or near headings.** No pills like "NEW", "Coming soon", "What's inside", "Weekly poll", "For parents", "Log out" sitting on top of a title. They look AI-made. Use the heading alone, with plain text under it if needed.
 - Keep the look of the game: chunky rounded buttons with a darker bottom edge, Lilita One headings, Fredoka body text, bright game colours, and panels styled like the in-game windows.
