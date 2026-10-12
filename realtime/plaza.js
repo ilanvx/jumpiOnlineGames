@@ -5,6 +5,7 @@ import { banMessage, needsVerify, readToken, parentTime } from "../routes/auth.j
 import { quietNow, isQuickChat } from "../public/shared/parental.js";
 import { attachTrading } from "./trade.js";
 import { attachDuels } from "./duel.js";
+import { attachShow, showJoined, showLeft, showIsOpen, showBanner, showTick } from "./show.js";
 import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
@@ -333,6 +334,7 @@ export function attachPlaza(io) {
 
   startPlaytime();
   setInterval(flushMoves, MOVE_MS);
+  setInterval(showTick, 1000);   // the show notices players who left (their place on the stage is free again)
   // hunger, energy, stamina and fun go down while playing
   startNeeds({
     playersOf: (userId) => [...players.values()].filter((p) => p.userId === userId),
@@ -376,6 +378,8 @@ export function attachPlaza(io) {
     };
     attachTrading(io, socket, { players, me, notifyLook, limiter, setStatus });
     attachDuels(io, socket, { players, limiter, notifyCoins, setStatus });
+    attachShow(io, socket, { players, me, limiter, spendModBudget, modBudgetLeft, addCoins: (u, n) => moderation.addCoins(u, n), notifyMember, socketIp });
+    if (showIsOpen()) socket.emit("show:on", showBanner());   // a show is on: the note at the top (also for players who come in later)
     attachVehicles(io, socket, { players, limiter, emitToUser });
 
     socket.on("join", async (pos) => {
@@ -384,7 +388,12 @@ export function attachPlaza(io) {
       let room = ROOM;
       const homeOf = cleanText(pos?.home, 32).toLowerCase();
       const place = typeof pos?.place === "string" && PLACES.has(pos.place) ? pos.place : "";
-      if (place) {
+      if (pos?.show === true) {   // the Jumpi Show (realtime/show.js): only while one is open
+        if (!showIsOpen()) return socket.emit("show:gone");
+        room = "show";
+        homeBounds.set(room, { x0: -40, x1: 40, z0: -40, z1: 40 });
+      }
+      else if (place) {
         room = "place:" + place;
         if (place === "club") homeBounds.set(room, houseShape({ big: true }).bounds);   // the Dance Club is the big room
       }
@@ -465,6 +474,7 @@ export function attachPlaza(io) {
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0, invisible: !!player.invisible });
       if (!already) roomSend(player, "player:join", publicView(player), { self: false });
       if (room === ROOM) { sendVehicles(io, socket, player); vehiclePlayerBack(io, player); }
+      if (room === "show") showJoined(player); else showLeft();
       sendNeeds(me.id);
       playOn(me.id, deviceOf(socket.handshake.headers["user-agent"]));   // play time for the parents' page
     });

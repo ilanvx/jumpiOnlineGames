@@ -142,7 +142,128 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .perf-meter{position:fixed;z-index:5;left:calc(env(safe-area-inset-left,0px) + 110px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 10px;border-radius:10px;background:rgb(10 20 40 / .78);color:#dbe7f7;font:500 .75rem/1.35 ui-monospace,Menlo,Consolas,monospace;pointer-events:none}
 .perf-meter[hidden]{display:none}
 .upd-note{position:fixed;z-index:48;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);translate:-50% 0;max-width:calc(100% - 32px);padding:10px 18px;border-radius:16px;background:#fff;box-shadow:0 5px 0 #b9c9e6,0 12px 28px rgb(0 0 0 / .25);color:#22324a;font:500 1rem/1.35 "Fredoka",system-ui,sans-serif;text-align:center}
-.upd-note b{color:#ff8a1c}.upd-note[hidden]{display:none}.perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
+.upd-note b{color:#ff8a1c}.upd-note[hidden]{display:none}
+/* the Jumpi Show (SHOW block): the note at the top, and the screen around the stage */
+.show-note{position:fixed;z-index:9;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);translate:-50% 0;display:flex;align-items:center;gap:12px;max-width:calc(100% - 24px);padding:8px 8px 8px 10px;border-radius:20px;
+  background:linear-gradient(180deg,#8a4dff,#5a22d6);box-shadow:0 5px 0 #3a1192,0 14px 30px rgb(40 10 110 / .4);color:#fff;font:500 1rem/1.3 "Fredoka",system-ui,sans-serif;animation:snIn .5s cubic-bezier(.2,1.6,.4,1)}
+.show-note[hidden]{display:none}
+@keyframes snIn{from{transform:translateY(-30px) scale(.9);opacity:0}}
+.show-note .sn-ic{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ff5fb4;box-shadow:0 3px 0 #a3226a;animation:snPulse 1.6s ease-in-out infinite}
+.show-note .sn-ic svg{width:24px;height:24px}
+@keyframes snPulse{50%{transform:scale(1.1)}}
+.show-note b{font-family:"Lilita One",system-ui,sans-serif;font-weight:400;letter-spacing:.02em}
+.show-note .sn-go{flex:none;min-height:42px;padding:0 20px;border:0;border-radius:999px;background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 4px 0 #138043;color:#fff;font:400 1.15rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.03em;cursor:pointer}
+.show-note .sn-x{flex:none;display:grid;place-items:center;width:34px;height:34px;border:0;border-radius:50%;background:rgb(255 255 255 / .18);color:#fff;cursor:pointer}
+.show-note .sn-x svg{width:14px;height:14px}
+.show-pill{position:fixed;z-index:9;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);translate:-50% 0;display:flex;align-items:center;gap:6px;padding:6px 14px 6px 8px;border:0;border-radius:999px;cursor:pointer;
+  background:linear-gradient(180deg,#ff7cc2,#e2357f);box-shadow:0 4px 0 #a3226a;color:#fff;font:400 1rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.04em}
+.show-pill svg{width:22px;height:22px}.show-pill[hidden]{display:none}
+.show-ui{position:fixed;inset:0;z-index:8;pointer-events:none;font-family:"Fredoka",system-ui,sans-serif;color:#fff}
+.show-ui[hidden]{display:none}
+.show-ui>*{pointer-events:auto}
+.sh-top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 0;pointer-events:none}
+.sh-top>*{pointer-events:auto}
+.sh-leave{display:flex;align-items:center;gap:6px;min-height:46px;padding:0 16px 0 10px;border:0;border-radius:16px;background:linear-gradient(180deg,#3fb4ff,#0a8cff);box-shadow:0 5px 0 #06488a;color:#fff;font:400 1.1rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
+.sh-leave svg{width:22px;height:22px}
+.sh-title{flex:1;display:flex;flex-direction:column;align-items:center;text-shadow:0 3px 0 rgb(20 0 60 / .45);pointer-events:none}
+.sh-title b{font:400 clamp(1.5rem,3vw,2.2rem)/1 "Lilita One",system-ui,sans-serif;color:#ffd23a;letter-spacing:.04em}
+.sh-title span{font-weight:600;font-size:.95rem}
+.sh-eye{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgb(15 10 50 / .55);color:#fff;font:400 1.2rem "Lilita One",system-ui,sans-serif;cursor:default}
+.sh-eye.can{cursor:pointer;background:linear-gradient(180deg,#a77bff,#7c5cff);box-shadow:0 4px 0 #3a1192}
+.sh-eye svg{width:24px;height:24px}
+.sh-country{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);translate:-50% 0;display:flex;align-items:center;gap:14px;padding:8px 10px 8px 22px;border-radius:999px;background:#fff;box-shadow:0 5px 0 #c9b8ff;color:#3a1192;font:400 1.4rem/1 "Lilita One",system-ui,sans-serif}
+.sh-country b{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:linear-gradient(180deg,#ffd23a,#ff9a00);box-shadow:0 4px 0 #b86a00;color:#fff;font:400 2rem/1 "Lilita One",system-ui,sans-serif}
+.sh-country[hidden],.sh-hang[hidden],.sh-poll[hidden],.sh-keys[hidden],.sh-mine[hidden],.sh-watch[hidden],.sh-panel[hidden],.sh-wheel[hidden],.sh-prize[hidden],.sh-menu[hidden],.sh-viewers[hidden],.sh-dlg[hidden]{display:none}
+.sh-hang{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 140px);translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 16px;border-radius:20px;background:rgb(15 10 50 / .6)}
+.sh-lives{display:flex;gap:6px}
+.sh-lives i{width:20px;height:24px;border-radius:50% 50% 46% 46%;background:var(--c);box-shadow:inset -3px -4px 0 rgb(0 0 0 / .15);position:relative;transition:transform .25s,opacity .25s}
+.sh-lives i::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:#fff8}
+.sh-lives i.pop{transform:scale(1.6);opacity:0}
+.sh-word{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;direction:ltr}
+.sh-word i{display:grid;place-items:end center;width:clamp(26px,3.4vw,40px);height:clamp(34px,4.4vw,50px);border-bottom:4px solid #fff;font:400 clamp(1.3rem,2.6vw,2rem)/1.1 "Lilita One",system-ui,sans-serif;font-style:normal;color:#ffd23a}
+.sh-word i.sp{border:0;width:14px}
+.sh-hang p{margin:0;font-weight:600;min-height:1em}
+.sh-keys{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);translate:-50% 0;display:flex;flex-wrap:wrap;justify-content:center;gap:5px;width:min(560px,calc(100% - 24px));padding:8px;border-radius:18px;background:rgb(15 10 50 / .6)}
+.sh-keys button{width:36px;height:38px;border:0;border-radius:10px;background:#fff;box-shadow:0 3px 0 #b9c9e6;color:#3a1192;font:400 1.15rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
+.sh-keys button:disabled{opacity:.3;cursor:default}
+.sh-poll{position:absolute;left:50%;top:50%;translate:-50% -50%;width:min(460px,calc(100% - 32px));padding:18px;border-radius:24px;background:#fff;box-shadow:0 8px 0 #c9b8ff,0 20px 40px rgb(0 0 0 / .35);color:#22324a;text-align:center}
+.sh-poll h3{margin:0 0 12px;font:400 1.5rem/1.15 "Lilita One",system-ui,sans-serif;color:#5a22d6}
+.shp-opts{display:grid;gap:8px}
+.shp-opts button{min-height:48px;border:0;border-radius:14px;background:linear-gradient(180deg,#a77bff,#7c5cff);box-shadow:0 4px 0 #3a1192;color:#fff;font:400 1.15rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
+.shp-opts button.on{background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 4px 0 #138043}
+.shp-opts button:disabled:not(.on){opacity:.5}
+.shp-res{position:relative;display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 14px;border-radius:12px;background:#f1edff;overflow:hidden}
+.shp-res span{position:absolute;inset:0 auto 0 0;background:#d9ccff;transition:width .8s}
+.shp-res.top span{background:#b5f0c9}
+.shp-res b,.shp-res em{position:relative;font:400 1.1rem "Lilita One",system-ui,sans-serif;font-style:normal;color:#3a1192}
+.shp-t{margin:10px 0 0;font-weight:600;color:#7a83a6}
+.sh-chatbox{position:absolute;left:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(360px,calc(100% - 24px));display:flex;flex-direction:column;gap:6px}
+.sh-feed{max-height:190px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;-webkit-mask:linear-gradient(transparent,#000 30%);mask:linear-gradient(transparent,#000 30%);pointer-events:none}
+.sh-feed p{margin:0;padding:4px 10px;border-radius:12px;background:rgb(15 10 50 / .55);font-size:.95rem;line-height:1.3;width:fit-content;max-width:100%}
+.sh-feed p b{color:#ffd23a}.sh-feed p b.admin{color:#ff8a8a}.sh-feed p b.mod{color:#8fc4ff}
+.sh-feed p.sys{background:rgb(124 92 255 / .7);font-weight:600}
+.sh-chat{display:flex;gap:6px}
+.sh-chat input{flex:1;min-width:0;height:44px;padding:0 14px;border:0;border-radius:14px;background:#fff;color:#22324a;font:500 1rem "Fredoka",system-ui,sans-serif}
+.sh-chat button{flex:none;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:14px;background:linear-gradient(180deg,#3fb4ff,#0a8cff);box-shadow:0 4px 0 #06488a;cursor:pointer}
+.sh-chat button svg{width:20px;height:20px}
+.sh-mine{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;gap:10px}
+.sh-mine button{min-width:96px;min-height:54px;border:0;border-radius:18px;background:linear-gradient(180deg,#ffb347,#ff8a1c);box-shadow:0 5px 0 #c25a00;color:#fff;font:400 1.3rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
+.sh-mine button+button{background:linear-gradient(180deg,#ff7cc2,#e2357f);box-shadow:0 5px 0 #a3226a}
+.sh-watch{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);margin:0;padding:10px 16px;border-radius:16px;background:rgb(15 10 50 / .6);font-weight:600;max-width:min(320px,calc(100% - 400px))}
+.sh-panel{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);width:200px;padding:12px;border-radius:20px;background:rgb(255 255 255 / .96);box-shadow:0 6px 0 #c9b8ff,0 18px 36px rgb(0 0 0 / .3);color:#22324a;transition:transform .25s}
+.sh-panel.shut{transform:translateX(calc(100% + 12px))}
+.sh-ptog{position:absolute;left:-40px;top:10px;width:34px;height:44px;border:0;border-radius:12px 0 0 12px;background:#7c5cff;cursor:pointer;display:grid;place-items:center}
+.sh-panel.shut .sh-ptog svg{transform:scaleX(-1)}
+.sh-ptog svg{width:18px;height:18px}
+.sh-panel h3{margin:0 0 8px;font:400 1.3rem/1 "Lilita One",system-ui,sans-serif;color:#5a22d6;text-align:center}
+.sh-tools{display:grid;gap:7px}
+.sh-tools button{--c:#7c5cff;--e:#3a1192;min-height:40px;border:0;border-radius:12px;background:var(--c);box-shadow:0 3px 0 var(--e);color:#fff;font:400 1.02rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.02em;cursor:pointer}
+.sh-tools .t-pink{--c:#ff5fb4;--e:#a3226a}.sh-tools .t-blue{--c:#2f9bff;--e:#06488a}.sh-tools .t-gold{--c:#ffb21f;--e:#b86a00}.sh-tools .t-violet{--c:#8a4dff;--e:#3a1192}
+.sh-tools .t-green{--c:#20b45a;--e:#138043}.sh-tools .t-orange{--c:#ff8a1c;--e:#c25a00}.sh-tools .t-teal{--c:#12b8a0;--e:#0a8a77}.sh-tools .t-red{--c:#ff5a5a;--e:#8a1c1c;margin-top:6px}
+.sh-tip{margin:10px 0 0;font-size:.82rem;line-height:1.3;color:#5b6b88;text-align:center}
+.sh-wheel{position:absolute;inset:0;display:grid;place-items:center;background:rgb(10 5 40 / .45)}
+.sh-wheel-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px}
+.sh-wheel-svg{width:min(340px,70vmin);aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 10px #ffd23a,0 0 0 16px #b86a00,0 20px 50px rgb(0 0 0 / .5)}
+.sh-pointer{position:absolute;top:-22px;left:50%;translate:-50% 0;width:0;height:0;border:20px solid transparent;border-top:34px solid #ff3d5a;filter:drop-shadow(0 3px 0 #8a1c1c);z-index:2}
+.sh-wheel-card p{margin:6px 0 0;font:400 1.3rem "Lilita One",system-ui,sans-serif;text-shadow:0 3px 0 rgb(0 0 0 / .4);text-align:center}
+.sh-spin{min-width:200px;min-height:64px;border:0;border-radius:999px;background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 6px 0 #138043,0 0 0 6px rgb(255 255 255 / .4);color:#fff;font:400 2rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;animation:snPulse 1.1s ease-in-out infinite}
+.sh-prize{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.shp-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:22px 34px;border-radius:28px;background:#fff;box-shadow:0 8px 0 #ffd98a,0 24px 50px rgb(0 0 0 / .4);color:#22324a;animation:snIn .5s cubic-bezier(.2,1.6,.4,1)}
+.shp-card b{font:400 2.2rem/1 "Lilita One",system-ui,sans-serif;color:#ff8a1c}
+.shp-card.k-skull b{color:#5b6b88}
+.shp-card p{margin:0;font:600 1.15rem "Fredoka",system-ui,sans-serif}
+.sh-menu{position:fixed;display:flex;flex-direction:column;gap:5px;width:220px;padding:10px;border-radius:16px;background:#fff;box-shadow:0 5px 0 #c9b8ff,0 14px 30px rgb(0 0 0 / .3);color:#22324a}
+.sh-menu b{font:400 1.15rem "Lilita One",system-ui,sans-serif;color:#5a22d6;text-align:center}
+.sh-menu button,.shv-card li button{min-height:36px;border:0;border-radius:10px;background:#f1edff;color:#3a1192;font:600 .92rem "Fredoka",system-ui,sans-serif;cursor:pointer;text-align:start;padding:0 10px}
+.sh-menu button:hover,.shv-card li button:hover{background:#e2d9ff}
+.sh-menu button.red,.shv-card li button.red{background:#ffe3e3;color:#b31d2f}
+.sh-viewers,.sh-dlg{position:fixed;inset:0;display:grid;place-items:center;background:rgb(10 5 40 / .5);padding:16px}
+.shv-card,.sh-dlg-card{position:relative;width:min(460px,100%);max-height:calc(100dvh - 40px);overflow:auto;padding:18px;border-radius:22px;background:#fff;box-shadow:0 8px 0 #c9b8ff;color:#22324a}
+.shv-card h3,.sh-dlg-card h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font:400 1.5rem/1 "Lilita One",system-ui,sans-serif;color:#5a22d6}
+.shv-card h3 svg{width:28px;height:28px;padding:4px;border-radius:50%;background:#7c5cff}
+.shv-x{position:absolute;top:10px;right:10px}
+.shv-card ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.shv-card li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:12px;background:#f7f5ff}
+.shv-card li span{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.sh-dlg-card label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-weight:600;font-size:.95rem;color:#3d4770}
+.sh-dlg-card input,.sh-dlg-card select{height:42px;padding:0 12px;border:2px solid #d9ccff;border-radius:12px;font:500 1rem "Fredoka",system-ui,sans-serif;color:#22324a;background:#fff}
+.sh-dlg-card input.sh-letter{width:80px;text-align:center;font:400 1.5rem "Lilita One",system-ui,sans-serif;text-transform:uppercase}
+.sh-dlg-card p{margin:0 0 10px;color:#5b6b88}
+.sh-dlg-row{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.sh-b{min-height:44px;padding:0 20px;border:0;border-radius:12px;font:400 1.1rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
+.sh-b.go{background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 4px 0 #138043;color:#fff}
+.sh-b.ghost{background:#f1edff;color:#3a1192}.sh-b.wide{width:100%;margin-bottom:6px}
+.sh-dlg-msg{margin:8px 0 0!important;color:#b31d2f!important;font-weight:600}
+.sh-puff{position:fixed;width:0;height:0;pointer-events:none;z-index:9}
+.sh-puff i{position:absolute;width:10px;height:10px;border-radius:3px;animation:shPuff .9s ease-out forwards}
+@keyframes shPuff{to{transform:translate(var(--dx),var(--dy)) rotate(260deg);opacity:0}}
+body.in-show .bubble{z-index:7}
+/* in the show only the stage and its screen: the world's buttons, map, needs, food bar… step aside (windows, messages and the wipe stay) */
+body.in-show>*:not(#stage):not(#showUi):not(#wipe):not(.bubble):not(#toast):not(#coinRain):not(#announce):not(#updNote):not(.sh-puff):not(.confetti):not([class*="overlay"]):not(.app-gate):not(script):not(style){display:none!important}
+body.in-show>#myBubble{display:none!important}
+@media (max-width:760px){.sh-panel{width:170px}.sh-watch{display:none}.sh-chatbox{width:calc(100% - 24px - 150px)}.sh-mine button{min-width:70px}}
+@media (prefers-reduced-motion:reduce){.show-note,.show-note .sn-ic,.sh-spin,.shp-card{animation:none}}
+.perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
 /* Bobo's card is open (the double-click step): Pip moves to the bottom left, under Bobo, out of the card's way */
 .tl-card.pc-on{left:calc(env(safe-area-inset-left,0px) + 76px);top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;translate:none;width:min(520px,calc(100% - 76px - clamp(280px,36vw,480px)))}
 @media (max-width:760px){.tl-card.pc-on{left:12px;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:calc(100% - 24px)}}
@@ -4135,6 +4256,44 @@ body.land .npc-card .idle-face{display:none}
   </div>
 </div>
 <!-- the Microsoft Store version of the computer program: coins and memberships through Microsoft (MSB block) -->
+<div class="show-ui" id="showUi" hidden>
+  <div class="sh-top">
+    <button type="button" class="sh-leave" id="shLeave" aria-label="Leave the show"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 L7.5 12 L14.5 19" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Leave</span></button>
+    <div class="sh-title"><b>JUMPI SHOW</b><span id="shHost"></span></div>
+    <button type="button" class="sh-eye" id="shEye" aria-label="Viewers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" fill="#fff"/><circle cx="12" cy="12" r="3.6" fill="#2a3d6b"/></svg><b id="shViewN">0</b></button>
+  </div>
+  <div class="sh-country" id="shCountry" hidden></div>
+  <div class="sh-hang" id="shHang" hidden><div class="sh-lives" id="shLives" aria-hidden="true"></div><div class="sh-word" id="shWord"></div><p id="shHangMsg"></p></div>
+  <div class="sh-poll" id="shPoll" hidden></div>
+  <div class="sh-keys" id="shKeys" hidden></div>
+  <div class="sh-chatbox">
+    <div class="sh-feed" id="shFeed" aria-live="polite"></div>
+    <form class="sh-chat" id="shChat" autocomplete="off"><label class="sr-only" for="shChatIn">Message</label><input id="shChatIn" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L21 3 L13.5 21 L11 13.5 Z" fill="#fff"/></svg></button></form>
+  </div>
+  <div class="sh-mine" id="shMine" hidden><button type="button" data-act="jump">Jump</button><button type="button" data-act="wave">Wave</button></div>
+  <p class="sh-watch" id="shWatch" hidden>You're watching. The host can bring you up to the stage!</p>
+  <aside class="sh-panel" id="shPanel" hidden>
+    <button type="button" class="sh-ptog" id="shPanelTog" aria-label="Host tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <h3>HOST</h3>
+    <div class="sh-tools">
+      <button type="button" data-h="confetti" class="t-pink">Confetti</button>
+      <button type="button" data-h="balloons" class="t-blue">Balloons</button>
+      <button type="button" data-h="spot" class="t-gold">Spotlight</button>
+      <button type="button" data-h="alldown" class="t-violet">Everyone down</button>
+      <button type="button" data-h="poll" class="t-green">Quick poll</button>
+      <button type="button" data-h="country" class="t-orange">Country-City</button>
+      <button type="button" data-h="hangman" class="t-teal">Hangman</button>
+      <button type="button" data-h="wheel" class="t-gold">Prize wheel</button>
+      <button type="button" data-h="close" class="t-red">End the show</button>
+    </div>
+    <p class="sh-tip">Click a player on the stage for more. The eye shows who's watching.</p>
+  </aside>
+  <div class="sh-wheel" id="shWheel" hidden><div class="sh-wheel-card"><div class="sh-pointer" aria-hidden="true"></div><div class="sh-wheel-svg" id="shWheelSvg"></div><p id="shWheelWho"></p><button type="button" class="sh-spin" id="shSpin" hidden>SPIN!</button></div></div>
+  <div class="sh-prize" id="shPrize" hidden></div>
+  <div class="sh-menu" id="shMenu" hidden></div>
+  <div class="sh-viewers" id="shViewers" hidden></div>
+  <div class="sh-dlg" id="shDlg" hidden></div>
+</div>
 <div class="idle-overlay msb-overlay cb-overlay" id="cbOv" role="dialog" aria-modal="true" aria-labelledby="cbTitle" hidden>
   <div class="idle-card msb-card cb-card">
     <button class="np-x" id="cbClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
@@ -4163,6 +4322,12 @@ body.land .npc-card .idle-face{display:none}
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
     </button>
     <h2 id="adminTitle">ADMIN PANEL</h2>
+
+    <section class="adm-sec">
+      <h3>JUMPI SHOW</h3>
+      <p class="adm-budget">A live show on a big stage: everyone in the game gets a note to join.</p>
+      <button class="adm-btn wide" id="admShow" type="button">Open a show</button>
+    </section>
 
     <section class="adm-sec adm-admin-only">
       <h3>SPEED METER</h3>
@@ -4407,6 +4572,7 @@ import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
 import {RESIDENTS,RESIDENT_BY_ID,QUESTS,QUEST_BY_ID,NPC_REACH,PICK_REACH,turnInOf} from "/shared/quests.js";
 import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MS_PRODUCTS} from "/shared/store.js";
+import {SHOW_ROWS,seatSpot,WHEEL as SHOW_WHEEL,WHEEL_SPIN_MS,SHOW_GIFT_MAX,POLL_SECS,COUNTRY_CATEGORIES} from "/shared/show.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
 import {WHEEL} from "/shared/season.js";
@@ -4785,6 +4951,7 @@ renderer.setAnimationLoop(()=>{
   if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
   if(typeof evMenuTick==="function")evMenuTick(t);
+  if(SHOW.in&&SHOW.scene){showFrame(t,dt);renderer.render(SHOW.scene,SHOW.cam);return;}   // the Jumpi Show: only the stage is drawn
   if(P){
     const f=reduce?1:0.08,calm=eyeFocus||inGame,tx=calm?0:target.x,ty=eyeFocus?-0.15:calm?0:target.y;look.x+=(tx-look.x)*f;look.y+=(ty-look.y)*f;
     // breathing
@@ -7518,7 +7685,7 @@ document.getElementById("npcClose").onclick=closeNpc;
 npcOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeNpc();}});
 npcOv.addEventListener("pointerdown",e=>{if(e.target===npcOv)closeNpc();});
 npcPrompt.onclick=e=>{press(e.currentTarget);if(QS.near)openResident(QS.near);};
-addEventListener("keydown",e=>{if(!inGame||!QS.near||nearStation||!npcOv.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
+addEventListener("keydown",e=>{if(!inGame||SHOW.in||!QS.near||nearStation||!npcOv.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
   if(e.code==="KeyE"){e.preventDefault();openResident(QS.near);}});
 // the family window
 const famOv=document.getElementById("famOv");
@@ -7597,7 +7764,7 @@ function updateRemotes(t,dt){
     placeBubbleAt(c.bubble,c.root,3.05);
   }
 }
-function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
+function netState(){if(typeof SHOW!=="undefined"&&SHOW.in)return {x:0,z:0,face:0,pose:null,show:true};const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
 let NET_RETRY=0;
 /* A new version of the game went live: the server says so a minute before ("server:update" in: 60) and again when it
    restarts (in: 0). The window reconnects by itself; if the server now has a newer page, it reloads and goes
@@ -7625,6 +7792,7 @@ function netJoin(){
     // everyone who moved, 10 times a second in one message: [id, x, z, face, flags (1 moving, 2 running), pose]
     socket.on("moves",list=>{for(const m of list){const c=remotes.get(m[0]);if(!c)continue;c.tx=m[1];c.tz=m[2];c.face=m[3];c.moving=!!(m[4]&1);c.run=!!(m[4]&2);c.pose=m[5]||null;netSample(c);}});
     socket.on("build",b=>netBuild(b));
+    showNet(socket);   // the Jumpi Show
     socket.on("server:update",d=>updNote(d&&d.in));
     socket.on("event",d=>evSet(d&&d.event,true));
     vehNet(socket);   // vehicles in the open world   // an admin switched a holiday event on / off (public/shared/events.js)
@@ -7634,8 +7802,8 @@ function netJoin(){
     socket.on("disconnect",()=>{clearRemotes();updateOnline();});
     socket.on("connect_error",err=>{updateOnline();if(err&&err.message==="banned"){exitGame();setAccount(null);toast("This account is banned.");socket.disconnect();socket=null;return;}if(err&&err.message==="not-open"){socket.disconnect();socket=null;location.href="/play?game&soon";return;}if(err&&err.message==="not-logged-in"){toast("Please log in again to see other players.");socket.disconnect();}
       if(err&&err.message==="parent-time"){exitGame();toast("Your parents set a no-Jumpi time. See you later!");socket.disconnect();socket=null;}});
-    socket.on("players",list=>{clearRemotes();list.forEach(addRemote);});
-    socket.on("player:join",p=>{addRemote(p);});
+    socket.on("players",list=>{clearRemotes();if(SHOW.in){SHOW.people=new Map(list.map(q=>[q.id,q]));showSync();return;}list.forEach(addRemote);});
+    socket.on("player:join",p=>{if(SHOW.in){SHOW.people.set(p.id,p);showSync();return;}addRemote(p);});
     socket.on("needs",setNeeds);
     socket.on("store:granted",storeGranted);
     socket.on("player:member",d=>{const c=remotes.get(d.id);if(!c||c.member===!!d.member)return;c.member=!!d.member;rebuildRemoteTag(c);});
@@ -7649,7 +7817,7 @@ function netJoin(){
     socket.on("player:move",d=>{const c=remotes.get(d.id);if(c){c.tx=d.x;c.tz=d.z;c.face=d.face;c.moving=d.moving;c.run=!!d.run;c.pose=d.pose||null;}});
     socket.on("home:update",d=>homeUpdated(d.home));
     socket.on("home:gone",d=>{toast((d&&d.message)||"That home isn't there any more.");leaveHome();});
-    socket.on("player:leave",id=>removeRemote(id));
+    socket.on("player:leave",id=>{if(SHOW.in){SHOW.people.delete(id);return;}removeRemote(id);});
     socket.on("player:look",d=>{if(d.id===socket.id)return;const c=remotes.get(d.id);if(!c)return;
       const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:d.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:c.uniform,phone:!!c.phT,bday:c.bday,hold:c.hold,lv:c.lv};
       removeRemote(d.id);addRemote(keep);});
@@ -7657,7 +7825,7 @@ function netJoin(){
     socket.on("player:uniform",d=>{const c=remotes.get(d&&d.id);if(!c||(c.uniform||null)===(d.job||null))return;
       const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:c.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:d.job||null,phone:!!c.phT,bday:c.bday,hold:c.hold,lv:c.lv};
       removeRemote(d.id);addRemote(keep);sfx.hover();});
-    socket.on("chat",d=>{if(d.id===socket.id)return;const c=remotes.get(d.id);if(c){remoteSay(c,d.text);sfx.hover();}windowChat(d);});
+    socket.on("chat",d=>{if(SHOW.in){showChat(d);return;}if(d.id===socket.id)return;const c=remotes.get(d.id);if(c){remoteSay(c,d.text);sfx.hover();}windowChat(d);});
     socket.on("typing",d=>{const c=remotes.get(d.id);if(c)remoteTyping(c,d.on);});
     socket.on("season:xp",d=>seasonXpPopup(d));
     socket.on("player:phone",d=>{const c=remotes.get(d&&d.id);if(c)c.phT=d.on?1:0;});
@@ -7728,9 +7896,10 @@ function refreshAdminOnline(){
     b.onclick=()=>{admUser.value=n;refreshAdminOnline();};box.appendChild(b);});
 }
 admUser.addEventListener("input",refreshAdminOnline);
+document.getElementById("admShow").onclick=async e=>{press(e.currentTarget);if(SHOW.on&&SHOW.on.host!==me.username){closeAdmin();enterShow();return;}if(SHOW.on){closeAdmin();enterShow();return;}await openShowAsHost();};
 {const b=document.getElementById("admMeter");const paint=()=>{b.setAttribute("aria-pressed",String(PERF.meter));b.textContent=PERF.meter?"Hide the speed meter":"Show the speed meter";};paint();
   b.onclick=()=>{if(!(me&&me.role==="admin"))return;perfMeter(!PERF.meter);paint();};}
-function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
+function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;document.getElementById("admShow").textContent=SHOW.on?"Go to the show":"Open a show";applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
 function closeAdmin(){if(adminOverlay.hidden)return;adminOverlay.hidden=true;sfx.close();}
 // big actions (coins, gift codes, permanent bans) ask an admin for their password first; then the action is sent again
 let admRetry=null;
@@ -8165,7 +8334,7 @@ function closeMap(){if(mapOverlay.hidden)return;mapOverlay.hidden=true;mapBig=fa
 document.getElementById("minimap").onclick=()=>openMap();
 document.getElementById("mapClose").onclick=closeMap;
 mapOverlay.addEventListener("pointerdown",e=>{if(e.target===mapOverlay)closeMap();});
-addEventListener("keydown",e=>{if(!inGame)return;if(e.key==="Escape"&&!mapOverlay.hidden){e.stopImmediatePropagation();closeMap();return;}
+addEventListener("keydown",e=>{if(!inGame||SHOW.in)return;if(e.key==="Escape"&&!mapOverlay.hidden){e.stopImmediatePropagation();closeMap();return;}
   if(e.code==="KeyM"&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!(e.target.closest&&e.target.closest("input,textarea"))){e.preventDefault();mapOverlay.hidden?openMap():closeMap();}},true);
 // from a point on the big map to the world
 function mapToWorld(e){const host=document.getElementById("mapHost"),r=host.getBoundingClientRect(),f=mapView;if(!f)return null;
@@ -8675,12 +8844,13 @@ function enterGame(){
   G.pos.set(0,0,9);G.face=Math.PI;G.target=null;G.keys={};
   G.camYaw=0;G.camPitch=1;G.running=false;
   cam.fov=45;cam.updateProjectionMatrix();G.camPos.set(0,1.2+5*zoomFactor(),G.pos.z+10.5*zoomFactor());
-  netJoin();initMap();refreshPhoneBadges();
+  netJoin();initMap();refreshPhoneBadges();setTimeout(showNotePaint,1500);
   // the live tutorial: asked for from the menu, or a new player who hasn't done it yet
   if(me&&(TL.pending||!me.tutorialDone)){const fresh=TL.pending;TL.pending=false;setTimeout(()=>{if(inGame&&!TL.on)tlStart(fresh);},1800);TL.auto=true;}
   checkDaily(!TL.auto);TL.auto=false;
 }
 function exitGame(){
+  if(SHOW.in){SHOW.in=false;for(const c of SHOW.chars.values())showDropChar(c);SHOW.chars.clear();if(SHOW.host){showDropChar(SHOW.host);SHOW.host=null;}SHOW.st=null;showUi.hidden=true;body.classList.remove("in-show");}
   if(PERF.el)PERF.el.hidden=true;perfSend();
   if(TL.on)tlStop();tlAsk.hidden=true;document.getElementById("tlDone").hidden=true;
   closePhone(true);closeGameStore(true);patrolExit();
@@ -8704,7 +8874,7 @@ function warmScene(roots,maxMs=4000){
     // compile only what's about to be seen, using the scene's current lights and fog (the ones it will be drawn with)
     // (three counts the lights of R twice if R is already in the scene, so the lights come from a stand-in scene
     //  that sees every visible light outside R: the same light set the real frame will have)
-    const jobs=roots.map(R=>{const S=new THREE.Scene();S.fog=scene.fog;S.environment=scene.environment;S.background=scene.background;
+    const jobs=roots.map(R=>{if(R.isScene)return renderer.compileAsync(R,cam).catch(()=>{});const S=new THREE.Scene();S.fog=scene.fog;S.environment=scene.environment;S.background=scene.background;
       S.traverseVisible=cb=>scene.traverseVisible(o=>{if(!o.isLight)return;for(let q=o;q;q=q.parent)if(q===R)return;cb(o);});
       return renderer.compileAsync(R,cam,S).catch(()=>{});});
     return Promise.race([Promise.all(jobs),new Promise(r=>setTimeout(r,maxMs))]);
@@ -8717,7 +8887,7 @@ function startGameTransition(){
   setTimeout(()=>{w.classList.add("in");},850);
   setTimeout(async()=>{enterGame();await warmScene([world,P.root]);w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);},1450);
 }
-addEventListener("keydown",e=>{if(!inGame)return;if(e.target.closest&&e.target.closest("input,textarea,button"))return;
+addEventListener("keydown",e=>{if(!inGame||SHOW.in)return;if(e.target.closest&&e.target.closest("input,textarea,button"))return;
   if(e.key==="Enter"){e.preventDefault();G.keys={};openChat();return;}
   if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code))e.preventDefault();G.keys[e.code]=true;
   if(e.code==="Space"&&!e.repeat)bigJump();});
@@ -9734,7 +9904,7 @@ addEventListener("keydown",e=>{if(e.key==="Escape"&&!gateOverlay.hidden){e.stopI
 document.getElementById("shop").onclick=e=>{press(e.currentTarget);openStore("shop");};
 document.getElementById("tags").onclick=e=>{press(e.currentTarget);openStore("tags");};
 document.getElementById("inventory").onclick=e=>{press(e.currentTarget);openStore("inventory");};
-stage.addEventListener("click",e=>{if(performance.now()-TOUCH.dragT<350)return;   // that was a camera drag / pinch, not a tap
+stage.addEventListener("click",e=>{if(SHOW.in)return;if(performance.now()-TOUCH.dragT<350)return;   // that was a camera drag / pinch, not a tap
   if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who&&playerTap(who,e))return;}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const rs=residentAt(e);if(rs){openResident(rs);return;}const who=remoteAt(e);if(who&&playerTap(who,e))return;clickToMove(e);}else doAction("wave");});
 document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoosh();exitGame();};
 
@@ -12291,7 +12461,7 @@ foodBarEl.addEventListener("click",e=>{e.stopPropagation();
   if(x){const id=x.dataset.x;if(FB.confirm===id&&now()-FB.confirmT<4){dropSnack(id);return;}FB.confirm=id;FB.confirmT=now();sfx.tick(false);paintFoodBar();
     setTimeout(()=>{if(FB.confirm===id&&now()-FB.confirmT>=3.9){FB.confirm=null;paintFoodBar();}},4000);return;}
   const b=e.target.closest(".fb-slot");if(b&&!b.classList.contains("empty")){press(b);holdSlot(+b.dataset.n);}});
-addEventListener("keydown",e=>{if(!inGame||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;
+addEventListener("keydown",e=>{if(!inGame||SHOW.in||e.repeat||e.ctrlKey||e.metaKey||e.altKey)return;
   const m=/^(?:Digit|Numpad)([1-4])$/.exec(e.code);if(!m)return;
   if(e.target.closest&&e.target.closest("input,textarea,select"))return;
   if(GS.open||PH.open||!menuOverlay.hidden||!mgOverlay.hidden||!dailyOverlay.hidden||adopt.open)return;
@@ -13988,6 +14158,331 @@ if(WEB_BUY){
 function coinsShort(r){if(!r||r.status!==402||!me||!cbOv.hidden)return false;const m=/([\d,]+)\s+more coins/i.exec((r.data&&r.data.error)||"");
   openCoinBox({short:m?+m[1].replace(/,/g,""):1});return true;}
 
+/* ---------- SHOW: the Jumpi Show ("משחקי המשגיחים"), a live show run by a moderator or an admin ----------
+   realtime/show.js decides everything; public/shared/show.js has the stage rows and the prize wheel.
+   - A show is on (socket "show:on"): a note at the top for everyone in the game with JOIN; it can be closed and
+     opened again from a small button (players who come in later get it too), until "show:off".
+   - Inside, the world isn't drawn: the main loop draws SHOW.scene, a stage with 3 rows. The players on it stand
+     straight and face the screen; the host is a big Jumpi on the left, turned a little towards the stage but with
+     the face to the screen. Viewers are only a number (eye button). Everyone in the show can chat.
+   - The host (right panel) runs confetti, balloons, the spotlight, funny exits, a quick poll, Country-City, Hangman
+     (balloons pop instead of a hanged man), the prize wheel and coin gifts. A click on a player on the stage opens
+     what the host can do with them; the eye opens the viewers list. */
+const SHOW={on:null,in:false,scene:null,cam:null,st:null,people:new Map(),chars:new Map(),host:null,stage:null,fx:[],spot:null,wheelSpin:null,voted:-1,noteShut:false,hostOpen:true,pending:null,feed:[]};
+const showUi=document.getElementById("showUi");
+const SHOW_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="#fff"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M12 18v3.5M8.5 21.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const EYE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" fill="#fff"/><circle cx="12" cy="12" r="3.6" fill="#2a3d6b"/></svg>';
+const isStaffMe=()=>!!(me&&(me.role==="admin"||me.role==="mod"));
+const amHost=()=>!!(SHOW.st&&socket&&SHOW.st.hostSid===socket.id)||(SHOW.in&&me&&me.role==="admin");
+
+/* ---- the note at the top (a show is on) ---- */
+function showNotePaint(){
+  let n=document.getElementById("showNote"),pill=document.getElementById("showPill");
+  const on=!!SHOW.on&&inGame&&!SHOW.in&&!!me;
+  if(!n){n=document.createElement("div");n.id="showNote";n.className="show-note";n.setAttribute("role","status");
+    n.innerHTML=`<span class="sn-ic">${SHOW_ICON}</span><span class="sn-txt"></span><button type="button" class="sn-go">JOIN</button><button type="button" class="sn-x" aria-label="Close">${I.xS}</button>`;
+    document.body.appendChild(n);
+    n.querySelector(".sn-go").onclick=e=>{press(e.currentTarget);enterShow();};
+    n.querySelector(".sn-x").onclick=()=>{SHOW.noteShut=true;sfx.close();showNotePaint();};
+    pill=document.createElement("button");pill.type="button";pill.id="showPill";pill.className="show-pill";pill.setAttribute("aria-label","The Jumpi Show is on");pill.innerHTML=SHOW_ICON+"<span>LIVE</span>";
+    pill.onclick=()=>{SHOW.noteShut=false;sfx.open();showNotePaint();};document.body.appendChild(pill);}
+  n.querySelector(".sn-txt").innerHTML=SHOW.on?`<b>The Jumpi Show is on!</b> ${esc(SHOW.on.host||"")} is hosting live games and prizes.`:"";
+  n.hidden=!on||SHOW.noteShut;pill.hidden=!on||!SHOW.noteShut;}
+function showOnOff(d){SHOW.on=d||null;if(d)SHOW.noteShut=false;showNotePaint();if(d&&inGame&&!SHOW.in)sfx.open();}
+
+/* ---- in and out ---- */
+async function enterShow(){
+  if(!SHOW.on||SHOW.in||!inGame||!socket||!socket.connected)return;
+  closePhone(true);closeGameStore(true);closeChat();closeMap();closePlayerCard();if(TL.on)tlStop();
+  const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
+  await new Promise(r=>setTimeout(r,500));
+  if(G.home){await leaveHome();}
+  SHOW.in=true;SHOW.voted=-1;SHOW.feed=[];showBuild();clearRemotes();
+  body.classList.add("in-show");showUi.hidden=false;showNotePaint();
+  socket.emit("join",{...netState(),show:true});
+  await warmScene(SHOW.scene,2000);
+  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
+  showPaint();setTimeout(()=>{const i=document.getElementById("shChatIn");if(i&&!TOUCH.coarse)i.focus({preventScroll:true});},800);}
+function leaveShow(msg){
+  if(!SHOW.in)return;SHOW.in=false;
+  const w=document.getElementById("wipe");w.classList.add("in");
+  setTimeout(()=>{
+    for(const c of SHOW.chars.values())showDropChar(c);SHOW.chars.clear();if(SHOW.host){showDropChar(SHOW.host);SHOW.host=null;}
+    SHOW.people.clear();SHOW.st=null;showUi.hidden=true;document.getElementById("shWheel").hidden=true;
+    body.classList.remove("in-show");
+    if(socket&&socket.connected&&inGame)socket.emit("join",netState());   // back to the Plaza, where you were
+    w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);showNotePaint();
+    if(msg)toast(msg);},450);}
+
+/* ---- the stage (built once) ---- */
+function showBuild(){
+  if(SHOW.scene)return;
+  const sc=new THREE.Scene();sc.background=new THREE.Color("#1b1450");
+  const cam=new THREE.PerspectiveCamera(38,innerWidth/innerHeight,.1,120);SHOW.cam=cam;
+  sc.add(new THREE.HemisphereLight(0xffffff,0x6a5ad6,1.25));
+  const key=new THREE.DirectionalLight(0xfff2dc,2.1);key.position.set(4,12,10);key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+  Object.assign(key.shadow.camera,{left:-14,right:14,top:10,bottom:-6,near:1,far:40});key.shadow.bias=-.0006;sc.add(key,key.target);
+  const M=(c,o={})=>new THREE.MeshStandardMaterial({color:c,roughness:.65,...o});
+  // back wall with a big curtain and lights
+  const wall=new THREE.Mesh(new THREE.BoxGeometry(40,16,.6),M("#2c1f7a"));wall.position.set(0,7,-6);sc.add(wall);
+  for(let i=-9;i<=9;i++){const f=new THREE.Mesh(new THREE.CylinderGeometry(.42,.42,11,10),M(i%2?"#c8264a":"#e03a5c",{roughness:.8}));f.position.set(i*.82,6.2,-5.4);f.receiveShadow=true;sc.add(f);}
+  const valance=new THREE.Mesh(new THREE.BoxGeometry(17,1.3,.9),M("#ffb21f",{metalness:.3,roughness:.4}));valance.position.set(0,11.6,-5.2);sc.add(valance);
+  // the big sign
+  const cv=document.createElement("canvas");cv.width=1024;cv.height=200;const x=cv.getContext("2d");x.font='400 150px "Lilita One", system-ui, sans-serif';x.textAlign="center";x.textBaseline="middle";
+  x.lineWidth=18;x.strokeStyle="#7a2a00";x.strokeText("JUMPI SHOW",512,108);x.fillStyle="#ffd23a";x.fillText("JUMPI SHOW",512,108);
+  const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(9,1.76),new THREE.MeshBasicMaterial({map:tex,transparent:true,toneMapped:false}));sign.position.set(0,9.6,-4.6);sc.add(sign);
+  // stage floor and the 3 rows (risers: the back rows stand higher)
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(26,.6,12),M("#7b4a2c",{roughness:.55}));floor.position.set(0,-.3,0);floor.receiveShadow=true;sc.add(floor);
+  const edge=new THREE.Mesh(new THREE.BoxGeometry(26,.25,.3),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.5}));edge.position.set(0,.02,6);sc.add(edge);
+  SHOW.rows=SHOW_ROWS.map((n,r)=>{const y=r*.95,z=2.8-r*2.1,w=n*1.2+.8;
+    if(r){const step=new THREE.Mesh(new THREE.BoxGeometry(w,y,2.1),M(r===1?"#5a3ad6":"#7c5cff",{roughness:.5}));step.position.set(1.2,y/2,z);step.receiveShadow=true;step.castShadow=true;sc.add(step);
+      const lip=new THREE.Mesh(new THREE.BoxGeometry(w,.08,.1),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.4}));lip.position.set(1.2,y+.02,z+1.05);sc.add(lip);}
+    return {y,z,n,dx:1.2};});
+  // the host's spot on the left: a round podium
+  const pod=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.8,.5,32),M("#ffb21f",{metalness:.25,roughness:.45}));pod.position.set(-7.3,.25,1.2);pod.receiveShadow=true;sc.add(pod);
+  // spotlight (shown when the host uses it)
+  const spot=new THREE.SpotLight(0xfff3b0,0,30,.22,.4,1);spot.position.set(0,14,6);sc.add(spot,spot.target);
+  const beam=new THREE.Mesh(new THREE.ConeGeometry(1.4,14,32,1,true),new THREE.MeshBasicMaterial({color:"#fff6c4",transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending}));
+  beam.position.set(0,7,4);sc.add(beam);SHOW.spot={spot,beam,t0:-99,x:0,z:0,to:null};
+  SHOW.scene=sc;SHOW.balloons=[];showCam();}
+function showCam(){if(!SHOW.cam)return;const a=innerWidth/innerHeight,c=SHOW.cam;c.aspect=a;
+  const d=a>=1.6?15.5:a>=1.2?18:a>=1?21:29;c.fov=a<1?46:36;c.position.set(-.6,6.2+(a<1?2:0),d);c.lookAt(-.6,1.9,0);c.updateProjectionMatrix();}
+addEventListener("resize",showCam);
+function seatPos(i){const s=seatSpot(i);if(!s)return null;const R=SHOW.rows[s[0]];return {x:1.2+(s[1]-(R.n-1)/2)*R.dx,y:R.y,z:R.z,row:s[0]};}
+
+/* ---- characters ---- */
+function showMakeChar(p,host){
+  const look=socket&&p.id===socket.id?myLook():uniformLook(p.look||{},p.uniform);
+  const n=makeCharacter(look,p.username||"Player",nameColor(p.role,p.member),p.lv||1);
+  n.root.traverse(o=>{if(o.isMesh)o.castShadow=true;});
+  n.tag.scale.multiplyScalar(host?.75:.42);SHOW.scene.add(n.root,n.tag);
+  return Object.assign(n,{sid:p.id,host:!!host,x:0,y:0,z:0,act:null,actT:-9,exit:null,exitT:0,blinkT:0,blinkStart:-9,phase:Math.random()*6,bubble:makeBubbleEl()});}
+function showDropChar(c){c.root.removeFromParent();c.tag.removeFromParent();if(c.tag.material.map)c.tag.material.map.dispose();c.tag.material.dispose();if(c.bubble)c.bubble.remove();if(c.balloon)c.balloon.removeFromParent();dropAura(c);}
+function personOf(sid){if(socket&&sid===socket.id)return{id:sid,username:me.username,role:me.role,look:myLook(),lv:me.lv||1,member:!!(me.subscriber||me.memberUntil)};return SHOW.people.get(sid);}
+// make the characters match the server's state (who is on which seat, who hosts)
+function showSync(){
+  if(!SHOW.in||!SHOW.scene||!SHOW.st)return;const st=SHOW.st,want=new Map();
+  st.seats.forEach((sid,i)=>{if(sid&&personOf(sid))want.set(sid,i);});
+  for(const [sid,c] of SHOW.chars)if(!want.has(sid)&&!c.exit){showDropChar(c);SHOW.chars.delete(sid);}
+  for(const [sid,i] of want){let c=SHOW.chars.get(sid);if(!c){c=showMakeChar(personOf(sid));SHOW.chars.set(sid,c);c.popT=now();}
+    const s=seatPos(i);c.x=s.x;c.y=s.y;c.z=s.z;c.seat=i;}
+  // the host
+  const hs=st.hostSid,hp=hs&&personOf(hs);
+  if(SHOW.host&&(!hp||SHOW.host.sid!==hs)){showDropChar(SHOW.host);SHOW.host=null;}
+  if(hp&&!SHOW.host){SHOW.host=showMakeChar(hp,true);Object.assign(SHOW.host,{x:-7.3,y:.5,z:1.2});}}
+
+/* ---- each frame ---- */
+function showFrame(t,dt){
+  const tn=now();
+  const all=[...SHOW.chars.values()];if(SHOW.host)all.push(SHOW.host);
+  for(const c of all){
+    let y=c.y,sc=c.host?1.55:1,ry=c.host?.62:0,rx=0;   // everyone faces the screen; the host stands turned towards the stage
+    // fixed animations: a jump, a wave
+    const k=(tn-c.actT)/.9;if(c.act==="jump"&&k>=0&&k<1)y+=jumpY(Math.min(.999,k))*.9;
+    if(c.popT){const p=Math.min(1,(tn-c.popT)/.45);sc*=p<1?ease(p)*(1+Math.sin(p*Math.PI)*.15):1;if(p>=1)c.popT=0;}
+    // funny exits
+    if(c.exit){const e=(tn-c.exitT)/1.6;
+      if(c.exit==="hole"){y-=Math.max(0,e-.15)*4.5;rx=Math.sin(e*12)*.2;}
+      else if(c.exit==="poof"){sc*=Math.max(.001,1-e*1.8);if(!c.poofed&&e>.3){c.poofed=true;showBurst(c.x,c.y+1,c.z);}}
+      else if(c.exit==="balloon"){y+=Math.max(0,e-.2)*7;if(!c.balloon){c.balloon=showBalloon("#ff5fb4");SHOW.scene.add(c.balloon);}c.balloon.position.set(c.x,y+2.6,c.z);}
+      if(e>=1.05){showDropChar(c);SHOW.chars.delete(c.sid);continue;}}
+    c.root.position.set(c.x,y,c.z);c.root.rotation.set(rx,ry,0);c.root.scale.setScalar(sc);
+    // the host turns its head to the screen (the body is diagonal)
+    if(c.host)c.head.rotation.y=-.55;
+    const br=Math.sin(t*2.1+c.phase);c.body.scale.set(1+br*.012,1+br*.018,1+br*.012);c.head.position.y=c.headY+br*.012;
+    const wv=c.act==="wave"&&tn-c.actT<1.8;c.armR.rotation.z=wv?-2.4+Math.sin((tn-c.actT)*12)*.35:0;c.armL.rotation.z=0;
+    if(t>c.blinkT){c.blinkT=t+2.5+Math.random()*3;c.blinkStart=t;}const bk=(t-c.blinkStart)/.25;c.eyeL.scale.y=c.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
+    c.tag.position.set(c.x+(c.host?.4:0),y+(c.host?.1:.12),c.z+(c.host?1.7:.62));
+    if(c.aura)c.aura.tick(t);
+    showBubbleAt(c,y);}
+  // the spotlight: wanders over the stage, then stops on the chosen one
+  const S=SHOW.spot;if(S){const e=tn-S.t0;let on=0;
+    if(e<7){on=Math.min(1,e*3,(7-e)*2);let tx,tz;const tc=S.to&&SHOW.chars.get(S.to);
+      if(e<2.6||!tc){tx=Math.sin(e*2.3)*9;tz=1.5+Math.cos(e*1.7)*1.6;}else{tx=tc.x;tz=tc.z;}
+      S.x+=(tx-S.x)*Math.min(1,dt*(e<2.6?3:6));S.z+=(tz-S.z)*Math.min(1,dt*(e<2.6?3:6));}
+    S.spot.intensity=on*90;S.spot.target.position.set(S.x,0,S.z);S.spot.target.updateMatrixWorld();S.beam.material.opacity=on*.22;S.beam.position.set(S.x,7,S.z+1.2);}
+  // balloons rising
+  for(let i=SHOW.balloons.length-1;i>=0;i--){const b=SHOW.balloons[i],a=tn-b.userData.t0;b.position.y=b.userData.y0+a*b.userData.v;b.position.x+=Math.sin(a*2+b.userData.ph)*.004;if(a>7){b.removeFromParent();SHOW.balloons.splice(i,1);}}
+  showWheelTick();
+  renderer.shadowMap.needsUpdate=true;}
+function showBubbleAt(c,y){const el=c.bubble;if(!el||!el.classList.contains("show"))return;
+  const v=_sbv.set(c.x,y+(c.host?4.2:2.65),c.z).project(SHOW.cam);el.style.left=((v.x+1)/2*innerWidth)+"px";el.style.top=((1-v.y)/2*innerHeight)+"px";el.style.scale=c.host?"1":".8";}
+const _sbv=new THREE.Vector3();
+function showBalloon(color){const g=new THREE.Group();const b=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),new THREE.MeshStandardMaterial({color,roughness:.3,metalness:.05}));b.scale.y=1.18;g.add(b);
+  const s=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,1.5,4),new THREE.MeshBasicMaterial({color:"#ffffff"}));s.position.y=-1.2;g.add(s);return g;}
+function showBurst(x,y,z){const v=_sbv.set(x,y,z).project(SHOW.cam);puffAt((v.x+1)/2*innerWidth,(1-v.y)/2*innerHeight);}
+function puffAt(px,py){if(reduce)return;const box=document.createElement("div");box.className="sh-puff";box.style.left=px+"px";box.style.top=py+"px";
+  const C=["#ffd23a","#ff5fb4","#2fd36b","#2f9bff","#ff8a1c","#ffffff"];for(let i=0;i<18;i++){const s=document.createElement("i");const a=i/18*Math.PI*2,d=40+Math.random()*50;
+    s.style.cssText=`--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;background:${C[i%C.length]};animation-delay:${Math.random()*.08}s`;box.appendChild(s);}
+  document.body.appendChild(box);setTimeout(()=>box.remove(),1200);}
+
+/* ---- effects from the server ---- */
+function showFx(d){
+  if(!SHOW.in||!d)return;const tn=now();
+  if(d.k==="confetti"){confettiRain();sfx.success();}
+  else if(d.k==="balloons"){const C=["#ff5fb4","#ffd23a","#2f9bff","#2fd36b","#ff8a1c","#a77bff"];
+    for(let i=0;i<26;i++){const b=showBalloon(C[i%C.length]);b.position.set(-12+Math.random()*24,-1-Math.random()*3,-1+Math.random()*6);Object.assign(b.userData,{t0:tn+Math.random()*1.2,y0:-2-Math.random()*2,v:1.6+Math.random()*1.4,ph:Math.random()*6});SHOW.scene.add(b);SHOW.balloons.push(b);}
+    sfx.hop();}
+  else if(d.k==="spot"){Object.assign(SHOW.spot,{t0:tn,to:d.sid});sfx.whoosh();setTimeout(()=>{if(SHOW.in)sfx.success();},2700);}
+  else if(d.k==="act"){const c=SHOW.chars.get(d.sid);if(c){c.act=d.a;c.actT=tn;}}
+  else if(d.k==="down"){(d.sids||[]).forEach((sid,i)=>{const c=SHOW.chars.get(sid);if(c){c.exit=d.style;c.exitT=tn+i*.06;}});sfx[d.style==="balloon"?"whoosh":"hop"]();}
+  else if(d.k==="guess"){showChatLine({sys:true,text:`${d.by} guessed ${d.l}: ${d.ok?"yes!":"no"}`});}
+  else if(d.k==="prize"){showPrize(d);}
+  else if(d.k==="gift"){const c=SHOW.chars.get(d.sid);if(c)showBurst(c.x,c.y+1.2,c.z);coinRain(socket&&d.sid===socket.id?24:10);sfx.coin();
+    showChatLine({sys:true,text:`${SHOW.st?SHOW.st.host:"The host"} gave ${d.n.toLocaleString("en-US")} coins to ${d.name}!`});}}
+function showPrize(d){const P=SHOW_WHEEL[d.slice];if(!P)return;const mine=socket&&d.sid===socket.id;
+  const box=document.getElementById("shPrize");box.innerHTML=`<div class="shp-card k-${P.k}"><div class="shp-art">${wheelArt(P,72)}</div><b>${P.k==="skull"?"Oh no!":"YOU WON!".replace("YOU",mine?"YOU":esc(d.name).toUpperCase())}</b><p>${P.k==="skull"?`${mine?"Nothing this time":esc(d.name)+" got nothing this time"}. Better luck next time!`:esc(P.label)+(P.k==="member"?" of the Members Club":"")}</p></div>`;
+  box.hidden=false;if(P.k!=="skull"){confettiRain();sfx.success();if(mine&&P.k==="coins")coinRain(24);}else sfx.error();
+  clearTimeout(SHOW.prizeT);SHOW.prizeT=setTimeout(()=>{box.hidden=true;},4500);}
+
+/* ---- the prize wheel (an SVG everyone sees turn the same way) ---- */
+function wheelArt(P,s){
+  if(P.k==="skull")return `<svg viewBox="0 0 40 40" width="${s}" height="${s}"><path d="M20 5c-8 0-13 5.5-13 12.5 0 4.4 2.2 7.6 5 9.3V31a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4.2c2.8-1.7 5-4.9 5-9.3C33 10.5 28 5 20 5z" fill="#f2f2f7"/><circle cx="14.5" cy="18" r="3.6" fill="#2a2d3d"/><circle cx="25.5" cy="18" r="3.6" fill="#2a2d3d"/><path d="M18.5 24.5h3l-1.5-3z" fill="#2a2d3d"/><path d="M16 29v4M20 29v4M24 29v4" stroke="#9a9db0" stroke-width="1.6"/></svg>`;
+  if(P.k==="coins")return `<span style="display:inline-block;width:${s}px;height:${s}px">${COIN_SVG}</span>`;
+  if(P.k==="xp")return `<svg viewBox="0 0 40 40" width="${s}" height="${s}"><path d="M20 3l4.9 10.6 11.6 1.3-8.6 7.9 2.4 11.4L20 28.4l-10.3 5.8 2.4-11.4-8.6-7.9 11.6-1.3z" fill="#ffd23a" stroke="#c98a00" stroke-width="1.6"/><text x="20" y="25" text-anchor="middle" font-family="Lilita One,system-ui" font-size="10" fill="#7a3d00">XP</text></svg>`;
+  return `<span style="display:inline-block;width:${s}px;height:${s}px">${GSTAR}</span>`;}
+function wheelBuild(){const el=document.getElementById("shWheelSvg");if(el.dataset.ok)return;el.dataset.ok="1";
+  const n=SHOW_WHEEL.length,R=150,parts=[];
+  SHOW_WHEEL.forEach((P,i)=>{const a0=(i/n)*Math.PI*2-Math.PI/2,a1=((i+1)/n)*Math.PI*2-Math.PI/2,x0=R+Math.cos(a0)*R,y0=R+Math.sin(a0)*R,x1=R+Math.cos(a1)*R,y1=R+Math.sin(a1)*R,am=(a0+a1)/2;
+    parts.push(`<path d="M${R} ${R} L${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)} Z" fill="${P.color}" stroke="#fff" stroke-width="3"/>`);
+    const tx=R+Math.cos(am)*R*.64,ty=R+Math.sin(am)*R*.64,rot=am*180/Math.PI+90;
+    parts.push(`<g transform="translate(${tx.toFixed(1)} ${ty.toFixed(1)}) rotate(${rot.toFixed(1)})"><foreignObject x="-22" y="-34" width="44" height="44">${wheelArt(P,40).replace("<svg",'<svg xmlns="http://www.w3.org/2000/svg"')}</foreignObject><text y="24" text-anchor="middle" font-family="Lilita One,system-ui" font-size="13" fill="#fff" stroke="rgba(0,0,0,.35)" stroke-width="3" paint-order="stroke">${P.k==="skull"?"":esc(P.k==="member"?"1 WEEK":P.k==="coins"?String(P.n):P.n+" XP")}</text></g>`);});
+  el.innerHTML=`<svg viewBox="0 0 300 300" width="100%" height="100%"><g id="shWheelRot">${parts.join("")}</g><circle cx="150" cy="150" r="22" fill="#ffd23a" stroke="#fff" stroke-width="5"/></svg>`;}
+function showWheelTick(){const W=SHOW.st&&SHOW.st.wheel,box=document.getElementById("shWheel");
+  if(!W){if(!box.hidden){box.hidden=true;SHOW.wheelSpin=null;}return;}
+  if(box.hidden){wheelBuild();box.hidden=false;SHOW.wheelSpin=null;sfx.open();}
+  const mine=socket&&W.sid===socket.id,who=personOf(W.sid);
+  document.getElementById("shWheelWho").textContent=W.state==="ready"?(mine?"Your turn! Press SPIN when you're ready.":`${who?who.username:"A player"} is about to spin!`):"";
+  const btn=document.getElementById("shSpin");btn.hidden=!(mine&&W.state==="ready");
+  const g=document.getElementById("shWheelRot");if(!g)return;
+  if(W.state==="spin"){
+    // the same turn on every screen: 5 full turns and the chosen slice stops under the pointer at the top
+    if(!SHOW.wheelSpin||SHOW.wheelSpin.at!==W.at){const n=SHOW_WHEEL.length,target=360*6-(W.slice+.5)*360/n;SHOW.wheelSpin={at:W.at,target,t0:performance.now()-Math.max(0,Date.now()-W.at),tick:-1};}
+    const k=Math.min(1,(performance.now()-SHOW.wheelSpin.t0)/WHEEL_SPIN_MS),e=1-Math.pow(1-k,3.4),deg=SHOW.wheelSpin.target*e;
+    g.setAttribute("transform",`rotate(${deg.toFixed(2)} 150 150)`);
+    const tick=Math.floor(deg/(360/SHOW_WHEEL.length));if(tick!==SHOW.wheelSpin.tick&&k<1){SHOW.wheelSpin.tick=tick;sfx.tick(true);}}
+  else g.setAttribute("transform","rotate(0 150 150)");}
+
+/* ---- the screen around the stage ---- */
+function showChatLine(d){SHOW.feed.push(d);if(SHOW.feed.length>40)SHOW.feed.shift();
+  const box=document.getElementById("shFeed");if(!box)return;
+  box.innerHTML=SHOW.feed.slice(-9).map(m=>m.sys?`<p class="sys">${esc(m.text)}</p>`:`<p><b class="${m.role==="admin"?"admin":m.role==="mod"?"mod":""}">${esc(m.username||"")}</b> ${esc(m.text)}</p>`).join("");
+  box.scrollTop=box.scrollHeight;}
+function showChat(d){showChatLine(d);const c=SHOW.chars.get(d.id)||(SHOW.host&&SHOW.host.sid===d.id?SHOW.host:null);
+  if(c&&c.bubble){const el=c.bubble;el.classList.remove("typing","hide");el.textContent=d.text;el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(c.bubbleT);c.bubbleT=setTimeout(()=>hideBubble(el),Math.min(9000,3500+d.text.length*80));}
+  if(!socket||d.id!==socket.id)sfx.hover();}
+function showPaint(){
+  if(!SHOW.in)return;const st=SHOW.st||{},host=amHost(),seated=!!(st.seats&&socket&&st.seats.includes(socket.id));
+  document.getElementById("shHost").textContent=st.host?`Hosted by ${st.host}`:"";
+  document.getElementById("shViewN").textContent=(st.viewers||0).toLocaleString("en-US");
+  document.getElementById("shEye").classList.toggle("can",host);
+  document.getElementById("shMine").hidden=!seated;
+  document.getElementById("shWatch").hidden=seated||host;
+  document.getElementById("shPanel").hidden=!host;document.getElementById("shPanel").classList.toggle("shut",!SHOW.hostOpen);
+  // Country-City band
+  const cb=document.getElementById("shCountry");cb.hidden=!st.country;if(st.country)cb.innerHTML=`<span>${esc(st.country.cat)}</span><b>${esc(st.country.letter)}</b>`;
+  // Hangman
+  const H=st.hangman,hb=document.getElementById("shHang");hb.hidden=!H;
+  if(H){document.getElementById("shWord").innerHTML=[...H.mask].map(ch=>ch===" "?'<i class="sp"></i>':`<i class="${ch==="_"?"":"on"}">${ch==="_"?"":esc(ch)}</i>`).join("");
+    document.getElementById("shLives").innerHTML=Array.from({length:H.lives},(_,i)=>`<i class="${i<H.lives-H.wrong?"":"pop"}" style="--c:${["#ff5fb4","#ffd23a","#2f9bff","#2fd36b","#ff8a1c","#a77bff"][i%6]}"></i>`).join("");
+    document.getElementById("shHangMsg").textContent=H.done==="win"?"You found it!":H.done==="lose"?"The balloons are gone! The word is above.":"";
+    const he=/[א-ת]/.test(H.mask)||(H.used.some&&H.used.some(l=>/[א-ת]/.test(l)));
+    const keys=document.getElementById("shKeys"),abc=he?"אבגדהוזחטיכלמנסעפצקרשת":"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    keys.hidden=!!H.done||host;keys.innerHTML=[...abc].map(l=>`<button type="button" data-l="${l}" ${H.used.includes(l)?"disabled":""}>${l}</button>`).join("");}
+  // the poll
+  const Pl=st.poll,pb=document.getElementById("shPoll");pb.hidden=!Pl;
+  if(Pl){const tot=Pl.counts?Pl.counts.reduce((a,b)=>a+b,0):0;
+    pb.innerHTML=`<h3>${esc(Pl.q)}</h3><div class="shp-opts">${Pl.opts.map((o,i)=>Pl.done?`<div class="shp-res${Pl.counts[i]===Math.max(...Pl.counts)&&tot?" top":""}"><span style="width:${tot?Math.round(Pl.counts[i]/tot*100):0}%"></span><b>${esc(o)}</b><em>${tot?Math.round(Pl.counts[i]/tot*100):0}%</em></div>`
+      :`<button type="button" data-v="${i}" class="${SHOW.voted===i?"on":""}" ${SHOW.voted>=0?"disabled":""}>${esc(o)}</button>`).join("")}</div><p class="shp-t" data-ends="${Pl.ends}">${Pl.done?`${tot} vote${tot===1?"":"s"}`:""}</p>`;}
+  else SHOW.voted=-1;
+  showSync();}
+setInterval(()=>{if(!SHOW.in)return;const t=document.querySelector("#shPoll .shp-t[data-ends]");const st=SHOW.st;if(t&&st&&st.poll&&!st.poll.done)t.textContent=Math.max(0,Math.ceil((st.poll.ends-Date.now())/1000))+" s";},250);
+
+/* ---- what the players do ---- */
+showUi.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b||!SHOW.in)return;
+  if(b.id==="shLeave"){press(b);leaveShow();return;}
+  if(b.dataset.act){press(b);socket.emit("show:act",{a:b.dataset.act});const c=SHOW.chars.get(socket.id);if(c){c.act=b.dataset.act;c.actT=now();}return;}
+  if(b.dataset.l){press(b);b.disabled=true;socket.emit("show:guess",{l:b.dataset.l});return;}
+  if(b.dataset.v!==undefined&&b.closest("#shPoll")){const i=+b.dataset.v;SHOW.voted=i;sfx.tick(true);socket.emit("show:vote",{i});showPaint();return;}
+  if(b.id==="shSpin"){press(b);b.hidden=true;socket.emit("show:spin");return;}
+  if(b.id==="shEye"){if(amHost())showViewers();return;}
+  if(b.id==="shPanelTog"){SHOW.hostOpen=!SHOW.hostOpen;sfx.click();showPaint();return;}
+  if(b.dataset.h)showHostAct(b.dataset.h,b);});
+document.getElementById("shChat").addEventListener("submit",e=>{e.preventDefault();const inp=document.getElementById("shChatIn"),text=inp.value.replace(/\s+/g," ").trim();if(!text)return;
+  if(mutedLeft()){toast(mutedText());sfx.error();return;}if(textBlocked(text,inp))return;inp.value="";sfx.tick(true);if(socket&&socket.connected)socket.emit("chat",text);});
+document.getElementById("shChatIn").addEventListener("keydown",e=>e.stopPropagation());
+// the host clicks a player on the stage
+const _shRay=new THREE.Raycaster(),_shNdc=new THREE.Vector2();
+stage.addEventListener("click",e=>{if(!SHOW.in||!amHost())return;_shNdc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_shRay.setFromCamera(_shNdc,SHOW.cam);
+  let best=null,bd=1e9;for(const c of SHOW.chars.values()){if(c.exit)continue;const h=_shRay.intersectObject(c.root,true)[0];if(h&&h.distance<bd){bd=h.distance;best=c;}}
+  if(best)showPlayerMenu(best.sid,e);},true);
+
+/* ---- the host's tools ---- */
+function showDialog(html,onOk){const d=document.getElementById("shDlg");d.innerHTML=`<form class="sh-dlg-card">${html}<div class="sh-dlg-row"><button type="button" class="sh-b ghost" data-close>Cancel</button><button type="submit" class="sh-b go">OK</button></div><p class="sh-dlg-msg" role="alert"></p></form>`;
+  d.hidden=false;const f=d.querySelector("form");f.querySelector("[data-close]").onclick=()=>{d.hidden=true;};
+  f.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")d.hidden=true;});
+  f.onsubmit=async e=>{e.preventDefault();const msg=await onOk(f);if(msg)f.querySelector(".sh-dlg-msg").textContent=msg;else d.hidden=true;};
+  setTimeout(()=>{const i=f.querySelector("input,select");if(i)i.focus();},40);}
+const showAsk=(ev,data)=>new Promise(r=>{if(!socket||!socket.connected)return r({error:"You're not connected right now."});socket.emit(ev,data,x=>r(x||{}));setTimeout(()=>r({error:"No answer from the server. Try again."}),6000);});
+async function showHostAct(k,b){press(b);
+  if(k==="confetti"||k==="balloons"||k==="spot"){socket.emit("show:fx",{k});return;}
+  if(k==="alldown"){socket.emit("show:down",{all:true,style:"poof"});return;}
+  if(k==="close"){showDialog(`<h3>End the show?</h3><p>Everyone goes back to the world.</p>`,async()=>{const r=await showAsk("show:close");return r.error||"";});return;}
+  if(k==="poll"){showDialog(`<h3>Quick poll</h3><label>Question<input name="q" maxlength="80" required placeholder="Which game next?"></label>
+      ${[1,2,3,4].map(i=>`<label>Answer ${i}${i>2?" (optional)":""}<input name="o${i}" maxlength="30" ${i<=2?"required":""}></label>`).join("")}
+      <label>How long<select name="secs">${POLL_SECS.map(s=>`<option value="${s}" ${s===20?"selected":""}>${s} seconds</option>`).join("")}</select></label>`,
+      async f=>{const v=n=>f.elements[n].value.trim();const r=await showAsk("show:poll",{q:v("q"),opts:[v("o1"),v("o2"),v("o3"),v("o4")].filter(Boolean),secs:+f.elements.secs.value});return r.error||"";});return;}
+  if(k==="country"){const st=SHOW.st||{};
+    showDialog(`<h3>Country-City</h3><label>Category<input name="cat" list="shCats" maxlength="24" required value="${esc(st.country?st.country.cat:"")}"></label><datalist id="shCats">${COUNTRY_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+      <label>Letter<input name="letter" maxlength="1" required class="sh-letter" value="${esc(st.country?st.country.letter:"")}"></label>${st.country?'<button type="button" class="sh-b ghost wide" data-clear>Take the band down</button>':""}`,
+      async f=>{socket.emit("show:country",{cat:f.elements.cat.value,letter:f.elements.letter.value});return "";});
+    const c=document.querySelector("#shDlg [data-clear]");if(c)c.onclick=()=>{socket.emit("show:country",{clear:true});document.getElementById("shDlg").hidden=true;};return;}
+  if(k==="hangman"){const on=!!(SHOW.st&&SHOW.st.hangman);
+    showDialog(`<h3>Hangman</h3><p>Pick a word (only you see it). Players guess letters; a wrong letter pops a balloon.</p><label>Word<input name="w" maxlength="20" required autocomplete="off"></label>${on?'<button type="button" class="sh-b ghost wide" data-clear>End this game</button>':""}`,
+      async f=>{const r=await showAsk("show:hangman",{word:f.elements.w.value});return r.error||"";});
+    const c=document.querySelector("#shDlg [data-clear]");if(c)c.onclick=()=>{socket.emit("show:hangman",{clear:true});document.getElementById("shDlg").hidden=true;};return;}
+  if(k==="wheel"){const st=SHOW.st||{},on=(st.seats||[]).filter(s=>s&&personOf(s));
+    if(!on.length){toast("Put a player on the stage first.");return;}
+    showDialog(`<h3>Prize wheel</h3><p>Tip: send everyone down to the viewers and bring the winner up alone.</p><label>Who spins<select name="sid">${on.map(s=>`<option value="${s}">${esc(personOf(s).username)}</option>`).join("")}</select></label>`,
+      async f=>{const r=await showAsk("show:wheel",{sid:f.elements.sid.value});return r.error||"";});return;}}
+function showGiftDialog(sid){const p=personOf(sid);if(!p)return;
+  showDialog(`<h3>Coins for ${esc(p.username)}</h3><label>How many<input name="n" type="number" min="1" max="${SHOW_GIFT_MAX}" value="100" required></label>`,
+    async f=>{const r=await showAsk("show:gift",{sid,coins:+f.elements.n.value});return r.error||"";});}
+function showPlayerMenu(sid,e){const p=personOf(sid);if(!p)return;const m=document.getElementById("shMenu");
+  m.innerHTML=`<b>${esc(p.username)}</b><button type="button" data-m="hole">Off the stage: a hole</button><button type="button" data-m="poof">Off the stage: poof!</button><button type="button" data-m="balloon">Off the stage: a balloon</button><button type="button" data-m="wheel">Give the prize wheel</button><button type="button" data-m="gift">Give coins</button><button type="button" data-m="remove" class="red">Send out of the show</button>`;
+  m.hidden=false;m.style.left=Math.min(innerWidth-230,e.clientX+10)+"px";m.style.top=Math.min(innerHeight-300,e.clientY-10)+"px";sfx.open();
+  m.onclick=async ev=>{const b=ev.target.closest("button");if(!b)return;m.hidden=true;const k=b.dataset.m;
+    if(k==="hole"||k==="poof"||k==="balloon")socket.emit("show:down",{sid,style:k});
+    else if(k==="wheel"){const r=await showAsk("show:wheel",{sid});if(r.error)toast(r.error);}
+    else if(k==="gift")showGiftDialog(sid);
+    else if(k==="remove"){const r=await showAsk("show:remove",{sid});if(r.error)toast(r.error);}};}
+addEventListener("pointerdown",e=>{const m=document.getElementById("shMenu");if(m&&!m.hidden&&!m.contains(e.target))m.hidden=true;},true);
+async function showViewers(){const r=await showAsk("show:viewers");if(r.error){toast(r.error);return;}const box=document.getElementById("shViewers");
+  const full=!(SHOW.st&&SHOW.st.seats.includes(null)),on=((SHOW.st&&SHOW.st.seats)||[]).filter(s=>s&&personOf(s));
+  box.innerHTML=`<div class="shv-card"><button type="button" class="np-x shv-x" aria-label="Close">${I.xS}</button><h3>${EYE_ICON} Watching (${r.viewers.length})</h3>${r.viewers.length?`<ul>${r.viewers.map(v=>`<li><b>${esc(v.username)}</b><span>
+    <button type="button" data-up="${v.id}">${full?"Swap onto the stage":"Up to the stage"}</button><button type="button" data-gift="${v.id}">Coins</button><button type="button" data-out="${v.id}" class="red">Out</button></span></li>`).join("")}</ul>`:'<p>Nobody is watching right now.</p>'}</div>`;
+  box.hidden=false;sfx.open();
+  box.onclick=async e=>{const b=e.target.closest("button");if(!b)return;if(b.classList.contains("shv-x")){box.hidden=true;return;}
+    if(b.dataset.up){if(full){showDialog(`<h3>Swap with</h3><label>Goes down to the viewers<select name="d">${on.map(s=>`<option value="${s}">${esc(personOf(s).username)}</option>`).join("")}</select></label>`,
+        async f=>{const x=await showAsk("show:up",{sid:b.dataset.up,swap:f.elements.d.value});if(!x.error)box.hidden=true;return x.error||"";});}
+      else{const x=await showAsk("show:up",{sid:b.dataset.up});if(x.error)toast(x.error);else b.closest("li").remove();}}
+    else if(b.dataset.gift)showGiftDialog(b.dataset.gift);
+    else if(b.dataset.out){const x=await showAsk("show:remove",{sid:b.dataset.out});if(x.error)toast(x.error);else b.closest("li").remove();}};}
+async function openShowAsHost(){const r=await showAsk("show:open");if(r.error){toast(r.error);return false;}closeAdmin();setTimeout(enterShow,300);return true;}
+
+/* ---- the server ---- */
+function showNet(s){
+  s.on("show:on",showOnOff);s.on("show:off",()=>{showOnOff(null);});
+  s.on("show:state",st=>{if(!SHOW.in)return;SHOW.st=st;showPaint();});
+  s.on("show:fx",showFx);
+  s.on("show:voted",d=>{SHOW.voted=d.i;showPaint();});
+  s.on("show:closed",d=>leaveShow(`The show is over. Thanks for watching${d&&d.by?", from "+d.by:""}!`));
+  s.on("show:removed",()=>leaveShow("The host sent you back to the world."));
+  s.on("show:gone",()=>{if(SHOW.in)leaveShow("The show just ended.");});
+  s.on("show:member",d=>{if(me&&d&&d.until){me.memberUntil=d.until;refreshMyTag();}});}
+
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");
 let decoTab="furniture",ghost=null,ghostF=-1,ghostR=0,selK=-1;
@@ -14489,7 +14984,7 @@ document.getElementById("phClose").onclick=()=>closePhone();
 document.getElementById("phHomeBar").onclick=()=>{sfx.tick(false);showHomeScreen();};
 document.getElementById("phBack").onclick=()=>{sfx.tick(false);goBack();};
 phone.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();if(phone.dataset.view==="app")goBack();else closePhone();}});
-addEventListener("keydown",e=>{if(!inGame||(!me&&!TL.on)||e.target.closest&&e.target.closest("input,textarea"))return;
+addEventListener("keydown",e=>{if(!inGame||SHOW.in||(!me&&!TL.on)||e.target.closest&&e.target.closest("input,textarea"))return;
   if(e.key==="Escape"&&PH.open){e.preventDefault();closePhone();}
   else if(e.code==="KeyP"&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();PH.open?closePhone():openPhone();}});
 
@@ -15460,7 +15955,7 @@ function updateStations(t){
   if(near!==nearStation){nearStation=near;mgPrompt.hidden=!near;if(near){document.getElementById("mgPromptName").textContent=near.name;mgPrompt.style.setProperty("--c",near.color);sfx.tick(true);}}
 }
 mgPrompt.onclick=e=>{press(e.currentTarget);if(nearStation)openMinigame(nearStation.id);};
-addEventListener("keydown",e=>{if(!inGame||!nearStation||!mgOverlay.hidden||!dailyOverlay.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
+addEventListener("keydown",e=>{if(!inGame||SHOW.in||!nearStation||!mgOverlay.hidden||!dailyOverlay.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
   if(e.code==="KeyE"){e.preventDefault();openMinigame(nearStation.id);}});
 
 /* =====================================================================
