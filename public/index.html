@@ -4939,11 +4939,13 @@ function perfSend(){if(PERF.ms<30000||!me)return;const min=PERF.ms/60000;
   try{if(navigator.sendBeacon&&navigator.sendBeacon("/api/perf",new Blob([body],{type:"application/json"})))return;}catch(e){}
   fetch("/api/perf",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{});}
 addEventListener("pagehide",perfSend);
+// the service worker (/sw.js): the heavy files (model, pictures, music, fonts) stay on the device for the next visit
+if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>setTimeout(()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}),4000));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)perfSend();});
 function perfMeterPaint(){
   if(!PERF.el){PERF.el=document.createElement("div");PERF.el.className="perf-meter";PERF.el.setAttribute("aria-hidden","true");document.body.appendChild(PERF.el);}
   PERF.el.hidden=!PERF.meter||!inGame||!(me&&me.role==="admin");if(PERF.el.hidden)return;const i=renderer.info;
-  PERF.el.innerHTML=`<b class="${PERF.fps>=50?"ok":PERF.fps>=30?"mid":"bad"}">${Math.round(PERF.fps)}</b> fps · slowest ${Math.round(PERF.worst)} ms<br>${i.render.calls} draws · ${(i.render.triangles/1000).toFixed(0)}k triangles · ${i.programs?i.programs.length:0} shaders<br>${PERF.long} stutters · ${GFX_TIER} · ${GFX.saver?"saver":GFX.mode} · x${GFX.pr.toFixed(2)}`;}
+  PERF.el.innerHTML=`<b class="${PERF.fps>=50?"ok":PERF.fps>=30?"mid":"bad"}">${Math.round(PERF.fps)}</b> fps · slowest ${Math.round(PERF.worst)} ms<br>${i.render.calls} draws · ${(i.render.triangles/1000).toFixed(0)}k triangles · ${i.programs?i.programs.length:0} shaders<br>${PERF.long} stutters · ${GFX_TIER} · ${GFX.saver?"saver":GFX.mode} · x${GFX.pr.toFixed(2)}<br>merged ${BATCH.parts} → ${BATCH.merged} (${BATCH.state||"wait"}${BATCH.undone?", "+BATCH.undone+" undone":""})`;}
 function perfMeter(on){PERF.meter=on;try{localStorage.setItem("jumpi-meter",on?"1":"0");}catch(e){}perfMeterPaint();}
 renderer.setAnimationLoop(()=>{
   if(document.hidden)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
@@ -5003,7 +5005,7 @@ renderer.setAnimationLoop(()=>{
   tickAuras(t);gfxTick();vehPreviewTick(t);routeTick(t);
   let flyFog=null;if(window.__fly){const F=window.__fly;cam.position.set(F[0],F[1],F[2]);cam.lookAt(F[3],F[4],F[5]);   // ?beachtest screenshots only
     if(F[6]){cam.fov=F[6];cam.near=F[7];cam.far=F[8];cam.updateProjectionMatrix();flyFog=scene.fog;scene.fog=null;}}
-  shadowTick();renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
+  batchCheck();shadowTick();renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
   if(inGame)renderMap();
 });
 
@@ -8830,7 +8832,7 @@ function trimShadows(root,minR=.28){const v=new THREE.Vector3();let n=0;root.upd
   walk(root);return n;}
 function enterGame(){
   if(!P)return;
-  if(!gameBuilt){buildPlaza();trimShadows(world);}
+  if(!gameBuilt){buildPlaza();trimShadows(world);setTimeout(batchPrepare,1500);}
   inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
@@ -14482,6 +14484,87 @@ function showNet(s){
   s.on("show:removed",()=>leaveShow("The host sent you back to the world."));
   s.on("show:gone",()=>{if(SHOW.in)leaveShow("The show just ended.");});
   s.on("show:member",d=>{if(me&&d&&d.until){me.memberUntil=d.until;refreshMyTag();}});}
+
+/* ---------- BATCH: the still parts of the world drawn as a few big shapes ----------
+   The Plaza is ~5,000 small objects, and every object is one draw call per frame (the thing weak computers struggle
+   with most). A few seconds after you come in, everything that stood still the whole time (buildings, benches,
+   fences, lamps, plants…) is merged: objects with the same look in the same 24 × 24 area become ONE shape. Twins
+   in material (same colour, same settings) are merged too, so ~2,500 materials become a few hundred.
+   Safety: nothing is merged that moved or changed while we watched; and a watchdog checks every 2 s whether code
+   touched one of the merged pieces (moved it, hid it, changed its colour, gave it children). If so, that one group
+   is taken apart again on the spot, and the pieces work exactly as before. Left alone: the city (it streams by
+   distance), characters, see-through things, special shaders, things with children (lights, signs).
+   Off switch for testing: localStorage "jumpi-nobatch" = "1". */
+const BATCH={state:"",groups:[],snap:null,parts:0,merged:0,undone:0,checkT:0};
+try{if(localStorage.getItem("jumpi-nobatch")==="1")BATCH.state="off";}catch(e){}
+const BATCH_CELL=24,_bm=new THREE.Matrix4(),_bv=new THREE.Vector3();
+const baseMat=m=>m&&(m.isMeshStandardMaterial||m.isMeshLambertMaterial||m.isMeshPhongMaterial||m.isMeshBasicMaterial||m.isMeshToonMaterial)&&!m.isShaderMaterial;
+// everything that changes how a material draws (two materials with the same signature look the same)
+function batchMatSig(m){const c=x=>x&&x.isColor?x.getHexString():"";const t=x=>x?x.uuid:"";
+  return [m.type,c(m.color),c(m.emissive),m.emissiveIntensity,m.roughness,m.metalness,m.shininess,c(m.specular),m.opacity,m.transparent,m.side,m.vertexColors,m.flatShading,m.wireframe,m.fog,m.toneMapped,
+    m.depthTest,m.depthWrite,m.alphaTest,m.blending,m.polygonOffset,m.polygonOffsetFactor,m.colorWrite,m.dithering,m.envMapIntensity,
+    t(m.map),t(m.normalMap),t(m.emissiveMap),t(m.alphaMap),t(m.aoMap),t(m.roughnessMap),t(m.metalnessMap),t(m.bumpMap),t(m.lightMap),t(m.envMap),t(m.specularMap)].join("|");}
+// a quick look at what code might change later (for the watchdog)
+const batchMatQuick=m=>[m.color?m.color.getHex():0,m.emissive?m.emissive.getHex():0,m.emissiveIntensity,m.opacity,m.visible,m.transparent,m.map?m.map.uuid:"",m.side].join(",");
+function batchOk(o){const g=o.geometry,m=o.material;
+  if(!o.isMesh||o.isInstancedMesh||o.isSkinnedMesh||Array.isArray(m)||!baseMat(m)||!g||!g.attributes.position)return false;
+  if(o.children.length||m.transparent||o.renderOrder||o.layers.mask!==1||!o.frustumCulled||o.morphTargetInfluences)return false;
+  if(m.onBeforeCompile!==THREE.Material.prototype.onBeforeCompile||o.onBeforeRender!==THREE.Object3D.prototype.onBeforeRender||m.userData.noBatch||o.userData.noBatch)return false;
+  if(Object.keys(g.morphAttributes).length)return false;   // (a box's 6 groups don't matter with one material: they're dropped when merging)
+  for(const k in g.attributes)if(!["position","normal","uv","color"].includes(k))return false;
+  return o.matrixWorld.determinant()>0;}   // mirrored pieces keep their own draw call (their faces would turn inside out)
+const batchSkip=o=>o.userData.isChar||o.userData.noBatch||o.name==="city";
+// 1) when you come in: remember where every candidate is
+function batchPrepare(){
+  if(BATCH.state)return;BATCH.state="watch";world.updateMatrixWorld(true);const snap=new Map();
+  const walk=(o,vis)=>{if(batchSkip(o))return;vis=vis&&o.visible;if(vis&&batchOk(o))snap.set(o,{e:o.matrixWorld.elements.slice(),q:batchMatQuick(o.material)});for(const c of o.children)walk(c,vis);};
+  walk(world,true);BATCH.snap=snap;setTimeout(batchRun,9000);}
+// 2) 9 s later: merge what didn't move or change in the meantime, a few groups per frame (no stutter)
+function batchRun(){
+  if(BATCH.state!=="watch")return;if(!inGame||G.home||SHOW.in){setTimeout(batchRun,4000);return;}
+  BATCH.state="run";world.updateMatrixWorld(true);
+  const inv=new THREE.Matrix4().copy(world.matrixWorld).invert(),cells=new Map(),canon=new Map();
+  const walk=(o,vis)=>{if(batchSkip(o))return;vis=vis&&o.visible;
+    if(vis&&o.isMesh){const s=BATCH.snap.get(o);
+      if(s&&batchOk(o)&&s.q===batchMatQuick(o.material)&&o.matrixWorld.elements.every((v,i)=>Math.abs(v-s.e[i])<1e-6)){
+        // glowing materials (shop windows, lamps: the day/night cycle changes them) keep their very own material, so
+        // the merged shape changes with them; the others are merged with their twins and drawn with a copy
+        const m=o.material,own=(m.emissive&&m.emissive.getHex()!==0)||!!m.emissiveMap,sig=own?"own:"+m.uuid:batchMatSig(m);
+        if(!canon.has(sig))canon.set(sig,own?m:m.clone());
+        o.geometry.computeBoundingSphere();_bv.copy(o.geometry.boundingSphere.center).applyMatrix4(o.matrixWorld);
+        const g=o.geometry,attrs=Object.keys(g.attributes).filter(k=>k!=="uv"||o.material.map||o.material.normalMap||o.material.aoMap).filter(k=>k!=="color"||o.material.vertexColors).sort().join(",");
+        const key=sig+"#"+Math.floor(_bv.x/BATCH_CELL)+","+Math.floor(_bv.z/BATCH_CELL)+"#"+o.castShadow+o.receiveShadow+"#"+attrs+"#"+(g.index?1:0);
+        let L=cells.get(key);if(!L)cells.set(key,L={sig,own,list:[],attrs:attrs.split(",")});L.list.push(o);}}
+    for(const c of o.children)walk(c,vis);};
+  walk(world,true);BATCH.snap=null;
+  const todo=[...cells.values()].filter(L=>L.list.length>1);
+  const step=()=>{if(BATCH.state!=="run")return;const t0=performance.now();
+    while(todo.length&&performance.now()-t0<7){const L=todo.pop();try{batchMerge(L,canon.get(L.sig),inv);}catch(e){console.warn("[batch]",e);}}
+    if(todo.length)requestAnimationFrame(step);else{BATCH.state="done";SHD.force=true;}};
+  requestAnimationFrame(step);}
+function batchMerge(L,mat,inv){
+  const geos=[];for(const o of L.list){if(!o.parent)continue;_bm.multiplyMatrices(inv,o.matrixWorld);const g=o.geometry.clone();g.clearGroups();
+    for(const k of Object.keys(g.attributes))if(!L.attrs.includes(k))g.deleteAttribute(k);
+    if(!g.attributes.normal)g.computeVertexNormals();g.applyMatrix4(_bm);geos.push(g);}
+  if(geos.length<2){geos.forEach(g=>g.dispose());return;}
+  const merged=mergeGeometries(geos,false);geos.forEach(g=>g.dispose());if(!merged)return;
+  merged.computeBoundingSphere();merged.computeBoundingBox();
+  const mesh=new THREE.Mesh(merged,mat),a=L.list[0];mesh.castShadow=a.castShadow;mesh.receiveShadow=a.receiveShadow;mesh.matrixAutoUpdate=false;mesh.name="batch";
+  const parents=new Map(),src=[];
+  for(const o of L.list){const P=o.parent;if(!P)continue;if(!parents.has(P))parents.set(P,P.matrixWorld.elements.slice());
+    src.push({o,P,v:o.visible,p:o.position.clone(),q:o.quaternion.clone(),s:o.scale.clone(),m:batchMatQuick(o.material)});P.remove(o);}
+  world.add(mesh);mesh.updateMatrixWorld(true);
+  BATCH.groups.push({mesh,src,parents,own:L.own,on:true});BATCH.parts+=src.length;BATCH.merged++;}
+// the watchdog: a merged piece was moved / hidden / recoloured / given children by the game → that group comes apart
+const visUp=o=>{for(let q=o;q;q=q.parent){if(!q.visible)return false;if(q===world)return true;}return false;};
+function batchUndo(G0){if(!G0.on)return;G0.on=false;G0.mesh.removeFromParent();G0.mesh.geometry.dispose();for(const s of G0.src)if(!s.o.parent)s.P.add(s.o);BATCH.undone++;BATCH.parts-=G0.src.length;BATCH.merged--;SHD.force=true;}
+function batchCheck(){
+  if(BATCH.state!=="done"&&BATCH.state!=="run")return;const t=performance.now();if(t-BATCH.checkT<2000)return;BATCH.checkT=t;
+  for(const G0 of BATCH.groups){if(!G0.on)continue;let bad=false;
+    for(const [P,e] of G0.parents){if(!visUp(P)||P.matrixWorld.elements.some((v,i)=>Math.abs(v-e[i])>1e-6)){bad=true;break;}}
+    if(!bad)for(const s of G0.src){const o=s.o;if(o.parent||o.visible!==s.v||o.children.length||!o.position.equals(s.p)||!o.quaternion.equals(s.q)||!o.scale.equals(s.s)||(!G0.own&&batchMatQuick(o.material)!==s.m)){bad=true;break;}}
+    if(bad)batchUndo(G0);}
+  if(BATCH.groups.length>64&&BATCH.groups.some(g=>!g.on))BATCH.groups=BATCH.groups.filter(g=>g.on);}
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");
