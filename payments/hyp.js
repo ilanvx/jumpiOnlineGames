@@ -22,6 +22,8 @@
      Only when Hyp answers CCode=0 (the signature is real) AND the payment's own CCode is 0 is the order paid.
      routes/store.js then also checks the amount against the order, and gives the goods only once.
 */
+import { PRODUCT_BY_ID } from "../public/shared/store.js";
+
 const PAY = "https://pay.hyp.co.il/p/";
 const env = () => ({ masof: process.env.HYP_MASOF || "", key: process.env.HYP_KEY || "", passp: process.env.HYP_PASSP || "" });
 
@@ -63,7 +65,23 @@ export const hyp = {
     if (payer?.first) p.set("ClientName", payer.first);
     if (payer?.last) p.set("ClientLName", payer.last);
     if (payer?.phone) p.set("cell", payer.phone);
-    if (user?.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) p.set("email", user.email);
+    const email = user?.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email) ? user.email : "";
+    if (email) p.set("email", email);
+    // the receipt (Hyp Invoice, made by Hyp for every payment; the document type, e.g. "קבלה" for an exempt dealer, is set in
+    // the Hyp portal → Settings → default document). Hyp emails it only when asked: SendHesh=True + email.
+    if (email) p.set("SendHesh", "True");
+    p.set("EZ.lang", lang === "he" ? "he" : "en");
+    const he = lang === "he";
+    const lines = (order.items?.length ? order.items : [{ product: order.product, qty: 1, price: order.amount }]).map((l) => {
+      const P = PRODUCT_BY_ID[l.product], name = P ? (he ? P.name.he : P.name.en) + (P.variant ? ` - ${he ? P.variant.he : P.variant.en}` : "") : "Jumpi Games";
+      return { name: `Jumpi Games - ${name}`.replace(/[\[\]~]/g, " ").slice(0, 80), qty: Math.max(1, Number(l.qty) || 1), price: Number(l.price) || 0 };
+    });
+    // the receipt lists every line: [code~description~quantity~price]; the lines must add up to Amount exactly (or Hyp refuses)
+    const cents = lines.reduce((a, l) => a + Math.round(l.price * 100) * l.qty, 0);
+    if (cents === Math.round(Number(order.amount) * 100)) {
+      p.set("Pritim", "True");
+      p.set("heshDesc", lines.map((l) => `[0~${l.name}~${l.qty}~${l.price.toFixed(2)}]`).join(""));
+    } else p.set("heshDesc", `Jumpi Games - ${product.name.en}`.slice(0, 80));
     const signed = await call(p);
     const cc = ccodeOf(signed);
     if (cc !== null && cc !== "0") throw new Error(`Hyp refused to sign the payment (CCode ${cc})`);
