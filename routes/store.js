@@ -188,40 +188,45 @@ router.post("/store/test-pay", requireJson, async (req, res, next) => {
   }
 });
 
-// HYP sends the buyer back here after paying
-const returns = new Map();   // the return address asks Hyp each time: at most 20 a minute from one address
-router.get("/store/hyp/return", async (req, res, next) => {
-  try {
-    if (!hyp.ready()) return res.status(404).type("text").send("Not found");
-    { const now = Date.now(), k = req.ip || "?", e = returns.get(k);
-      if (returns.size > 20000) for (const [x, v] of returns) if (v.reset < now) returns.delete(x);
-      if (!e || e.reset < now) returns.set(k, { n: 1, reset: now + 60_000 });
-      else if (++e.n > 20) return res.status(429).type("text").send("Too many tries. Please wait a minute."); }
-    res.set("Cache-Control", "no-store");
-    const raw = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?") + 1) : "";
-    let v;
-    try { v = await hyp.verify(raw); }
-    catch (e) {   // Hyp didn't answer: nothing is given now; the order stays "pending" and can be checked by hand
-      console.error(`[store] HYP verify failed (order ${req.query.Order}, Hyp id ${req.query.Id}): ${e.message}`);
-      return res.redirect(back("payment=check"));
+// HYP sends the buyer back after paying. The same check runs on our own address (/api/store/hyp/return) and on the
+// pages set in the Hyp portal (/success and /fail, server.js): `to(result, product)` says where to send the buyer then.
+const returns = new Map();   // each return asks Hyp: at most 20 a minute from one address
+const toStore = (r, product) => back(r === "ok" ? "payment=ok&product=" + encodeURIComponent(product) : "payment=" + r);
+export function hypReturn(to = toStore) {
+  return async (req, res, next) => {
+    try {
+      if (!hyp.ready()) return res.status(404).type("text").send("Not found");
+      { const now = Date.now(), k = req.ip || "?", e = returns.get(k);
+        if (returns.size > 20000) for (const [x, v] of returns) if (v.reset < now) returns.delete(x);
+        if (!e || e.reset < now) returns.set(k, { n: 1, reset: now + 60_000 });
+        else if (++e.n > 20) return res.status(429).type("text").send("Too many tries. Please wait a minute."); }
+      res.set("Cache-Control", "no-store");
+      const raw = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?") + 1) : "";
+      let v;
+      try { v = await hyp.verify(raw); }
+      catch (e) {   // Hyp didn't answer: nothing is given now; the order stays "pending" and can be checked by hand
+        console.error(`[store] HYP verify failed (order ${req.query.Order}, Hyp id ${req.query.Id}): ${e.message}`);
+        return res.redirect(to("check"));
+      }
+      if (!v.ok || !mongoose.isValidObjectId(v.orderId)) {
+        console.warn(`[store] HYP return not accepted: order ${v.orderId} code ${v.code}`);
+        if (!["badsign", "nosign"].includes(v.code) && mongoose.isValidObjectId(v.orderId)) await Order.updateOne({ _id: v.orderId, status: "pending", provider: "hyp" }, { $set: { status: "failed", providerRef: String(v.ref || "") } });
+        return res.redirect(to("failed"));
+      }
+      const order = await Order.findOne({ _id: v.orderId, provider: "hyp" });
+      if (!order || Math.abs(order.amount - Number(v.amount)) > 0.001) {
+        console.error(`[store] HYP paid amount ${v.amount} doesn't match order ${v.orderId} (Hyp id ${v.ref})`);
+        return res.redirect(to("check"));
+      }
+      const r = await fulfillOrder(order._id, String(v.ref || ""));
+      if (r.duplicate) return res.redirect(to("check"));
+      res.redirect(to("ok", order.product));
+    } catch (err) {
+      next(err);
     }
-    if (!v.ok || !mongoose.isValidObjectId(v.orderId)) {
-      console.warn(`[store] HYP return not accepted: order ${v.orderId} code ${v.code}`);
-      if (!["badsign", "nosign"].includes(v.code) && mongoose.isValidObjectId(v.orderId)) await Order.updateOne({ _id: v.orderId, status: "pending", provider: "hyp" }, { $set: { status: "failed", providerRef: String(v.ref || "") } });
-      return res.redirect(back("payment=failed"));
-    }
-    const order = await Order.findOne({ _id: v.orderId, provider: "hyp" });
-    if (!order || Math.abs(order.amount - Number(v.amount)) > 0.001) {
-      console.error(`[store] HYP paid amount ${v.amount} doesn't match order ${v.orderId} (Hyp id ${v.ref})`);
-      return res.redirect(back("payment=check"));
-    }
-    const r = await fulfillOrder(order._id, String(v.ref || ""));
-    if (r.duplicate) return res.redirect(back("payment=check"));
-    res.redirect(back("payment=ok&product=" + encodeURIComponent(order.product)));
-  } catch (err) {
-    next(err);
-  }
-});
+  };
+}
+router.get("/store/hyp/return", hypReturn());
 
 /*
   Give the buyer what they paid for. Safe to call twice: only the call that moves the order

@@ -1,0 +1,82 @@
+/* After paying in the Jumpi Store: /success (pay-success.html) and /fail (pay-fail.html). One card: a 3D stage
+   (pay-result.js) beside the text. Night-purple like the store's hero; green tick for success, a soft coral cross for fail. */
+@font-face{font-family:"Jumpi He";src:url(/site/fonts/fredoka-he-700.woff) format("woff");font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F}
+html,body{overflow-x:clip}
+body{--display:"Lilita One","Jumpi He","Secular One","Arial Rounded MT Bold",system-ui,sans-serif;--body:"Fredoka","Rubik",system-ui,sans-serif;
+  background:#fff8e8;--night:#17134f;--gold:#ffb000}
+
+.pr-wrap{position:relative;isolation:isolate;padding:clamp(28px,5vw,64px) clamp(14px,4vw,40px) clamp(48px,7vw,90px);
+  background:radial-gradient(70% 60% at 50% 0%,#3b2496 0%,#231a6e 45%,transparent 75%),linear-gradient(180deg,#14164a 0%,#1d1660 58%,#fff8e8 58.1%)}
+.pr-wrap::before{content:"";position:absolute;inset:0 0 42% 0;z-index:-1;pointer-events:none;opacity:.7;
+  background-image:radial-gradient(1.5px 1.5px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 28% 62%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 44% 12%,#ffe9a0 50%,transparent 51%),
+    radial-gradient(1px 1px at 63% 40%,#fff 50%,transparent 51%),radial-gradient(2px 2px at 81% 16%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 90% 58%,#d9ccff 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 6% 70%,#d9ccff 50%,transparent 51%),radial-gradient(1px 1px at 72% 74%,#fff 50%,transparent 51%)}
+
+.pr-card{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);border-radius:32px;overflow:hidden;background:#fff;
+  box-shadow:0 10px 0 #d9cfee,0 30px 70px rgb(20 10 70 / .35)}
+.pr-stage{position:relative;min-height:440px;background:radial-gradient(75% 65% at 50% 62%,#6a36d6 0%,#3a2196 45%,#1c1662 100%)}
+.pr-fail .pr-stage{background:radial-gradient(75% 65% at 50% 62%,#5a5fc8 0%,#34308f 48%,#1a1a5c 100%)}
+.pr-stage{clip-path:inset(0 round 32px 0 0 32px)}
+[dir="rtl"] .pr-stage{clip-path:inset(0 round 0 32px 32px 0)}
+.pr-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pr-stage::after{content:"";position:absolute;inset:auto 0 0 0;height:70px;pointer-events:none;background:linear-gradient(0deg,rgb(16 10 60 / .35),transparent)}
+
+.pr-text{padding:clamp(28px,4vw,52px) clamp(22px,4vw,52px);display:flex;flex-direction:column;align-items:flex-start;color:#1d2b4f}
+.pr-badge{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;animation:pr-pop .6s cubic-bezier(.3,1.6,.5,1) both .15s}
+.pr-badge svg{width:36px;height:36px}
+.pr-badge.ok{color:#fff;background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 5px 0 #138043,0 10px 24px rgb(32 180 90 / .35)}
+.pr-badge.no{color:#fff;background:linear-gradient(180deg,#ff9a8a,#ff5d6c);box-shadow:0 5px 0 #c2364a,0 10px 24px rgb(255 93 108 / .3)}
+.pr-badge.wait{color:#5a2a00;background:linear-gradient(180deg,#fff27a,#ffc21c);box-shadow:0 5px 0 #b86a00}
+.pr-badge.wait svg{animation:pr-spin 1.4s linear infinite}
+@keyframes pr-pop{from{transform:scale(.2);opacity:0}to{transform:none;opacity:1}}
+@keyframes pr-spin{to{transform:rotate(360deg)}}
+
+.pr-text h1{margin:0;font:400 clamp(2rem,3.6vw,3rem)/1.04 var(--display);color:#22195e;letter-spacing:.01em}
+.pr-lead{margin:12px 0 0;font:500 clamp(1.08rem,1.6vw,1.25rem)/1.5 var(--body);color:#3d4770;text-wrap:pretty}
+
+/* what was bought */
+.pr-item{display:flex;align-items:center;gap:16px;width:100%;margin-top:22px;padding:14px 16px;border-radius:22px;background:linear-gradient(180deg,#fff9e6,#fff1c9);box-shadow:inset 0 0 0 2px #ffe08a}
+.pr-item[hidden]{display:none}
+.pr-item img{flex:none;width:96px;height:96px;object-fit:contain;filter:drop-shadow(0 6px 8px rgb(150 80 0 / .25))}
+.pr-item b{display:block;font:400 1.4rem/1.1 var(--display);color:#7a3d00}
+.pr-got{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.pr-got li{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:#fff;box-shadow:0 2px 0 #f0c560;font:600 .95rem/1.2 var(--body);color:#5a3a00}
+.pr-got li::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--dot,#ffc21c);box-shadow:inset 0 -2px 0 rgb(0 0 0 / .15)}
+.pr-got li.days{--dot:#7c5cff}.pr-got li.items{--dot:#ff6fb5}
+
+.pr-tip{margin:18px 0 0;font:500 1.02rem/1.5 var(--body);color:#5a6488}
+.pr-why{margin-top:22px;width:100%;padding:16px 18px;border-radius:20px;background:#f3f1ff}
+.pr-why b{display:block;font:600 1.02rem var(--body);color:#3a2a8a;margin-bottom:8px}
+.pr-why ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pr-why li{display:flex;align-items:center;gap:10px;font:500 1.02rem/1.35 var(--body);color:#3d4770}
+.pr-why i{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:400 .95rem/1 var(--display);font-style:normal;color:#fff;background:#7c5cff;box-shadow:0 2px 0 #4a2fc0}
+
+.pr-btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.pr-btn{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 26px;border-radius:999px;text-decoration:none;font:400 1.25rem/1 var(--display);letter-spacing:.02em;transition:transform .12s,filter .15s}
+[lang="he"] .pr-btn{letter-spacing:0}
+.pr-btn svg{width:22px;height:22px;flex:none}
+[dir="rtl"] .pr-btn.play svg{transform:scaleX(-1)}
+.pr-btn.play{color:#fff;text-shadow:0 2px 0 rgb(0 0 0 / .15);background:linear-gradient(180deg,#ffb347,#ff8a1c 60%);box-shadow:0 6px 0 #c25a00,0 12px 26px rgb(255 138 28 / .3),inset 0 2px 0 rgb(255 255 255 / .45)}
+.pr-btn.retry{color:#5a2a00;background:linear-gradient(180deg,#fff27a,#ffc21c 55%,#ff9d00);box-shadow:0 6px 0 #b86a00,0 12px 26px rgb(255 170 0 / .3),inset 0 2px 0 rgb(255 255 255 / .6)}
+.pr-btn.ghost{color:#3a2a8a;background:#f1edff;box-shadow:0 5px 0 #d2c8f5}
+.pr-btn:hover{transform:translateY(-2px);filter:brightness(1.05)}
+.pr-btn:active{transform:translateY(4px)}
+.pr-btn:focus-visible{outline:3px solid #7c5cff;outline-offset:4px}
+.pr-small{margin:22px 0 0;font:500 .95rem/1.4 var(--body);color:#7a83a6}
+.pr-small a{color:#5a3ad6;font-weight:600}
+
+/* a burst of gold flecks behind the stage on success (only the first moment) */
+.pr-burst{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 55%,rgb(255 226 120 / .55),transparent 45%);opacity:0;animation:pr-flash 1.6s ease-out .2s both}
+@keyframes pr-flash{0%{opacity:0;transform:scale(.6)}25%{opacity:1}100%{opacity:0;transform:scale(1.4)}}
+
+@media (max-width:860px){
+  .pr-wrap{background:radial-gradient(90% 40% at 50% 0%,#3b2496 0%,#231a6e 50%,transparent 80%),linear-gradient(180deg,#14164a 0%,#1d1660 40%,#fff8e8 40.1%)}
+  .pr-card{grid-template-columns:1fr;border-radius:26px}
+  .pr-stage,[dir="rtl"] .pr-stage{min-height:0;height:clamp(250px,68vw,340px);clip-path:inset(0 round 26px 26px 0 0)}
+  .pr-text{align-items:center;text-align:center}
+  .pr-btns{justify-content:center;width:100%}
+  .pr-btn{flex:1 1 220px;justify-content:center}
+  .pr-item{text-align:start}
+  .pr-why{text-align:start}
+}
+@media (prefers-reduced-motion:reduce){.pr-badge,.pr-badge.wait svg,.pr-burst{animation:none}.pr-btn{transition:none}}

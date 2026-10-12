@@ -279,6 +279,7 @@ try { start = new URLSearchParams(location.search).get("lang") || localStorage.g
 setLang(start);
 {
   const q = new URLSearchParams(location.search);
+  if (location.hash === "#cart" && CART.length) openCart("cart");   // "Try again" on /fail
   if (q.get("payment") === "ok") done(q.get("product"));
   else if (q.get("payment") === "check") openModal(`<h2>${T("We're checking your payment", "אנחנו בודקים את התשלום")}</h2><p class="st-text">${T("The payment company didn't confirm it yet. If you were charged, the purchase will reach the account soon. Didn't get it? Write to us on the Contact page.", "חברת הסליקה עוד לא אישרה את התשלום. אם חויבתם, הרכישה תגיע לחשבון בקרוב. לא קיבלתם? כתבו לנו בעמוד צור קשר.")}</p><a class="st-buy big" href="/contact">${T("Contact us", "צור קשר")}</a>`);
   else if (q.get("payment") === "failed") openModal(`<h2>${T("Payment didn't go through", "התשלום לא עבר")}</h2><p class="st-text">${T("Nothing was charged. Your cart is still here, you can try again.", "שום דבר לא חויב. הסל עדיין כאן, אפשר לנסות שוב.")}</p>`);

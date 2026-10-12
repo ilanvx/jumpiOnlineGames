@@ -18,7 +18,7 @@ import teamRoutes from "./routes/team.js";
 import adminRoutes, { isSenior } from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
 import petRoutes from "./routes/pets.js";
-import storeRoutes from "./routes/store.js";
+import storeRoutes, { hypReturn } from "./routes/store.js";
 import msStoreRoutes from "./routes/msstore.js";
 import jobRoutes from "./routes/jobs.js";
 import seasonRoutes from "./routes/season.js";
@@ -219,6 +219,18 @@ app.get(["/forgot-password", "/reset-password"], (req, res, next) => { res.set({
 // "/store?soon": a preview of the closed-store page; "/store?preview": the real store while it's closed (only admins can buy there)
 app.get("/store", (req, res, next) => page((STORE_OPEN || "preview" in req.query) && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));
 app.get("/site/store.html", (req, res) => res.redirect(302, "/store"));
+// after paying: the pages set in the Hyp portal (success → /success, failed → /fail). Coming from Hyp (with its parameters)
+// both first go through the same check as /api/store/hyp/return (routes/store.js), then land on the clean page:
+// /success?p=<product> (given), /success?check (Hyp didn't confirm yet), /fail (not paid)
+const payTo = (r, product) => (r === "ok" ? "/success?p=" + encodeURIComponent(product || "") : r === "check" ? "/success?check" : "/fail");
+const fromHyp = (q) => "Id" in q || "CCode" in q || "Sign" in q || "Order" in q;
+const payPage = (file) => (req, res, next) => {
+  if (fromHyp(req.query)) return hypReturn(payTo)(req, res, next);
+  res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex" });
+  page(file)(req, res, next);
+};
+app.get("/success", payPage("site/pay-success.html"));
+app.get("/fail", payPage("site/pay-fail.html"));
 // the admin panel: only senior admins (SENIOR_ADMINS in routes/admin.js). Anyone signed in who isn't one, other admins too,
 // gets "Not found"; the page itself checks the rest with the server
 app.get(["/admin", "/admin/"], async (req, res, next) => {

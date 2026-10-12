@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment complete · Jumpi Games</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Your Jumpi Store purchase is complete.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/jumpi-head-192.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/shared/a11y.js"></script>
+<link rel="preload" as="font" type="font/woff" href="/site/fonts/fredoka-he-700.woff" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
+<link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
+<link rel="stylesheet" href="/site/legal.css">
+<link rel="stylesheet" href="/site/chrome.css">
+<link rel="stylesheet" href="/site/pay-result.css">
+</head>
+<body class="pr-success" data-kind="success">
+<header class="hm-top" id="top">
+  <div class="hm-top-in">
+    <a class="hm-brand" href="/" aria-label="Jumpi Games home"><img src="/jumpi-logo.png" alt="Jumpi Games" width="118" height="69"></a>
+    <span class="hm-age" tabindex="0" aria-describedby="ageTip"><b dir="ltr">6+</b><span class="hm-age-tip" id="ageTip" role="tooltip"><span data-l="en">Recommended for ages 6 and up</span><span data-l="he">המשחק מומלץ מגיל 6 ומעלה</span></span></span>
+    <nav class="hm-nav" id="nav" aria-label="Main">
+      <a href="/for-parents"><img src="/site/img/nav/parents.png" alt="" width="30" height="30"><span data-l="en">Parents</span><span data-l="he">הורים</span></a>
+      <a href="/safety"><img src="/site/img/nav/safety.png" alt="" width="30" height="30"><span data-l="en">Safety</span><span data-l="he">בטיחות ברשת</span></a>
+      <a href="/help"><img src="/site/img/nav/help.png" alt="" width="30" height="30"><span data-l="en">Help</span><span data-l="he">עזרה</span></a>
+      <a href="/contact"><img src="/site/img/nav/contact.png" alt="" width="30" height="30"><span data-l="en">Contact</span><span data-l="he">צור קשר</span></a>
+      <a href="/team"><img src="/site/img/nav/team.png" alt="" width="30" height="30"><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
+      <a class="hm-nav-play" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
+    </nav>
+    <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-l="en" data-set="en" aria-pressed="true">EN</button><button type="button" data-l="he" data-set="he" aria-pressed="false">עב</button></div>
+    <a class="hm-btn orange sm hm-top-play" href="/play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><span data-l="en">Play</span><span data-l="he">לשחק</span></a>
+    <button class="hm-menu" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<script src="/site/chrome.js"></script>
+
+<main class="pr-wrap">
+  <section class="pr-card" aria-labelledby="prTitle">
+    <div class="pr-stage"><canvas id="prCanvas" aria-hidden="true"></canvas><div class="pr-burst" aria-hidden="true"></div></div>
+    <div class="pr-text" id="prText">
+      <div class="pr-badge ok" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5.5 12.5 4.2 4.2L18.5 7.8" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h1 id="prTitle" data-en="Payment complete!" data-he="התשלום עבר בהצלחה!">Payment complete!</h1>
+      <p class="pr-lead" id="prLead" data-en="Thank you! Everything you bought is already in your Jumpi account." data-he="תודה! כל מה שקניתם כבר בחשבון הג'אמפי שלכם.">Thank you! Everything you bought is already in your Jumpi account.</p>
+      <div class="pr-item" id="prItem" hidden>
+        <img id="prImg" src="" alt="" width="96" height="96">
+        <div><b id="prName"></b><ul class="pr-got" id="prGot"></ul></div>
+      </div>
+      <p class="pr-tip" id="prTip" data-en="Open the game and enjoy! If the game is already open, it's there now." data-he="פתחו את המשחק ותיהנו! אם המשחק כבר פתוח, זה כבר שם.">Open the game and enjoy! If the game is already open, it's there now.</p>
+      <div class="pr-btns" id="prBtns">
+        <a class="pr-btn play" href="/play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg><span data-en="Play now" data-he="לשחק עכשיו">Play now</span></a>
+        <a class="pr-btn ghost" data-store href="/store"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 1.9-1.4L21 8H6.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="19.5" r="1.7" fill="currentColor"/><circle cx="17" cy="19.5" r="1.7" fill="currentColor"/></svg><span data-en="Back to the store" data-he="חזרה לחנות">Back to the store</span></a>
+      </div>
+      <p class="pr-small"><span data-en="Questions about this purchase?" data-he="שאלות על הרכישה?">Questions about this purchase?</span> <a href="/contact" data-en="Write to us" data-he="כתבו לנו">Write to us</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="hm-foot">
+  <svg class="hm-foot-sand" viewBox="0 0 1440 140" preserveAspectRatio="none" aria-hidden="true"><path d="M0 70 C 160 20 320 110 520 64 C 720 18 900 96 1100 56 C 1260 24 1360 60 1440 44 V140 H0 Z"/></svg>
+  <div class="hm-foot-in">
+    <div class="hm-foot-brand">
+      <img src="/jumpi-logo.png" alt="Jumpi Games" width="150" height="88" loading="lazy">
+      <p data-l="en">A free 3D world for kids. Explore, play, raise pets and make friends, safely.</p>
+      <p data-l="he">עולם תלת־ממדי חינמי לילדים. לחקור, לשחק, לגדל חיות ולהכיר חברים, בבטחה.</p>
+      <a class="hm-btn orange" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
+    </div>
+    <nav class="hm-foot-col" aria-label="Play">
+      <h3><span data-l="en">Play</span><span data-l="he">משחק</span></h3>
+      <a href="/play"><span data-l="en">Play online</span><span data-l="he">לשחק אונליין</span></a>
+      <a class="hm-noapp" href="https://apps.microsoft.com/detail/9N4FZ4DJKMSD" target="_blank" rel="noopener">Microsoft Store</a>
+      <a class="hm-noapp" href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
+      <a href="/trailer"><span data-l="en">Watch the trailer</span><span data-l="he">הטריילר</span></a>
+      <a class="hm-noapp" href="/store"><span data-l="en">Jumpi Store</span><span data-l="he">החנות</span></a>
+    </nav>
+    <nav class="hm-foot-col" aria-label="Help">
+      <h3><span data-l="en">Help</span><span data-l="he">עזרה</span></h3>
+      <a href="/help"><span data-l="en">Help center</span><span data-l="he">מרכז העזרה</span></a>
+      <a href="/safety"><span data-l="en">Online safety</span><span data-l="he">בטיחות ברשת</span></a>
+      <a href="/for-parents"><span data-l="en">For parents</span><span data-l="he">להורים</span></a>
+      <a href="/parents"><span data-l="en">Parental controls</span><span data-l="he">בקרת הורים</span></a>
+      <a href="/forgot-password"><span data-l="en">Forgot password</span><span data-l="he">שכחתי סיסמה</span></a>
+      <a href="/contact"><span data-l="en">Contact us</span><span data-l="he">צור קשר</span></a>
+    </nav>
+    <nav class="hm-foot-col" aria-label="Jumpi">
+      <h3>Jumpi</h3>
+      <a href="/about"><span data-l="en">About us</span><span data-l="he">אודות</span></a>
+      <a href="/partners"><span data-l="en">Our partners</span><span data-l="he">השותפים שלנו</span></a>
+      <a href="/team"><span data-l="en">Join the team</span><span data-l="he">הצטרפות לצוות</span></a>
+      <a class="hm-noapp" href="https://discord.gg/dgwsBJgzZS" target="_blank" rel="noopener"><span data-l="en">Discord (13+)</span><span data-l="he">דיסקורד (<span dir="ltr">13+</span>)</span></a>
+      <a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a>
+      <a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a>
+      <a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a>
+      <a href="/delete-account"><span data-l="en">Delete an account</span><span data-l="he">מחיקת חשבון</span></a>
+    </nav>
+  </div>
+  <div class="hm-foot-safe">
+    <span><b data-l="en">Free to play</b><b data-l="he">חינם לשחק</b></span>
+    <span><b data-l="en">Friends-only messages</b><b data-l="he">הודעות רק לחברים</b></span>
+    <span><b data-l="en">A chat filter that protects</b><b data-l="he">מסנן צ'אט שמגן</b></span>
+    <span><b data-l="en">Free parental controls</b><b data-l="he">בקרת הורים בחינם</b></span>
+  </div>
+  <div class="hm-foot-end">
+    <p class="hm-foot-seo" lang="he" dir="rtl">ג'אמפי (Jumpi Games) הוא עולם וירטואלי בתלת־ממד לילדים: יוצרים דמות, מטיילים עם חברים בעיר ענקית, משחקים במיני-משחקים, עובדים בעבודות, מגדלים חיות מחמד ומעצבים בית. משחק אונליין חינמי בדפדפן, עם בקרת הורים.</p>
+    <p>© 2026 Jumpi Games™</p>
+  </div>
+</footer>
+
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+<script type="module" src="/site/pay-result.js"></script>
+</body>
+</html>
