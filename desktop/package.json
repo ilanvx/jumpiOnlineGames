@@ -92,6 +92,12 @@
         "he-IL"
       ],
       "artifactName": "Jumpi-Games-Store.${ext}"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "store-helper/bin/store-helper.exe",
+        "to": "store-helper.exe"
+      }
+    ]
   }
 }

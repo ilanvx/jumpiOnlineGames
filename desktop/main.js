@@ -4,12 +4,17 @@
   - updates: on every start it checks GitHub Releases (electron-updater). A new version is downloaded with a
     progress bar in the splash, installed silently and the game opens again by itself. While playing it checks
     again every few hours and installs the update the next time the game is closed.
-  - the page knows it's in the app: "JumpiApp/<version>" in the user agent (body.app: no paid store, no Discord)
+  - the page knows it's in the app: "JumpiApp/<version>" in the user agent (body.app: no paid store, no Discord);
+    the Microsoft Store version adds "JumpiStore/1": coins and memberships are bought there through Microsoft
+    (store-helper.exe, see store-helper/store-helper.cpp, and routes/msstore.js on the server)
+  - Discord (13+) never opens from the app, whatever link the page has
   - only /play stays inside the app; every other page or site opens in the normal browser
   - no connection: the Jumpi "no internet" page (offline.html) with TRY AGAIN
 */
 const { app, BrowserWindow, ipcMain, shell, Menu, session } = require("electron");
 const path = require("path");
+const { execFile } = require("child_process");
+const STORE = !!process.windowsStore;   // installed from the Microsoft Store
 
 const HOST = "jumpigames.com";
 const START = "https://jumpigames.com/play";
@@ -73,8 +78,10 @@ function ours(u) {
 function isGame(u) {
   try { const x = new URL(u); return x.protocol === "file:" || (ours(u) && (x.pathname === "/play" || x.pathname === "/play/")); } catch { return false; }
 }
+// Discord is 13+: never from the app (the game hides its Discord button there too)
+const DISCORD = /(^|\.)(discord\.gg|discord\.com|discordapp\.com|discord\.new)$/i;
 function openOutside(u) {
-  try { const x = new URL(u); if (x.protocol === "https:" || x.protocol === "http:" || x.protocol === "mailto:") shell.openExternal(x.toString()); } catch {}
+  try { const x = new URL(u); if (DISCORD.test(x.hostname)) return; if (x.protocol === "https:" || x.protocol === "http:" || x.protocol === "mailto:") shell.openExternal(x.toString()); } catch {}
 }
 
 function startGame() {
@@ -86,7 +93,7 @@ function startGame() {
     webPreferences: { preload: path.join(__dirname, "preload.js"), contextIsolation: true, sandbox: true, backgroundThrottling: false },
   });
   const wc = game.webContents;
-  wc.setUserAgent(`${wc.getUserAgent()} JumpiApp/${app.getVersion()} JumpiDesktop/${app.getVersion()}`);
+  wc.setUserAgent(`${wc.getUserAgent()} JumpiApp/${app.getVersion()} JumpiDesktop/${app.getVersion()}${STORE ? " JumpiStore/1" : ""}`);
 
   wc.on("will-navigate", (e, u) => { if (!isGame(u)) { e.preventDefault(); openOutside(u); } });
   wc.setWindowOpenHandler(({ url }) => { openOutside(url); return { action: "deny" }; });
@@ -113,6 +120,39 @@ ipcMain.on("app:retry", () => { if (game) game.webContents.loadURL(START); });
 ipcMain.on("app:open", (e, u) => { if (game && e.sender === game.webContents && ours(e.sender.getURL())) openOutside(String(u || "")); });
 ipcMain.on("splash:close", () => app.quit());
 ipcMain.handle("app:version", () => app.getVersion());
+
+// ---------- buying through the Microsoft Store (only the Store version) ----------
+const HELPER = path.join(process.resourcesPath || __dirname, "store-helper.exe");
+let buying = false;
+function helper(args, input) {
+  return new Promise((done) => {
+    if (!STORE) return done({ ok: false, error: "not-store" });
+    let child;
+    try {
+      child = execFile(HELPER, args, { windowsHide: true, timeout: 15 * 60e3, maxBuffer: 1 << 20 }, (err, stdout) => {
+        try { done(JSON.parse(String(stdout).trim().split(/\r?\n/).pop())); } catch { done({ ok: false, error: err ? err.message : "no answer" }); }
+      });
+    } catch (e) { return done({ ok: false, error: e.message }); }
+    child.stdin.on("error", () => {});
+    child.stdin.end(input || "");
+  });
+}
+const hwnd = () => {
+  if (!game) return "0";
+  const b = game.getNativeWindowHandle();
+  return (b.length >= 8 ? b.readBigUInt64LE(0) : BigInt(b.readUInt32LE(0))).toString(16);
+};
+const fromGame = (e) => game && e.sender === game.webContents && ours(e.sender.getURL());
+ipcMain.handle("ms:products", (e) => (fromGame(e) ? helper(["products", hwnd()]) : { ok: false }));
+ipcMain.handle("ms:buy", async (e, id) => {
+  if (!fromGame(e) || !/^[0-9A-Z]{12}$/.test(String(id)) || buying) return { ok: false, error: buying ? "busy" : "bad" };
+  buying = true;
+  try { return await helper(["buy", hwnd(), String(id)]); } finally { buying = false; }
+});
+ipcMain.handle("ms:key", (e, ticket, uid) => {
+  if (!fromGame(e) || typeof ticket !== "string" || ticket.length > 8000 || /[\r\n]/.test(ticket) || !/^[0-9a-f]{32}$/.test(String(uid))) return { ok: false, error: "bad" };
+  return helper(["key", hwnd()], ticket + "\n" + uid + "\n");
+});
 
 app.whenReady().then(() => {
   // no camera / mic / location etc. for the page

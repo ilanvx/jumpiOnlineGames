@@ -6,4 +6,10 @@ contextBridge.exposeInMainWorld("JumpiAppBridge", {
   retry: () => ipcRenderer.send("app:retry"),
   version: () => version,
   openOutside: (u) => ipcRenderer.send("app:open", String(u || "")),
+  // the Microsoft Store version only ("JumpiStore/" in the user agent): Microsoft's own purchase window
+  msStore: {
+    products: () => ipcRenderer.invoke("ms:products"),
+    buy: (storeId) => ipcRenderer.invoke("ms:buy", String(storeId || "")),
+    key: (ticket, uid) => ipcRenderer.invoke("ms:key", String(ticket || ""), String(uid || "")),
+  },
 });
