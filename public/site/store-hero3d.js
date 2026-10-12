@@ -17,6 +17,8 @@ async function start() {
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch (e) { canvas.remove(); return; }
+  // the canvas always covers the hero exactly (even if an old store.css is still in the browser's cache)
+  canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;z-index:-1";
   const small = () => innerWidth <= 760;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -278,8 +280,8 @@ async function start() {
     const w = Math.round(r.width), h = Math.round(r.height);
     if (!w || !h) return;
     const dpr = Math.min(devicePixelRatio || 1, small() ? 1.5 : w > 1600 ? 1.4 : 1.75);
-    renderer.setPixelRatio(dpr);
-    if (w !== W || h !== H) renderer.setSize(w, h, false);
+    if (renderer.getPixelRatio() !== dpr) renderer.setPixelRatio(dpr);
+    if (w !== W || h !== H || canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) renderer.setSize(w, h, false);
     W = w; H = h;
     sparks.material.uniforms.uPx.value = stars.material.uniforms.uPx.value = dpr * (h / 700);
     cam.aspect = w / h;
@@ -307,8 +309,15 @@ async function start() {
     world.scale.set(rtl ? -s : s, s, s);
     world.position.set(cx + (rtl ? 0.72 : -0.72) * s, 1.55 + cy, 0);
   };
-  new ResizeObserver(fit).observe(hero);
-  new MutationObserver(fit).observe(document.documentElement, { attributes: true, attributeFilter: ["dir", "lang"] });
+  let fitQueued = false;
+  const fitSoon = () => { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; fit(); }); };
+  new ResizeObserver(fitSoon).observe(hero);
+  addEventListener("resize", fitSoon);
+  // the graphics card dropped the 3D (a long time in another tab, a driver reset…): show the picture, and come back cleanly
+  let lost = false;
+  canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); lost = true; hero.classList.remove("is-3d"); });
+  canvas.addEventListener("webglcontextrestored", () => { lost = false; W = H = 0; fit(); shown = false; last = 0; });
+  new MutationObserver(fitSoon).observe(document.documentElement, { attributes: true, attributeFilter: ["dir", "lang"] });
   fit();
 
   /* ---------- mouse: the scene turns a little toward it, the Jumpis look; a click on the chest bursts ---------- */
@@ -340,10 +349,12 @@ async function start() {
   new IntersectionObserver(([e]) => (onScreen = e.isIntersecting), { rootMargin: "60px" }).observe(hero);
   const clock = new THREE.Clock();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), tmp = new THREE.Vector3();
-  let last = 0, shown = false;
+  let last = 0, shown = false, sizeTick = 0;
   const frame = () => {
     requestAnimationFrame(frame);
-    if (!onScreen || document.hidden) { clock.getDelta(); return; }
+    if (!onScreen || document.hidden || lost) { clock.getDelta(); return; }
+    // the drawing must match the hero's size (zoom, a moved window, a phone turned): check once a second
+    if (++sizeTick % 60 === 0 && (Math.abs(canvas.clientWidth - W) > 1 || Math.abs(canvas.clientHeight - H) > 1)) fit();
     const dt = Math.min(clock.getDelta(), 1 / 20), t = clock.elapsedTime;
     mouse.x += (mouse.tx - mouse.x) * 0.05; mouse.y += (mouse.ty - mouse.y) * 0.05;
     tilt.rotation.y = Math.sin(t * 0.22) * 0.08 + mouse.x * 0.16 * (rtl ? -1 : 1);
