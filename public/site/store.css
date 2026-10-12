@@ -2,32 +2,45 @@
 body{background:#fff8e8}
 .st-hero,.st-main,.st-cart,.st-modal{--gold:#ffb000;--gold-edge:#b86a00;--plum:#5a22d6;--plum-edge:#34107f}
 
-/* ---------- the hero: a picture (img/store/hero-*.webp, made in 3D with the real Jumpi) with the text on its dark left side ---------- */
-.st-hero{position:relative;overflow:hidden;color:#fff;isolation:isolate;background:#14164a;min-height:clamp(470px,43vw,700px);display:flex;align-items:center}
-.st-hero-art{position:absolute;inset:0;z-index:-1}
+/* Hebrew headings: Fredoka Bold's Hebrew letters (fonts/fredoka-he-700.woff, only the Hebrew block), round like Lilita One */
+@font-face{font-family:"Jumpi He";src:url(/site/fonts/fredoka-he-700.woff) format("woff");font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F}
+body{--display:"Lilita One","Jumpi He","Secular One","Arial Rounded MT Bold",system-ui,sans-serif}
+[lang="he"] body{--body:"Fredoka","Rubik",system-ui,sans-serif}
+
+/* ---------- the hero: a live 3D scene (store-hero3d.js) beside the text; the picture under it (img/store/hero-*.webp)
+   is what shows while it loads, with "reduce motion", or without 3D ---------- */
+.st-hero{position:relative;overflow:hidden;color:#fff;isolation:isolate;min-height:clamp(470px,43vw,700px);display:flex;align-items:center;
+  background:radial-gradient(60% 75% at 76% 58%,#5b2bb8 0%,#36208a 35%,transparent 72%),radial-gradient(40% 50% at 70% 20%,rgb(160 110 255 / .35),transparent 70%),linear-gradient(180deg,#14164a,#1d1660)}
+[dir="rtl"] .st-hero{background:radial-gradient(60% 75% at 24% 58%,#5b2bb8 0%,#36208a 35%,transparent 72%),radial-gradient(40% 50% at 30% 20%,rgb(160 110 255 / .35),transparent 70%),linear-gradient(180deg,#14164a,#1d1660)}
+.st-hero-art{position:absolute;inset:0;z-index:-2;transition:opacity .8s}
 .st-hero-art img{width:100%;height:100%;object-fit:cover;object-position:100% 50%;display:block}
-.st-hero-in{width:100%;max-width:1320px;margin:0 auto;padding:40px clamp(18px,5vw,72px) 70px;box-sizing:border-box;direction:ltr}
-.st-hero-box{max-width:min(560px,40vw)}
+[dir="rtl"] .st-hero-art img{transform:scaleX(-1)}
+.st-hero-3d{position:absolute;inset:0;z-index:-1;width:100%;height:100%;display:block;opacity:0;transition:opacity .8s}
+.st-hero.is-3d .st-hero-3d{opacity:1}
+.st-hero.is-3d .st-hero-art{opacity:0}
+.st-hero-in{width:100%;max-width:1320px;margin:0 auto;padding:40px clamp(18px,5vw,72px) 70px;box-sizing:border-box;direction:ltr;pointer-events:none}
+[dir="rtl"] .st-hero-in{direction:rtl}
+.st-hero-box{max-width:min(560px,40vw);pointer-events:auto}
 [dir="rtl"] .st-hero-box{direction:rtl}
 .st-hero h1{margin:0;font:400 clamp(2.3rem,4.6vw,4.2rem)/1.02 var(--display);color:#fff;text-shadow:0 5px 0 #2a1470,0 12px 30px rgb(0 0 0 / .35)}
-[lang="he"] .st-hero h1{font-family:"Secular One","Lilita One",system-ui,sans-serif;line-height:1.1}
+[lang="he"] .st-hero h1{line-height:1.08;font-size:clamp(2.3rem,4.3vw,4rem)}
 .st-motto{margin:14px 0 0;font:400 clamp(1.3rem,2.2vw,1.9rem)/1.15 var(--display);color:#ffd23a;text-shadow:0 3px 0 #7a3d00}
-[lang="he"] .st-motto{font-family:"Secular One","Lilita One",system-ui,sans-serif}
-.st-lead{margin:14px 0 26px;font:500 clamp(1.02rem,1.5vw,1.22rem)/1.55 var(--body);color:#dcd6ff}
+.st-lead{margin:14px 0 26px;font:500 clamp(1.02rem,1.5vw,1.22rem)/1.55 var(--body);color:#dcd6ff;max-width:30em;text-wrap:pretty}
+[lang="he"] .st-lead{font-weight:500;line-height:1.6}
 .st-hero-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;text-decoration:none;color:#5a2a00;font:400 1.35rem/1 var(--display);letter-spacing:.02em;
   background:linear-gradient(180deg,#fff27a,#ffc21c 55%,#ff9d00);box-shadow:0 6px 0 #b86a00,0 14px 30px rgb(255 170 0 / .35),inset 0 2px 0 rgb(255 255 255 / .6);transition:transform .15s,filter .15s}
-[lang="he"] .st-hero-btn{font-family:"Secular One","Lilita One",system-ui,sans-serif}
+[lang="he"] .st-hero-btn{letter-spacing:0}
 .st-hero-btn svg{width:22px;height:22px}
 .st-hero-btn:hover{transform:translateY(-3px);filter:brightness(1.05)}
 .st-hero-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b86a00}
 .st-hero-btn:focus-visible{outline:3px solid #fff;outline-offset:4px}
-.st-hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:48px;background:#fff8e8;border-radius:50% 50% 0 0/100% 100% 0 0}
+.st-hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:48px;background:#fff8e8;border-radius:50% 50% 0 0/100% 100% 0 0;pointer-events:none}
 @media (max-width:760px){
-  .st-hero{min-height:calc(100vw * 1.3);align-items:flex-start}
-  .st-hero-art img{object-position:50% 100%}
+  .st-hero{min-height:calc(100vw * 1.3);align-items:flex-start;background:radial-gradient(90% 55% at 50% 78%,#5b2bb8 0%,#36208a 40%,transparent 75%),linear-gradient(180deg,#14164a,#1d1660)}
+  .st-hero-art img,[dir="rtl"] .st-hero-art img{object-position:50% 100%}
   .st-hero-in{padding:26px 20px 0;text-align:center}
   .st-hero-box{max-width:none;text-align:center}
-  .st-hero h1{font-size:clamp(2rem,8.4vw,2.6rem)}
+  .st-hero h1,[lang="he"] .st-hero h1{font-size:clamp(2rem,8.4vw,2.6rem)}
   .st-lead{margin:10px auto 18px;font-size:1rem}
   .st-hero-btn{padding:13px 22px;font-size:1.15rem}
 }

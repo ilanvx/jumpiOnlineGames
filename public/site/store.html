@@ -15,6 +15,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/jumpi-head-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <script src="/shared/a11y.js"></script>
+<link rel="preload" as="font" type="font/woff" href="/site/fonts/fredoka-he-700.woff" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;500;600&family=Secular+One&display=swap">
@@ -50,6 +51,7 @@
     <source media="(max-width:760px)" srcset="/site/img/store/hero-tall.webp">
     <img src="/site/img/store/hero-1600.webp" srcset="/site/img/store/hero-1600.webp 1600w, /site/img/store/hero-2560.webp 2560w" sizes="100vw" width="2560" height="1100" alt="Two Jumpis next to a golden treasure chest full of coins, crystals and sparkles" fetchpriority="high">
   </picture>
+  <canvas class="st-hero-3d" id="stHero3d" aria-hidden="true"></canvas>
   <div class="st-hero-in"><div class="st-hero-box">
     <h1 data-en="The Official Jumpi Games Store" data-he="החנות הרשמית של ג'אמפי גיימס">The Official Jumpi Games Store</h1>
     <p class="st-motto" data-en="A little magic for every adventure!" data-he="קצת קסם לכל הרפתקה!">A little magic for every adventure!</p>
@@ -164,5 +166,6 @@
 
 <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module" src="/site/store-page.js"></script>
+<script type="module" src="/site/store-hero3d.js"></script>
 </body>
 </html>
