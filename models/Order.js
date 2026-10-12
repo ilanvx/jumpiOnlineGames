@@ -10,7 +10,7 @@ const orderSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
     username: { type: String, default: "" },
     product: { type: String, required: true },   // the product id, or "cart" when the order has several
-    kind: { type: String, enum: ["member", "coins", "bundle", "cart"], required: true },
+    kind: { type: String, enum: ["member", "coins", "bundle", "costume", "cart"], required: true },
     // what is in the cart: one line per product (bundles are always 1); amount = the sum of price × qty
     items: { type: [{ _id: false, product: String, qty: Number, price: Number }], default: [] },
     cartKey: { type: String, default: "" },   // the same cart again within 15 minutes reuses this order (no paying twice)

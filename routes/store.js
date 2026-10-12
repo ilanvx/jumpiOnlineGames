@@ -120,11 +120,13 @@ function readCart(raw, owned) {
     lines.push({ product: id, qty, price: P.price });
   }
   const amount = Math.round(lines.reduce((a, l) => a + l.price * 100 * l.qty, 0)) / 100;
-  const give = { coins: 0, items: [], memberDays: 0 };
+  // items: added only if the account doesn't have them (one-time bundles); extra: always added, one set per costume bought
+  const give = { coins: 0, items: [], extra: [], memberDays: 0 };
   for (const l of lines) {
-    const g = PRODUCT_BY_ID[l.product].give;
+    const P = PRODUCT_BY_ID[l.product], g = P.give;
     give.coins += (g.coins || 0) * l.qty; give.memberDays += (g.memberDays || 0) * l.qty;
-    for (const it of g.items || []) if (!give.items.includes(it)) give.items.push(it);
+    if (P.kind === "costume") for (let k = 0; k < l.qty; k++) give.extra.push(...(g.items || []));
+    else for (const it of g.items || []) if (!give.items.includes(it)) give.items.push(it);
   }
   return { lines, amount, give };
 }
@@ -246,7 +248,7 @@ async function fulfillOne(orderId, ref) {
   const now = new Date(), inv = { $ifNull: ["$inventory", []] };
   const set = {
     coins: { $add: [{ $ifNull: ["$coins", 0] }, give.coins || 0] },
-    inventory: { $concatArrays: [inv, { $filter: { input: give.items || [], as: "it", cond: { $not: [{ $in: ["$$it", inv] }] } } }] },
+    inventory: { $concatArrays: [inv, { $filter: { input: give.items || [], as: "it", cond: { $not: [{ $in: ["$$it", inv] }] } } }, give.extra || []] },
   };
   set.__v = { $add: [{ $ifNull: ["$__v", 0] }, 1] };   // a stale save() elsewhere can't wipe what was just given
   if (give.memberDays) set.memberUntil = { $add: [{ $cond: [{ $gt: [{ $ifNull: ["$memberUntil", now] }, now] }, "$memberUntil", now] }, give.memberDays * DAY] };

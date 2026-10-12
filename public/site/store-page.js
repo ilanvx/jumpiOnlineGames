@@ -2,6 +2,7 @@
    cart → log in to the account that gets it (only for this purchase: nothing is saved, the game's login doesn't count)
    → the grown-up confirms and agrees → HYP's payment page. */
 import { PRODUCTS, PRODUCT_BY_ID, MEMBER_PERKS } from "/shared/store.js";
+import { OUTFITS } from "/shared/outfits.js";
 
 const $ = (id) => document.getElementById(id);
 let lang = "en";
@@ -15,7 +16,18 @@ const ITEM_NAMES = {
   "pants:4": ["Pink jeans", "ג'ינס ורוד"], "pants:7": ["Gold shorts", "מכנסי זהב"], "glasses:4": ["Heart glasses", "משקפי לבבות"], "glasses:5": ["Neon shades", "משקפי ניאון"],
   "aura:8": ["Sakura Breeze aura", "הילת סאקורה"], "aura:9": ["Crown of Stars aura", "הילת כתר הכוכבים"], "tag:8": ["Crown name tag", "תג כתר"],
 };
-const itemName = (id) => (ITEM_NAMES[id] ? T(...ITEM_NAMES[id]) : id);
+// the costume pieces in Hebrew (English comes from outfits.js)
+const PIECE_HE = {
+  "Black police cap": "כובע שוטר שחור", "Black police shirt": "חולצת שוטר שחורה", "Black police pants": "מכנסי שוטר שחורים",
+  "Pink police cap": "כובע שוטר ורוד", "Pink police shirt": "חולצת שוטר ורודה", "Pink police pants": "מכנסי שוטר ורודים",
+  "Backwards rapper cap": "כובע ראפר הפוך", "Rapper tee": "חולצת ראפר", "Rapper jeans": "ג'ינס ראפר",
+  "Emoji cap": "כובע אימוג'י", "Emoji tee": "חולצת אימוג'י", "Emoji pants": "מכנסי אימוג'י",
+};
+const itemName = (id) => {
+  if (ITEM_NAMES[id]) return T(...ITEM_NAMES[id]);
+  const [slot, i] = id.split(":"), o = OUTFITS[slot]?.[+i];
+  return o ? (lang === "he" && PIECE_HE[o.name] ? PIECE_HE[o.name] : o.name) : id;
+};
 const ICON = {
   cart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.1 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 1.9-1.4L21 8H6.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="19.5" r="1.6" fill="currentColor"/><circle cx="17" cy="19.5" r="1.6" fill="currentColor"/></svg>',
   lock: '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5a4.5 4.5 0 0 0-4.5 4.5v2H5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-.5V6A4.5 4.5 0 0 0 10 1.5zm-2.5 4.5a2.5 2.5 0 0 1 5 0v2h-5z"/></svg>',
@@ -60,7 +72,8 @@ function setQty(id, q) {
 
 /* ---------- the cards ---------- */
 // the picture of each product (made ahead of time: coins and memberships in img/store/, bundles in img/)
-const artOf = (p) => (p ? (p.kind === "bundle" ? `/site/img/${p.id}.png` : `/site/img/store/${p.id}.webp`) : "/site/img/store/coins-4000.webp");
+const artOf = (p) => (p ? (p.kind === "bundle" ? `/site/img/${p.id}.png` : `/site/img/store/${p.id}.webp`) : "/site/img/store/cart-empty.webp");
+const PICK = {};   // the colour chosen on each costume card (group -> product id)
 const PASS_COLOR = { 7: "#1fb6ff", 30: "#8a4dff", 90: "#ff8a1c", 365: "#ff4f8b" };
 const tag = (p) => (p.tag === "popular" ? `<span class="st-tag">${T("Most popular", "הכי פופולרי")}</span>` : p.tag === "best" ? `<span class="st-tag best">${T("Best value", "הכי משתלם")}</span>` : "");
 function addBtn(p) {
@@ -87,15 +100,17 @@ function render() {
       <p class="st-pday">${T(`only ₪${(p.price / p.days).toFixed(2)} a day`, `רק ₪${(p.price / p.days).toFixed(2)} ליום`)}</p>
       ${addBtn(p)}
     </article>`).join("");
-  // bundles
-  $("stBundles").innerHTML = PRODUCTS.filter((p) => p.kind === "bundle").map((p) => {
-    const g = p.give;
-    const list = [...(g.items || []).map((id) => `<li class="${id.startsWith("aura:") ? "aura" : ""}">${esc(itemName(id))}</li>`),
-      g.coins ? `<li class="coins">${num(g.coins)} ${T("coins", "מטבעות")}</li>` : "", g.memberDays ? `<li class="member">${T(`${g.memberDays} days of membership`, `${g.memberDays} ימי מנוי`)}</li>` : ""].join("");
-    return `<article class="st-bundle" id="${p.id}" style="--bc:${p.color}">
-      <div class="st-art"><img src="${artOf(p)}" alt="" width="460" height="460" loading="lazy"></div>
-      <div class="st-bbody"><h3>${esc(p.name[lang])}</h3><p>${esc(p.blurb[lang])}</p><ul class="st-list">${list}</ul>
-      <p class="st-once">${T("One per account", "אחת לכל חשבון")}</p>
+  // costumes: one card for each costume; the police costume has a colour to choose (each colour is its own product)
+  const groups = [...new Set(PRODUCTS.filter((p) => p.kind === "costume").map((p) => p.group))];
+  $("stBundles").innerHTML = groups.map((gr) => {
+    const vars = PRODUCTS.filter((p) => p.kind === "costume" && p.group === gr), p = vars.find((v) => v.id === PICK[gr]) || vars[0], g = p.give;
+    const list = [...g.items.map((id) => `<li>${esc(itemName(id))}</li>`),
+      `<li class="coins">${num(g.coins)} ${T("coins", "מטבעות")}</li>`, `<li class="member">${T(`${g.memberDays} days of membership`, `${g.memberDays} ימי מנוי`)}</li>`].join("");
+    const pick = vars.length > 1 ? `<div class="st-pick" role="radiogroup" aria-label="${T("Colour", "צבע")}">${vars.map((v) => `<button type="button" role="radio" aria-checked="${v.id === p.id}" data-pick="${gr}" data-v="${v.id}" style="--sw:${v.color}"><span></span>${esc(v.variant[lang])}</button>`).join("")}</div>` : "";
+    return `<article class="st-bundle st-costume" id="${p.id}" data-group="${gr}" style="--bc:${p.color}">
+      <div class="st-art"><img src="${artOf(p)}" alt="${esc(T(`A Jumpi in the ${p.name.en}`, `ג'אמפי ב${p.name.he}`))}" width="460" height="460" loading="lazy"></div>
+      <div class="st-bbody"><h3>${esc(p.name[lang])}</h3>${pick}<p>${esc(p.blurb[lang])}</p><ul class="st-list">${list}</ul>
+      <p class="st-once">${T("The clothes can be traded · Buy it as many times as you like", "את הבגדים אפשר להחליף · אפשר לקנות כמה פעמים שרוצים")}</p>
       <div class="st-buyrow">${addBtn(p)}</div></div></article>`;
   }).join("");
   const n = cartCount();
@@ -132,7 +147,7 @@ const line = (l, small) => {
   const P = PRODUCT_BY_ID[l.id];
   return `<li class="st-line${S.flash === l.id ? " new" : ""}">
     <img src="${artOf(P)}" alt="">
-    <div class="st-lmain"><b>${esc(P.name[lang])}</b><span>${P.kind === "coins" ? T(`${num(P.give.coins)} coins`, `${num(P.give.coins)} מטבעות`) : P.kind === "member" ? T(`${num(P.days)} days of membership`, `${num(P.days)} ימי מנוי`) : T("Special bundle", "חבילה מיוחדת")} · ${money(P)}</span>
+    <div class="st-lmain"><b>${esc(P.name[lang])}</b><span>${P.kind === "coins" ? T(`${num(P.give.coins)} coins`, `${num(P.give.coins)} מטבעות`) : P.kind === "member" ? T(`${num(P.days)} days of membership`, `${num(P.days)} ימי מנוי`) : P.kind === "costume" ? (P.variant ? `${T("Costume", "תחפושת")} · ${esc(P.variant[lang])}` : T("Costume", "תחפושת")) : T("Special bundle", "חבילה מיוחדת")} · ${money(P)}</span>
       ${small ? (l.qty > 1 ? `<span>× ${l.qty}</span>` : "") : P.once ? `<span class="st-lone">${T("One per account", "אחת לכל חשבון")}</span>` : `<div class="st-qty" role="group" aria-label="${T("How many", "כמות")}"><button type="button" data-q="${l.id}" data-d="-1" aria-label="${T("One less", "פחות אחד")}">−</button><output>${l.qty}</output><button type="button" data-q="${l.id}" data-d="1" aria-label="${T("One more", "עוד אחד")}" ${l.qty >= 10 ? "disabled" : ""}>+</button></div>`}
     </div>
     <div class="st-lend"><b>${ils(P.price * l.qty)}</b>${small ? "" : `<button type="button" class="st-del" data-del="${l.id}" aria-label="${T("Remove", "להסיר")}">${ICON.trash}</button>`}</div>
@@ -146,7 +161,7 @@ function paintCart(focus) {
   $("stCartBack").hidden = S.step === "cart";
   const msg = S.msg ? `<p class="st-err" role="alert">${esc(S.msg)}</p>` : "";
   if (S.step === "cart") {
-    if (!CART.length) body.innerHTML = `<div class="st-empty"><img src="/site/img/store/coins-800.webp" alt=""><p>${T("Your cart is empty. Pick some coins, a membership or a bundle!", "הסל ריק. בחרו מטבעות, מנוי או חבילה!")}</p><button class="st-buy big" type="button" data-cclose>${T("Back to the store", "חזרה לחנות")}</button></div>`;
+    if (!CART.length) body.innerHTML = `<div class="st-empty"><img src="/site/img/store/cart-empty.webp" alt=""><p>${T("Your cart is empty. Pick some coins, a membership or a costume!", "הסל ריק. בחרו מטבעות, מנוי או תחפושת!")}</p><button class="st-buy big" type="button" data-cclose>${T("Back to the store", "חזרה לחנות")}</button></div>`;
     else body.innerHTML = `${msg}<ul class="st-lines">${CART.map((l) => line(l)).join("")}</ul>
       <div class="st-cfoot">${total(T("Total", "סה״כ"))}
         <p class="st-cnote">${T("One payment, nothing renews by itself. Memberships add up. All purchases are final.", "תשלום אחד, שום דבר לא מתחדש לבד. מנויים מצטברים. כל הרכישות סופיות.")}</p>
@@ -258,6 +273,7 @@ function done(id) {
 document.addEventListener("click", (e) => {
   const a = e.target.closest("[data-add]"); if (a) return addToCart(a.dataset.add);
   if (e.target.closest("[data-open-cart]")) openCart("cart");
+  const pk = e.target.closest("[data-pick]"); if (pk) { PICK[pk.dataset.pick] = pk.dataset.v; render(); const b = document.querySelector(`[data-v="${pk.dataset.v}"]`); b && b.focus(); }
 });
 let start = "en";
 try { start = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jumpi-lang") || "en"; } catch (e) {}
@@ -267,7 +283,8 @@ setLang(start);
   if (q.get("payment") === "ok") done(q.get("product"));
   else if (q.get("payment") === "check") openModal(`<h2>${T("We're checking your payment", "אנחנו בודקים את התשלום")}</h2><p class="st-text">${T("The payment company didn't confirm it yet. If you were charged, the purchase will reach the account soon. Didn't get it? Write to us on the Contact page.", "חברת הסליקה עוד לא אישרה את התשלום. אם חויבתם, הרכישה תגיע לחשבון בקרוב. לא קיבלתם? כתבו לנו בעמוד צור קשר.")}</p><a class="st-buy big" href="/contact">${T("Contact us", "צור קשר")}</a>`);
   else if (q.get("payment") === "failed") openModal(`<h2>${T("Payment didn't go through", "התשלום לא עבר")}</h2><p class="st-text">${T("Nothing was charged. Your cart is still here, you can try again.", "שום דבר לא חויב. הסל עדיין כאן, אפשר לנסות שוב.")}</p>`);
-  // links from the game: /store#bundle-sakura → scroll there and light it up
-  const id = location.hash.slice(1), el = id && document.getElementById(id);
+  // links from the game: /store#costume-rapper → scroll there and light it up (a colour of the police costume picks it first)
+  const id = location.hash.slice(1); if (PRODUCT_BY_ID[id]?.group) { PICK[PRODUCT_BY_ID[id].group] = id; render(); }
+  const el = id && (document.getElementById(id) || document.querySelector(`[data-group="${PRODUCT_BY_ID[id]?.group}"]`));
   if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); }
 }

@@ -206,7 +206,7 @@ function offerProblem(user, items, who) {
   for (const id of items) want.set(id, (want.get(id) || 0) + 1);
   for (const [id, n] of want) {
     if (ITEMS.get(id)?.gift) return `${ITEMS.get(id).name} is a special item, it can't be traded.`;
-    if (ITEMS.get(id)?.exclusive) return `${ITEMS.get(id).name} comes from the Jumpi Store, it can't be traded.`;
+    if (ITEMS.get(id)?.exclusive && !ITEMS.get(id)?.costume) return `${ITEMS.get(id).name} comes from the Jumpi Store, it can't be traded.`;
     if (ITEMS.get(id)?.member) return `${ITEMS.get(id).name} is a Members Club item, it can't be traded.`;
     const have = counts.get(id) || 0;
     if (have < n) return have ? `${who === "You" ? "You only have" : who + " only has"} ${have} × ${ITEMS.get(id)?.name || "that item"}.` : `${who === "You" ? "You don't" : who + " doesn't"} have ${ITEMS.get(id)?.name || "that item"}.`;

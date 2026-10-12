@@ -44,6 +44,7 @@ for (const slot of OUTFIT_SLOTS)
     if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
     if (o.rarity) items[items.length - 1].rarity = o.rarity;
     if (o.member) items[items.length - 1].member = true;   // the Members Club collection: only members can buy it
+    if (o.costume) Object.assign(items[items.length - 1], { exclusive: true, costume: true });   // Jumpi Store costumes: not in the coin shop, but tradable
   });
 
 // name tags (an icon next to the name)

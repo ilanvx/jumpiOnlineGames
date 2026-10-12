@@ -304,4 +304,23 @@ MEM("pants", "rare", { id: "stars", name: "Platinum starry pants", price: 900, b
 MEM("hair", "epic", { id: "spiky", name: "Diamond Spiky", price: 1400, col: ["#e8f4ff", "#5fe0ff"] });
 MEM("hair", "epic", { id: "longbow", name: "Royal long hair with bow", price: 1400, col: ["#6b1f8a", "#ffd23a"] });
 
+// ---------- Jumpi Store costumes (public/shared/store.js, kind "costume"): only from the store, but they CAN be traded,
+// they're for everyone (not members-only) and can be bought again (each purchase adds another set). costume: true ----------
+const COS = (slot, o) => add(slot, { ...o, price: 0, rarity: "epic", costume: true });
+// police: the work uniform's shapes (shirt with belt, pants, peaked cap) in two new colours
+COS("shirt", { id: "police", name: "Black police shirt", fill: "#262a33", hem: "#121419", acc: "#ffd23a", light: "#e6e9f0" });
+COS("pants", { id: "police", name: "Black police pants", base: "#1c1f26", acc: "#ffd23a" });
+COS("hat", { id: "police", name: "Black police cap", col: "#23262e", col2: "#ffd23a" });
+COS("shirt", { id: "police", name: "Pink police shirt", fill: "#ff6fb5", hem: "#c83f86", acc: "#ffffff", light: "#ffe3f0" });
+COS("pants", { id: "police", name: "Pink police pants", base: "#e2559c", acc: "#ffffff" });
+COS("hat", { id: "police", name: "Pink police cap", col: "#ff6fb5", col2: "#ffffff" });
+// rapper: backwards cap, black tee with a gold chain, dark jeans with gold stripes
+COS("hat", { id: "cap", name: "Backwards rapper cap", col: "#1d1d24", col2: "#ffd23a", back: true });
+COS("shirt", { id: "rapper", name: "Rapper tee", fill: "#1d1d24", hem: "#0d0d12", acc: "#ffd23a" });
+COS("pants", { id: "rapper", name: "Rapper jeans", base: "#33436e", waist: "#1b2442", acc: "#ffd23a" });
+// emoji: orange and yellow, covered in smiley faces
+COS("hat", { id: "cap", name: "Emoji cap", col: "#ff8a1c", col2: "#ffd23a", emoji: true });
+COS("shirt", { id: "emoji", name: "Emoji tee", fill: "#ffb21f", hem: "#e2650a", acc: "#ffd23a" });
+COS("pants", { id: "emoji", name: "Emoji pants", base: "#ff8a1c", waist: "#c75e00", acc: "#ffd23a" });
+
 export const OUTFIT_SLOTS = Object.keys(out);
