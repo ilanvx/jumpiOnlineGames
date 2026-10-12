@@ -40,7 +40,10 @@ jobs:
         working-directory: desktop/store-helper
         run: |
           if not exist bin mkdir bin
-          cl /nologo /EHsc /std:c++20 /permissive- /O2 /MT /utf-8 /DUNICODE /D_UNICODE store-helper.cpp /Fe:bin\store-helper.exe /link /SUBSYSTEM:CONSOLE
+          cl /nologo /EHsc /std:c++20 /permissive- /O2 /MT /utf-8 /DUNICODE /D_UNICODE store-helper.cpp /Fe:bin\store-helper.exe /link /SUBSYSTEM:CONSOLE > ..\..\helper-build-log.txt 2>&1
+          set ERR=%ERRORLEVEL%
+          type ..\..\helper-build-log.txt
+          exit /b %ERR%
 
       - name: Install
         run: npm install --no-audit --no-fund
@@ -62,6 +65,7 @@ jobs:
         run: |
           mkdir -p out
           cp desktop-build-log.txt out/build-log.txt 2>/dev/null || echo "no build log" > out/build-log.txt
+          cp helper-build-log.txt out/helper-build-log.txt 2>/dev/null || true
           printf "status: %s\nversion: 1.0.%s\ncommit: %s\ndate: %s\n" "${{ steps.build.outcome }}" "${{ github.run_number }}" "${{ github.sha }}" "$(date -u)" > out/BUILD_INFO.txt
           cd out
           git init -q -b desktop-build
