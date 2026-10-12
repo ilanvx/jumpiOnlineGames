@@ -139,6 +139,9 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
   display:flex;align-items:center;gap:14px;padding:12px 14px 12px 12px;border-radius:22px;background:#fff;color:#22324a;font-family:"Fredoka",system-ui,sans-serif;
   box-shadow:0 6px 0 #b9c9e6,0 16px 34px rgb(0 0 0 / .25);transition:background .3s,box-shadow .3s}
 .tl-card[hidden]{display:none}
+/* Bobo's card is open (the double-click step): Pip moves to the bottom left, under Bobo, out of the card's way */
+.tl-card.pc-on{left:calc(env(safe-area-inset-left,0px) + 76px);top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;translate:none;width:min(520px,calc(100% - 76px - clamp(280px,36vw,480px)))}
+@media (max-width:760px){.tl-card.pc-on{left:12px;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:calc(100% - 24px)}}
 .tl-card.pop{animation:tlPop .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes tlPop{0%{transform:translateY(-14px) scale(.92);opacity:.4}}
 .tl-card.win{background:#e6fbe9;box-shadow:0 6px 0 #9fe0b0,0 16px 34px rgb(0 0 0 / .25)}
@@ -622,7 +625,7 @@ body.chat-open .fbar-wrap{bottom:calc(env(safe-area-inset-bottom,0px) + 158px)}
 @media (max-width:560px){.fb-slot{width:50px;height:50px;border-radius:13px}.fbar{gap:6px;padding:6px}}
 @media (prefers-reduced-motion:reduce){.tears i,.bye-card .idle-face{animation:none}}
 body.login-mode .logout-btn{opacity:0;translate:-140% 0;pointer-events:none}
-.toast{position:fixed;z-index:6;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);translate:-50% 0;max-width:calc(100% - 32px);
+.toast{position:fixed;z-index:47;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);translate:-50% 0;max-width:calc(100% - 32px);
   padding:12px 18px;border-radius:14px;background:#3e5b86;border:2px solid #1f3355;color:#fff;font:500 1rem "Fredoka",system-ui,sans-serif;
   opacity:0;transform:translateY(12px);transition:opacity .25s,transform .3s;pointer-events:none}
 .toast.show{opacity:1;transform:none}
@@ -709,6 +712,37 @@ body.msbuy .msb-plus{display:grid}
 .msb-foot{margin:4px 0 0;text-align:center;color:#5b6b88;font:500 .82rem/1.4 "Fredoka",system-ui,sans-serif}
 .msb-foot button{border:0;background:none;padding:0;color:#0f6fe0;font:inherit;text-decoration:underline;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.msb-spin{animation-duration:2s}.msb-tile,.msb-plus{transition:none}}
+/* the coins window in a browser (body.webbuy: + next to the coins) and "not enough coins" everywhere (cbOv) */
+body.webbuy .msb-plus{display:grid}
+body.webbuy .coins{cursor:pointer;padding-right:6px}
+.idle-overlay.cb-overlay{z-index:56}
+.cb-card{overflow:hidden}
+.cb-card h2{position:relative}
+.cb-rain{position:absolute;inset:0 0 auto 0;height:120px;pointer-events:none;overflow:hidden}
+.cb-rain i{position:absolute;top:-30px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3a8 0 18%,#ffd23a 20% 58%,#e8a300 60%);box-shadow:0 2px 0 #c98a00;
+  animation:cbFall 1.5s cubic-bezier(.4,.1,.7,1) both}
+@keyframes cbFall{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(150px) rotate(320deg);opacity:0}}
+.cb-need{display:flex;align-items:center;gap:14px;margin:0 auto 16px;padding:12px 16px;max-width:520px;border-radius:20px;background:linear-gradient(180deg,#fff7df,#ffeec2);box-shadow:inset 0 0 0 3px #ffd98a}
+.cb-pic{flex:none;display:grid;place-items:center;width:78px;height:78px;border-radius:16px;background:#2c4468;overflow:hidden}
+.cb-pic img,.cb-pic canvas{max-width:100%;max-height:100%;object-fit:contain}
+.cb-pic svg{width:56px;height:56px}
+.cb-card .cb-need b{text-align:left;display:block;font:400 1.3rem/1.1 "Lilita One",system-ui,sans-serif;color:#22324a}
+.cb-card .cb-need p{max-width:none;padding:0;text-align:left;text-indent:0;margin:4px 0 8px;font:500 1rem/1.3 "Fredoka",system-ui,sans-serif;color:#8a3a00}
+.cb-need p strong{color:#e2357f}
+.cb-bar{position:relative;height:14px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 2px #f0c560;overflow:hidden}
+.cb-bar i{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:linear-gradient(180deg,#ffe066,#ffb21f);transition:width .8s cubic-bezier(.2,.8,.3,1)}
+.msb-tile.pick{transform:translateY(-3px);box-shadow:inset 0 0 0 4px #2fd36b,0 5px 0 #17a24a,0 0 0 4px rgb(47 211 107 / .25)}
+.msb-tile.pick::after{content:"";position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:#2fd36b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:0 2px 0 #17a24a}
+.cb-cover{display:block;margin-top:2px;font:600 .75rem "Fredoka",system-ui,sans-serif;color:#17803d}
+.cb-go{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px auto 10px;min-width:min(320px,100%);min-height:58px;padding:0 28px;border:0;border-radius:999px;cursor:pointer;
+  background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 6px 0 #138043,inset 0 2px 0 rgb(255 255 255 / .4);color:#fff;font:400 1.4rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.02em;text-shadow:0 2px 0 rgb(0 0 0 / .15)}
+.cb-go svg{width:26px;height:26px}
+.cb-go:hover{filter:brightness(1.05);transform:translateY(-2px)}.cb-go:active{transform:translateY(4px);box-shadow:0 2px 0 #138043}
+.cb-earn{list-style:none;margin:0 auto 12px;padding:0;max-width:520px;display:grid;gap:10px}
+.cb-earn li{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:#eef5ff;font:500 1rem/1.3 "Fredoka",system-ui,sans-serif;color:#22324a}
+.cb-earn li b{font-weight:600}
+.cb-earn i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--c,#2f7bff);box-shadow:0 3px 0 var(--e,#1a56d6);color:#fff;font:400 1.2rem/1 "Lilita One",system-ui,sans-serif;font-style:normal}
+@media (prefers-reduced-motion:reduce){.cb-rain{display:none}.cb-bar i{transition:none}}
 .admin-btn{--c:#ff5a5a;--hi:#ff9b9b;--lo:#d63333;--edge:#8a1c1c;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 90px);right:18px;width:58px;height:58px;border-radius:16px;padding:0;display:none}
 .admin-btn svg{width:32px;height:32px}
 body.in-game.is-staff .admin-btn:not([hidden]){display:flex}
@@ -4091,6 +4125,15 @@ body.land .npc-card .idle-face{display:none}
   </div>
 </div>
 <!-- the Microsoft Store version of the computer program: coins and memberships through Microsoft (MSB block) -->
+<div class="idle-overlay msb-overlay cb-overlay" id="cbOv" role="dialog" aria-modal="true" aria-labelledby="cbTitle" hidden>
+  <div class="idle-card msb-card cb-card">
+    <button class="np-x" id="cbClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+    <div class="cb-rain" aria-hidden="true"></div>
+    <h2 id="cbTitle">GET MORE COINS</h2>
+    <div id="cbBody"></div>
+    <p class="msb-foot" id="cbFoot"></p>
+  </div>
+</div>
 <div class="idle-overlay msb-overlay" id="msbOv" role="dialog" aria-modal="true" aria-labelledby="msbTitle" hidden>
   <div class="idle-card msb-card">
     <button class="np-x" id="msbClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
@@ -7431,7 +7474,7 @@ if(testKey("questtest"))window.__q={QS,load:loadQuests,go:(x,z)=>{G.pos.set(x,0,
 /* ---------- multiplayer: other players in the Plaza ---------- */
 const remotes=new Map();let socket=null;const NET={last:0,x:0,z:0,face:0,moving:false};
 const onlineEl=document.getElementById("online");
-function updateOnline(){document.getElementById("onlineText").textContent=(remotes.size+1)+" online";onlineEl.classList.toggle("offline",!(socket&&socket.connected));}
+function updateOnline(){let n=1;for(const c of remotes.values())if(!c.bot)n++;document.getElementById("onlineText").textContent=n+" online";onlineEl.classList.toggle("offline",!(socket&&socket.connected));}
 function makeBubbleEl(){const el=document.createElement("div");el.className="bubble";el.setAttribute("aria-hidden","true");document.body.appendChild(el);return el;}
 const _rp=new THREE.Vector3();
 function placeBubbleAt(el,obj,dy){if(!el.classList.contains("show"))return;el.style.scale=distScale(obj).toFixed(3);_rp.copy(obj.position);_rp.y+=dy;_rp.project(cam);
@@ -9365,9 +9408,10 @@ storeAct.onclick=async()=>{
   storeBusy=true;storeAct.disabled=true;
   if((slot==="furniture"&&storeMode!=="shop"&&storeMode!=="spooky")||(slot==="emote"&&owns(id)))return void(storeBusy=false);
   const buying=i>=0&&(!owns(id)||slot==="furniture");
+  {const it=catalog&&catalog.get(id);if(buying&&it&&me&&(me.coins||0)<it.price){storeBusy=false;paintStoreFoot();openCoinBox({price:it.price,name:itemName(slot,i),pic:itemPic(slot,i)});return;}}
   const r=buying?await api("/api/shop/buy",{item:id}):await api("/api/inventory/equip",{slot,index:i});
   storeBusy=false;
-  if(!r.ok){storeMsg.className="form-msg";storeMsg.textContent=r.data.error||"Something went wrong.";sfx.error();paintStoreFoot();return;}
+  if(!r.ok){if(coinsShort(r)){paintStoreFoot();return;}storeMsg.className="form-msg";storeMsg.textContent=r.data.error||"Something went wrong.";sfx.error();paintStoreFoot();return;}
   setAccount(r.data.user);if(GS.open){refreshMyTag();setPreview(true);}
   if(buying&&slot==="emote"){sfx.success();storeMsg.className="form-msg ok";storeMsg.textContent="You unlocked "+itemName(slot,i)+"! Find it in the chat bar.";paintEmoteButtons();renderStoreGrid();return;}
   if(buying&&slot==="furniture"){sfx.success();doAction("wave",null,true);storeMsg.className="form-msg ok";storeMsg.textContent="You bought "+itemName(slot,i)+"! Place it in My Home.";}
@@ -9545,7 +9589,7 @@ document.getElementById("shop").onclick=e=>{press(e.currentTarget);openStore("sh
 document.getElementById("tags").onclick=e=>{press(e.currentTarget);openStore("tags");};
 document.getElementById("inventory").onclick=e=>{press(e.currentTarget);openStore("inventory");};
 stage.addEventListener("click",e=>{if(performance.now()-TOUCH.dragT<350)return;   // that was a camera drag / pinch, not a tap
-  if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const rs=residentAt(e);if(rs){openResident(rs);return;}const who=remoteAt(e);if(who){openPlayerCard(who,e);return;}clickToMove(e);}else doAction("wave");});
+  if(inGame&&GS.open){closeGameStore();return;}if(inGame&&PH.open){closePhone();return;}if(inGame&&G.home){if(homeClick(e))return;if(deco.hidden){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const who=remoteAt(e);if(who&&playerTap(who,e))return;}clickToMove(e);return;}if(inGame){if(!chatInput.value.trim())closeChat();else chatInput.blur();if(petClick(e))return;const rs=residentAt(e);if(rs){openResident(rs);return;}const who=remoteAt(e);if(who&&playerTap(who,e))return;clickToMove(e);}else doAction("wave");});
 document.getElementById("exitGame").onclick=e=>{press(e.currentTarget);sfx.whoosh();exitGame();};
 
 /* =====================================================================
@@ -11641,9 +11685,11 @@ function renderHouseUp(){const H=HSHAPE.house,list=document.getElementById("hupL
   buy.disabled=!!H[u.id]||need;buy.className="hup-buy"+(H[u.id]?" owned":need?" locked":"");
   buy.innerHTML=H[u.id]?"YOU HAVE IT!":need?`Get the ${UPGRADE_BY_ID[u.needs].name} first`:`BUY <span class="hup-coin"></span> ${u.price.toLocaleString("en-US")}`;
   document.getElementById("hupShort").textContent=!H[u.id]&&!need&&coins<u.price?`You need ${(u.price-coins).toLocaleString("en-US")} more coins. Play mini-games to earn them!`:"";}
-async function buyHouseUp(){const u=UPGRADE_BY_ID[hupSel],buy=document.getElementById("hupBuy");if(buy.disabled)return;buy.disabled=true;
+async function buyHouseUp(){const u=UPGRADE_BY_ID[hupSel],buy=document.getElementById("hupBuy");if(buy.disabled)return;
+  if(me&&(me.coins||0)<u.price){openCoinBox({price:u.price,name:u.name});return;}
+  buy.disabled=true;
   const r=await api("/api/home/upgrade",{id:u.id});
-  if(!r.ok){document.getElementById("hupMsg").textContent=r.data.error||"Couldn't buy that.";sfx.error();renderHouseUp();return;}
+  if(!r.ok){if(coinsShort(r)){renderHouseUp();return;}document.getElementById("hupMsg").textContent=r.data.error||"Couldn't buy that.";sfx.error();renderHouseUp();return;}
   if(me)me.coins=r.data.coins;paintCoins(true);HOME.layout.house=r.data.home.house;closeHouseUp();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   setTimeout(()=>{setHouse(HOME.layout.house);homeSky();placePieces();
@@ -12106,7 +12152,7 @@ addEventListener("keydown",e=>{if(!inGame||e.repeat||e.ctrlKey||e.metaKey||e.alt
 function takeFood(kind,i,btn){const it=foodOf(kind,i);if(!it)return;
   if(!socket||!socket.connected){toast("You're not connected right now.");sfx.error();return;}
   if(FB.bag.length>=FOOD_SLOTS){toast("Your food bar is full! Eat something first, or throw one away (the × on a slot).");sfx.error();return;}
-  if(it.price&&me&&(me.coins||0)<it.price){toast(`You need ${it.price} coins for that.`);sfx.error();return;}
+  if(it.price&&me&&(me.coins||0)<it.price){openCoinBox({price:it.price,name:it.name});return;}
   btn.disabled=true;let done=false;
   const fin=r=>{if(done)return;done=true;btn.disabled=false;if(!r||!r.ok){toast((r&&r.error)||"Too busy right now. Try again.");sfx.error();return;}
     if(it.price){if(me){me.coins=r.coins;paintCoins(true);}sfx.coin();}else sfx.success();
@@ -12249,10 +12295,10 @@ addEventListener("pointerdown",e=>{if(NEEDS.open&&!e.target.closest("#needPop,#n
 addEventListener("keydown",e=>{if(e.key==="Escape"&&NEEDS.open)closeNeedPop();});
 needPop.querySelector(".np-buy").onclick=async e=>{
   const k=NEEDS.open;if(!k||NEEDS.busy)return;const cost=needCost(NEEDS.v[k]);if(!cost)return;
-  if(!me||me.coins<cost){toast("You need "+cost+" coins for that. Play mini-games to earn more!");sfx.error();return;}
+  if(!me||me.coins<cost){closeNeedPop();openCoinBox({price:cost,name:{hunger:"Fill up your hunger",energy:"Fill up your energy",stamina:"Fill up your stamina",fun:"Fill up your fun"}[k]||"Fill it up"});return;}
   press(e.currentTarget);NEEDS.busy=true;paintNeedPop();
   const r=await api("/api/needs/fill",{need:k});NEEDS.busy=false;
-  if(!r.ok){toast(r.data.error||"Couldn't do that right now.");sfx.error();paintNeedPop();return;}
+  if(!r.ok){if(coinsShort(r))return;toast(r.data.error||"Couldn't do that right now.");sfx.error();paintNeedPop();return;}
   if(me)me.coins=r.data.coins;paintCoins(true);NEEDS.v[k]=100;paintNeeds();sfx.success();
   toast({hunger:"Yum, all full!",energy:"Wide awake again!",stamina:"Full of energy, let's run!",fun:"Yay, that was fun!"}[k]);};
 function setNeeds(d){NEEDS.v=d.needs;if(d.price)NEEDS.price=d.price;paintNeeds();}
@@ -12598,7 +12644,7 @@ document.getElementById("adoptForm").addEventListener("submit",async e=>{e.preve
   const say=(t,field)=>{adoptMsg.className="pa-msg";adoptMsg.textContent="";void adoptMsg.offsetWidth;adoptMsg.textContent=t;sfx.error();
     adoptName.classList.remove("bad");if(field){void adoptName.offsetWidth;adoptName.classList.add("bad");adoptName.focus({preventScroll:true});}};
   if(bad)return say(bad,true);if(!checkName(name).ok)return say("Let's keep Jumpi friendly! Try another name.",true);
-  if(!me||me.coins<K.price)return say(`You need ${K.price} coins to adopt a ${K.name.toLowerCase()}. You have ${(me&&me.coins||0).toLocaleString("en-US")}. Play mini-games to earn more!`);
+  if(!me||me.coins<K.price){openCoinBox({price:K.price,name:"Adopt a "+K.name.toLowerCase()});return;}
   adopt.busy=true;paintAdopt();adoptMsg.className="pa-msg ok";adoptMsg.textContent="Adopting…";
   let r;try{r=await api("/api/pets/adopt",{kind:adopt.kind,color:adopt.color,name});}catch(err){r={ok:false,data:{}};}
   adopt.busy=false;paintAdopt();
@@ -13567,9 +13613,9 @@ spxOverlay.addEventListener("click",e=>{if(e.target===spxOverlay)closeOffers();}
 spxOverlay.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeOffers();}});
 setInterval(()=>{if(spxOverlay.hidden)return;spxOverlay.querySelectorAll("[data-ends]").forEach(el=>el.textContent=endsText(+el.dataset.ends));},30000);
 document.getElementById("spxBtn").onclick=e=>{press(e.currentTarget);openOffers();};
-if(!STORE_OPEN||IN_APP)document.getElementById("spxBtn").remove();else document.body.classList.add("has-offers");   // the real-money store is closed for now
-if(STORE_OPEN&&!IN_APP){const c=document.getElementById("coins");c.setAttribute("role","button");c.tabIndex=0;c.title="Get more coins";
-  c.addEventListener("click",()=>{if(inGame&&me)openOffers();});c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&inGame&&me){e.preventDefault();openOffers();}});}
+if(!STORE_OPEN||IN_APP||IS_DESK||/JumpiStore\//.test(navigator.userAgent))document.getElementById("spxBtn").remove();else document.body.classList.add("has-offers");   // the real-money store is closed for now
+if(STORE_OPEN&&!IN_APP&&!IS_DESK&&!/JumpiStore\//.test(navigator.userAgent)){const c=document.getElementById("coins");c.setAttribute("role","button");c.tabIndex=0;c.title="Get more coins";
+  c.addEventListener("click",()=>{if(me)openCoinBox();});c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&me){e.preventDefault();openCoinBox();}});}
 // something was bought in the store (in another tab): show it right away
 function storeGranted(d){const P=PRODUCT_BY_ID[d.product];if(d.user&&me){me.coins=d.user.coins;me.inventory=d.user.inventory;me.subscriber=d.user.subscriber;me.memberUntil=d.user.memberUntil;me.buyNote=d.user.buyNote||null;}
   paintCoins(true);refreshMyTag();if(GS.open)renderStoreGrid();OFFERS.me=null;if(!spxOverlay.hidden)closeOffers(true);
@@ -13718,6 +13764,81 @@ if(MS_APP){
   document.getElementById("coinsPlus").addEventListener("click",e=>{e.stopPropagation();press(e.currentTarget);openMsb();});
   msbCheck().catch(()=>{});
 }
+
+/* ---------- CB: the coins window (browser: + next to the coins) and "not enough coins" (everywhere) ----------
+   In a browser it shows the Jumpi Store's coin packs and memberships with their real pictures and opens the store
+   page on the one picked (a grown-up pays there, like always). In the apps there are no links to paid things:
+   the Microsoft Store program sends you to its own coins window, and the Android app / other computer program
+   show ways to earn coins in the game instead. */
+const WEB_BUY=STORE_OPEN&&!IN_APP&&!IS_DESK&&!MS_APP&&!/JumpiStore\//.test(navigator.userAgent);
+if(WEB_BUY)document.body.classList.add("webbuy");
+const cbOv=document.getElementById("cbOv"),cbBody=document.getElementById("cbBody");
+const CB={need:0,pick:null,from:null};
+function cbRain(){const box=cbOv.querySelector(".cb-rain");box.innerHTML="";if(reduce)return;
+  for(let k=0;k<12;k++){const c=document.createElement("i");c.style.left=(4+Math.random()*92)+"%";c.style.animationDelay=(Math.random()*.7).toFixed(2)+"s";c.style.scale=(.6+Math.random()*.6).toFixed(2);box.appendChild(c);}}
+// opts: {price, name, pic (html)} when something costs more than you have; nothing = the plain coins window
+function openCoinBox(opts={}){
+  if(!me)return;const coins=me.coins||0;
+  const need=opts.price?Math.max(0,opts.price-coins):(opts.short||0);
+  if(MS_APP){if(MSB.on&&!need){openMsb();return;}}
+  if(!WEB_BUY&&!need&&!(MS_APP&&MSB.on))return;
+  CB.need=need;CB.from=document.activeElement;
+  const packs=PRODUCTS.filter(P=>P.kind==="coins");
+  CB.pick=need?(packs.find(P=>P.give.coins>=need)||packs[packs.length-1]).id:null;
+  if(inGame){closePhone(true);closeChat();}G.keys={};G.target=null;
+  cbPaint(opts);cbOv.hidden=false;sfx.whoosh();cbRain();
+  setTimeout(()=>{const b=cbOv.querySelector(".cb-go")||cbOv.querySelector(".msb-tile");if(b)b.focus({preventScroll:true});},80);}
+function closeCoinBox(quiet){if(cbOv.hidden)return;cbOv.hidden=true;if(!quiet)sfx.close();
+  if(CB.from&&CB.from.focus&&document.contains(CB.from))CB.from.focus({preventScroll:true});}
+function cbPaint(opts){
+  const coins=(me&&me.coins)||0,need=CB.need,price=opts.price||coins+need;
+  document.getElementById("cbTitle").textContent=need?"NOT ENOUGH COINS":"GET MORE COINS";
+  const head=need?`<div class="cb-need"><span class="cb-pic">${opts.pic||COIN_SVG}</span><div style="flex:1;min-width:0">
+      <b>${esc(opts.name||"Not enough coins")}</b><p>You have ${coins.toLocaleString("en-US")} coins. You need <strong>${need.toLocaleString("en-US")} more</strong>.</p>
+      <div class="cb-bar" aria-hidden="true"><i style="width:0"></i></div></div></div>`:"";
+  const tag=P=>P.tag?`<span class="tag">${P.tag==="best"?"Best value":"Popular"}</span>`:"";
+  if(WEB_BUY){
+    const coinsT=PRODUCTS.filter(P=>P.kind==="coins").map(P=>`<button type="button" class="msb-tile${CB.pick===P.id?" pick":""}" data-cb="${P.id}" aria-pressed="${CB.pick===P.id}">${tag(P)}
+      <img src="/site/img/store/${P.id}.webp" alt=""><b>${P.give.coins.toLocaleString("en-US")}</b><small>coins${need&&CB.pick===P.id?'<span class="cb-cover">Enough for it!</span>':""}</small><span class="msb-price">₪${P.price.toFixed(2)}</span></button>`).join("");
+    const memT=PRODUCTS.filter(P=>P.kind==="member").map(P=>`<button type="button" class="msb-tile mb${CB.pick===P.id?" pick":""}" data-cb="${P.id}" aria-pressed="${CB.pick===P.id}">${tag(P)}
+      <img src="/site/img/store/${P.id}.webp" alt=""><b>${esc(P.name.en)}</b><small>+${P.give.coins.toLocaleString("en-US")} coins</small><span class="msb-price">₪${P.price.toFixed(2)}</span></button>`).join("");
+    cbBody.innerHTML=head+`<section class="msb-sec"><h3>${COIN_SVG}Coins</h3><div class="msb-grid">${coinsT}</div></section>
+      <section class="msb-sec"><h3>${GSTAR}Membership<small>One payment, never renews by itself</small></h3><div class="msb-grid">${memT}</div></section>
+      <button type="button" class="cb-go">${COIN_SVG}${CB.pick?"BUY THIS IN THE STORE":"TO THE JUMPI STORE"}</button>`;
+    document.getElementById("cbFoot").textContent="The Jumpi Store opens in a new tab. Always ask a grown-up first!";
+  }else if(MS_APP&&MSB.on){
+    cbBody.innerHTML=head+`<button type="button" class="cb-go" data-ms-open>${COIN_SVG}GET COINS</button>`;
+    document.getElementById("cbFoot").textContent="";
+  }else{
+    const ways=[["#2f7bff","#1a56d6","1","<b>Mini-games</b> pay coins every round you play."],
+      ["#ff8a1c","#c25a00","2","<b>Jobs</b> (phone → Jobs): waiter, police officer and pizza rider."],
+      ["#2fbf6a","#17803d","3","<b>The daily gift</b>: come back every day, it grows each day in a row."],
+      ["#e2357f","#a8185a","4","<b>The Lucky Wheel</b> and the <b>Season</b> track give coins too."]];
+    cbBody.innerHTML=head+`<h3 class="msb-sec" style="margin:0 0 10px;text-align:center;font:400 1.3rem 'Lilita One',system-ui,sans-serif;color:#22324a">Ways to earn coins</h3>
+      <ul class="cb-earn">${ways.map(([c,e,n,t])=>`<li><i style="--c:${c};--e:${e}">${n}</i><span>${t}</span></li>`).join("")}</ul>
+      <button type="button" class="cb-go" data-close>OK!</button>`;
+    document.getElementById("cbFoot").textContent="";
+  }
+  if(need)requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=cbOv.querySelector(".cb-bar i");if(f)f.style.width=Math.min(100,coins/price*100).toFixed(1)+"%";}));
+}
+cbBody.addEventListener("click",e=>{
+  const t=e.target.closest("[data-cb]");if(t){CB.pick=t.dataset.cb;sfx.tick(true);
+    cbBody.querySelectorAll("[data-cb]").forEach(b=>{const on=b.dataset.cb===CB.pick;b.classList.toggle("pick",on);b.setAttribute("aria-pressed",on);});
+    const go=cbBody.querySelector(".cb-go");if(go)go.innerHTML=COIN_SVG+"BUY THIS IN THE STORE";return;}
+  const go=e.target.closest(".cb-go");if(!go)return;press(go);
+  if(go.hasAttribute("data-close")){closeCoinBox();return;}
+  if(go.hasAttribute("data-ms-open")){closeCoinBox(true);openMsb();return;}
+  closeCoinBox(true);openStorePage(CB.pick||"coins");toast("The Jumpi Store opened in a new tab. Ask a grown-up to help you buy.");});
+document.getElementById("cbClose").onclick=()=>closeCoinBox();
+cbOv.addEventListener("click",e=>{if(e.target===cbOv)closeCoinBox();});
+cbOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeCoinBox();}});
+if(WEB_BUY){
+  document.getElementById("coinsPlus").tabIndex=0;
+  document.getElementById("coinsPlus").addEventListener("click",e=>{e.stopPropagation();press(e.currentTarget);if(me)openCoinBox();});
+}
+// "You need N more coins" from the server (any purchase): the same window, when nothing else showed it already
+function coinsShort(r){if(!r||r.status!==402||!me||!cbOv.hidden)return false;const m=/([\d,]+)\s+more coins/i.exec((r.data&&r.data.error)||"");
+  openCoinBox({short:m?+m[1].replace(/,/g,""):1});return true;}
 
 /* ---------- decorating ---------- */
 const deco=document.getElementById("decoPanel"),decoTray=document.getElementById("decoTray"),decoTool=document.getElementById("decoTool");
@@ -13955,8 +14076,8 @@ function openPlayerCard(hit,e){
   pcTarget=hit.id;pcChar=hit.c;const n=document.getElementById("pcName");n.textContent=hit.c.username||"Player";n.classList.toggle("admin",hit.c.role==="admin");n.classList.toggle("mod",hit.c.role==="mod");
   {const lv=hit.c.lv||1;document.getElementById("pcLvBadge").src=levelBadgeURL(lv);document.getElementById("pcLvNum").textContent=lv;document.getElementById("pcLvRank").textContent=RANK_NAMES[rankOf(lv)];}
   pcard.hidden=false;pcImg=null;drawPortrait();
-  const full=body.classList.contains("land")||body.classList.contains("app");pcard.classList.toggle("pc-full",full);
-  if(full){pcard.style.left=pcard.style.top="";G.keys={};}
+  const full=true;pcard.classList.toggle("pc-full",full);
+  if(full){pcard.style.left=pcard.style.top="";G.keys={};G.target=null;if(G.marker)G.marker.visible=false;}
   else{const w=pcard.offsetWidth,h=pcard.offsetHeight,x=e.clientX+(e.clientX>innerWidth/2?-w-24:24);
     pcard.style.left=Math.max(12,Math.min(innerWidth-w-12,x))+"px";pcard.style.top=Math.max(12,Math.min(innerHeight-h-12,e.clientY-h/2))+"px";}
   const poor=!me||(me.coins||0)<100;["pcTTT","pcC4"].forEach(id=>{const b=document.getElementById(id);b.disabled=poor;b.title=poor?"You need 100 coins to play":"";});
@@ -13965,8 +14086,18 @@ function openPlayerCard(hit,e){
   document.getElementById("pcBlock").hidden=hit.c.role==="admin"||hit.c.role==="mod";   // the Jumpi team can't be blocked (they can be reported)
   document.getElementById("pcKick").hidden=!(G.home&&HOME.mine)||hit.c.role==="admin";   // in my home: send a visitor out
   sfx.open();setTimeout(()=>document.getElementById(noAsk?"pcFriend":"pcTrade").focus(),30);
+  if(isBotId(hit.id))tlEvent("botCard");
 }
-function closePlayerCard(){pcard.hidden=true;pcTarget=null;pcChar=null;}
+function closePlayerCard(){const bot=isBotId(pcTarget);pcard.hidden=true;pcTarget=null;pcChar=null;if(bot)tlEvent("botCardClose");}
+// a player's card opens with a DOUBLE click (two quick taps on a phone) on them; one click just walks there
+const DBL={id:null,t:0,x:0,y:0};
+function playerTap(who,e){const t=e.timeStamp||performance.now();
+  if(DBL.id===who.id&&t-DBL.t<450&&Math.hypot(e.clientX-DBL.x,e.clientY-DBL.y)<48){DBL.id=null;openPlayerCard(who,e);return true;}
+  DBL.id=who.id;DBL.t=t;DBL.x=e.clientX;DBL.y=e.clientY;return false;}
+const isBotId=id=>typeof id==="string"&&id.startsWith("tl-bot");
+// the practice Jumpi in the tutorial: its card is pretend, every button only explains what it does on a real player
+pcard.addEventListener("click",e=>{if(!isBotId(pcTarget))return;const b=e.target.closest(".pc-btn,.pc-mini,.pc-lv");if(!b)return;
+  e.stopImmediatePropagation();e.preventDefault();press(b);sfx.tick(true);toast("This is just Bobo, a practice Jumpi. On a real player this button works!");},true);
 const askDuel=game=>{if(pcTarget&&socket&&socket.connected)socket.emit("duel:request",{to:pcTarget,game});closePlayerCard();};
 document.getElementById("pcTTT").onclick=()=>askDuel("ttt");
 document.getElementById("pcC4").onclick=()=>askDuel("c4");
@@ -14617,6 +14748,7 @@ const TL_STEPS=[
   // ---- chat & phone ----
   {ch:"CHAT & PHONE",hl:"#chatFab",ev:"chat",touch:`Time to say hi! Tap the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`,say:`Time to say hi! Press ${K("Enter")} or click the <b>chat button</b>, type <b>hello</b> and send it. Your message pops up over your head for everyone nearby. Bad words are blocked automatically.`},
   {ch:"CHAT & PHONE",hl:()=>chatDock.classList.contains("open")?"#emoteTray":"#chatFab",ev:"emote",say:`Now send an <b>emote</b>! Open the chat bar and click one of the faces: a big emoji jumps above your head. Some are free, and you can unlock more in the shop.`},
+  {ch:"CHAT & PHONE",bot:true,needs:"botCard",ev:"botCardClose",touch:`Meet <b>Bobo</b>, a practice Jumpi! <b>Tap twice quickly</b> on a player to open their <b>player card</b>: there you can add a friend, trade, play a game together, visit their home or report. Tap Bobo twice now, then close the card with the <b>X</b>.`,say:`Meet <b>Bobo</b>, a practice Jumpi! <b>Double-click</b> on a player to open their <b>player card</b>: there you can add a friend, trade, play a game together, visit their home or report. Double-click Bobo now, then close the card with the <b>X</b>.`},
   {ch:"CHAT & PHONE",hl:"#phoneBtn",needs:"phoneOpen",ev:"phoneClose",say:`This is your <b>phone</b>! Press ${K("P")} or click it. Inside: <b>Friends</b>, <b>JumpiChat</b> (private chat with friends), who's <b>Online</b>, your <b>Home</b>, <b>Pets</b>, <b>Music</b>, <b>Jobs</b>, <b>My Look</b> and the <b>Shop</b>. Have a look, then put it away.`},
   // ---- eating ----
   {ch:"EAT & DRINK",at:()=>DOOR("diner"),say:`Feeling hungry? Let's visit the <b>Restaurant</b> (the building with the red roof). Walk to the <b>glowing circle</b> at its door. Follow the orange arrow!`},
@@ -14712,13 +14844,24 @@ function tlEdgeTick(at){
 function tlEvent(name){if(!TL.on||TL.busy)return;const S=TL_STEPS[TL.i];if(!S)return;
   if(S.needs&&name===S.needs){TL.need[name]=true;return;}
   if(S.ev===name&&(!S.needs||TL.need[S.needs]))tlComplete();}
+// Bobo, the practice Jumpi for the "double-click a player" step: only this player sees it, in front of them
+function tlBot(on){const id="tl-bot";
+  if(!on){if(remotes.has(id)){if(pcTarget===id)closePlayerCard();removeRemote(id);}return;}
+  if(remotes.has(id)||G.home||!world)return;
+  // a little to the side of where the camera looks, so your own Jumpi doesn't hide it
+  const yaw=(G.camYaw||0)+Math.PI,a=yaw+.55,x=G.pos.x+Math.sin(a)*3.4,z=G.pos.z+Math.cos(a)*3.4;
+  addRemote({id,username:"Bobo",role:"player",lv:5,x,z,face:G.camYaw||0,look:{color:5,eyes:2,hair:1,shirt:3,pants:1,glasses:-1,hat:2,neck:-1,tag:-1,aura:-1}});
+  const c=remotes.get(id);if(c){c.bot=true;c.tx=x;c.tz=z;updateOnline();}}
 function tlTick(dt,moving,keyMove){
+  {const S0=TL.on&&TL_STEPS[TL.i];tlBot(!!(S0&&S0.bot&&!G.home));}
   if(!TL.on){if(TL.chatHint)tlChatHint(false);return;}const S=TL_STEPS[TL.i];if(!S||tlCard.hidden){tlSpot.hidden=true;tlEdge.hidden=true;if(TL.chatHint)tlChatHint(false);return;}
   // where to look / walk (outside things while inside a shop: point at Leave first)
   let at=S.at?S.at():null,hl=tlTouch()&&S.touchHl?S.touchHl:typeof S.hl==="function"?S.hl():S.hl;
   if(at&&!at.room&&G.home){at=null;hl="#homeLeave";}
   if(at&&at.room&&HOME.place!==at.room)at=null;
   tlRing(at);tlSpotOn(TL.busy?null:hl);
+  {const on=!!(S.bot&&!pcard.hidden&&!TL.busy);if(on!==tlCard.classList.contains("pc-on")){tlCard.classList.toggle("pc-on",on);
+    document.getElementById("tlSay").innerHTML=on?"That's Bobo's <b>player card</b>! Try the buttons, then close it with the red <b>X</b> at the top.":tlText(S);}}
   {const on=S.ev==="chat"&&body.classList.contains("land")&&body.classList.contains("chat-open");if(on!==!!TL.chatHint)tlChatHint(on);}
   if(TL.ring){const a=TL.ring.userData.arrow;a.position.y=4.2+Math.sin(now()*4)*.35;a.rotation.y+=dt*2;}
   tlEdgeTick(at);
@@ -14736,7 +14879,7 @@ function tlTick(dt,moving,keyMove){
   if(p>=1)tlComplete();
 }
 function tlComplete(){
-  if(TL.busy)return;TL.busy=true;sfx.success();tlCard.classList.add("win");tlSpot.hidden=true;
+  if(TL.busy)return;TL.busy=true;tlCard.classList.remove("pc-on");sfx.success();tlCard.classList.add("win");tlSpot.hidden=true;
   const cheers=["Great job!","Awesome!","You got it!","Super!","Nice one!","Perfect!","Woohoo!","You're a natural!"];
   if(TL.i>0)document.getElementById("tlSay").innerHTML=`<b style="color:#17a24a">${cheers[TL.i%cheers.length]}</b>`;
   document.getElementById("tlGo").hidden=true;document.getElementById("tlNudge").hidden=true;
@@ -14753,7 +14896,7 @@ async function tlFinish(){
   document.getElementById("tlDone").hidden=false;setTimeout(()=>document.getElementById("tlDoneOk").focus(),100);
 }
 // stop the guide (the game keeps going)
-function tlStop(){TL.on=false;TL.busy=false;tlRing(null);tlCard.hidden=true;tlSpot.hidden=true;tlEdge.hidden=true;tlCard.classList.remove("low");body.classList.remove("tutorial");if(TL.chatHint)tlChatHint(false);}
+function tlStop(){TL.on=false;TL.busy=false;tlBot(false);tlRing(null);tlCard.hidden=true;tlSpot.hidden=true;tlEdge.hidden=true;tlCard.classList.remove("low");body.classList.remove("tutorial");if(TL.chatHint)tlChatHint(false);}
 // skipping asks first
 function tlAskSkip(){if(!TL.on)return;document.getElementById("tlAskFace").src=emoteImage("sad",PIP_SKIN);tlAsk.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("tlAskStay").focus(),60);}
 document.getElementById("tlAskStay").onclick=()=>{tlAsk.hidden=true;sfx.close();};
@@ -14996,12 +15139,13 @@ function offerEmote(e){
   closeEmoteBuy();const i=EMOTES.findIndex(x=>x.id===e),it=catalog&&catalog.get("emote:"+i),price=it?it.price:0,coins=(me&&me.coins)||0;
   const box=document.createElement("div");box.className="emote-buy";box.setAttribute("role","dialog");box.setAttribute("aria-label","Buy emote");
   box.innerHTML=`<img alt="" src="${emoteImage(e,skinOf({color:lk("color")}))}"><span class="eb-txt">${esc(EMOTES[i].name)}<small>${coins>=price?"Unlock it forever!":`You need ${(price-coins).toLocaleString("en-US")} more coins`}</small></span>
-    <button type="button" class="eb-yes" ${coins<price||!it?"disabled":""}>${COIN_SVG}${price}</button><button type="button" class="eb-no" aria-label="Cancel">${I.xS}</button>`;
+    <button type="button" class="eb-yes" ${!it?"disabled":""}>${COIN_SVG}${price}</button><button type="button" class="eb-no" aria-label="Cancel">${I.xS}</button>`;
   emoteTray.parentElement.appendChild(box);emoteBuyEl=box;sfx.tick(true);
   box.querySelector(".eb-no").onclick=()=>{closeEmoteBuy();sfx.close();};
   const yes=box.querySelector(".eb-yes");yes.focus();
-  yes.onclick=async()=>{yes.disabled=true;const r=await api("/api/shop/buy",{item:"emote:"+i});
-    if(!r.ok){toast(r.data.error||"Couldn't buy it.");sfx.error();yes.disabled=false;return;}
+  yes.onclick=async()=>{if(me&&(me.coins||0)<price){closeEmoteBuy();openCoinBox({price,name:EMOTES[i].name,pic:`<img alt="" src="${emoteImage(e,skinOf({color:lk("color")}))}">`});return;}
+    yes.disabled=true;const r=await api("/api/shop/buy",{item:"emote:"+i});
+    if(!r.ok){if(coinsShort(r)){closeEmoteBuy();return;}toast(r.data.error||"Couldn't buy it.");sfx.error();yes.disabled=false;return;}
     setAccount(r.data.user);closeEmoteBuy();paintEmoteButtons();sfx.success();toast(`🎉 You unlocked ${EMOTES[i].name}!`);lastEmote=0;sendEmote(e);};
 }
 EMOTES.forEach((e,i)=>{const b=document.createElement("button");b.type="button";b.className="emote-pick";b.dataset.e=e.id;b.dataset.i=i;b.title=e.name;b.setAttribute("aria-label",e.name);
