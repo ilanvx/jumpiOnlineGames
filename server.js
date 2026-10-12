@@ -36,7 +36,7 @@ import { currentUser, loadRevoked } from "./routes/auth.js";
 import "./models/Report.js";
 import "./models/Revoked.js";
 import "./models/Logs.js";
-import { attachPlaza, onlinePlayers } from "./realtime/plaza.js";
+import { attachPlaza, onlinePlayers, announceUpdate } from "./realtime/plaza.js";
 import { startDiscordStats } from "./discord/pip.js";
 import { discordInteractions } from "./discord/interactions.js";
 import { loadEvent, eventInfo } from "./realtime/events.js";
@@ -325,9 +325,12 @@ attachPlaza(new Server(server, {
     cb(null, okOrigins.has(host) || own.includes(host));
   },
 }));
-// Ctrl+C: save everyone's needs before stopping
+// "pm2 sendSignal SIGUSR2 jumpi" (update.sh, a minute before the restart): every game window says an update is coming
+process.on("SIGUSR2", () => announceUpdate(60));
+// Ctrl+C / restart: tell the game windows (they reconnect by themselves and come straight back), save everyone's needs
 for (const sig of ["SIGINT", "SIGTERM"])
   process.once(sig, async () => {
+    announceUpdate(0);
     await Promise.race([saveAllNeeds(), new Promise((r) => setTimeout(r, 3000))]);
     process.exit(0);
   });

@@ -26,6 +26,11 @@ import { WORLD_BOUNDS } from "../public/shared/city-layout.js";
 import { modLog } from "../discord/pip.js";
 import { loadBlocks, ghosts, hasGhosts } from "./blocks.js";
 import { levelOf, MAX_LEVEL } from "../public/shared/levels.js";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+// which version of the game page this server has: a game window that reconnects to a server with a newer page
+// reloads itself (and goes straight back into the game), so nobody keeps playing an old page against a new server
+const BUILD = (() => { try { return createHash("sha1").update(readFileSync(new URL("../public/index.html", import.meta.url))).digest("hex").slice(0, 12); } catch { return String(Date.now()); } })();
 const TOWN_BOUNDS = { x0: -56, x1: 56, z0: -56, z1: 56 };   // Pizza Town (the delivery job), a big map of your own
 
 /*
@@ -112,6 +117,43 @@ function roomSend(p, event, data, { self = true, volatile = false } = {}) {
     (volatile ? ioRef.to(q.id).volatile : ioRef.to(q.id)).emit(event, data);
   }
 }
+/* Moves: instead of one message per step per player, the server collects them and sends each window ONE "moves"
+   message 10 times a second with everyone who moved. Players far from you (more than NEAR) only once a second:
+   they're small on the screen, and with lots of players in one place that's most of the traffic. */
+const MOVE_MS = 100, NEAR = 70, FAR_EVERY = 10;
+let moveTick = 0;
+const r2 = (v) => Math.round(v * 100) / 100;
+function flushMoves() {
+  if (!ioRef) return;
+  moveTick++;
+  const farTick = moveTick % FAR_EVERY === 0, now = Date.now(), byRoom = new Map();
+  for (const p of players.values()) {
+    if (!p.mv && !(farTick && now - (p.movedAt || 0) < 1100)) continue;
+    let l = byRoom.get(p.room);
+    if (!l) byRoom.set(p.room, (l = []));
+    l.push(p);
+  }
+  if (!byRoom.size) return;
+  for (const q of players.values()) {
+    const list = byRoom.get(q.room);
+    if (!list) continue;
+    const out = [];
+    for (const p of list) {
+      if (p === q || !sees(q, p)) continue;
+      const near = Math.hypot(p.x - q.x, p.z - q.z) <= NEAR;
+      // near: every step. Far away: the once-a-second round (with anyone who moved in the last second, so their last spot arrives too)
+      if (near ? !p.mv : !farTick) continue;
+      out.push([p.id, r2(p.x), r2(p.z), r2(p.face), (p.moving ? 1 : 0) | (p.run ? 2 : 0), p.pose || 0]);
+    }
+    if (out.length) ioRef.to(q.id).volatile.emit("moves", out);
+  }
+  for (const p of players.values()) p.mv = false;
+}
+// a new version is going live: every window shows a note (in: seconds until the restart; 0 = now)
+export function announceUpdate(seconds) {
+  if (ioRef) ioRef.emit("server:update", { in: Math.max(0, Math.round(seconds)) });
+}
+
 // turn invisibility on or off for every open window of this admin (from the game banner or the admin website)
 export function setInvisible(userId, on) {
   if (!ioRef) return 0;
@@ -290,6 +332,7 @@ export function attachPlaza(io) {
   }
 
   startPlaytime();
+  setInterval(flushMoves, MOVE_MS);
   // hunger, energy, stamina and fun go down while playing
   startNeeds({
     playersOf: (userId) => [...players.values()].filter((p) => p.userId === userId),
@@ -316,6 +359,7 @@ export function attachPlaza(io) {
     });
     const me = socket.data.user;
     socket.emit("whoami", { id: String(me.id || me._id || "") });
+    socket.emit("build", BUILD);
     socket.emit("event", { event: activeEvent() });   // the holiday event that is on (public/shared/events.js)   // the game checks this is the account it shows (a stale socket after logging in as someone else reconnects)
     const canChat = limiter(5, 5000);
     const canMove = limiter(25, 1000);
@@ -545,7 +589,7 @@ export function attachPlaza(io) {
       p.moving = d?.moving === true;
       p.pose = cleanPose(d?.pose, p.room === ROOM); // outside only sitting and lying down (benches, sun loungers)
       p.run = p.moving && d?.run === true;
-      roomSend(p, "player:move", { id: p.id, x: p.x, z: p.z, face: p.face, moving: p.moving, run: p.run, pose: p.pose }, { self: false, volatile: true });
+      p.mv = true;   // sent with the next "moves" round (flushMoves)
     });
 
     socket.on("chat", async (raw) => {

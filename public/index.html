@@ -140,7 +140,9 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
   box-shadow:0 6px 0 #b9c9e6,0 16px 34px rgb(0 0 0 / .25);transition:background .3s,box-shadow .3s}
 .tl-card[hidden]{display:none}
 .perf-meter{position:fixed;z-index:5;left:calc(env(safe-area-inset-left,0px) + 110px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:6px 10px;border-radius:10px;background:rgb(10 20 40 / .78);color:#dbe7f7;font:500 .75rem/1.35 ui-monospace,Menlo,Consolas,monospace;pointer-events:none}
-.perf-meter[hidden]{display:none}.perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
+.perf-meter[hidden]{display:none}
+.upd-note{position:fixed;z-index:48;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);translate:-50% 0;max-width:calc(100% - 32px);padding:10px 18px;border-radius:16px;background:#fff;box-shadow:0 5px 0 #b9c9e6,0 12px 28px rgb(0 0 0 / .25);color:#22324a;font:500 1rem/1.35 "Fredoka",system-ui,sans-serif;text-align:center}
+.upd-note b{color:#ff8a1c}.upd-note[hidden]{display:none}.perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
 /* Bobo's card is open (the double-click step): Pip moves to the bottom left, under Bobo, out of the card's way */
 .tl-card.pc-on{left:calc(env(safe-area-inset-left,0px) + 76px);top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;translate:none;width:min(520px,calc(100% - 76px - clamp(280px,36vw,480px)))}
 @media (max-width:760px){.tl-card.pc-on{left:12px;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:calc(100% - 24px)}}
@@ -7552,11 +7554,33 @@ function addRemote(p){
 }
 function removeRemote(id){const c=remotes.get(id);if(!c)return;dropAura(c);if(c.badge)c.badge.remove();const em=activeEmotes.get(id);if(em){em.el.remove();activeEmotes.delete(id);}setTimeout(refreshAdminOnline);c.root.removeFromParent();c.tag.removeFromParent();if(c.zzz)c.zzz.remove();if(c.think)c.think.remove();dropPetObj(c.petObj);c.petObj=null;c.tag.material.map.dispose();c.tag.material.dispose();c.bubble.remove();clearTimeout(c.bubbleT);remotes.delete(id);updateOnline();}
 function clearRemotes(){[...remotes.keys()].forEach(removeRemote);if(typeof vehClearAll==="function"){vehBeforeLeave();vehClearAll();}}
+/* Other players are drawn a little in the past (NET_DELAY) and slid smoothly between the two updates around that
+   moment, so a shaky connection doesn't make them jump. Far away ones (updates once a second) just walk to the last
+   spot. With a crowd, only the NEAR_FULL closest get the full treatment every frame; the others move every frame but
+   animate less often and cast no shadow. */
+const NET_DELAY=120,NEAR_FULL=25;
+function netSample(c){const b=c.buf||(c.buf=[]);b.push({t:performance.now(),x:c.tx,z:c.tz});if(b.length>6)b.shift();}
+let crowdT=0;
+function crowdRank(){const list=[...remotes.values()];if(list.length<=NEAR_FULL){for(const c of list)setLite(c,false);return;}
+  const cp=cam.position;list.sort((a,b)=>a.root.position.distanceToSquared(cp)-b.root.position.distanceToSquared(cp));list.forEach((c,i)=>setLite(c,i>=NEAR_FULL));}
+function setLite(c,on){if(!!c.lite===on)return;c.lite=on;c.root.traverse(o=>{if(o.isMesh){if(on){o.userData.cs=o.castShadow;o.castShadow=false;}else if(o.userData.cs!==undefined)o.castShadow=o.userData.cs;}});}
 function updateRemotes(t,dt){
+  if(t-crowdT>.5){crowdT=t;crowdRank();}
+  const nowMs=performance.now(),rt=nowMs-NET_DELAY;
   for(const c of remotes.values()){
-    const p=c.root.position,dx=c.tx-p.x,dz=c.tz-p.z,d=Math.hypot(dx,dz);
-    if(d>(c.onVeh?14:6)){p.x=c.tx;p.z=c.tz;}else if(d>.001){const step=Math.min(d,Math.max(SPEED*(c.run?RUN:1)*1.15*dt,d*dt*(c.onVeh?9:6)));p.x+=dx/d*step;p.z+=dz/d*step;}c.onVeh=false;
+    const p=c.root.position;let gx=c.tx,gz=c.tz;
+    // the moment NET_DELAY ago, between the two updates around it (only when updates come often: near players)
+    const b=c.buf,slowFeed=!!(b&&b.length>=2&&b[b.length-1].t-b[b.length-2].t>=350);let lerpOn=false;
+    if(b&&b.length>=2&&!c.onVeh&&!slowFeed&&nowMs-b[b.length-1].t<600){lerpOn=true;
+      let i=b.length-1;while(i>0&&b[i-1].t>rt)i--;
+      if(i>0&&b[i].t>=rt){const A=b[i-1],B=b[i],k=Math.max(0,Math.min(1,(rt-A.t)/Math.max(1,B.t-A.t)));gx=A.x+(B.x-A.x)*k;gz=A.z+(B.z-A.z)*k;}
+      else if(i===0){gx=b[0].x;gz=b[0].z;}}
+    const dx=gx-p.x,dz=gz-p.z,d=Math.hypot(dx,dz),dt2=Math.hypot(c.tx-p.x,c.tz-p.z);
+    if(dt2>(c.onVeh?14:6)){p.x=c.tx;p.z=c.tz;if(c.buf)c.buf.length=0;}else if(d>.001){const step=Math.min(d,Math.max(SPEED*(c.run?RUN:1)*1.15*dt,d*dt*(c.onVeh?9:lerpOn?14:slowFeed?2.5:6)));p.x+=dx/d*step;p.z+=dz/d*step;}c.onVeh=false;
     const moving=d>.06||c.moving;
+    // far away or not among the closest: the walk animation and the little details every 3rd frame (6th in a crowd)
+    c.lodN=(c.lodN||0)+1;const far=c.lite||p.distanceToSquared(cam.position)>45*45,every=c.lite?6:3,hopping=now()-c.hopT<1.2;
+    if(far&&!hopping&&!c.pose&&c.lodN%every){c.root.position.x=p.x;placeBubbleAt(c.bubble,c.root,3.05);if(moving)c.phase+=dt*(c.run?16:11);continue;}
     let df=c.face-c.cur;df=Math.atan2(Math.sin(df),Math.cos(df));c.cur+=df*Math.min(1,dt*12);
     if(moving)c.phase+=dt*(deepWater(p.x,p.z)?6:THREE.MathUtils.lerp(c.run?16:11,7,wadeK(p.z,p.x)));
     const hk=(now()-c.hopT)/(c.hopBig?JUMP_T:.9),hy=hk>=0&&hk<1?(c.hopBig?jumpY(hk):Math.abs(Math.sin(hk*Math.PI*2))*.22*(1-hk)):0;
@@ -7575,11 +7599,33 @@ function updateRemotes(t,dt){
 }
 function netState(){const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
 let NET_RETRY=0;
+/* A new version of the game went live: the server says so a minute before ("server:update" in: 60) and again when it
+   restarts (in: 0). The window reconnects by itself; if the server now has a newer page, it reloads and goes
+   straight back into the game (sessionStorage "jumpi-resume"). */
+let NET_BUILD=null;
+function netBuild(b){if(!b)return;if(NET_BUILD===null){NET_BUILD=b;return;}if(b===NET_BUILD){updNote(null);return;}
+  try{sessionStorage.setItem("jumpi-resume",inGame?"game":"menu");}catch(e){}
+  updNote(-1);setTimeout(()=>location.reload(),900);}
+let updT=null;
+function updNote(sec){let el=document.getElementById("updNote");
+  if(sec===null||sec===undefined){if(el)el.hidden=true;clearInterval(updT);return;}
+  if(!el){el=document.createElement("div");el.id="updNote";el.className="upd-note";el.setAttribute("role","status");document.body.appendChild(el);}
+  el.hidden=false;clearInterval(updT);
+  if(sec>0){const end=Date.now()+sec*1000;const paint=()=>{const left=Math.max(0,Math.round((end-Date.now())/1000));
+      el.innerHTML=`<b>Jumpi is getting an update!</b> In ${left>=60?"1 minute":left+" seconds"}. You'll be right back where you are.`;if(!left)clearInterval(updT);};paint();updT=setInterval(paint,1000);}
+  else el.innerHTML=sec===-1?"<b>New version!</b> Loading it…":"<b>Updating Jumpi…</b> Back in a few seconds!";}
+// came back after an update: straight into the game
+function resumeAfterUpdate(){let k=null;try{k=sessionStorage.getItem("jumpi-resume");sessionStorage.removeItem("jumpi-resume");}catch(e){}
+  if(k!=="game")return;let n=0;const go=()=>{if(inGame)return;if(me&&P&&!document.getElementById("loader")?.offsetParent){startGameTransition();return;}if(++n<60)setTimeout(go,500);};setTimeout(go,800);}
 function netJoin(){
   if(typeof io==="undefined"){updateOnline();return;}   // page opened without our server: play alone
   if(!socket){
-    socket=io({withCredentials:true,auth:cb=>cb({tab:TAB.get()})});
+    socket=io({withCredentials:true,transports:["websocket","polling"],auth:cb=>cb({tab:TAB.get()})});   // straight to WebSocket (polling only if that's blocked)
     socket._uid=me&&me.id;
+    // everyone who moved, 10 times a second in one message: [id, x, z, face, flags (1 moving, 2 running), pose]
+    socket.on("moves",list=>{for(const m of list){const c=remotes.get(m[0]);if(!c)continue;c.tx=m[1];c.tz=m[2];c.face=m[3];c.moving=!!(m[4]&1);c.run=!!(m[4]&2);c.pose=m[5]||null;netSample(c);}});
+    socket.on("build",b=>netBuild(b));
+    socket.on("server:update",d=>updNote(d&&d.in));
     socket.on("event",d=>evSet(d&&d.event,true));
     vehNet(socket);   // vehicles in the open world   // an admin switched a holiday event on / off (public/shared/events.js)
     // the server says who this connection is: not the account on screen (logged in as someone else on this tab) = connect again as the right one
@@ -9198,7 +9244,7 @@ addEventListener("keydown",e=>{const k=(e.key||"").toLowerCase(),mod=e.ctrlKey||
 // already logged in from an earlier visit? (or switch to a saved account if the session ended)
 api("me").then(async r=>{
   if(!r.ok&&r.status===401&&!TAB.get())r=await api("me");   // this tab's token ran out: the browser's login may still be good
-  if(r.ok&&r.data.user){setAccount(r.data.user);return;}
+  if(r.ok&&r.data.user){setAccount(r.data.user);resumeAfterUpdate();return;}
   if(r.status===403&&r.data.code==="parent-time"){toast(parentMsg(r.data));return;}   // parents' no-Jumpi time
   const a=await api("accounts");const first=a.ok&&(a.data.accounts||[])[0];
   if(first){const s=await api("switch",{username:first.username});if(s.ok&&s.data.user)setAccount(s.data.user);}
