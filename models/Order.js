@@ -16,17 +16,29 @@ const orderSchema = new mongoose.Schema(
     cartKey: { type: String, default: "" },   // the same cart again within 15 minutes reuses this order (no paying twice)
     amount: { type: Number, required: true }, // shekels
     currency: { type: String, default: "ILS" },
-    status: { type: String, enum: ["pending", "paid", "failed", "cancelled", "duplicate", "refunded"], default: "pending", index: true },
+    // partial = part of the money was given back; refunded = all of it (routes/payments.js)
+    status: { type: String, enum: ["pending", "paid", "failed", "cancelled", "duplicate", "partial", "refunded"], default: "pending", index: true },
     provider: { type: String, enum: ["hyp", "test"], default: "hyp" },
     providerRef: { type: String, default: "" }, // the payment company's transaction id
     give: { type: Object, default: {} }, // what this order gives, copied at the time of buying
     paidAt: { type: Date, default: null },
     grantedAt: { type: Date, default: null },
+    // money given back from the admin payments panel. kind "cancel" = cancelled at Hyp the same day (no fee),
+    // "refund" = a refund transaction at Hyp. days = membership days taken back; ref = Hyp's id of the refund
+    refunds: {
+      type: [{ _id: false, kind: String, amount: Number, at: Date, by: String, ref: String, reason: String, takeBack: String, coins: Number, days: Number, items: [String], batch: String }],
+      default: [],
+    },
+    refunded: { type: Number, default: 0 },          // shekels given back so far
+    busy: { type: Date, default: null },             // a refund is being sent to Hyp right now (stops double clicks)
+    notes: { type: String, default: "" },            // the admin's own notes
   },
   { timestamps: true }
 );
 orderSchema.index({ user: 1, product: 1, status: 1 });
 orderSchema.index({ user: 1, "items.product": 1, status: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ paidAt: -1 });
+orderSchema.index({ "refunds.at": -1 });
 
 export const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

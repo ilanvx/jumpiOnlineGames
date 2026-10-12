@@ -8,8 +8,7 @@ import { Message } from "../models/Message.js";
 import { ContactMessage } from "../models/ContactMessage.js";
 import { Report, URGENT_REASONS } from "../models/Report.js";
 import { TeamApplication, TEAM_ROLES, TEAM_STATUS } from "../models/TeamApplication.js";
-import { Order } from "../models/Order.js";
-import { fulfillOrder } from "./store.js";
+import paymentsRoutes from "./payments.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { discordOn, modLog, postGiftCode } from "../discord/pip.js";
@@ -26,16 +25,22 @@ import { EVENTS, isEvent } from "../public/shared/events.js";
 
 /*
   The /admin website. Security, in layers:
-  1. Signed in (the normal login cookie) AND role "admin" in the database, checked on every request.
-     Anyone else gets "Not found", so the panel doesn't even admit it exists.
+  1. Signed in (the normal login cookie) AND role "admin" in the database AND a senior admin (SENIOR_ADMINS below),
+     checked on every request. Anyone else, other admins too, gets "Not found", so the panel doesn't even admit it exists.
+     (Other admins keep their admin tools inside the game: realtime/plaza.js, not this website.)
   2. Admins must type their password again to unlock the panel. The unlock lasts 30 minutes
      (renewed while active), lives in its own HttpOnly + SameSite=Strict cookie, and stops working
      if the admin's password is reset.
   3. Changes only accept JSON from this same site (blocks cross-site forms and requests).
   4. Rate limits, and every action (and every unlock attempt) is written to the admin log.
+  6. Payments (/api/admin/pay, routes/payments.js) need one more code on top of all this: PAYMENTS_CODE in .env.
   5. Admins can't act on other admins (ban, mute, password...). Roles are only changed with
      `npm run make-admin` on the server computer.
 */
+// the only accounts that can open the /admin website (usernames, lower case). Changed only here, in the code.
+export const SENIOR_ADMINS = new Set(["ilanvx"]);
+export const isSenior = (u) => !!u && u.role === "admin" && SENIOR_ADMINS.has(String(u.usernameLower || u.username || "").toLowerCase());
+
 const router = express.Router();
 const UNLOCK = "jumpi_admin";
 const UNLOCK_MS = 30 * 60 * 1000;
@@ -72,7 +77,7 @@ router.use(async (req, res, next) => {
   res.set({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex" });
   try {
     const user = await currentUser(req, { cookieOnly: true });   // the protected login cookie only (a game tab's token can't open the panel)
-    if (!user || user.role !== "admin" || user.isBanned()) return fail(res, 404, "Not found.");
+    if (!user || !isSenior(user) || user.isBanned()) return fail(res, 404, "Not found.");
     const as = req.get("x-jumpi-as");   // the game window plays another account (see requireUser in shop.js)
     if (as && as !== user._id.toString()) return res.status(409).json({ error: "You switched account in another tab.", code: "account-changed", now: user.username });
     req.admin = user;
@@ -143,6 +148,9 @@ router.use((req, res, next) => {
   if (until - Date.now() < UNLOCK_MS - 5 * 60 * 1000) setUnlock(req, res);   // keep it open while the admin is working
   next();
 });
+
+/* ---------- payments: one more code (routes/payments.js) ---------- */
+router.use("/pay", paymentsRoutes);
 
 /* ---------- helpers for players ---------- */
 const brief = (u) => ({
@@ -577,44 +585,6 @@ router.get("/items", async (req, res, next) => {
 });
 
 /* ---------- messages from the Contact page ---------- */
-// Jumpi Store orders (real money) and totals
-router.get("/orders", async (req, res, next) => {
-  try {
-    const status = ["pending", "paid", "failed", "cancelled", "duplicate", "refunded"].includes(req.query.status) ? req.query.status : null;
-    const q = status ? { status } : {};
-    const name = clean(req.query.q, 32).toLowerCase();
-    if (name) q.username = new RegExp("^" + esc(name), "i");
-    const [list, sums] = await Promise.all([
-      Order.find(q).sort({ createdAt: -1 }).limit(200).lean(),
-      Order.aggregate([{ $group: { _id: "$status", n: { $sum: 1 }, total: { $sum: "$amount" } } }]),
-    ]);
-    const since = new Date(Date.now() - 30 * 86400000);
-    const month = await Order.aggregate([{ $match: { status: "paid", paidAt: { $gte: since } } }, { $group: { _id: null, n: { $sum: 1 }, total: { $sum: "$amount" } } }]);
-    res.json({ list, sums, month: month[0] || { n: 0, total: 0 } });
-  } catch (err) {
-    next(err);
-  }
-});
-// a HYP payment that never came back to the site (the buyer closed the page after paying): after checking in the Hyp portal
-// that it was really paid, the admin gives it by hand with Hyp's transaction number. Only "pending" or "failed" HYP orders.
-router.post("/orders/:id/grant", async (req, res, next) => {
-  try {
-    if (!mongoose.isValidObjectId(req.params.id)) return fail(res, 400, "Bad order.");
-    const ref = clean(req.body.ref, 40);
-    if (!/^[0-9A-Za-z-]{3,40}$/.test(ref)) return fail(res, 400, "Type the HYP transaction number (from the Hyp portal).");
-    const order = await Order.findById(req.params.id);
-    if (!order || order.provider !== "hyp") return fail(res, 404, "Order not found.");
-    if (!["pending", "failed"].includes(order.status)) return fail(res, 409, `This order is already "${order.status}".`);
-    if (await Order.exists({ _id: { $ne: order._id }, provider: "hyp", providerRef: ref, status: "paid" })) return fail(res, 409, "That HYP number was already used for another order.");
-    if (order.status === "failed") await Order.updateOne({ _id: order._id, status: "failed" }, { $set: { status: "pending" } });
-    const r = await fulfillOrder(order._id, ref);
-    const user = await User.findById(order.user).select("username");
-    audit(req, "store-grant", user, `order ${order._id} · ₪${order.amount} · HYP ${ref}`);
-    res.json({ ok: true, message: r.duplicate ? "A one-time bundle in it was already bought: nothing given, refund by hand." : `Given to ${order.username}.` });
-  } catch (err) {
-    next(err);
-  }
-});
 router.get("/contact", async (req, res, next) => {
   try {
     const q = req.query.show === "all" ? {} : { handled: false };

@@ -15,7 +15,7 @@ import homeRoutes from "./routes/home.js";
 import socialRoutes from "./routes/social.js";
 import contactRoutes from "./routes/contact.js";
 import teamRoutes from "./routes/team.js";
-import adminRoutes from "./routes/admin.js";
+import adminRoutes, { isSenior } from "./routes/admin.js";
 import needsRoutes from "./routes/needs.js";
 import petRoutes from "./routes/pets.js";
 import storeRoutes from "./routes/store.js";
@@ -217,11 +217,12 @@ app.get(["/forgot-password", "/reset-password"], (req, res, next) => { res.set({
 // "/store?soon": a preview of the closed-store page; "/store?preview": the real store while it's closed (only admins can buy there)
 app.get("/store", (req, res, next) => page((STORE_OPEN || "preview" in req.query) && !("soon" in req.query) ? "site/store.html" : "site/store-soon.html")(req, res, next));
 app.get("/site/store.html", (req, res) => res.redirect(302, "/store"));
-// the admin panel: signed-in players who aren't admins get "Not found"; the page itself checks the rest with the server
+// the admin panel: only senior admins (SENIOR_ADMINS in routes/admin.js). Anyone signed in who isn't one, other admins too,
+// gets "Not found"; the page itself checks the rest with the server
 app.get(["/admin", "/admin/"], async (req, res, next) => {
   try {
     const user = await currentUser(req);
-    if (user && user.role !== "admin") return notFound(req, res);
+    if (user && !isSenior(user)) return notFound(req, res);
     res.set({
       "Cache-Control": "no-store", "X-Frame-Options": "DENY", "X-Robots-Tag": "noindex",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",

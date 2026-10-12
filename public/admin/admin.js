@@ -79,9 +79,11 @@
         const r = await fetch("/api/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: $("#gateUser").value, password: pass, remember: false }) });
         const d = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(d.error || "Couldn't sign in.");
-        if (!d.user || d.user.role !== "admin") {
+        // only senior admins can open this website (other admins use their tools inside the game)
+        const ok = d.user && d.user.role === "admin" && (await fetch("/api/admin/session", { credentials: "same-origin" })).status !== 404;
+        if (!ok) {
           await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: "{}" });
-          throw new Error("This account isn't an admin.");
+          throw new Error("This account can't open the admin website.");
         }
       }
       const u = await api("/unlock", { password: pass });
@@ -159,6 +161,260 @@
   }
   $("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") $("#modal").hidden = true; });
   addEventListener("keydown", (e) => { if (e.key === "Escape") $("#modal").hidden = true; });
+
+  /* ---------- payments panel ---------- */
+  const fill = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false));
+  const ils = (n) => "₪" + (Math.round(Number(n || 0) * 100) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  async function payApi(path, body) {
+    const opt = { credentials: "same-origin", headers: {} };
+    if (body !== undefined) { opt.method = "POST"; opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(body); }
+    let r;
+    try { r = await fetch("/api/admin/pay" + path, opt); } catch { throw new Error("Can't reach the server."); }
+    const data = await r.json().catch(() => ({}));
+    if (r.status === 401 && data.locked) { showGate("unlock"); throw Object.assign(new Error("Locked"), { quiet: true }); }
+    if (r.status === 401 && data.payLocked) { if (path !== "/session") payGate(); throw Object.assign(new Error("Payments locked"), { quiet: path !== "/session", payLocked: true }); }
+    if (!r.ok) throw new Error(data.error || "Something went wrong.");
+    return data;
+  }
+  function payGate() {
+    page("Payments");
+    const code = h("input", { type: "password", autocomplete: "off", maxlength: 200, required: true });
+    const msg = h("p", { class: "bad small", role: "alert" });
+    const form = h("form", { class: "panel pay-gate" },
+      h("h2", null, "Payments code"),
+      h("p", { class: "muted" }, "The payments are locked with their own code. It stays open for 15 minutes while you work."),
+      h("label", { class: "fld" }, h("span", null, "Code"), code),
+      h("button", { class: "b b-orange", type: "submit" }, "Open payments"), msg);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault(); msg.textContent = "";
+      const btn = form.querySelector("button"); btn.disabled = true;
+      try { await payApi("/unlock", { code: code.value }); code.value = ""; if (location.hash.startsWith("#pay")) route(); else location.hash = "#pay"; }
+      catch (err) { if (!err.quiet || err.payLocked) msg.textContent = err.message === "Payments locked" ? "Wrong code." : err.message; }
+      btn.disabled = false;
+    });
+    main.append(form);
+    setTimeout(() => code.focus(), 30);
+  }
+  const STATUS_TAG = { paid: ["green", "Paid"], pending: ["", "Waiting"], failed: ["red", "Failed"], cancelled: ["", "Cancelled"], duplicate: ["red", "Paid twice"], partial: ["orange", "Part refunded"], refunded: ["violet", "Refunded"] };
+  const statusTag = (st) => h("span", { class: "tag " + (STATUS_TAG[st]?.[0] || "") }, STATUS_TAG[st]?.[1] || st);
+  const tileBox = (big, label, c, e, sub) => h("div", { class: "tile", style: `--c:${c};--e:${e}` }, h("b", null, big), h("span", null, label), sub ? h("small", { class: "tile-sub" }, sub) : null);
+  // bars for the last 30 days: money in (green) and refunds (red)
+  function payChart(days) {
+    const W = 720, H = 180, pad = 22, n = days.length, bw = (W - pad * 2) / n;
+    const max = Math.max(10, ...days.map((d) => Math.max(d.in, d.out)));
+    const NS = "http://www.w3.org/2000/svg", el = (t, a) => { const x = document.createElementNS(NS, t); for (const k in a) x.setAttribute(k, a[k]); return x; };
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H + 24}`, class: "pay-chart", role: "img", "aria-label": "Money in and refunds, last 30 days" });
+    for (const f of [0, 0.5, 1]) {
+      const y = pad + (H - pad * 2) * (1 - f);
+      svg.append(el("line", { x1: pad, x2: W - pad, y1: y, y2: y, class: "grid" }));
+      const t = el("text", { x: 2, y: y - 3, class: "lbl" }); t.textContent = "₪" + Math.round(max * f); svg.append(t);
+    }
+    days.forEach((d, i) => {
+      const x = pad + i * bw, hIn = (H - pad * 2) * (d.in / max), hOut = (H - pad * 2) * (d.out / max);
+      const g = el("g", {});
+      const tip = el("title", {}); tip.textContent = `${d.day}: ${ils(d.in)} in (${d.n})${d.out ? ", " + ils(d.out) + " refunded" : ""}`; g.append(tip);
+      g.append(el("rect", { x: x + 2, y: H - pad - hIn, width: Math.max(2, bw / 2 - 2), height: Math.max(0, hIn), rx: 3, class: "in" }));
+      if (d.out) g.append(el("rect", { x: x + bw / 2, y: H - pad - hOut, width: Math.max(2, bw / 2 - 2), height: hOut, rx: 3, class: "out" }));
+      svg.append(g);
+      if (i % 5 === 0 || i === n - 1) { const t = el("text", { x: x + 2, y: H + 4, class: "lbl" }); t.textContent = d.day.slice(5).replace("-", "/"); svg.append(t); }
+    });
+    return svg;
+  }
+  async function download(path, name) {
+    const r = await fetch("/api/admin/pay" + path, { credentials: "same-origin" });
+    if (r.status === 401) { const d = await r.json().catch(() => ({})); if (d.payLocked) return payGate(); if (d.locked) return showGate("unlock"); }
+    if (!r.ok) throw new Error("Couldn't make the file.");
+    const url = URL.createObjectURL(await r.blob()), a = h("a", { href: url, download: name });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  async function openReceipt(orderId, ref) {
+    const w = window.open("", "_blank");   // opened right away, so the browser doesn't block it
+    try {
+      const d = await payApi(`/orders/${orderId}/receipt` + (ref ? "?ref=" + encodeURIComponent(ref) : ""));
+      if (w) { w.opener = null; w.location.href = d.url; } else location.href = d.url;
+    } catch (e) { if (w) w.close(); oops(e); }
+  }
+
+  // one order: everything about it, and what can be done with it
+  async function orderCard(id, after) {
+    const d = await payApi("/orders/" + id), o = d.order, p = d.player, card = $("#modalCard");
+    card.classList.add("wide");
+    const close = () => { $("#modal").hidden = true; };
+    const done = async (msg) => { toast(msg); close(); await after?.(); };
+    const facts = (pairs) => h("dl", { class: "facts" }, pairs.filter(Boolean).map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, v))));
+    const acts = h("div", { class: "row pay-acts" });
+    if (o.provider === "hyp" && o.ref && o.status !== "pending" && o.status !== "failed") acts.append(h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => openReceipt(o.id) }, "Receipt (PDF)"));
+    if (["paid", "partial", "duplicate"].includes(o.status) && o.left > 0) acts.append(h("button", { class: "b b-red b-sm", type: "button", onclick: () => refundForm(o, done, after) }, "Refund…"));
+    if (o.provider === "hyp" && ["pending", "failed"].includes(o.status)) acts.append(h("button", { class: "b b-green b-sm", type: "button", onclick: () => grantForm(o, done) }, "Paid → give"));
+    const notes = h("textarea", { rows: 2, maxlength: 500 }); notes.value = o.notes || "";
+    const saveNote = h("button", { class: "b b-ghost b-sm", type: "button", onclick: async () => { try { await payApi(`/orders/${o.id}/note`, { notes: notes.value }); toast("Note saved."); } catch (e) { oops(e); } } }, "Save note");
+    fill(card,
+      h("h2", null, `Order · ${ils(o.amount)}`), h("div", { class: "row", style: "justify-content:flex-start;gap:8px" }, statusTag(o.status), o.provider === "test" ? h("span", { class: "tag" }, "test (pretend)") : null, o.busy ? h("span", { class: "tag orange" }, "refund being sent") : null),
+      facts([["Created", fmtDate(o.at)], ["Paid", fmtDate(o.paidAt)], ["Hyp transaction", o.ref || "–"], ["Refunded", ils(o.refunded)], ["Can still refund", ils(o.left)], ["Order id", h("span", { class: "mono small" }, o.id)]]),
+      h("h3", { class: "pay-h3" }, "What was bought"),
+      table([["Product", (l) => l.name], ["Qty", (l) => l.qty], ["Price", (l) => ils(l.price)], ["Total", (l) => ils(l.price * l.qty)]], o.lines),
+      h("p", { class: "small muted" }, `Gave: ${fmtNum(o.give.coins)} coins${o.give.memberDays ? ` · ${o.give.memberDays} membership days` : ""}${o.give.items.length ? " · " + o.give.items.join(", ") : ""}${o.grantedAt ? " · given " + fmtDate(o.grantedAt) : " · nothing given yet"}`),
+      o.memberValue ? h("p", { class: "small" }, `Membership still unused from this order: ${o.memberValue.days} days, worth ${ils(o.memberValue.amount)}.`) : null,
+      p ? h("div", { class: "pay-sec" }, h("h3", { class: "pay-h3" }, "Player"), facts([["Player", h("a", { href: "#player/" + p.id, onclick: close }, p.username)], ["Email", p.email], ["Coins now", fmtNum(p.coins)], ["Member until", p.memberUntil ? fmtDate(p.memberUntil) : "–"],
+        ["Spent in total", ils(p.spent)], ["Refunded in total", ils(p.refunded)], ["Paid orders", fmtNum(p.orders)]])) : h("p", { class: "bad" }, "The account was deleted."),
+      o.refunds.length ? h("div", { class: "pay-sec" }, h("h3", { class: "pay-h3" }, "Refunds"), table([["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Type", (r) => (r.kind === "cancel" ? "Same-day cancel" : "Refund")], ["Amount", (r) => ils(r.amount)],
+        ["Took back", (r) => [r.coins && fmtNum(r.coins) + " coins", r.days && r.days + " days", r.items && r.items + " clothes"].filter(Boolean).join(", ") || "–"], ["By", (r) => r.by], ["Why", (r) => h("span", { class: "small" }, r.reason || "–")],
+        ["", (r) => (o.provider === "hyp" && r.kind === "refund" && r.ref ? h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => openReceipt(o.id, r.ref) }, "Credit doc") : "")]], o.refunds)) : null,
+      h("label", { class: "fld" }, h("span", null, "Your notes (only you see them)"), notes), h("div", { class: "row", style: "justify-content:flex-start" }, saveNote),
+      acts, h("div", { class: "row" }, h("button", { class: "b b-ghost", type: "button", onclick: close }, "Close")));
+    $("#modal").hidden = false;
+  }
+  function refundForm(o, done, after) {
+    const card = $("#modalCard"), whole = h("input", { type: "checkbox", checked: true });
+    const amount = h("input", { type: "number", min: "0.01", step: "0.01", max: String(o.left), value: o.left.toFixed(2), disabled: true });
+    whole.onchange = () => { amount.disabled = whole.checked; if (whole.checked) amount.value = o.left.toFixed(2); };
+    const take = h("select", null, [["none", "Leave what they got (money only)"], ["share", "Take back the same part: coins and membership days"], ["all", "Take back everything: coins, days and clothes"]].map(([v, t]) => h("option", { value: v }, t)));
+    if (o.status === "duplicate") take.disabled = true;
+    const reason = h("input", { maxlength: 200, placeholder: "e.g. parent asked, didn't get the coins…" });
+    const sure = h("input", { type: "checkbox" });
+    const form = h("form", { class: "ann" }, h("h2", null, `Refund ${o.username}`),
+      h("p", { class: "muted" }, `${o.what} · paid ${ils(o.amount)}${o.refunded ? `, ${ils(o.refunded)} already refunded` : ""}.`),
+      o.canCancel ? h("p", { class: "tag green pay-note" }, "Paid today: a full refund is sent as a same-day cancel at Hyp (no card fee).") : null,
+      o.provider === "test" ? h("p", { class: "tag pay-note" }, "A test (pretend) order: Hyp won't be called.") : null,
+      h("label", { class: "chk" }, whole, h("span", null, `Everything that's left (${ils(o.left)})`)),
+      h("label", { class: "fld" }, h("span", null, "Amount (₪)"), amount),
+      h("label", { class: "fld" }, h("span", null, "From the player's account"), take),
+      h("label", { class: "fld" }, h("span", null, "Reason (for your log)"), reason),
+      h("label", { class: "chk" }, sure, h("span", null, "I checked: send this money back to the card.")),
+      h("div", { class: "row" }, h("button", { class: "b b-ghost", type: "button", onclick: () => orderCard(o.id, after).catch(oops) }, "Back"), h("button", { class: "b b-red", type: "submit" }, "Refund")));
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!sure.checked) return toast("Tick the box first.", true);
+      const btn = form.querySelector('[type="submit"]'); btn.disabled = true; btn.textContent = "Sending to Hyp…";
+      try { const r = await payApi(`/orders/${o.id}/refund`, { all: whole.checked, amount: Number(amount.value), takeBack: take.value, reason: reason.value }); await done(r.message); }
+      catch (err) { oops(err); btn.disabled = false; btn.textContent = "Refund"; }
+    });
+    fill(card, form);
+  }
+  function grantForm(o, done) {
+    modal(`Give ${o.username} what they paid for`, [
+      { text: `Only if ${ils(o.amount)} really came in: check the payment in the Hyp portal first, then copy its transaction number.` },
+      { name: "ref", label: "Hyp transaction number", ph: "e.g. 12345678", max: 40 },
+    ], "Give", async (v) => { const r = await payApi(`/orders/${o.id}/grant`, { ref: v.ref.trim() }); await done(r.message); });
+  }
+
+  const PAY = {
+    async overview(box) {
+      const d = await payApi("/summary"), m = d.money;
+      const sub = (x) => `${fmtNum(x.orders)} payments · ${ils(x.gross)} in${x.refunds ? " · " + ils(x.refunds) + " back" : ""}`;
+      box.append(h("div", { class: "tiles" },
+        tileBox(ils(m.today.net), "today (net)", "#2fd36b", "#17a24a", sub(m.today)),
+        tileBox(ils(m.d7.net), "last 7 days", "#1fb6ff", "#06488a", sub(m.d7)),
+        tileBox(ils(m.d30.net), "last 30 days", "#8a4dff", "#3a1192", sub(m.d30)),
+        tileBox(ils(m.all.net), "since the start", "#3e5b86", "#1f3355", sub(m.all)),
+        tileBox(fmtNum(d.buyers), "players who paid", "#ff9a1f", "#a3410a"),
+        tileBox(ils(d.members.owed), "unused paid membership", "#ff5fb4", "#a3226a", `${fmtNum(d.members.active)} members now · ${fmtNum(d.members.paidFor)} paid for`)));
+      const hl = d.health;
+      const check = (ok, good, bad) => h("li", { class: ok ? "ok" : "no" }, ok ? good : bad);
+      box.append(h("div", { class: "split" },
+        panel("Last 30 days", payChart(d.days), h("p", { class: "small muted" }, h("span", { class: "dot in" }), " money in  ", h("span", { class: "dot out" }), " refunds · Israel time")),
+        h("div", null,
+          panel("Needs a look", d.attention.length ? table([["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => r.username], ["Amount", (r) => ils(r.amount)],
+            ["Why", (r) => (r.status === "duplicate" ? h("span", { class: "tag red" }, "paid twice: refund") : r.busy ? h("span", { class: "tag orange" }, "refund stuck") : h("span", { class: "tag" }, "never came back: check Hyp"))]], d.attention, (r) => orderCard(r.id, route))
+            : h("p", { class: "muted" }, "All good: nothing waiting.")),
+          panel("Set-up", h("ul", { class: "pay-health" },
+            check(hl.hyp, "Hyp is connected", "Hyp isn't connected (HYP_MASOF / HYP_KEY / HYP_PASSP in .env)"),
+            check(hl.code, "Payments code is set", "No payments code"),
+            check(hl.storeOpen, "The store is open to everyone", "The store is closed (only admins on /store?preview)"),
+            hl.test ? h("li", { class: "no" }, "STORE_TEST is on: admins can make pretend payments") : null),
+            h("p", { class: "small muted" }, "In the Hyp portal: success page = https://jumpigames.com" + hl.returnUrl + ", default document = Receipt (exempt dealer)."))),
+      ));
+      box.append(panel("What sells", table([["Product", (r) => r.name], ["Sold", (r) => fmtNum(r.n)], ["Money in", (r) => ils(r.total)]], d.byKind)));
+    },
+
+    async tx(box) {
+      const st = h("select", { class: "inp" }, [["", "All"], ["money", "Money in (paid + refunded)"], ["paid", "Paid"], ["partial", "Part refunded"], ["refunded", "Refunded"], ["attention", "Needs a look"], ["pending", "Waiting for payment"], ["failed", "Failed"], ["duplicate", "Paid twice"]].map(([v, t]) => h("option", { value: v }, t)));
+      const q = h("input", { class: "inp", type: "search", placeholder: "Player, Hyp number or order id…", maxlength: 40 });
+      const from = h("input", { class: "inp pay-date", type: "date", title: "From" }), to = h("input", { class: "inp pay-date", type: "date", title: "To" });
+      const prov = h("select", { class: "inp" }, [["", "Hyp + test"], ["hyp", "Hyp only"], ["test", "Test only"]].map(([v, t]) => h("option", { value: v }, t)));
+      const csv = h("button", { class: "b b-sm b-green", type: "button" }, "Download for Excel");
+      const list = h("div");
+      let pageN = 0;
+      const params = () => `status=${st.value}&q=${encodeURIComponent(q.value.trim())}&from=${from.value}&to=${to.value}&provider=${prov.value}`;
+      const load = async () => {
+        const d = await payApi("/orders?" + params() + "&page=" + pageN);
+        const pager = d.pages > 1 ? h("div", { class: "row pay-pager" },
+          h("button", { class: "b b-ghost b-sm", type: "button", disabled: pageN === 0, onclick: () => { pageN--; load().catch(oops); } }, "← Newer"),
+          h("span", { class: "muted small" }, `Page ${pageN + 1} of ${d.pages} · ${fmtNum(d.count)} orders`),
+          h("button", { class: "b b-ghost b-sm", type: "button", disabled: pageN >= d.pages - 1, onclick: () => { pageN++; load().catch(oops); } }, "Older →")) : null;
+        fill(list,
+          h("p", { class: "pay-totals" }, h("span", null, "In: ", h("b", null, ils(d.totals.paid))), h("span", null, "Refunded: ", h("b", null, ils(d.totals.refunded))), h("span", null, "Net: ", h("b", null, ils(d.totals.net))), h("span", { class: "muted small" }, `${fmtNum(d.count)} orders`)),
+          panel(null, table([
+            ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => r.username], ["What", (r) => h("span", { class: "small" }, r.what)],
+            ["Amount", (r) => h("span", { class: "nowrap" }, ils(r.amount), r.refunded ? h("small", { class: "bad" }, " −" + ils(r.refunded)) : null)],
+            ["Status", (r) => statusTag(r.status)], ["Hyp no.", (r) => h("span", { class: "small muted mono" }, r.provider === "test" ? "test" : r.ref || "–")],
+            ["", (r) => (r.notes ? h("span", { class: "tag blue", title: r.notes }, "note") : "")],
+          ], d.list, (r) => orderCard(r.id, load)), pager));
+      };
+      const reload = () => { pageN = 0; load().catch(oops); };
+      for (const x of [st, from, to, prov]) x.onchange = reload;
+      q.addEventListener("input", () => { clearTimeout(q.t); q.t = setTimeout(reload, 300); });
+      csv.onclick = () => download("/orders.csv?" + params(), "jumpi-payments.csv").catch(oops);
+      box.append(h("div", { class: "tools" }, st, q, from, to, prov, csv), list);
+      await load();
+    },
+
+    async members(box) {
+      const min = h("input", { class: "inp pay-num", type: "number", min: "0", max: "50", step: "0.5", value: "1", title: "Smallest refund (₪)" });
+      const out = h("div");
+      let timer = 0;
+      const showJob = (j) => {
+        if (!j) return null;
+        const pct = j.total ? Math.round((j.done / j.total) * 100) : 0;
+        return panel(j.running ? "Refunding now…" : "Last membership refund",
+          h("div", { class: "pay-bar" }, h("i", { style: `width:${pct}%` })),
+          h("p", null, `${j.done} of ${j.total} orders · ${j.ok} done · ${j.failed} failed · ${ils(j.amount)} of ${ils(j.planned)} sent back`),
+          h("p", { class: "small muted" }, `Started ${fmtDate(j.startedAt)} by ${j.by}${j.endedAt ? " · ended " + fmtDate(j.endedAt) : ""} · ${j.endMembership ? "membership days were taken away" : "membership days were left"}`),
+          j.errors.length ? table([["Player", (e) => e.username || "–"], ["Amount", (e) => (e.amount ? ils(e.amount) : "–")], ["Problem", (e) => h("span", { class: "small bad" }, e.error)],
+            ["", (e) => (e.orderId ? h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => orderCard(e.orderId) }, "Open") : "")]], j.errors) : null);
+      };
+      const load = async () => {
+        clearTimeout(timer);
+        const d = await payApi("/members/plan?min=" + (Number(min.value) || 0));
+        const code = h("input", { type: "password", autocomplete: "off", maxlength: 200 });
+        const confirm = h("input", { maxlength: 20, placeholder: "REFUND ALL", autocomplete: "off" });
+        const end = h("input", { type: "checkbox", checked: true });
+        const run = h("button", { class: "b b-red", type: "submit", disabled: !d.orders || d.job?.running }, `Refund ${ils(d.total)} to ${fmtNum(d.plan.length)} players`);
+        const form = h("form", { class: "panel pay-run" }, h("h2", null, "Send it all back"),
+          h("p", null, "Each payment is refunded on its own through Hyp, by the days left, one after another. You can leave this page while it runs."),
+          h("label", { class: "chk" }, end, h("span", null, "Also take away the refunded membership days")),
+          h("label", { class: "fld" }, h("span", null, "Payments code (again)"), code),
+          h("label", { class: "fld" }, h("span", null, "Type REFUND ALL"), confirm), h("div", { class: "row" }, run));
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          run.disabled = true;
+          try { await payApi("/members/run", { code: code.value, confirm: confirm.value, min: Number(min.value) || 0, endMembership: end.checked }); code.value = ""; toast("Started."); await load(); }
+          catch (err) { oops(err); run.disabled = false; }
+        });
+        fill(out,
+          h("div", { class: "tiles" }, tileBox(fmtNum(d.members), "members now", "#ff5fb4", "#a3226a"), tileBox(fmtNum(d.plan.length), "with paid time left", "#8a4dff", "#3a1192"),
+            tileBox(fmtNum(d.orders), "payments to refund", "#1fb6ff", "#06488a"), tileBox(ils(d.total), "would go back", "#ff5a5a", "#8a1c1c")),
+          d.job ? showJob(d.job) : null,
+          panel("Who gets what", h("p", { class: "small muted" }, "Days left are matched to the newest paid orders first. A membership day is worth its pack's price ÷ days; days that came with a costume are worth the 1-week pack's day price. Days given by hand or by codes aren't refunded."),
+            table([["Player", (p) => h("a", { href: "#player/" + p.userId }, p.username)], ["Member until", (p) => h("span", { class: "nowrap small" }, fmtDate(p.memberUntil))], ["Days left", (p) => fmtNum(p.daysLeft)],
+              ["Payments", (p) => h("span", { class: "small" }, p.rows.map((r) => `${r.days}d of ${r.what} → ${ils(r.amount)}`).join(" · "))], ["Refund", (p) => h("b", null, ils(p.total))]], d.plan)),
+          d.orders ? form : null);
+        if (d.job?.running) timer = setTimeout(() => { if (location.hash.startsWith("#pay/members")) load().catch(oops); }, 2500);
+      };
+      min.onchange = () => load().catch(oops);
+      box.append(panel(null, h("p", { style: "margin:0" }, "If the game ever closes: everyone with a membership gets back the money for the days they haven't used yet. Nothing is sent until you run it below."),
+        h("div", { class: "tools", style: "margin:12px 0 0" }, h("label", { class: "small" }, "Skip refunds smaller than ₪ "), min)), out);
+      await load();
+    },
+
+    async log(box) {
+      const d = await payApi("/log");
+      const NAMES = { "payments-open": "Opened payments", "payments-code-wrong": "Wrong payments code", "payments-refund": "Refund", "payments-refund-failed": "Refund failed", "payments-note": "Note", "payments-receipt": "Receipt opened",
+        "payments-export": "Excel export", "payments-members-start": "Membership refund started", "payments-members-done": "Membership refund ended", "store-grant": "Given by hand" };
+      box.append(panel(null, table([["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Who", (r) => r.admin], ["What", (r) => h("span", { class: "tag " + (/wrong|failed/.test(r.action) ? "red" : "") }, NAMES[r.action] || r.action)],
+        ["Player", (r) => r.target || "–"], ["Details", (r) => h("span", { class: "small" }, r.details)], ["IP", (r) => h("span", { class: "small muted mono" }, r.ip)]], d.list)));
+    },
+  };
 
   /* ---------- views ---------- */
   const VIEWS = {
@@ -551,40 +807,26 @@
       main.append(tiles, h("div", { class: "tools" }, status, role, q), box);
       await load();
     },
-    async orders() {
-      page("Store orders");
-      const sel = h("select", { class: "inp" }, [["", "All orders"], ["paid", "Paid"], ["pending", "Waiting for payment"], ["failed", "Failed"], ["duplicate", "Paid twice (refund by hand)"], ["refunded", "Refunded"]].map(([v, t]) => h("option", { value: v }, t)));
-      const q = h("input", { class: "inp", placeholder: "Player name…", maxlength: 32 });
+    /* ---------- payments (one more code: PAYMENTS_CODE on the server) ---------- */
+    async pay(arg) {
+      const tab = ["overview", "tx", "members", "log"].includes(arg) ? arg : "overview";
+      const s = await payApi("/session").catch((e) => { if (e.payLocked) return { codeSet: true, open: false }; throw e; });
+      if (!s.codeSet) {
+        page("Payments");
+        main.append(panel("The payments code isn't set yet",
+          h("p", null, "The payments panel opens with its own code, on top of your password. Add this line to the server's .env file (at least 6 characters, only you know it), then restart the server:"),
+          h("pre", { class: "mono pay-pre" }, "PAYMENTS_CODE=your-code-here"),
+          h("p", { class: "muted small" }, "Don't send the code in chat or email. If you change it, every open payments session closes.")));
+        return;
+      }
+      if (!s.open) return payGate();
+      const lockBtn = h("button", { class: "b b-sm b-ghost", type: "button", onclick: async () => { try { await payApi("/lock", {}); } catch {} payGate(); } }, "Lock payments");
+      page("Payments", lockBtn);
+      const tabs = [["overview", "Overview"], ["tx", "Transactions"], ["members", "Membership refunds"], ["log", "Money log"]];
+      main.append(h("nav", { class: "pay-tabs" }, tabs.map(([k, t]) => h("a", { href: "#pay/" + k, class: k === tab ? "on" : null }, t))));
       const box = h("div");
-      const ils = (n) => "₪" + (Math.round(n * 100) / 100).toFixed(2);
-      const load = async () => {
-        const d = await api("/orders?status=" + sel.value + "&q=" + encodeURIComponent(q.value.trim()));
-        const sum = (st) => d.sums.find((x) => x._id === st) || { n: 0, total: 0 };
-        box.replaceChildren(
-          h("div", { class: "tiles" },
-            h("div", { class: "tile", style: "--c:#2fd36b;--e:#17a24a" }, h("b", null, ils(d.month.total)), h("span", null, `paid in the last 30 days (${d.month.n})`)),
-            h("div", { class: "tile", style: "--c:#1fb6ff;--e:#06488a" }, h("b", null, ils(sum("paid").total)), h("span", null, `paid in total (${sum("paid").n})`)),
-            h("div", { class: "tile", style: "--c:#ff9a1f;--e:#a3410a" }, h("b", null, fmtNum(sum("pending").n)), h("span", null, "waiting for payment")),
-            h("div", { class: "tile", style: "--c:#c8263c;--e:#7a1020" }, h("b", null, fmtNum(sum("duplicate").n)), h("span", null, "paid twice: refund by hand"))),
-          panel(null, table([
-            ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.createdAt))], ["Player", (r) => userLink(r.username, r.user)],
-            ["Product", (r) => (r.items && r.items.length ? r.items.map((l) => (l.qty > 1 ? l.qty + "× " : "") + l.product).join(", ") : r.product)], ["Price", (r) => ils(r.amount)],
-            ["Status", (r) => h("span", { class: "tag " + ({ paid: "green", pending: "", duplicate: "red", failed: "red", refunded: "" }[r.status] || "") }, r.status)],
-            ["Payment", (r) => h("span", { class: "small muted" }, r.provider === "test" ? "test (pretend)" : r.providerRef || "–")],
-            // paid in HYP but never came back to the site: give it by hand after checking the Hyp portal
-            ["", (r) => (r.provider === "hyp" && (r.status === "pending" || r.status === "failed")
-              ? h("button", { class: "b b-ghost small", type: "button", onclick: async () => {
-                  const ref = prompt(`Was ₪${(Math.round(r.amount * 100) / 100).toFixed(2)} from ${r.username} really paid? Check in the Hyp portal, then type the HYP transaction number:`);
-                  if (!ref) return;
-                  try { const x = await api(`/orders/${r._id}/grant`, { ref: ref.trim() }); toast(x.message); await load(); } catch (e) { oops(e); }
-                } }, "Paid → give")
-              : "")],
-          ], d.list)));
-      };
-      sel.onchange = () => load().catch(oops);
-      q.addEventListener("input", () => { clearTimeout(q.t); q.t = setTimeout(() => load().catch(oops), 300); });
-      main.append(h("div", { class: "tools" }, sel, q), box);
-      await load();
+      main.append(box);
+      await PAY[tab](box);
     },
   };
 

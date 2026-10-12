@@ -196,3 +196,37 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .rp-ctx{margin:8px 0 0;max-height:260px;overflow:auto;border-radius:10px;background:#f6f9fd;padding:8px 10px;font-size:.88rem}
 .rp-ctx p{margin:2px 0}.rp-ctx p.tgt{color:#b31d2f}.rp-ctx small{color:var(--ink-2);margin-right:6px}
 .rp-details{white-space:pre-wrap;margin:6px 0 0;padding:8px 10px;border-radius:10px;background:#fff8e6}
+
+/* payments */
+.pay-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 16px}
+.pay-tabs a{padding:8px 14px;border-radius:12px;background:#fff;color:var(--ink);text-decoration:none;font:400 1rem var(--display);letter-spacing:.03em;box-shadow:0 4px 0 var(--line)}
+.pay-tabs a.on{background:var(--panel);color:#fff;box-shadow:0 4px 0 var(--navy)}
+.pay-gate{max-width:420px;display:grid;gap:12px}
+.pay-gate .fld input{background:#f3f6fb}
+.pay-pre{background:#f3f6fb;border-radius:12px;padding:10px 12px;overflow:auto}
+.tile-sub{font-size:.78rem;opacity:.85;font-weight:500}
+.pay-chart{width:100%;height:auto;display:block}
+.pay-chart .grid{stroke:#e3e9f4;stroke-width:1}
+.pay-chart .lbl{font:500 10px var(--body);fill:var(--ink-2)}
+.pay-chart .in{fill:var(--green)}.pay-chart .out{fill:var(--red)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px}.dot.in{background:var(--green)}.dot.out{background:var(--red)}
+.pay-health{list-style:none;padding:0;margin:0 0 8px;display:grid;gap:6px}
+.pay-health li{padding-inline-start:26px;position:relative;font-weight:500}
+.pay-health li::before{position:absolute;inset-inline-start:0;top:0;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;color:#fff}
+.pay-health li.ok::before{content:"✓";background:var(--green)}.pay-health li.no::before{content:"!";background:var(--orange)}
+.pay-totals{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;margin:0 0 10px}
+.pay-totals b{font:400 1.25rem var(--display)}
+.pay-pager{justify-content:center;align-items:center;margin-top:12px}
+.pay-date{flex:none!important;min-width:0!important;width:150px!important}
+.pay-num{flex:none!important;min-width:0!important;width:90px!important}
+.pay-h3{font-size:1.05rem;margin:6px 0 -2px}
+.pay-note{display:block;white-space:normal;padding:6px 10px;border-radius:10px;margin:0;font-size:.85rem}
+.pay-acts{justify-content:flex-start;gap:10px;flex-wrap:wrap}
+.pay-bar{height:14px;border-radius:999px;background:#eef3fa;overflow:hidden;margin-bottom:8px}
+.pay-bar i{display:block;height:100%;background:var(--green);transition:width .4s}
+.pay-run{display:grid;gap:12px;max-width:520px;border:3px solid #ffd0d0}
+.pay-run .fld input{background:#f3f6fb}
+.chk{display:flex;gap:8px;align-items:center;font-weight:500;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--orange)}
+.pay-sec{display:grid;gap:10px}
+.split>*{min-width:0}.pay-chart{max-width:100%}

@@ -80,4 +80,29 @@ export const hyp = {
     const paid = back.get("CCode") === "0";
     return { ok: signOk && paid, orderId: back.get("Order"), ref: back.get("Id") || "", amount: back.get("Amount"), code: signOk ? back.get("CCode") : "badsign" };
   },
+  /* ---------- for the admin payments panel (routes/payments.js) ---------- */
+  // cancel a payment the same day, before Hyp sends it to the card company (until 22:00 Israel time): no fee
+  async cancel(transId) {
+    const e = env(), p = new URLSearchParams();
+    p.set("action", "CancelTrans"); p.set("Masof", e.masof); p.set("PassP", e.passp); p.set("TransId", String(transId));
+    const a = new URLSearchParams(await call(p));
+    return { ok: a.get("CCode") === "0", code: a.get("CCode"), raw: { ReversalStatus: a.get("ReversalStatus"), Hesh: a.get("Hesh") } };
+  },
+  // refund all or part of a payment that was already sent to the card company; makes a new Hyp transaction (and a credit document)
+  async refund(transId, amount) {
+    const e = env(), p = new URLSearchParams();
+    p.set("action", "zikoyAPI"); p.set("Masof", e.masof); p.set("PassP", e.passp); p.set("TransId", String(transId)); p.set("Amount", Number(amount).toFixed(2));
+    const a = new URLSearchParams(await call(p));
+    return { ok: a.get("CCode") === "0", code: a.get("CCode"), id: a.get("Id") || "", raw: { ACode: a.get("ACode"), HeshASM: a.get("HeshASM") } };
+  },
+  // a link that opens the receipt (Hyp Invoice / EZcount) of a transaction as a PDF; signed by Hyp, holds no password
+  async receiptUrl(transId) {
+    const e = env(), p = new URLSearchParams();
+    p.set("action", "APISign"); p.set("What", "SIGN"); p.set("ACTION", "PrintHesh"); p.set("type", "EZCOUNT");
+    p.set("KEY", e.key); p.set("PassP", e.passp); p.set("Masof", e.masof); p.set("TransId", String(transId));
+    const signed = await call(p);
+    const cc = ccodeOf(signed);
+    if ((cc !== null && cc !== "0") || !/signature=/.test(signed)) throw new Error(`Hyp didn't give a receipt link (CCode ${cc ?? "?"})`);
+    return PAY + "?" + signed;
+  },
 };
