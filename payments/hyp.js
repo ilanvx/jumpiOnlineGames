@@ -56,7 +56,7 @@ export const hyp = {
     p.set("PageLang", lang === "he" ? "HEB" : "ENG");
     p.set("UTF8", "True"); p.set("UTF8out", "True");
     p.set("Sign", "True");                                      // the return address gets a signature we can verify
-    p.set("MoreData", "True");
+    // no MoreData: the return address then carries no card digits or buyer details (nothing personal in our logs)
     // no name / email / phone of the player is sent: the grown-up types what Hyp asks for on Hyp's own page
     const signed = await call(p);
     const cc = ccodeOf(signed);

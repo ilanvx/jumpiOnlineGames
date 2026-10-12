@@ -571,6 +571,14 @@
             ["Product", (r) => (r.items && r.items.length ? r.items.map((l) => (l.qty > 1 ? l.qty + "× " : "") + l.product).join(", ") : r.product)], ["Price", (r) => ils(r.amount)],
             ["Status", (r) => h("span", { class: "tag " + ({ paid: "green", pending: "", duplicate: "red", failed: "red", refunded: "" }[r.status] || "") }, r.status)],
             ["Payment", (r) => h("span", { class: "small muted" }, r.provider === "test" ? "test (pretend)" : r.providerRef || "–")],
+            // paid in HYP but never came back to the site: give it by hand after checking the Hyp portal
+            ["", (r) => (r.provider === "hyp" && (r.status === "pending" || r.status === "failed")
+              ? h("button", { class: "b b-ghost small", type: "button", onclick: async () => {
+                  const ref = prompt(`Was ₪${(Math.round(r.amount * 100) / 100).toFixed(2)} from ${r.username} really paid? Check in the Hyp portal, then type the HYP transaction number:`);
+                  if (!ref) return;
+                  try { const x = await api(`/orders/${r._id}/grant`, { ref: ref.trim() }); toast(x.message); await load(); } catch (e) { oops(e); }
+                } }, "Paid → give")
+              : "")],
           ], d.list)));
       };
       sel.onchange = () => load().catch(oops);

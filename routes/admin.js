@@ -9,6 +9,7 @@ import { ContactMessage } from "../models/ContactMessage.js";
 import { Report, URGENT_REASONS } from "../models/Report.js";
 import { TeamApplication, TEAM_ROLES, TEAM_STATUS } from "../models/TeamApplication.js";
 import { Order } from "../models/Order.js";
+import { fulfillOrder } from "./store.js";
 import { Code, CodeUse, createCode } from "../models/Code.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { discordOn, modLog, postGiftCode } from "../discord/pip.js";
@@ -590,6 +591,26 @@ router.get("/orders", async (req, res, next) => {
     const since = new Date(Date.now() - 30 * 86400000);
     const month = await Order.aggregate([{ $match: { status: "paid", paidAt: { $gte: since } } }, { $group: { _id: null, n: { $sum: 1 }, total: { $sum: "$amount" } } }]);
     res.json({ list, sums, month: month[0] || { n: 0, total: 0 } });
+  } catch (err) {
+    next(err);
+  }
+});
+// a HYP payment that never came back to the site (the buyer closed the page after paying): after checking in the Hyp portal
+// that it was really paid, the admin gives it by hand with Hyp's transaction number. Only "pending" or "failed" HYP orders.
+router.post("/orders/:id/grant", async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) return fail(res, 400, "Bad order.");
+    const ref = clean(req.body.ref, 40);
+    if (!/^[0-9A-Za-z-]{3,40}$/.test(ref)) return fail(res, 400, "Type the HYP transaction number (from the Hyp portal).");
+    const order = await Order.findById(req.params.id);
+    if (!order || order.provider !== "hyp") return fail(res, 404, "Order not found.");
+    if (!["pending", "failed"].includes(order.status)) return fail(res, 409, `This order is already "${order.status}".`);
+    if (await Order.exists({ _id: { $ne: order._id }, provider: "hyp", providerRef: ref, status: "paid" })) return fail(res, 409, "That HYP number was already used for another order.");
+    if (order.status === "failed") await Order.updateOne({ _id: order._id, status: "failed" }, { $set: { status: "pending" } });
+    const r = await fulfillOrder(order._id, ref);
+    const user = await User.findById(order.user).select("username");
+    audit(req, "store-grant", user, `order ${order._id} · ₪${order.amount} · HYP ${ref}`);
+    res.json({ ok: true, message: r.duplicate ? "A one-time bundle in it was already bought: nothing given, refund by hand." : `Given to ${order.username}.` });
   } catch (err) {
     next(err);
   }

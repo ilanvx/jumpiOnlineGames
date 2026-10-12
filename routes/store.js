@@ -189,9 +189,14 @@ router.post("/store/test-pay", requireJson, async (req, res, next) => {
 });
 
 // HYP sends the buyer back here after paying
+const returns = new Map();   // the return address asks Hyp each time: at most 20 a minute from one address
 router.get("/store/hyp/return", async (req, res, next) => {
   try {
     if (!hyp.ready()) return res.status(404).type("text").send("Not found");
+    { const now = Date.now(), k = req.ip || "?", e = returns.get(k);
+      if (returns.size > 20000) for (const [x, v] of returns) if (v.reset < now) returns.delete(x);
+      if (!e || e.reset < now) returns.set(k, { n: 1, reset: now + 60_000 });
+      else if (++e.n > 20) return res.status(429).type("text").send("Too many tries. Please wait a minute."); }
     res.set("Cache-Control", "no-store");
     const raw = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?") + 1) : "";
     let v;
