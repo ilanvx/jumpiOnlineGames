@@ -1026,6 +1026,7 @@ body.code-in .code-input{display:block}
 .item.r-rare[aria-selected="true"],.item.r-epic[aria-selected="true"]{box-shadow:inset 0 0 0 3px var(--rc),0 4px 0 #9fb3d1,0 0 0 3px var(--orange)}
 .item.r-rare{--rc:#2f8bff}.item.r-epic{--rc:#9b5cff}
 .item .pr.own{color:#7df0a5}.item[aria-selected="true"] .pr.own{color:#17a24a}
+.item.worn{box-shadow:inset 0 0 0 3px #3fd27a}.item.worn::after{content:"";position:absolute;top:6px;right:6px;z-index:2;width:22px;height:22px;border-radius:50%;pointer-events:none;background:#2fbf6a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:0 2px 0 #188a47}
 .item .pr.wear{color:#ffd27a}.item[aria-selected="true"] .pr.wear{color:#c96a00}
 .item .badge-new{position:absolute;z-index:1;top:4px;right:4px;padding:2px 7px;border-radius:999px;background:#ff5fb4;color:#fff;font-size:.7rem;font-weight:600}
 .sw{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--sw) 50%,#fff) 0%,var(--sw) 45%,color-mix(in srgb,var(--sw) 65%,#000) 100%);box-shadow:inset 0 -4px 0 rgb(0 0 0 / .2)}
@@ -8018,7 +8019,7 @@ document.getElementById("minimap").onclick=()=>openMap();
 document.getElementById("mapClose").onclick=closeMap;
 mapOverlay.addEventListener("pointerdown",e=>{if(e.target===mapOverlay)closeMap();});
 addEventListener("keydown",e=>{if(!inGame)return;if(e.key==="Escape"&&!mapOverlay.hidden){e.stopImmediatePropagation();closeMap();return;}
-  if((e.key==="m"||e.key==="M")&&!(e.target.closest&&e.target.closest("input,textarea"))){e.preventDefault();mapOverlay.hidden?openMap():closeMap();}},true);
+  if(e.code==="KeyM"&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!(e.target.closest&&e.target.closest("input,textarea"))){e.preventDefault();mapOverlay.hidden?openMap():closeMap();}},true);
 // from a point on the big map to the world
 function mapToWorld(e){const host=document.getElementById("mapHost"),r=host.getBoundingClientRect(),f=mapView;if(!f)return null;
   const px=e.clientX-r.left,py=e.clientY-r.top;return {px,py,x:(px-f.ox)/f.s/MAP_PX+MAP_BOUNDS.x0,z:(py-f.oy)/f.s/MAP_PX+MAP_BOUNDS.z0};}
@@ -8502,12 +8503,30 @@ function exitGame(){
   P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);walk.x=0;walk.face=0;G.keys={};
   document.getElementById("bubble").classList.remove("show");myBubble.classList.remove("show");chatInput.blur();resize();
 }
+// get every shader and texture of the world ready while the wipe covers the screen. Without this, the first time
+// something new comes into view (turning the camera right after entering) the GPU stops to build it: a freeze.
+const _warmTex=new Set();
+function warmScene(roots,maxMs=4000){
+  try{
+    roots=[].concat(roots).filter(Boolean);
+    roots.forEach(R=>R.traverse(o=>{const ms=o.material;if(!ms)return;[].concat(ms).forEach(m=>{for(const k in m){const t=m[k];
+      if(t&&t.isTexture&&!t.isRenderTargetTexture&&t.version>0&&!_warmTex.has(t)&&t.image){_warmTex.add(t);try{renderer.initTexture(t);}catch(e){}}}});}));
+    if(!renderer.compileAsync)return Promise.resolve();
+    // compile only what's about to be seen, using the scene's current lights and fog (the ones it will be drawn with)
+    // (three counts the lights of R twice if R is already in the scene, so the lights come from a stand-in scene
+    //  that sees every visible light outside R: the same light set the real frame will have)
+    const jobs=roots.map(R=>{const S=new THREE.Scene();S.fog=scene.fog;S.environment=scene.environment;S.background=scene.background;
+      S.traverseVisible=cb=>scene.traverseVisible(o=>{if(!o.isLight)return;for(let q=o;q;q=q.parent)if(q===R)return;cb(o);});
+      return renderer.compileAsync(R,cam,S).catch(()=>{});});
+    return Promise.race([Promise.all(jobs),new Promise(r=>setTimeout(r,maxMs))]);
+  }catch(e){return Promise.resolve();}
+}
 function startGameTransition(){
   if(act.flip&&now()-act.flip.t<1.4)return;
   setMenu(false);doAction("flip");sfx.hop();setTimeout(()=>sfx.whoosh(),350);
   const w=document.getElementById("wipe");
   setTimeout(()=>{w.classList.add("in");},850);
-  setTimeout(()=>{enterGame();w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);},1450);
+  setTimeout(async()=>{enterGame();await warmScene([world,P.root]);w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);},1450);
 }
 addEventListener("keydown",e=>{if(!inGame)return;if(e.target.closest&&e.target.closest("input,textarea,button"))return;
   if(e.key==="Enter"){e.preventDefault();G.keys={};openChat();return;}
@@ -9283,6 +9302,7 @@ function renderStoreGrid(){
     else price=`<span class="pr">${COIN_SVG}${it?it.price.toLocaleString("en-US"):"…"}</span>`;
     const rar=i>=0?itemRarity(slot,i):null,legend=i>=0&&(slot==="aura"||rar==="legendary"),isNew=!legend&&!rar&&!inv&&it&&!it.starter&&!owns(id);if(legend)b.classList.add("legendary");
     if(rar&&!legend)b.classList.add("r-"+rar);
+    if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&wearing(slot,i)){b.classList.add("worn");b.title="Tap again to take it off";}
     b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew&&!(it&&it.member)?'<span class="badge-new">NEW</span>':""}${it&&it.member?'<span class="mchip" title="Members Club">★ MEMBERS</span>':""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
     b.setAttribute("aria-label",(i<0?"None":itemName(slot,i))+", "+b.querySelector(".pr").textContent);
     b.onclick=()=>selectItem(i);storeGrid.appendChild(b);});
@@ -9294,6 +9314,8 @@ function selectItem(i){
   if(slot==="furniture"){sfx.tick(true);renderStoreGrid();return;}
   if(slot==="vehicle"){vehPreview(i);sfx.tick(true);renderStoreGrid();return;}
   if(slot==="emote"){popEmote(P.root,myBubble,EMOTES[i].id,skinOf({color:lk("color")}),"me");sfx.hop();renderStoreGrid();return;}
+  // tapping the thing you're already wearing takes it off (same as the "none" tile)
+  if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura")&&wearing(slot,i)){storeSel=i=-1;}
   if(slot==="color")colorIdx=i;else if(slot==="eyes")eyeIdx=i;else outfit[slot]=i;
   applyColor();applyEyeColor();applyOutfit();refreshMenuTag();
   sfx.tick(true);doAction("hop",null,true);
@@ -10037,6 +10059,7 @@ async function enterHome(username){
   body.classList.add("in-home");homeTitle.textContent=(HOME.mine?"MY HOME":HOME.owner.toUpperCase()+"'S HOME");
   document.getElementById("homeDecorate").hidden=!HOME.mine;document.getElementById("homeUpgrade").hidden=!HOME.mine;
   document.getElementById("homeAccess").hidden=!HOME.mine;if(HOME.mine){HOME.access=r.data.access||"friends";paintAccess();}
+  await warmScene(HOME.group,2500);
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
 }
 // put everything back the way the Plaza needs it
@@ -10374,6 +10397,7 @@ async function goToWork(job="waiter"){
   body.classList.add("in-home","at-work");homeTitle.textContent="JUMPI RESTAURANT";document.getElementById("homeDecorate").hidden=true;document.getElementById("homeUpgrade").hidden=true;
   document.getElementById("homeLeave").lastChild.textContent="Clock out";
   Sound.venue("diner");WORK.on=true;WORK.job=job;setUniform("waiter");
+  await warmScene(HOME.group,2500);
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
   PLACE.busy=false;setTimeout(()=>showShiftIntro(),500);}
 // leaving the restaurant (door, Clock out, phone): finish the shift if one is running
@@ -10801,6 +10825,7 @@ async function goDelivery(){
   body.classList.add("in-home","at-work","at-delivery");homeTitle.textContent="PIZZA TOWN";document.getElementById("homeDecorate").hidden=true;document.getElementById("homeUpgrade").hidden=true;
   document.getElementById("homeLeave").lastChild.textContent="Clock out";document.getElementById("wkStop").textContent="End shift";
   Sound.venue(null);WORK.on=true;WORK.job="delivery";setUniform("delivery");DLV.state="idle";
+  await warmScene(HOME.group,3000);
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
   PLACE.busy=false;setTimeout(()=>showShiftIntro(),500);}
 function dlvStartShift(){DLV.state="pickup";DLV.has=false;dlvBoxShow(false);dlvSetTarget(PIZZERIA.win[0],PIZZERIA.win[1],"#ff8a1c");
@@ -12163,6 +12188,7 @@ async function enterPlace(id){
   if(socket&&socket.connected)socket.emit("join",netState());   // everyone in this shop sees each other
   body.classList.add("in-home");homeTitle.textContent=V.title;document.getElementById("homeDecorate").hidden=true;document.getElementById("homeUpgrade").hidden=true;
   Sound.venue(C.music||null);
+  await warmScene(HOME.group,2500);
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
   PLACE.busy=false;setTimeout(()=>{if(HOME.place===id)toast(V.hello);},650);
 }
@@ -13755,7 +13781,7 @@ document.getElementById("decoRotate").onclick=()=>{if(ghost){ghostR=(ghostR+1)%4
 document.getElementById("decoMove").onclick=()=>{if(selK<0)return;const it=HOME.layout.items.splice(selK,1)[0];placePieces();selectPiece(-1);startGhost(it.f,it.r);queueSave();renderDeco();};
 document.getElementById("decoStore").onclick=()=>{if(ghost){cancelGhost();return;}if(selK<0)return;HOME.layout.items.splice(selK,1);placePieces();selectPiece(-1);renderDeco();queueSave();sfx.close();};
 addEventListener("keydown",e=>{if(!G.home||deco.hidden)return;if(e.target.closest&&e.target.closest("input,textarea"))return;
-  if(e.key==="r"||e.key==="R"){document.getElementById("decoRotate").click();e.preventDefault();}
+  if(e.code==="KeyR"&&!e.ctrlKey&&!e.metaKey&&!e.altKey){document.getElementById("decoRotate").click();e.preventDefault();}
   if(e.key==="Escape"){e.stopImmediatePropagation();if(ghost||selK>=0){cancelGhost();selectPiece(-1);}else closeDecorate();}
   if(e.key==="Delete"||e.key==="Backspace"){if(selK>=0){document.getElementById("decoStore").click();e.preventDefault();}}},true);
 function queueSave(){const chip=document.getElementById("decoSaved");chip.textContent="Saving…";chip.className="deco-saved";clearTimeout(HOME.saveT);
@@ -14186,7 +14212,7 @@ document.getElementById("phBack").onclick=()=>{sfx.tick(false);goBack();};
 phone.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();if(phone.dataset.view==="app")goBack();else closePhone();}});
 addEventListener("keydown",e=>{if(!inGame||(!me&&!TL.on)||e.target.closest&&e.target.closest("input,textarea"))return;
   if(e.key==="Escape"&&PH.open){e.preventDefault();closePhone();}
-  else if((e.key==="p"||e.key==="P")&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();PH.open?closePhone():openPhone();}});
+  else if(e.code==="KeyP"&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();PH.open?closePhone():openPhone();}});
 
 /* ---------- screens ---------- */
 function showHomeScreen(){PH.stack=[];PH.chat=null;PH.tok++;stopBars();phone.dataset.view="home";paintGrid();}
