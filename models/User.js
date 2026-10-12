@@ -58,6 +58,9 @@ const userSchema = new mongoose.Schema(
     subscriber: { type: Boolean, default: false },
     // membership bought in the store: one payment, never renews by itself; buying again adds days
     memberUntil: { type: Date, default: null },
+    // what the store gave since the player last saw the "thank you" popup in the game (routes/store.js fulfillOne adds to it,
+    // POST /api/store/note/seen clears it): coins and membership days added up over every purchase in between
+    buyNote: { type: { coins: Number, days: Number, items: Number, kinds: [String], n: Number, at: Date, _id: false }, default: undefined },
     // "admin" gets the admin panel (npm run make-admin -- <username>)
     role: { type: String, enum: ["player", "mod", "admin"], default: "player" },   // "mod" = moderator (chosen players: kick/ban/mute, coins from a monthly budget)
     modBudget: { type: mongoose.Schema.Types.Mixed },   // moderators: { month: "2026-10", used: coins given this month }
@@ -205,6 +208,7 @@ userSchema.methods.toPublic = function () {
     levelXp: this.levelXp || 0,
     birthDate: this.birthDate ? this.birthDate.toISOString().slice(0, 10) : null,   // shown only to the player (Settings → Account)
     birthdayToday: isBirthdayOn(this.birthDate),
+    buyNote: this.buyNote && this.buyNote.n ? { coins: this.buyNote.coins || 0, days: this.buyNote.days || 0, items: this.buyNote.items || 0, kinds: [...(this.buyNote.kinds || [])], n: this.buyNote.n, at: this.buyNote.at } : null,   // the game's "thank you" popup, once
     tutorialDone: !!this.tutorialAt,
     chatLock: this.parental?.chatLock === true,   // parents turned the chat off: only the ready-made messages (public/shared/parental.js)
     secrets: Array.isArray(this.secrets) ? [...this.secrets] : [],

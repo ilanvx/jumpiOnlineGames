@@ -1867,6 +1867,41 @@ html body.game-store .phone-btn,html body.game-store .home-btn,html body.game-st
 .online{display:none!important}
 /* ---------- happy birthday ---------- */
 .hb-overlay{z-index:58}
+/* the store's "thank you" popup (BUYNOTE) */
+.ty-overlay{z-index:59}
+.idle-card.ty-card{position:relative;width:min(500px,100%);padding:6px 26px 24px;text-align:center;overflow:hidden;isolation:isolate;background:linear-gradient(180deg,#fff8dc 0%,#fff 48%)}
+.ty-rays{position:absolute;left:50%;top:110px;width:640px;height:640px;margin:-320px 0 0 -320px;z-index:-1;opacity:.55;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgb(255 200 40 / .55) 0 9deg,transparent 9deg 22.5deg);-webkit-mask:radial-gradient(circle,#000 0 18%,transparent 60%);mask:radial-gradient(circle,#000 0 18%,transparent 60%);animation:tySpin 14s linear infinite}
+@keyframes tySpin{to{transform:rotate(360deg)}}
+.ty-chest{position:relative;width:180px;height:142px;margin:30px auto 0;animation:tyIn .6s cubic-bezier(.3,1.6,.5,1) both}
+.ty-chest svg{width:100%;height:100%;display:block;overflow:visible}
+.ty-lid{transform-box:fill-box;transform-origin:15% 100%;animation:tyLid .7s .45s cubic-bezier(.3,1.7,.5,1) both}
+.ty-glow{opacity:0;animation:tyGlow 2.4s .55s ease-in-out infinite}
+.ty-coins-in{opacity:0;animation:tyFade .3s .6s both}
+@keyframes tyIn{from{transform:scale(.3) translateY(30px);opacity:0}}
+@keyframes tyLid{from{transform:none}to{transform:translate(-4px,-14px) rotate(-18deg)}}
+@keyframes tyGlow{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes tyFade{to{opacity:1}}
+.ty-fly{position:absolute;left:50%;top:58px;width:0;height:0;z-index:2;pointer-events:none}
+.ty-fly i{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#fff6b0,#ffd23a 45%,#e8a300);box-shadow:inset 0 0 0 3px #c98a00;opacity:0;
+  animation:tyCoin var(--d) var(--w) cubic-bezier(.2,.7,.4,1) both}
+.ty-fly i.gem{border-radius:4px;width:16px;height:22px;left:-8px;top:-11px;background:linear-gradient(160deg,#fff,var(--c) 45%);box-shadow:none;clip-path:polygon(50% 0,100% 40%,50% 100%,0 40%)}
+@keyframes tyCoin{0%{opacity:1;transform:translate(0,10px) scale(.4) rotateY(0)}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(1) rotate(var(--r))}}
+.ty-title{margin:2px 0 4px;font:400 2.6rem/1 var(--font);letter-spacing:.02em;direction:inherit}
+.ty-title span{display:inline-block;color:var(--c);text-shadow:0 3px 0 rgb(0 0 0 / .14);animation:hbJump 1.4s calc(var(--i) * .07s) ease-in-out infinite,tyPop .5s calc(.2s + var(--i) * .05s) cubic-bezier(.3,1.6,.6,1) both}
+@keyframes tyPop{from{transform:scale(0)}}
+.ty-sub{margin:0 0 16px;color:#4a5b75;font:500 1.08rem/1.45 "Fredoka",system-ui,sans-serif}.ty-sub b{color:#e07a00}
+.ty-gifts{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:0 0 20px}
+.ty-gift{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:128px;padding:12px 12px 10px;border-radius:20px;background:#fff;box-shadow:0 5px 0 #f1d48a,0 0 0 3px #ffefc0 inset;
+  animation:phPop .5s calc(.8s + var(--k) * .15s) cubic-bezier(.3,1.6,.6,1) both}
+.ty-gift .pic{width:58px;height:58px;display:grid;place-items:center}.ty-gift .pic svg{width:100%;height:100%}
+.ty-gift b{font:400 1.7rem/1 var(--font);color:#1d2b4f;font-variant-numeric:tabular-nums;direction:ltr}
+.ty-gift small{color:#8a7a5a;font:600 .86rem "Fredoka",system-ui,sans-serif}
+.ty-gift.days{box-shadow:0 5px 0 #cdbcff,0 0 0 3px #ece5ff inset}.ty-gift.days b{color:#5a2ad6}
+.ty-gift.items{box-shadow:0 5px 0 #ffc2dd,0 0 0 3px #ffe3f0 inset}.ty-gift.items b{color:#d6286e}
+.ty-ok{min-width:200px}
+@media (prefers-reduced-motion:reduce){.ty-rays,.ty-chest,.ty-lid,.ty-glow,.ty-coins-in,.ty-title span,.ty-gift{animation:none}.ty-lid{transform:translate(-4px,-14px) rotate(-18deg)}.ty-glow,.ty-coins-in{opacity:1}.ty-fly{display:none}}
+
 .idle-card.hb-card{position:relative;width:min(470px,100%);padding:18px 26px 24px;text-align:center;overflow:hidden;background:linear-gradient(180deg,#fff7fb,#fff)}
 .hb-gift svg{width:150px;height:122px;display:block;margin:0 auto}
 .hb-lid{transform-box:fill-box;transform-origin:20% 100%;animation:hbLid 1.2s .3s cubic-bezier(.3,1.6,.5,1) both}
@@ -3918,6 +3953,29 @@ body.land .npc-card .idle-face{display:none}
     <p class="hb-text" id="trText"></p>
     <div class="hb-presents" id="trPresents"></div>
     <div class="hb-acts"><button class="vf-go hb-wear" id="trWear" type="button">WEAR MY CROWN</button><button class="vf-again" id="trThanks" type="button">Awesome!</button></div>
+  </div>
+</div>
+<!-- the store's "thank you" popup: once, the next time the player is in the game after buying (me.buyNote, BUYNOTE block) -->
+<div class="idle-overlay ty-overlay" id="tyOv" role="dialog" aria-modal="true" aria-labelledby="tyTitle" hidden>
+  <div class="idle-card ty-card">
+    <div class="ty-rays" aria-hidden="true"></div>
+    <div class="ty-chest" aria-hidden="true">
+      <div class="ty-fly" id="tyFly"></div>
+      <svg viewBox="0 0 200 150"><defs><linearGradient id="tyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe680"/><stop offset=".55" stop-color="#ffc21c"/><stop offset="1" stop-color="#e58a00"/></linearGradient>
+        <radialGradient id="tyL" cx=".5" cy=".9" r=".7"><stop offset="0" stop-color="#fffbe0"/><stop offset=".5" stop-color="#ffd85a" stop-opacity=".8"/><stop offset="1" stop-color="#ffb000" stop-opacity="0"/></radialGradient></defs>
+        <ellipse cx="100" cy="142" rx="70" ry="7" fill="rgb(60 20 0 / .18)"/>
+        <ellipse class="ty-glow" cx="100" cy="70" rx="70" ry="48" fill="url(#tyL)"/>
+        <rect x="34" y="70" width="132" height="68" rx="12" fill="url(#tyG)" stroke="#b86a00" stroke-width="5"/>
+        <rect x="58" y="70" width="14" height="68" fill="#fff1b8" stroke="#b86a00" stroke-width="3"/><rect x="128" y="70" width="14" height="68" fill="#fff1b8" stroke="#b86a00" stroke-width="3"/>
+        <rect x="88" y="88" width="24" height="28" rx="6" fill="#fff1b8" stroke="#b86a00" stroke-width="4"/><circle cx="100" cy="100" r="4" fill="#b86a00"/>
+        <g class="ty-coins-in"><circle cx="70" cy="70" r="11" fill="#ffd23a" stroke="#c98a00" stroke-width="3"/><circle cx="95" cy="64" r="12" fill="#ffd23a" stroke="#c98a00" stroke-width="3"/><circle cx="122" cy="68" r="11" fill="#ffd23a" stroke="#c98a00" stroke-width="3"/><circle cx="108" cy="72" r="10" fill="#ffe680" stroke="#c98a00" stroke-width="3"/></g>
+        <g class="ty-lid"><path d="M30 72 Q30 30 100 30 Q170 30 170 72 Z" fill="url(#tyG)" stroke="#b86a00" stroke-width="5" stroke-linejoin="round"/><rect x="58" y="34" width="14" height="38" fill="#fff1b8" stroke="#b86a00" stroke-width="3"/><rect x="128" y="34" width="14" height="38" fill="#fff1b8" stroke="#b86a00" stroke-width="3"/></g>
+      </svg>
+    </div>
+    <h2 class="ty-title" id="tyTitle"></h2>
+    <p class="ty-sub" id="tySub"></p>
+    <div class="ty-gifts" id="tyGifts"></div>
+    <button class="vf-go ty-ok" id="tyOk" type="button"></button>
   </div>
 </div>
 <div class="idle-overlay hb-overlay" id="hbOv" role="dialog" aria-modal="true" aria-labelledby="hbTitle" hidden>
@@ -8415,7 +8473,7 @@ function gfxTick(){const t=performance.now();if(!GFX.last){GFX.last=t;return;}co
 function enterGame(){
   if(!P)return;
   if(!gameBuilt)buildPlaza();
-  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();setTimeout(()=>loadFoodBag(),800);
+  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
@@ -13487,9 +13545,60 @@ if(!STORE_OPEN||IN_APP)document.getElementById("spxBtn").remove();else document.
 if(STORE_OPEN&&!IN_APP){const c=document.getElementById("coins");c.setAttribute("role","button");c.tabIndex=0;c.title="Get more coins";
   c.addEventListener("click",()=>{if(inGame&&me)openOffers();});c.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&inGame&&me){e.preventDefault();openOffers();}});}
 // something was bought in the store (in another tab): show it right away
-function storeGranted(d){const P=PRODUCT_BY_ID[d.product];if(d.user&&me){me.coins=d.user.coins;me.inventory=d.user.inventory;me.subscriber=d.user.subscriber;me.memberUntil=d.user.memberUntil;}
-  paintCoins(true);refreshMyTag();if(GS.open)renderStoreGrid();OFFERS.me=null;sfx.success();doAction("hop",null,true);
-  toast(P?`Thank you! ${P.name.en} is yours.`:"Thank you for your purchase!");if(!spxOverlay.hidden)closeOffers(true);}
+function storeGranted(d){const P=PRODUCT_BY_ID[d.product];if(d.user&&me){me.coins=d.user.coins;me.inventory=d.user.inventory;me.subscriber=d.user.subscriber;me.memberUntil=d.user.memberUntil;me.buyNote=d.user.buyNote||null;}
+  paintCoins(true);refreshMyTag();if(GS.open)renderStoreGrid();OFFERS.me=null;if(!spxOverlay.hidden)closeOffers(true);
+  // in the game right now: the "thank you" popup straight away (otherwise it waits for the next time in the game)
+  if(me&&me.buyNote&&inGame)showBuyNote(400);else if(!me||!me.buyNote)toast(P?`Thank you! ${P.name.en} is yours.`:"Thank you for your purchase!");}
+
+/* ---------- BUYNOTE: the store's "thank you" popup ----------
+   The server adds every purchase to me.buyNote (coins and membership days added up, routes/store.js fulfillOne) until
+   the player sees it: the next time they're in the game (or straight away if they are), then POST /api/store/note/seen. */
+const tyOv=document.getElementById("tyOv");let tyAt=0,tyTimer=0;
+const tyHe=()=>!!(window.I18N&&I18N.lang==="he");
+const tyT=(en,he)=>tyHe()?he:en;
+const CROWN_SVG=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5l4.2 3.6L12 5l4.8 7.1L21 8.5 19.3 18H4.7z" fill="#9b6bff" stroke="#5a2ad6" stroke-width="1.6" stroke-linejoin="round"/><rect x="4.7" y="17.2" width="14.6" height="3" rx="1" fill="#ffd23a" stroke="#c98a00" stroke-width="1.2"/><circle cx="12" cy="5" r="1.6" fill="#ffd23a"/><circle cx="3" cy="8.5" r="1.4" fill="#ffd23a"/><circle cx="21" cy="8.5" r="1.4" fill="#ffd23a"/></svg>`;
+const SHIRT_SVG=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 3.5 3 6.5l2.2 4.3 2.3-1.1V20.5h9V9.7l2.3 1.1L21 6.5l-5.5-3c-.6 1.5-1.9 2.3-3.5 2.3S9.1 5 8.5 3.5z" fill="#ff6fb5" stroke="#c2307a" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+function showBuyNote(wait=1800){
+  if(!me||!me.buyNote||!tyOv.hidden)return;
+  clearTimeout(tyTimer);
+  tyTimer=setTimeout(()=>{
+    const n=me&&me.buyNote;if(!n||!inGame||!tyOv.hidden)return;
+    tyAt=Date.parse(n.at)||Date.now();
+    const kinds=n.kinds||[],only=k=>kinds.length===1&&kinds[0]===k,many=n.n>1;
+    const word=tyT("ENJOY!","תתחדש!"),cols=["#ff9a1f","#ff5fa8","#9b5cff","#1fb6ff","#2fd36b","#ffd23a","#ff9a1f"];
+    const title=document.getElementById("tyTitle");title.setAttribute("aria-label",word);
+    title.innerHTML=[...word].map((ch,i)=>ch===" "?" ":`<span aria-hidden="true" style="--i:${i};--c:${cols[i%cols.length]}">${esc(ch)}</span>`).join("");
+    const what=only("member")?tyT(many?"You bought memberships":"You bought a membership",many?"רכשת מנויים":"רכשת מנוי")
+      :only("coins")?tyT(many?"You bought coin packs":"You bought a coin pack",many?"רכשת חבילות מטבעות":"רכשת חבילת מטבעות")
+      :only("costume")?tyT(many?"You bought costumes":"You bought a costume",many?"רכשת תחפושות":"רכשת תחפושת")
+      :tyT("Your purchase is here","הרכישה שלך הגיעה");
+    document.getElementById("tySub").innerHTML=`<b>${esc(what)}!</b> ${esc(tyT(`Thank you, ${me.username}! It's all in your account already.`,`תודה, ${me.username}! הכל כבר בחשבון שלך.`))}`;
+    const g=[];
+    if(n.coins)g.push(`<div class="ty-gift" style="--k:${g.length}"><span class="pic">${COIN_SVG}</span><b data-count="${n.coins}">+0</b><small>${tyT("coins","מטבעות")}</small></div>`);
+    if(n.days)g.push(`<div class="ty-gift days" style="--k:${g.length}"><span class="pic">${CROWN_SVG}</span><b data-count="${n.days}">+0</b><small>${tyT(n.days===1?"day of membership":"days of membership","ימי מנוי")}</small></div>`);
+    if(n.items)g.push(`<div class="ty-gift items" style="--k:${g.length}"><span class="pic">${SHIRT_SVG}</span><b data-count="${n.items}">+0</b><small>${tyT(n.items===1?"new item":"new items","פריטים חדשים")}</small></div>`);
+    document.getElementById("tyGifts").innerHTML=g.join("");
+    document.getElementById("tyOk").textContent=tyT("AWESOME!","מגניב!");
+    // coins and gems flying out of the chest
+    const fly=document.getElementById("tyFly");fly.innerHTML="";
+    if(!reduce)for(let i=0;i<26;i++){const e=document.createElement("i"),gem=i%5===4,a=-Math.PI/2+(Math.random()-.5)*2.4,r=90+Math.random()*120;
+      if(gem){e.className="gem";e.style.setProperty("--c",["#ff6fae","#6fe7ff","#c9a2ff","#8affc1"][i%4]);}
+      e.style.setProperty("--x",Math.cos(a)*r+"px");e.style.setProperty("--y",Math.sin(a)*r*.9+"px");e.style.setProperty("--r",(Math.random()*720-360)+"deg");
+      e.style.setProperty("--d",(1+Math.random()*.7)+"s");e.style.setProperty("--w",(.55+Math.random()*.9)+"s");fly.appendChild(e);}
+    tyOv.dir=tyHe()?"rtl":"ltr";
+    tyOv.hidden=false;G.keys={};sfx.success();doAction("hop",null,true);
+    setTimeout(()=>document.getElementById("tyOk").focus(),60);
+    // the numbers count up to what was bought
+    tyOv.querySelectorAll("[data-count]").forEach((el,k)=>{const to=+el.dataset.count,t0=performance.now()+900+k*150,dur=reduce?0:1100;
+      const step=now=>{const p=dur?Math.min(1,Math.max(0,(now-t0)/dur)):1,e=1-Math.pow(1-p,3);el.textContent="+"+Math.round(to*e).toLocaleString(tyHe()?"he-IL":"en-US");if(p<1&&!tyOv.hidden)requestAnimationFrame(step);};
+      requestAnimationFrame(step);});
+  },wait);
+}
+function closeBuyNote(){if(tyOv.hidden)return;tyOv.hidden=true;sfx.close();doAction("wave",null,true);
+  const at=tyAt;if(me)me.buyNote=null;api("/api/store/note/seen",{at}).catch(()=>{});}
+document.getElementById("tyOk").onclick=closeBuyNote;
+tyOv.addEventListener("click",e=>{if(e.target===tyOv)closeBuyNote();});
+tyOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"||e.key==="Tab"){if(e.key==="Escape")closeBuyNote();else{e.preventDefault();document.getElementById("tyOk").focus();}}});
 
 /* ---------- MSB: buying coins and memberships inside the Microsoft Store app ----------
    Only the Store version of the computer program ("JumpiStore/" in the user agent, window.JumpiAppBridge.msStore).

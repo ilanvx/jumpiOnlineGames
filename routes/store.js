@@ -261,6 +261,17 @@ async function fulfillOne(orderId, ref) {
     inventory: { $concatArrays: [inv, { $filter: { input: give.items || [], as: "it", cond: { $not: [{ $in: ["$$it", inv] }] } } }, give.extra || []] },
   };
   set.__v = { $add: [{ $ifNull: ["$__v", 0] }, 1] };   // a stale save() elsewhere can't wipe what was just given
+  // the "thank you" popup in the game (shown once, the next time the player is in the game): everything bought since, added up
+  const kinds = [...new Set(ids.map((x) => PRODUCT_BY_ID[x]?.kind).filter(Boolean))];
+  const note = (f) => ({ $ifNull: [`$buyNote.${f}`, 0] });
+  set.buyNote = {
+    coins: { $add: [note("coins"), give.coins || 0] },
+    days: { $add: [note("days"), give.memberDays || 0] },
+    items: { $add: [note("items"), (give.items || []).length + (give.extra || []).length] },
+    n: { $add: [note("n"), 1] },
+    kinds: { $setUnion: [{ $ifNull: ["$buyNote.kinds", []] }, kinds] },
+    at: now,
+  };
   if (give.memberDays) set.memberUntil = { $add: [{ $cond: [{ $gt: [{ $ifNull: ["$memberUntil", now] }, now] }, "$memberUntil", now] }, give.memberDays * DAY] };
   const user = await User.findOneAndUpdate({ _id: order.user }, [{ $set: set }], { new: true });
   await Order.updateOne({ _id: order._id }, { $set: { grantedAt: new Date() } });
@@ -273,5 +284,16 @@ async function fulfillOne(orderId, ref) {
   console.log(`[store] order ${order._id} paid: ${ids.join(", ")} for ${order.username} (₪${order.amount})`);
   return { ok: true, product: order.product, user: user?.toPublic() };
 }
+
+// the player saw the "thank you" popup: forget it (only up to the purchase it showed; a newer one stays for next time)
+router.post("/store/note/seen", requireJson, requireUser, async (req, res, next) => {
+  try {
+    const at = new Date(Number(req.body.at) || 0);
+    if (!Number.isNaN(at.getTime()) && at.getTime() > 0) await User.updateOne({ _id: req.user._id, "buyNote.at": { $lte: at } }, { $unset: { buyNote: 1 } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;
