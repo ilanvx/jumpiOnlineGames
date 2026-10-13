@@ -31,7 +31,9 @@ export async function addSeasonXp(userId, amount, { capped = true } = {}) {
       const user = await User.findById(userId);
       if (!user) return null;
       const S = currentSeason(), rec = seasonRec(user, S), day = dayKey(), dayXp = dayXpOf(user);
-      const gain = capped ? Math.max(0, Math.min(amount, SEASON_DAY_XP - dayXp)) : amount;
+      // members go 50% faster (and their daily limit is 50% higher)
+      const mem = user.isMember(), amt = mem ? Math.round(amount * 1.5) : amount, cap = mem ? Math.round(SEASON_DAY_XP * 1.5) : SEASON_DAY_XP;
+      const gain = capped ? Math.max(0, Math.min(amt, cap - dayXp)) : amt;
       if (!gain) return { gained: 0, xp: rec.xp, capped: true };
       const before = tierOf(rec.xp), xp = Math.min(rec.xp + gain, TIERS * TIER_XP + 999);
       const ok = await User.updateOne(
@@ -54,7 +56,7 @@ function view(user) {
   return {
     season: { id: S.id, name: S.name, about: S.about, colors: S.colors, endsAt: S.endsAt, bonus: S.bonus },
     xp: rec.xp, tier: tierOf(rec.xp), claimed: rec.claimed, rewards: seasonRewards(S),
-    tiers: TIERS, tierXp: TIER_XP, dayXp: dayXpOf(user), dayCap: SEASON_DAY_XP,
+    tiers: TIERS, tierXp: TIER_XP, dayXp: dayXpOf(user), dayCap: user.isMember() ? Math.round(SEASON_DAY_XP * 1.5) : SEASON_DAY_XP, boost: user.isMember() ? 1.5 : 1,
   };
 }
 

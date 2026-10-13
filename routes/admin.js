@@ -16,7 +16,7 @@ import { contactReplyEmail, ANSWER_SLOT } from "../mail/contactReply.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { PerfDay } from "../models/PerfDay.js";
 import { currentUser } from "./auth.js";
-import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
+import { CATALOG, ITEMS, LOOK_SLOTS, maxFurniture } from "../catalog.js";
 import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MOD_BUDGET } from "../realtime/plaza.js";
 import { MOD_ITEMS } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
@@ -361,7 +361,7 @@ const ACTIONS = {
     if (!item) return fail(res, 400, "Pick an item.");
     u.normalizeInventory();
     if (u.inventory.includes(id) && item.category !== "furniture") return fail(res, 409, `${u.username} already has ${item.name}.`);
-    if (item.category === "furniture" && u.inventory.filter((x) => x.startsWith("furniture:")).length >= MAX_FURNITURE) return fail(res, 409, "Their furniture is full.");
+    if (item.category === "furniture" && u.inventory.filter((x) => x.startsWith("furniture:")).length >= maxFurniture(u)) return fail(res, 409, "Their furniture is full.");
     u.inventory = [...u.inventory, id];
     await u.save();
     moderation.refresh(u);

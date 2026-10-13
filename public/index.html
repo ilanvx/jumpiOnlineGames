@@ -171,21 +171,7 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .sh-eye{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgb(15 10 50 / .55);color:#fff;font:400 1.2rem "Lilita One",system-ui,sans-serif;cursor:default}
 .sh-eye.can{cursor:pointer;background:linear-gradient(180deg,#a77bff,#7c5cff);box-shadow:0 4px 0 #3a1192}
 .sh-eye svg{width:24px;height:24px}
-.sh-country{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 74px);translate:-50% 0;display:flex;align-items:center;gap:14px;padding:8px 10px 8px 22px;border-radius:999px;background:#fff;box-shadow:0 5px 0 #c9b8ff;color:#3a1192;font:400 1.4rem/1 "Lilita One",system-ui,sans-serif}
-.sh-country b{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:linear-gradient(180deg,#ffd23a,#ff9a00);box-shadow:0 4px 0 #b86a00;color:#fff;font:400 2rem/1 "Lilita One",system-ui,sans-serif}
-.sh-country[hidden],.sh-hang[hidden],.sh-poll[hidden],.sh-keys[hidden],.sh-mine[hidden],.sh-watch[hidden],.sh-panel[hidden],.sh-wheel[hidden],.sh-prize[hidden],.sh-menu[hidden],.sh-viewers[hidden],.sh-dlg[hidden]{display:none}
-.sh-hang{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 140px);translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 16px;border-radius:20px;background:rgb(15 10 50 / .6)}
-.sh-lives{display:flex;gap:6px}
-.sh-lives i{width:20px;height:24px;border-radius:50% 50% 46% 46%;background:var(--c);box-shadow:inset -3px -4px 0 rgb(0 0 0 / .15);position:relative;transition:transform .25s,opacity .25s}
-.sh-lives i::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:#fff8}
-.sh-lives i.pop{transform:scale(1.6);opacity:0}
-.sh-word{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;direction:ltr}
-.sh-word i{display:grid;place-items:end center;width:clamp(26px,3.4vw,40px);height:clamp(34px,4.4vw,50px);border-bottom:4px solid #fff;font:400 clamp(1.3rem,2.6vw,2rem)/1.1 "Lilita One",system-ui,sans-serif;font-style:normal;color:#ffd23a}
-.sh-word i.sp{border:0;width:14px}
-.sh-hang p{margin:0;font-weight:600;min-height:1em}
-.sh-keys{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);translate:-50% 0;display:flex;flex-wrap:wrap;justify-content:center;gap:5px;width:min(560px,calc(100% - 24px));padding:8px;border-radius:18px;background:rgb(15 10 50 / .6)}
-.sh-keys button{width:36px;height:38px;border:0;border-radius:10px;background:#fff;box-shadow:0 3px 0 #b9c9e6;color:#3a1192;font:400 1.15rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
-.sh-keys button:disabled{opacity:.3;cursor:default}
+.sh-poll[hidden],.sh-watch[hidden],.sh-panel[hidden],.sh-wheel[hidden],.sh-prize[hidden],.sh-menu[hidden],.sh-viewers[hidden],.sh-dlg[hidden]{display:none}
 .sh-poll{position:absolute;left:50%;top:50%;translate:-50% -50%;width:min(460px,calc(100% - 32px));padding:18px;border-radius:24px;background:#fff;box-shadow:0 8px 0 #c9b8ff,0 20px 40px rgb(0 0 0 / .35);color:#22324a;text-align:center}
 .sh-poll h3{margin:0 0 12px;font:400 1.5rem/1.15 "Lilita One",system-ui,sans-serif;color:#5a22d6}
 .shp-opts{display:grid;gap:8px}
@@ -206,9 +192,6 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .sh-chat input{flex:1;min-width:0;height:44px;padding:0 14px;border:0;border-radius:14px;background:#fff;color:#22324a;font:500 1rem "Fredoka",system-ui,sans-serif}
 .sh-chat button{flex:none;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:14px;background:linear-gradient(180deg,#3fb4ff,#0a8cff);box-shadow:0 4px 0 #06488a;cursor:pointer}
 .sh-chat button svg{width:20px;height:20px}
-.sh-mine{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:flex;gap:10px}
-.sh-mine button{min-width:96px;min-height:54px;border:0;border-radius:18px;background:linear-gradient(180deg,#ffb347,#ff8a1c);box-shadow:0 5px 0 #c25a00;color:#fff;font:400 1.3rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
-.sh-mine button+button{background:linear-gradient(180deg,#ff7cc2,#e2357f);box-shadow:0 5px 0 #a3226a}
 .sh-watch{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);margin:0;padding:10px 16px;border-radius:16px;background:rgb(15 10 50 / .6);font-weight:600;max-width:min(320px,calc(100% - 400px))}
 .sh-panel{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);width:200px;padding:12px;border-radius:20px;background:rgb(255 255 255 / .96);box-shadow:0 6px 0 #c9b8ff,0 18px 36px rgb(0 0 0 / .3);color:#22324a;transition:transform .25s}
 .sh-panel.shut{transform:translateX(calc(100% + 12px))}
@@ -221,9 +204,10 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .sh-tools .t-pink{--c:#ff5fb4;--e:#a3226a}.sh-tools .t-blue{--c:#2f9bff;--e:#06488a}.sh-tools .t-gold{--c:#ffb21f;--e:#b86a00}.sh-tools .t-violet{--c:#8a4dff;--e:#3a1192}
 .sh-tools .t-green{--c:#20b45a;--e:#138043}.sh-tools .t-orange{--c:#ff8a1c;--e:#c25a00}.sh-tools .t-teal{--c:#12b8a0;--e:#0a8a77}.sh-tools .t-red{--c:#ff5a5a;--e:#8a1c1c;margin-top:6px}
 .sh-tip{margin:10px 0 0;font-size:.82rem;line-height:1.3;color:#5b6b88;text-align:center}
-.sh-wheel{position:absolute;inset:0;display:grid;place-items:center;background:rgb(10 5 40 / .45)}
+.sh-wheel{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle at 50% 46%,rgb(10 5 40 / .35),transparent 42%)}
+.sh-wheel-card{pointer-events:auto}
 .sh-wheel-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px}
-.sh-wheel-svg{width:min(340px,70vmin);aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 10px #ffd23a,0 0 0 16px #b86a00,0 20px 50px rgb(0 0 0 / .5)}
+.sh-wheel-svg{width:min(300px,46vmin);aspect-ratio:1;border-radius:50%;box-shadow:0 0 0 10px #ffd23a,0 0 0 16px #b86a00,0 20px 50px rgb(0 0 0 / .5)}
 .sh-pointer{position:absolute;top:-22px;left:50%;translate:-50% 0;width:0;height:0;border:20px solid transparent;border-top:34px solid #ff3d5a;filter:drop-shadow(0 3px 0 #8a1c1c);z-index:2}
 .sh-wheel-card p{margin:6px 0 0;font:400 1.3rem "Lilita One",system-ui,sans-serif;text-shadow:0 3px 0 rgb(0 0 0 / .4);text-align:center}
 .sh-spin{min-width:200px;min-height:64px;border:0;border-radius:999px;background:linear-gradient(180deg,#5fe08a,#20b45a);box-shadow:0 6px 0 #138043,0 0 0 6px rgb(255 255 255 / .4);color:#fff;font:400 2rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.04em;cursor:pointer;animation:snPulse 1.1s ease-in-out infinite}
@@ -247,7 +231,6 @@ body{margin:0;overflow:hidden;color:var(--ink);font-family:var(--font);
 .shv-card li span{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .sh-dlg-card label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-weight:600;font-size:.95rem;color:#3d4770}
 .sh-dlg-card input,.sh-dlg-card select{height:42px;padding:0 12px;border:2px solid #d9ccff;border-radius:12px;font:500 1rem "Fredoka",system-ui,sans-serif;color:#22324a;background:#fff}
-.sh-dlg-card input.sh-letter{width:80px;text-align:center;font:400 1.5rem "Lilita One",system-ui,sans-serif;text-transform:uppercase}
 .sh-dlg-card p{margin:0 0 10px;color:#5b6b88}
 .sh-dlg-row{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
 .sh-b{min-height:44px;padding:0 20px;border:0;border-radius:12px;font:400 1.1rem/1 "Lilita One",system-ui,sans-serif;cursor:pointer}
@@ -261,7 +244,7 @@ body.in-show .bubble{z-index:7}
 /* in the show only the stage and its screen: the world's buttons, map, needs, food bar… step aside (windows, messages and the wipe stay) */
 body.in-show>*:not(#stage):not(#showUi):not(#wipe):not(.bubble):not(#toast):not(#coinRain):not(#announce):not(#updNote):not(.sh-puff):not(.confetti):not([class*="overlay"]):not(.app-gate):not(script):not(style){display:none!important}
 body.in-show>#myBubble{display:none!important}
-@media (max-width:760px){.sh-panel{width:170px}.sh-watch{display:none}.sh-chatbox{width:calc(100% - 24px - 150px)}.sh-mine button{min-width:70px}}
+@media (max-width:760px){.sh-panel{width:170px}.sh-watch{display:none}.sh-chatbox{width:calc(100% - 24px - 150px)}}
 @media (prefers-reduced-motion:reduce){.show-note,.show-note .sn-ic,.sh-spin,.shp-card{animation:none}}
 .perf-meter b{font-size:1rem}.perf-meter .ok{color:#5fe08a}.perf-meter .mid{color:#ffd23a}.perf-meter .bad{color:#ff6b6b}
 /* Bobo's card is open (the double-click step): Pip moves to the bottom left, under Bobo, out of the card's way */
@@ -628,6 +611,12 @@ body.app .disc-btn,body.app .sx-discord{display:none!important}   /* the apps (A
 .np-buy.pa-go{background:linear-gradient(180deg,#ff8fc8,#ff5fa8);box-shadow:0 5px 0 #b02a6c}
 .np-buy.pa-go:active{box-shadow:0 2px 0 #b02a6c}
 .np-buy.pa-go:disabled{background:#e8eef7;color:#8a97ab;box-shadow:0 5px 0 #c3cfdf}
+.sea-boost{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 9px 2px 5px;border-radius:999px;background:linear-gradient(180deg,#fff3b0,#ffd84a);color:#6a4500;font-weight:700;font-size:.85em}
+.sea-boost .mcrown{width:16px;height:16px}
+.pa-col.member{position:relative}
+.pa-col.member .mcrown{position:absolute;top:-9px;right:-7px;width:20px;height:20px;filter:drop-shadow(0 1px 1px rgb(0 0 0 / .3))}
+.np-buy.pa-go.members{background:linear-gradient(180deg,#ffd84a,#ffb300);color:#5a3a00;box-shadow:0 5px 0 #b87a00}
+.np-buy.pa-go.members .mcrown{width:22px;height:22px;vertical-align:-4px;margin-right:6px}
 .pa-go.poor{filter:saturate(.6)}
 .pa-kind:focus-visible,.pa-col:focus-visible,.pa-go:focus-visible{outline:3px solid #1f9bff;outline-offset:3px}
 @media (max-height:620px){.adopt-card h2{font-size:1.8rem;margin-bottom:8px}.pa-kind img{width:40px;height:40px}.pa-kinds{margin-bottom:8px}.pa-side{gap:8px}.pa-col{width:36px;height:36px}}
@@ -1624,6 +1613,40 @@ body.mg-open .chat-dock,body.mg-open .mg-result{display:none!important}
 .route-chip svg{width:22px;height:22px}
 .route-chip button{width:28px;height:28px;border:0;border-radius:50%;background:#ff5a5a;color:#fff;font:700 .85rem "Fredoka",sans-serif;cursor:pointer;box-shadow:0 2px 0 #8a1c1c}
 body.game-store .route-chip,body.duel-in .route-chip,body:not(.in-game) .route-chip,body.in-home .route-chip{display:none!important}
+.mbadge{position:absolute;z-index:1;top:4px;right:4px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#8a4dff,#5a22d6);box-shadow:0 2px 0 #3a1192,0 0 0 2px #fff}
+.mbadge .mcrown{width:17px;height:17px}
+.mcrown{width:1.2em;height:1.2em;vertical-align:-.22em;flex:none}
+.pr.mfree{color:#7a3cff;display:inline-flex;align-items:center;gap:3px}
+.store-act.members{background:linear-gradient(180deg,#a77bff,#7c5cff)!important;box-shadow:0 5px 0 #3a1192!important;color:#fff!important;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.store-mem{display:flex;align-items:center;gap:5px;padding:5px 12px 5px 8px;border-radius:999px;background:linear-gradient(180deg,#8a4dff,#5a22d6);color:#fff;font:600 .9rem "Fredoka",system-ui,sans-serif;white-space:nowrap}
+.store-mem[hidden]{display:none}
+.mof-overlay{z-index:60}
+.idle-card.msb-card.mof-card{width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:22px 22px 18px;border-radius:28px;background:linear-gradient(180deg,#fff 0,#fff 60%,#f6f0ff);box-shadow:0 10px 0 #c9b8ff,0 30px 60px rgb(20 0 60 / .45);text-align:center;animation:snIn .45s cubic-bezier(.2,1.6,.4,1)}
+.mof-head{display:flex;align-items:center;gap:16px;text-align:start;margin:0 0 12px}
+.mof-head>div{flex:1;min-width:0}
+.idle-card.mof-card p.mof-what{margin:6px 0 0;max-width:none}
+.idle-card.mof-card p.mof-small{margin:14px auto 0;max-width:46ch}
+.idle-card.mof-card.gift p.mof-what{margin:8px auto 16px;max-width:40ch}
+.msb-card.mof-card .mof-head h2,.msb-card.mof-card.gift h2{margin:0;text-shadow:none;letter-spacing:.01em;font:400 clamp(1.4rem,3.8vw,1.9rem)/1.05 "Lilita One",system-ui,sans-serif;background:linear-gradient(180deg,#a77bff,#5a22d6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mof-pic{position:relative;flex:none;display:grid;place-items:center;width:104px;height:104px;border-radius:24px;background:radial-gradient(circle at 50% 40%,#fff6c4,#ffd23a 70%);box-shadow:inset 0 -5px 0 #e8a300,0 6px 0 #b8860b}
+.mof-pic svg,.mof-pic img{width:78px;height:78px}
+.mof-pic.big .mcrown{width:72px;height:72px}
+.mof-ribbon{position:absolute;bottom:-10px;left:50%;translate:-50% 0;display:flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;background:#5a22d6;color:#fff;font:400 .72rem/1.4 "Lilita One",system-ui,sans-serif;font-style:normal;white-space:nowrap}
+.mof-ribbon .mcrown{width:13px;height:13px}
+.mof-what{margin:6px 0 0;color:#3d4770;font:500 1rem/1.35 "Fredoka",system-ui,sans-serif}
+.mof-perks{list-style:none;margin:10px 0 14px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:7px;text-align:start}
+.mof-perks li{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:14px;background:#f3eeff;color:#2a2d55;font:500 .9rem/1.25 "Fredoka",system-ui,sans-serif;animation:snIn .4s cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(var(--k) * 45ms)}
+.mof-perks svg{flex:none;width:28px;height:28px}
+.mof-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:240px;min-height:58px;padding:0 26px;border:0;border-radius:999px;background:linear-gradient(180deg,#ffd23a,#ff9a00);box-shadow:0 6px 0 #b86a00,0 0 0 5px rgb(255 210 58 / .3);color:#5a2a00;font:400 1.5rem/1 "Lilita One",system-ui,sans-serif;letter-spacing:.02em;cursor:pointer;animation:snPulse 1.4s ease-in-out infinite}
+.mof-go .mcrown{width:26px;height:26px}
+.mof-small{margin:12px 0 0;color:#6b7394;font:500 .82rem/1.4 "Fredoka",system-ui,sans-serif}
+.mof-card .np-x{position:absolute;top:12px;right:12px}
+.mof-card{position:relative}
+.mof-giftpic{display:grid;place-items:center;width:120px;height:120px;margin:0 auto 10px;border-radius:30px;background:radial-gradient(circle at 50% 40%,#fff6c4,#ffd23a 70%);box-shadow:inset 0 -5px 0 #e8a300,0 6px 0 #b8860b}
+.mof-giftpic svg,.mof-giftpic img{width:86px;height:86px}
+.mof-card.gift .mof-what{margin:8px 0 16px}
+@media (max-width:520px){.mof-perks{grid-template-columns:1fr}.mof-head{flex-direction:column;text-align:center}}
+@media (prefers-reduced-motion:reduce){.mof-go,.mof-card,.mof-perks li{animation:none}}
 .mchip{position:absolute;z-index:1;top:4px;right:4px;padding:2px 7px 1px;border-radius:999px;background:linear-gradient(180deg,#b06bff,#6b2fd6);color:#fff;font:400 .6rem/1.3 var(--font);letter-spacing:.04em;box-shadow:0 2px 0 #3d1585,0 0 0 2px #ffd23a;pointer-events:none}
 .item[aria-selected="true"] .qty{box-shadow:0 2px 0 #b36b00,0 0 0 2px #fff}
 /* ---------- my home ---------- */
@@ -4262,15 +4285,11 @@ body.land .npc-card .idle-face{display:none}
     <div class="sh-title"><b>JUMPI SHOW</b><span id="shHost"></span></div>
     <button type="button" class="sh-eye" id="shEye" aria-label="Viewers"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" fill="#fff"/><circle cx="12" cy="12" r="3.6" fill="#2a3d6b"/></svg><b id="shViewN">0</b></button>
   </div>
-  <div class="sh-country" id="shCountry" hidden></div>
-  <div class="sh-hang" id="shHang" hidden><div class="sh-lives" id="shLives" aria-hidden="true"></div><div class="sh-word" id="shWord"></div><p id="shHangMsg"></p></div>
   <div class="sh-poll" id="shPoll" hidden></div>
-  <div class="sh-keys" id="shKeys" hidden></div>
   <div class="sh-chatbox">
     <div class="sh-feed" id="shFeed" aria-live="polite"></div>
     <form class="sh-chat" id="shChat" autocomplete="off"><label class="sr-only" for="shChatIn">Message</label><input id="shChatIn" type="text" maxlength="80" placeholder="Say something…" enterkeyhint="send"><button type="submit" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 L21 3 L13.5 21 L11 13.5 Z" fill="#fff"/></svg></button></form>
   </div>
-  <div class="sh-mine" id="shMine" hidden><button type="button" data-act="jump">Jump</button><button type="button" data-act="wave">Wave</button></div>
   <p class="sh-watch" id="shWatch" hidden>You're watching. The host can bring you up to the stage!</p>
   <aside class="sh-panel" id="shPanel" hidden>
     <button type="button" class="sh-ptog" id="shPanelTog" aria-label="Host tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -4278,11 +4297,10 @@ body.land .npc-card .idle-face{display:none}
     <div class="sh-tools">
       <button type="button" data-h="confetti" class="t-pink">Confetti</button>
       <button type="button" data-h="balloons" class="t-blue">Balloons</button>
-      <button type="button" data-h="spot" class="t-gold">Spotlight</button>
+      <button type="button" data-h="spot" class="t-gold" id="shSpotBtn">Spotlight</button>
+      <button type="button" data-h="shuffle" class="t-orange">New players</button>
       <button type="button" data-h="alldown" class="t-violet">Everyone down</button>
       <button type="button" data-h="poll" class="t-green">Quick poll</button>
-      <button type="button" data-h="country" class="t-orange">Country-City</button>
-      <button type="button" data-h="hangman" class="t-teal">Hangman</button>
       <button type="button" data-h="wheel" class="t-gold">Prize wheel</button>
       <button type="button" data-h="close" class="t-red">End the show</button>
     </div>
@@ -4462,6 +4480,7 @@ body.land .npc-card .idle-face{display:none}
   <div class="store-head">
     <h2 class="step-title" id="storeTitle">SHOP</h2>
     <button class="store-back-game" id="storeBackGame" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Back to game</button>
+    <span class="store-mem" id="storeMem" hidden></span>
     <span class="store-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="storeCoins">0</b></span>
   </div>
   <div class="store-tabs" id="storeTabs" role="tablist" aria-label="Categories"></div>
@@ -4565,14 +4584,14 @@ import {OUTFITS} from "/shared/outfits.js";
 import {EVENTS,isEvent} from "/shared/events.js";
 import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
 import {QUICK_CHAT} from "/shared/parental.js";
-import {PET_KINDS,PET_BY_ID,MAX_PETS,petNameProblem,cleanPetName} from "/shared/pets.js";
+import {PET_KINDS,PET_BY_ID,MAX_PETS,MAX_PETS_MEMBER,memberColor,petNameProblem,cleanPetName} from "/shared/pets.js";
 import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} from "/shared/food.js";
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
 import {RESIDENTS,RESIDENT_BY_ID,QUESTS,QUEST_BY_ID,NPC_REACH,PICK_REACH,turnInOf} from "/shared/quests.js";
-import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MS_PRODUCTS} from "/shared/store.js";
-import {SHOW_ROWS,seatSpot,WHEEL as SHOW_WHEEL,WHEEL_SPIN_MS,SHOW_GIFT_MAX,POLL_SECS,COUNTRY_CATEGORIES} from "/shared/show.js";
+import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MS_PRODUCTS,MEMBER_PERKS,memberPrice} from "/shared/store.js";
+import {SHOW_ROWS,seatSpot,WHEEL as SHOW_WHEEL,WHEEL_SPIN_MS,SHOW_GIFT_MAX,POLL_SECS} from "/shared/show.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
 import {WHEEL} from "/shared/season.js";
@@ -4581,6 +4600,10 @@ import {HOUSE_UPGRADES,UPGRADE_BY_ID,houseShape,spotProblem,regionAt,UX} from "/
 import * as CITY_L from "/shared/city-layout.js";
 import {VEHICLES,RARITY,VEH_REACH} from "/shared/vehicles.js";
 import {buildBike,makeTrail} from "/world/bikes.js";
+// the autumn 2026 wardrobe (public/shared/items/*.js): how each new piece looks. Each builder gets WEAR_H() (the shared helpers)
+import {SHIRT_PRINTS,SLEEVE_PRINTS,PANTS_PRINTS,shirt3D,pants3D} from "/world/wear-clothes.js";
+import {HAIR_STYLES} from "/world/wear-hair.js";
+import {HAT_STYLES,NECK_STYLES,GLASSES_STYLES} from "/world/wear-heads.js";
 import {buildCity,TRAILS as CITY_TRAILS} from "/world/city.js";
 let inGame=false;   // true while walking around the Plaza
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -5002,7 +5025,7 @@ renderer.setAnimationLoop(()=>{
     if(!GS_STAGE)accTick(t);
     }
   }
-  tickAuras(t);gfxTick();vehPreviewTick(t);routeTick(t);
+  tickAuras(t);gfxTick();if(WEAR_ANIM.size)WEAR_ANIM.forEach(f=>f(t));if(LOUNGE_TICK&&world&&world.visible)LOUNGE_TICK(t);vehPreviewTick(t);routeTick(t);
   let flyFog=null;if(window.__fly){const F=window.__fly;cam.position.set(F[0],F[1],F[2]);cam.lookAt(F[3],F[4],F[5]);   // ?beachtest screenshots only
     if(F[6]){cam.fov=F[6];cam.near=F[7];cam.far=F[8];cam.updateProjectionMatrix();flyFog=scene.fog;scene.fog=null;}}
   batchCheck();shadowTick();renderer.render(scene,cam);if(flyFog)scene.fog=flyFog;
@@ -5050,7 +5073,10 @@ const OUTFIT_PARTS=OUTFITS;
 const outfit={hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1};
 const OUTFIT_OBJ={hair:[],shirt:[],pants:[],glasses:[],hat:[],neck:[]};
 // most hats cover the hair (the ear headbands don't)
-const hatHidesHair=i=>Number.isInteger(i)&&i>=0&&!!OUTFIT_PARTS.hat[i]&&!OUTFIT_PARTS.hat[i].keepHair;
+// a hat and hair together: the hair stays, pressed down under the hat (hatHair); only a hat that covers the whole
+// head (hideHair in outfits.js) hides it
+const hatHidesHair=i=>Number.isInteger(i)&&i>=0&&!!OUTFIT_PARTS.hat[i]&&!!OUTFIT_PARTS.hat[i].hideHair;
+const hatPresses=i=>Number.isInteger(i)&&i>=0&&!!OUTFIT_PARTS.hat[i]&&!OUTFIT_PARTS.hat[i].keepHair&&!OUTFIT_PARTS.hat[i].hideHair;
 /* =====================================================================
    AURAS: wild LEGENDARY effects all around a character (sold in the shop)
    Same order as the aura items in catalog.js.
@@ -5068,6 +5094,7 @@ const AURA_LIST=[
   {id:"crown",  name:"Crown of Stars",c:["#7a3cff","#ffd84a"],store:true},
   {id:"butterfly",name:"Butterfly Garden",c:["#ff5fa8","#5fe0ff"]},   // the Big World collection
   {id:"beats",  name:"Neon Beats",   c:["#14ffa0","#ff2fd6"]},
+  {id:"members",name:"Members Sparkle",c:["#ffc400","#fff6c4"],member:true},   // free for members
 ];
 const AURAS=new Set();   // every aura in the world, animated each frame
 const TAU=Math.PI*2;
@@ -5227,6 +5254,20 @@ function makeAura(idx){
       drivePoints(notes,(i,s,o)=>{const ph=(t/2.6+s)%1,a=s*TAU*3+ph*TAU,r=.7+Math.sin(ph*5)*.1;o.x=Math.cos(a)*r;o.z=Math.sin(a)*r;o.y=.2+ph*2.2+Math.abs(Math.sin(t*TAU*1+s*9))*.15;
         o.col.copy(i%2?C0:C1);o.a=fadeIO(ph,.12,.3);});
       drivePoints(spark,(i,s,o)=>{const a=s*TAU*7+t,r=.3+s*.9;o.x=Math.cos(a)*r;o.z=Math.sin(a)*r;o.y=.1+((s*13+t*.2)%1)*2.3;o.col.copy(s>.5?C0:C1);o.a=Math.max(0,Math.sin(t*12.566+s*40))**4;});};
+  }else if(A.id==="members"){
+    // members only: three little gold crowns circle the player, sparkles twinkle up and a soft gold ring glows on the floor
+    const glow=auraDisc("disc",1.1,"#ffd23a",.35,THREE.AdditiveBlending),ring=auraDisc("ring",1.08,"#ffc400",.95),spark=auraPoints(70,.22,"star",THREE.NormalBlending),dust=auraPoints(40,.12,"dot");
+    g.add(glow,ring,spark,dust);
+    const gold=new THREE.MeshStandardMaterial({color:"#ffc400",emissive:"#b87a00",emissiveIntensity:.55,metalness:.6,roughness:.3}),gemM=[["#ff3b6b"],["#1f9bff"],["#2fd36b"]].map(([c])=>new THREE.MeshBasicMaterial({color:c}));
+    const crowns=[0,1,2].map(k=>{const cr=new THREE.Group();
+      const band=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.07,18,1,true),gold);band.material.side=THREE.DoubleSide;cr.add(band);
+      for(let j=0;j<5;j++){const a=j/5*TAU,sp=new THREE.Mesh(new THREE.ConeGeometry(.035,.1,6),gold);sp.position.set(Math.cos(a)*.12,.08,Math.sin(a)*.12);cr.add(sp);
+        const b=new THREE.Mesh(new THREE.SphereGeometry(.018,8,6),gold);b.position.set(Math.cos(a)*.12,.135,Math.sin(a)*.12);cr.add(b);}
+      const gem=new THREE.Mesh(new THREE.SphereGeometry(.028,10,8),gemM[k]);gem.position.set(0,0,.125);cr.add(gem);g.add(cr);return cr;});
+    tick=t=>{ring.rotation.z=t*.7;ring.scale.setScalar(1+Math.sin(t*3)*.05);glow.material.opacity=.3+Math.sin(t*2)*.08;
+      crowns.forEach((cr,k)=>{const a=k/3*TAU+t*1.1;cr.position.set(Math.cos(a)*.9,1.15+Math.sin(t*2.2+k*2)*.25,Math.sin(a)*.9);cr.rotation.y=-a+Math.PI/2;cr.rotation.z=Math.sin(t*3+k)*.15;});
+      drivePoints(spark,(i,s,o)=>{const ph=(t/2.4+s)%1,a=s*TAU*5+ph*TAU*.8,r=.5+s*.6;o.x=Math.cos(a)*r;o.z=Math.sin(a)*r;o.y=.1+ph*2.4;o.col.copy(C0).lerp(C1,Math.sin(s*30)*.5+.5);o.a=fadeIO(ph,.12,.35)*(.5+.5*Math.sin(t*8+s*60));});
+      drivePoints(dust,(i,s,o)=>{const a=s*TAU*3+t*.4,r=.3+s*1;o.x=Math.cos(a)*r;o.z=Math.sin(a)*r;o.y=.15+((s*17+t*.15)%1)*2.2;o.col.set("#ffffff");o.a=Math.max(0,Math.sin(t*5+s*70))**3;});};
   }
   g.traverse(o=>{o.raycast=()=>{};o.castShadow=false;o.receiveShadow=false;});   // never blocks clicks
   tick(0);
@@ -5333,6 +5374,7 @@ function shirtTex(id,p={}){
       x.beginPath();x.arc(cx,h*.46,10,0,7);x.fill();}
     if(HALLOWEEN_SHIRT[id])HALLOWEEN_SHIRT[id](x,w,h,p);
     if(EXTRA_SHIRT[id])EXTRA_SHIRT[id](x,w,h,p);
+    if(SHIRT_PRINTS[id])SHIRT_PRINTS[id](x,w,h,p,WEAR_H());
     x.fillStyle=hem;x.fillRect(0,h-26,w,26);
   });
 }
@@ -5477,6 +5519,7 @@ function sleeveTex(id,p={}){if(id==="police")return uniformSleeveTex(p);if(id===
   if(id==="flannel"){x.globalAlpha=.45;x.fillStyle=p.acc;for(let i=0;i<w;i+=40)x.fillRect(i,0,16,h);for(let j=0;j<h;j+=40)x.fillRect(0,j,w,16);x.globalAlpha=1;}
   if(id==="stripes"){const c=p.stripes;for(let y=0,k=0;y<h;y+=24,k++){x.fillStyle=c[k%c.length];x.fillRect(0,y,w,24);}}
   if(id==="tiedye")tieDye(x,w,h,w*.5,h*.5);
+  if(SLEEVE_PRINTS[id])SLEEVE_PRINTS[id](x,w,h,p,WEAR_H());
   if(id==="galaxy")galaxySky(x,w,h,3);
   if(HALLOWEEN_SLEEVE[id])HALLOWEEN_SLEEVE[id](x,w,h,p);
   if(EXTRA_SLEEVE[id])EXTRA_SLEEVE[id](x,w,h,p);
@@ -5505,6 +5548,7 @@ function pantsTex(id,p={}){if(id==="police")return uniformPantsTex(p);if(id==="w
   if(id==="mummy")hwBandages(x,w,h,base,11);
   if(id==="hstripes"){x.fillStyle=acc;for(let y=30;y<h;y+=40)x.fillRect(0,y,w,20);}
   if(EXTRA_PANTS[id])EXTRA_PANTS[id](x,w,h,p);
+  if(PANTS_PRINTS[id])PANTS_PRINTS[id](x,w,h,p,WEAR_H());
   x.fillStyle=p.waist||PANTS_WAIST[id];x.fillRect(0,0,w,30);
 });}
 
@@ -5619,6 +5663,7 @@ function buildHair(id,cols){
     g.rotation.set(0,0,0);
   }
   buildHairNew(id,cols,g,m1,m2,add,R);
+  if(HAIR_STYLES[id])HAIR_STYLES[id](cols,g,m1,m2,add,R,WEAR_H());
   return mergeByMaterial(g);
 }
 
@@ -5697,7 +5742,8 @@ function buildHat(o){
   // a snug cover over the head (follows its real shape); t0..t1 = from / to how far down from the crown
   const dome=(t0,t1,sc,m)=>{const d=new THREE.Mesh(capGeo(t1,t1,t1,sc,0,1,t0),m);g.add(d);return d;};
   const top=HC.y+HR[1]*S*bulge(0,0);
-  switch(o.id){
+  if(HAT_STYLES[o.id]){if(HAT_STYLES[o.id](o,{g,c1,c2,dark,M,dome,yAt,top,S,mb},WEAR_H())==="raw"){g.traverse(m=>{if(m.isMesh)m.castShadow=true;});return g;}}
+  else switch(o.id){
     case "cap":{dome(0,1.3,S,c1);const ey=HC.y+Math.cos(1.3)*HR[1]*S*bulge(1.3,0);
       const brim=M(new THREE.CylinderGeometry(.6,.6,.07,40,1,false,-Math.PI/2,Math.PI),solid(new THREE.Color(o.col).lerp(new THREE.Color("#000"),.4),.6),0,ey+.02,.3);
       brim.scale.set(.95,1,.9);brim.rotation.x=.2;
@@ -5863,7 +5909,8 @@ function buildNeck(o){
   const chain=(r=.016)=>M(new THREE.TubeGeometry(loop(),96,r,8,true),c1);
   const along=(curve,n,fn)=>{for(let i=0;i<n;i++)fn(curve.getPointAt(i/n),i);};
   const faceFront=m=>{m.rotation.x=-.25;return m;};
-  switch(o.id){
+  if(NECK_STYLES[o.id]){if(NECK_STYLES[o.id](o,{g,c1,c2,M,loop,front,chain,along,faceFront},WEAR_H())==="raw"){g.traverse(m=>{if(m.isMesh)m.castShadow=true;});return g;}}
+  else switch(o.id){
     case "chain":{const c=loop();M(new THREE.TubeGeometry(c,96,.014,6,true),c1);
       const ring=new THREE.TorusGeometry(.028,.011,6,12);along(c,44,(p,i)=>{const m=M(ring,c1,p);m.lookAt(p.clone().add(c.getTangentAt(i/44)));if(i%2)m.rotateZ(Math.PI/2);});break;}
     case "pearls":{const c=loop(),b=new THREE.SphereGeometry(.042,12,10);const m=solid(o.col,.18,{metalness:.15});along(c,38,p=>M(b,m,p));break;}
@@ -5955,12 +6002,24 @@ function buildNeck(o){
   g.traverse(m=>{if(m.isMesh)m.castShadow=true;});
   return mergeByMaterial(g);}
 
+/* everything the wardrobe builders in public/world/wear-*.js may use. anim(fn): fn(t seconds) runs every frame (for moving
+   patterns: change a shared texture / material, so every copy of the item moves together) */
+const WEAR_ANIM=new Set();let WEAR_HV=null;
+function WEAR_H(){return WEAR_HV||(WEAR_HV={THREE,solid,mat,clothMat,canvasTex,shell,blob,starPath,rng,tieDye,galaxySky,hp,hn,V3,HC,HR,bulge,lockGeo,capGeo,bodyPt,mergeByMaterial,
+  emojiFace,exScales,exBolt,exPixelHeart,exNote,exFlames,textTex,anim:fn=>{WEAR_ANIM.add(fn);}});}
+/* Clothes are built the first time someone wears them (or the Shop draws their picture), not all at the start:
+   OUTFIT_OBJ[slot][i] stays empty until outfitGet(slot, i). Each builder hangs the item, hidden, on the base character. */
+let OUTFIT_READY=false;const OUTFIT_MAKE={};
+function outfitGet(k,i){const L=OUTFIT_OBJ[k];if(!L||!OUTFIT_READY||!Number.isInteger(i)||i<0||!OUTFIT_PARTS[k]||!OUTFIT_PARTS[k][i])return null;
+  if(!L[i]){const o=OUTFIT_MAKE[k](i);L[i]=o;[].concat(o).forEach(p=>p.traverse(q=>{q.userData.base=true;}));}
+  return L[i];}
+function outfitEnsure(look){if(!look)return;for(const k in OUTFIT_OBJ)outfitGet(k,look[k]);}
 function buildOutfit(){
   measureHead(P.head);
   /* ---- hair (on the head) ---- */
-  OUTFIT_PARTS.hair.forEach(({id,col})=>{const g=buildHair(id,col);g.visible=false;P.head.add(g);OUTFIT_OBJ.hair.push(g);});
+  OUTFIT_MAKE.hair=i=>{const {id,col}=OUTFIT_PARTS.hair[i];const g=buildHair(id,col);g.visible=false;P.head.add(g);return g;};
   /* ---- shirts (body band + sleeves on each arm) ---- */
-  OUTFIT_PARTS.shirt.forEach(it=>{const id=it.id;
+  OUTFIT_MAKE.shirt=i=>{const it=OUTFIT_PARTS.shirt[i],id=it.id;
     const parts=[],tex=shirtTex(id,it),st=sleeveTex(id,it);
     const body=shell({center:[0,0.52,0],radii:[0.38,0.46,0.33],scale:1.045,pear:0.12,t0:0.36,t1:1.85,mat:clothMat(tex),seg:[72,24]});
     P.body.add(body);parts.push(body);
@@ -5968,17 +6027,17 @@ function buildOutfit(){
       const sl=shell({center:[s*0.03,-0.2,0],radii:[0.10,0.24,0.11],scale:1.16,t0:0,t1:1.25,rotZ:s*0.18,mat:clothMat(st),seg:[32,12]});
       arm.add(sl);parts.push(sl);});
     if(id==="waiter"){const bow=waiterBow();P.body.add(bow);parts.push(bow);}
-    parts.forEach(p=>p.visible=false);OUTFIT_OBJ.shirt.push(parts);
-  });
+    {const x3=shirt3D(it,WEAR_H());if(x3)[].concat(x3).forEach(o=>{(o.userData.arm==="L"?P.armL:o.userData.arm==="R"?P.armR:P.body).add(o);parts.push(o);});}
+    parts.forEach(p=>p.visible=false);return parts;};
   /* ---- pants (lower body + both legs) ---- */
-  OUTFIT_PARTS.pants.forEach(it=>{const id=it.id;
-    const parts=[],mat=clothMat(pantsTex(id,it)),shorts=id==="khaki"||id==="gold";
+  OUTFIT_MAKE.pants=i=>{const it=OUTFIT_PARTS.pants[i],id=it.id;
+    const parts=[],mat=clothMat(pantsTex(id,it)),shorts=id==="khaki"||id==="gold"||it.legs==="short";
     const hip=shell({center:[0,0.52,0],radii:[0.38,0.46,0.33],scale:1.05,pear:0.12,t0:1.8,t1:Math.PI,mat,seg:[72,16]});
     P.body.add(hip);parts.push(hip);
-    [-1,1].forEach(s=>{const leg=shell({center:[s*0.16,0.12,0.03],radii:[0.15,0.14,0.17],scale:1.08,t0:0,t1:shorts?1.0:1.62,mat,seg:[32,14]});P.body.add(leg);parts.push(leg);});
+    if(it.legs!=="none")[-1,1].forEach(s=>{const leg=shell({center:[s*0.16,0.12,0.03],radii:[0.15,0.14,0.17],scale:1.08,t0:0,t1:shorts?1.0:1.62,mat,seg:[32,14]});P.body.add(leg);parts.push(leg);});
     if(id==="police"){const belt=policeBelt();P.body.add(belt);parts.push(belt);}
-    parts.forEach(p=>p.visible=false);OUTFIT_OBJ.pants.push(parts);
-  });
+    {const x3=pants3D(it,mat,WEAR_H());if(x3)[].concat(x3).forEach(o=>{P.body.add(o);parts.push(o);});}
+    parts.forEach(p=>p.visible=false);return parts;};
   /* ---- glasses (on the head, in front of the eyes) ---- */
   const eyeL=P.eyeL.position,eyeR=P.eyeR.position,Z=0.615,Y=eyeL.y;
   function rrect(w,h,r){const s=new THREE.Shape(),x=-w/2,y=-h/2;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+h-r);
@@ -5990,7 +6049,8 @@ function buildOutfit(){
   const ext=(shape,mat)=>new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:0.03,bevelEnabled:true,bevelThickness:0.01,bevelSize:0.01,bevelSegments:2,curveSegments:24}),mat);
   function rod(a,b,r,mat){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,A.distanceTo(B),10),mat);
     m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),B.clone().sub(A).normalize());return m;}
-  OUTFIT_PARTS.glasses.forEach(it=>{const id=it.id;
+  OUTFIT_MAKE.glasses=i=>{const it=OUTFIT_PARTS.glasses[i],id=it.id;
+    if(GLASSES_STYLES[id]){const g=new THREE.Group();GLASSES_STYLES[id](it,g,{eyeL,eyeR,Y,Z,rrect,ext,rod,starShape,heartShape},WEAR_H());g.traverse(m=>{if(m.isMesh)m.castShadow=true;});g.visible=false;P.head.add(g);return g;}
     const fcol=it.frame||{round:"#1d1d24",square:"#e23b3b",star:"#ffc21a",shades:"#14141a",heart:"#ff4f9a",neon:"#39ff14",goldround:"#f2c230",monocle:"#e8b923"}[id];
     const g=new THREE.Group(),frame=solid(fcol,.35,(id==="star"&&!it.frame)||id==="goldround"||id==="monocle"?{metalness:.6,roughness:.3}:id==="neon"?{emissive:it.glow||"#22b80c",emissiveIntensity:.6}:{});
     if(id==="monocle"){   // one gold ring on the right eye with a little chain
@@ -5998,7 +6058,7 @@ function buildOutfit(){
       const glass=new THREE.Mesh(new THREE.CircleGeometry(0.2,32),new THREE.MeshStandardMaterial({color:"#dff6ff",transparent:true,opacity:.18,roughness:.05}));glass.position.set(e.x,Y,Z+.012);glass.rotation.y=.16;g.add(glass);
       const pts=[];for(let k=0;k<=12;k++){const t=k/12;pts.push(new THREE.Vector3(e.x+.2-.05*t,Y-.06-t*.55+Math.sin(t*Math.PI)*.12,Z-.02-t*.08));}
       g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),24,.012,6),frame));
-      g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
+      g.visible=false;P.head.add(g);return g;}
     if(id==="batmask"){   // Halloween: one mask across both eyes shaped like a bat, eye holes cut out
       const sh=new THREE.Shape(),W=.62;sh.moveTo(0,.16);
       sh.quadraticCurveTo(.16,.24,.3,.2);sh.quadraticCurveTo(.5,.28,W+.12,.36);sh.quadraticCurveTo(W+.02,.18,W+.08,.02);sh.quadraticCurveTo(W-.06,.04,W-.08,-.08);
@@ -6012,7 +6072,7 @@ function buildOutfit(){
       // bend it round the face a little: two halves turned like the lenses
       const bend=m.geometry.attributes.position;for(let k=0;k<bend.count;k++){const vx=bend.getX(k);bend.setZ(k,bend.getZ(k)-vx*vx*.28);}bend.needsUpdate=true;m.geometry.computeVertexNormals();
       g.add(m);[-1,1].forEach(s=>{const strap=new THREE.Mesh(new THREE.TorusGeometry(.66,.014,6,24,Math.PI*.55),solid("#1d1d24",.6));strap.rotation.set(Math.PI/2,0,s>0?-.12:Math.PI+.12);strap.position.set(0,Y+.04,-.04);g.add(strap);});
-      g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
+      g.visible=false;P.head.add(g);return g;}
     if(id==="visor"){   // the Big World collection: one glowing band across both eyes, bent round the face
       // tall enough for the big eyes and wrapped round the head on an oval that clears the eyes. The lens is a finely cut curved band
       // (a flat extruded shape only bends at its corners and sat behind the eyes), the frame is tubes along its edges
@@ -6025,14 +6085,14 @@ function buildOutfit(){
       [-TH,TH].forEach(a=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,LH+.06,10),frame);e.position.set(EA*Math.sin(a),0,EB*Math.cos(a));f.add(e);});
       m.renderOrder=3;   // the see-through band is drawn after the eyes so they show tinted behind it
       [-1,1].forEach(sd=>g.add(rod([sd*EA*Math.sin(TH),Y+.03,EB*Math.cos(TH)],[sd*.66,Y+.06,-.12],0.022,frame)));
-      g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
+      g.visible=false;P.head.add(g);return g;}
     if(id==="goggles"){   // big round goggles with a strap round the head
       [eyeL,eyeR].forEach((e,i)=>{const s=i?1:-1,l=new THREE.Group();l.position.set(e.x,Y,Z+.01);l.rotation.y=s*.16;
         l.add(new THREE.Mesh(new THREE.TorusGeometry(.215,.06,12,40),frame));const glass=new THREE.Mesh(new THREE.CircleGeometry(.2,32),new THREE.MeshStandardMaterial({color:"#9fe0ff",roughness:.05,metalness:.4,transparent:true,opacity:.55}));glass.position.z=.02;l.add(glass);
         const gl=new THREE.Mesh(new THREE.PlaneGeometry(.05,.18),new THREE.MeshBasicMaterial({color:"#ffffff",transparent:true,opacity:.5}));gl.position.set(-.07,.03,.03);gl.rotation.z=-.5;l.add(gl);g.add(l);});
       g.add(rod([eyeL.x+.2,Y,Z+.01],[eyeR.x-.2,Y,Z+.01],.03,frame));
       const strap=new THREE.Mesh(new THREE.TorusGeometry(.66,.04,8,48,Math.PI*1.25),solid("#2a2d36",.7));strap.rotation.set(Math.PI/2,0,Math.PI*1.125);strap.position.set(0,Y+.02,-.02);strap.scale.set(1,.92,1);g.add(strap);
-      g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);return;}
+      g.visible=false;P.head.add(g);return g;}
     let half=0.21;
     [eyeL,eyeR].forEach((e,i)=>{const s=i?1:-1,lens=new THREE.Group();lens.position.set(e.x,Y,Z);lens.rotation.y=s*0.16;
       if(id==="retro3d"){const sh=rrect(0.47,0.36,0.04);sh.holes.push(rrect(0.4,0.29,0.03));const f=ext(sh,frame);f.position.z=-0.015;lens.add(f);half=0.235;
@@ -6058,20 +6118,48 @@ function buildOutfit(){
       g.add(lens);});
     g.add(rod([eyeL.x+half*0.95,Y+0.03,Z],[eyeR.x-half*0.95,Y+0.03,Z],0.018,frame));
     [eyeL,eyeR].forEach((e,i)=>{const s=i?1:-1;g.add(rod([e.x+s*half*0.98,Y+0.02,Z-0.03*1],[s*0.63,Y+0.05,0.02],0.017,frame));});
-    g.visible=false;P.head.add(g);OUTFIT_OBJ.glasses.push(g);
-  });
+    g.visible=false;P.head.add(g);return g;};
   /* ---- hats (head) and necklaces (body) ---- */
-  OUTFIT_PARTS.hat.forEach(it=>{const g=buildHat(it);g.visible=false;P.head.add(g);OUTFIT_OBJ.hat.push(g);});
-  OUTFIT_PARTS.neck.forEach(it=>{const g=buildNeck(it);g.visible=false;P.body.add(g);OUTFIT_OBJ.neck.push(g);});
-  P.root.traverse(o=>{o.userData.base=true;});   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
+  OUTFIT_MAKE.hat=i=>{const g=buildHat(OUTFIT_PARTS.hat[i]);g.visible=false;P.head.add(g);return g;};
+  OUTFIT_MAKE.neck=i=>{const g=buildNeck(OUTFIT_PARTS.neck[i]);g.visible=false;P.body.add(g);return g;};
+  P.root.traverse(o=>{o.userData.base=true;});
+  OUTFIT_READY=true;   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
 }
 function applyOutfit(){
-  if(!P||!OUTFIT_OBJ.hair.length)return;
+  if(!P||!OUTFIT_READY)return;
   // at work the job's uniform pieces are worn instead of my own clothes
   const W=wearUniform&&JOB_LOOK[wearUniform],L=k=>W&&k in W?W[k]:lk(k),noHair=hatHidesHair(L("hat"));
+  for(const k in OUTFIT_OBJ)outfitGet(k,L(k));
   for(const k in OUTFIT_OBJ)OUTFIT_OBJ[k].forEach((o,i)=>[].concat(o).forEach(p=>p.visible=i===(L(k)??-1)&&!(k==="hair"&&noHair)));
+  const h=L("hair");OUTFIT_OBJ.hair.forEach((o,i)=>[].concat(o).forEach(p=>hatHair(p,i===h&&hatPresses(L("hat"))?L("hat"):-1)));
   setAura(P,lk("aura"));
 }
+/* ----- hair under a hat: everything above the hat's band is pressed down and pulled in, so it stays under the
+   hat (long hair, pigtails, the sides and the back still show below it). One shape per hair piece and hat, made
+   once and shared by every character that wears the pair. ----- */
+const HAT_FIT=new Map(),HAT_HAIR=new Map();
+function toHeadSpace(o){const chain=[];for(let q=o;q&&q.name!=="Head";q=q.parent)chain.push(q);const m=new THREE.Matrix4();
+  for(let i=chain.length-1;i>=0;i--){chain[i].updateMatrix();m.multiply(chain[i].matrix);}return m;}
+function headShape(){if(headShape.v)return headShape.v;const b=new THREE.Box3(),v=new THREE.Vector3();
+  P.head.traverse(o=>{if(!o.isMesh||o.userData.outfit||!o.material||o.material.name!=="Skin")return;const M=toHeadSpace(o),a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)b.expandByPoint(v.fromBufferAttribute(a,i).applyMatrix4(M));});
+  const c=b.getCenter(new THREE.Vector3());return headShape.v={cx:c.x,cy:c.y,cz:c.z,top:b.max.y};}
+function hatFit(hi){if(HAT_FIT.has(hi))return HAT_FIT.get(hi);const H=headShape(),v=new THREE.Vector3();let band=1e9;const pts=[];
+  outfitGet("hat",hi).traverse(o=>{if(!o.isMesh)return;const M=toHeadSpace(o),a=o.geometry.attributes.position;
+    for(let i=0;i<a.count;i++){v.fromBufferAttribute(a,i).applyMatrix4(M);pts.push(v.x,v.y,v.z);if(Math.hypot(v.x-H.cx,v.z-H.cz)<.9)band=Math.min(band,v.y);}});
+  if(band>H.top)band=H.top-.12;
+  let r=0;for(let i=0;i<pts.length;i+=3)if(pts[i+1]<band+.18)r=Math.max(r,Math.hypot(pts[i]-H.cx,pts[i+2]-H.cz));
+  const f={band,r:Math.max(.25,r)};HAT_FIT.set(hi,f);return f;}
+function hatHairGeo(mesh,hi){const key=mesh.geometry.uuid+"|"+hi;let g=HAT_HAIR.get(key);if(g)return g;
+  const f=hatFit(hi),H=headShape(),M=toHeadSpace(mesh),Mi=M.clone().invert(),v=new THREE.Vector3(),top=f.band-.03,lim=f.r*.96;
+  g=mesh.geometry.clone();const a=g.attributes.position;
+  for(let i=0;i<a.count;i++){v.fromBufferAttribute(a,i).applyMatrix4(M);
+    if(v.y>top){v.y=top+(v.y-top)*.16;const dx=v.x-H.cx,dz=v.z-H.cz,d=Math.hypot(dx,dz);if(d>lim){v.x=H.cx+dx/d*lim;v.z=H.cz+dz/d*lim;}}
+    v.applyMatrix4(Mi);a.setXYZ(i,v.x,v.y,v.z);}
+  g.computeVertexNormals();g.computeBoundingSphere();HAT_HAIR.set(key,g);return g;}
+// a hair piece (and all its meshes) with or without a hat on top (hi = the hat, -1 = none)
+// (userData is copied through JSON when a character is cloned, so the plain shape of each pressed one is kept here)
+const HAIR_PLAIN=new WeakMap();
+function hatHair(part,hi){part.traverse(o=>{if(!o.isMesh)return;o.geometry=HAIR_PLAIN.get(o.geometry)||o.geometry;if(hi>=0){const g=hatHairGeo(o,hi);HAIR_PLAIN.set(g,o.geometry);o.geometry=g;}});}
 function setOutfit(kind,i){outfit[kind]=outfit[kind]===i?-1:i;applyOutfit();paintOutfitUI();}
 
 /* ----- picker icons (simple flat SVGs) ----- */
@@ -6155,13 +6243,13 @@ const THB={key:"",n:null,scene:null,queue:[],raf:0,done:new Set()};
 function thbScene(){if(THB.scene)return THB.scene;const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x2a4fb0,1.5));
   const k=new THREE.DirectionalLight(0xffffff,2.3);k.position.set(2,4,4);sc.add(k);const f=new THREE.DirectionalLight(0xffffff,.6);f.position.set(-3,2,3);sc.add(f);return THB.scene=sc;}
 function renderThumbs(){
-  if(!P||!OUTFIT_OBJ.hair.length)return;
+  if(!P||!OUTFIT_READY)return;
   const look={color:lk("color")??0,eyes:lk("eyes")??0},key=JSON.stringify(look);
   if(!THB.n){THB.n=cleanChar(look);THB.n.root.traverse(o=>{if(o.isMesh)o.castShadow=false;});thbScene().add(THB.n.root);}
   if(key!==THB.key){THB.key=key;THB.done.clear();recolorChar(THB.n,look);}
   // what the player is looking at right now comes first
   const first=[storeSlot,...Object.keys(OUTFIT_OBJ)].filter((k,i,a)=>OUTFIT_OBJ[k]&&a.indexOf(k)===i);
-  THB.queue=[];first.forEach(k=>OUTFIT_OBJ[k].forEach((o,i)=>{if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
+  THB.queue=[];first.forEach(k=>OUTFIT_PARTS[k].forEach((o,i)=>{if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
   if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
 function thbPump(){
@@ -6172,7 +6260,7 @@ function thbPump(){
   while(THB.queue.length&&performance.now()-t0<6){
     const [kind,i]=THB.queue.shift(),v=THUMB_VIEW[kind];tc.position.set(...v.pos);tc.lookAt(...v.at);
     // a copy of just this item, hung on the same part of the copy character
-    const added=[].concat(OUTFIT_OBJ[kind][i]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);return q;});
+    const added=[].concat(outfitGet(kind,i)||[]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);return q;});
     {const R=iconR(120,120,true);R.render(thbScene(),tc);THUMBS[kind][i]=R.domElement.toDataURL("image/png");}added.forEach(q=>q.removeFromParent());
     THB.done.add(kind+":"+i);changed=true;if(kind===storeSlot&&!THB.queue.some(q=>q[0]===storeSlot))slotDone=true;}
   if(changed&&(slotDone||!THB.queue.length)){refreshChipImages();if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
@@ -6206,7 +6294,7 @@ function pickEye(i,user){eyeIdx=i;applyEyeColor();paintEyeUI();queueThumbs();
    GAME: the Plaza. Built once, the first time the player enters.
    North (-z) is the sea; the camera sits south of the player looking north.
    ===================================================================== */
-let world=null,gameBuilt=false;
+let world=null,gameBuilt=false,LOUNGE_TICK=null;
 const G={pos:new THREE.Vector3(),face:0,target:null,keys:{},phase:0,lastStep:0,moving:false,stall:0,
   colliders:[],bounds:{x0:-22,x1:22,z0:-19.6,z1:22},camPos:new THREE.Vector3(),sea:null,seaBase:null,jets:null,marker:null,npc:null,npcState:{greetT:-99,shown:false}};
 const SPEED=5.2,RUN=1.8,SWIM_FAST=1.65;   // swimming fast (the same Shift / run button) is 1.65x   // running (Shift or double-click) is 1.8x faster
@@ -6318,10 +6406,12 @@ const badgeImg=(lv,px=40,cls="lv-badge")=>`<img class="${cls}" src="${levelBadge
 function nameTag(text,fill="#fff",tag=-1,lv=0){
   const w=lv>0?760:640,h=128,font='600 70px "Fredoka", "Arial Rounded MT Bold", sans-serif';
   const tex=canvasTex(w,h,(x)=>{x.font=font;x.textBaseline="middle";x.lineJoin="round";
-    const icon=tag==="bday"||(tag>=0&&TAGS[tag])?86:0,gap=icon?12:0,bw=lv>0?96:0,bgap=bw?10:0,tw=Math.min(x.measureText(text).width,lv>0?w-40-icon-gap-bw-bgap:w-130),start=(w-(icon+gap+tw+bgap+bw))/2;
+    // members (golden name) have a little crown after the name
+    const icon=tag==="bday"||(tag>=0&&TAGS[tag])?86:0,gap=icon?12:0,cw=fill==="#ffd23a"?58:0,cgap=cw?8:0,bw=lv>0?96:0,bgap=bw?10:0,tw=Math.min(x.measureText(text).width,(lv>0?w-40-icon-gap-bw-bgap:w-130)-cw-cgap),start=(w-(icon+gap+tw+cgap+cw+bgap+bw))/2;
     if(tag==="bday")drawCakeIcon(x,start+icon/2,h/2,icon);else if(icon)drawTagIcon(x,tag,start+icon/2,h/2,icon);
     x.textAlign="left";x.lineWidth=14;x.strokeStyle="#000";x.strokeText(text,start+icon+gap,h/2+4,tw);x.fillStyle=fill;x.fillText(text,start+icon+gap,h/2+4,tw);
-    if(bw)drawLevelBadge(x,lv,start+icon+gap+tw+bgap+bw/2,h/2+4,bw);});
+    if(cw)drawCrownIcon(x,start+icon+gap+tw+cgap+cw/2,h/2,cw);
+    if(bw)drawLevelBadge(x,lv,start+icon+gap+tw+cgap+cw+bgap+bw/2,h/2+4,bw);});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:true,depthWrite:false,transparent:true}));s.scale.set(2.75*w/640,0.55,1);s.renderOrder=10;return s;}
 // keep a name just in front of its owner's feet (towards the camera), so the owner's own body never covers it
 const _tg=new THREE.Vector3();
@@ -6385,6 +6475,7 @@ const VENUES={
   clothes:{x:-19.2,z:6,ry:Math.PI/2,title:"CLOTHES SHOP",enter:"ENTER SHOP",hello:"Welcome to the Clothes Shop! Check out the new outfits.",o:{name:"CLOTHES",wall:"#ffe8f3",roof:"#ff5fa8",stripe:"#ff7fbf",signBg:"#ff3d96"}},
   club:{x:19.2,z:-7,ry:-Math.PI/2,title:"DANCE CLUB",enter:"ENTER CLUB",hello:"Welcome to the Dance Club! Step on the dance floor and press E.",o:{name:"DANCE CLUB",wall:"#3a2a6e",roof:"#1a1240",stripe:"#9b5cff",signBg:"#9b5cff",glow:true}},
   pets:{x:0,z:64.5,ry:Math.PI,custom:true,door:5.5,out:7.3,title:"PET CENTER",enter:"ENTER PET CENTER",hello:"Welcome to the Pet Center! Walk up to a pet and press E to adopt it.",o:{name:"PET CENTER"}},
+  lounge:{x:-20.4,z:-.45,ry:Math.PI/2,custom:true,member:true,door:2.3,out:3.9,title:"MEMBERS LOUNGE",enter:"ENTER LOUNGE",hello:"Welcome to the Members Lounge! Relax on the sofas, dance and show off your crown.",o:{name:"MEMBERS LOUNGE"}},
   diner:{x:19.2,z:6,ry:-Math.PI/2,title:"RESTAURANT",enter:"ENTER RESTAURANT",hello:"Welcome to the Restaurant! Order at the counter, then find a table.",o:{name:"RESTAURANT",wall:"#fff1d6",roof:"#d94a3a",stripe:"#e8423b",signBg:"#d94a3a"}},
 };
 // a point in a shop's own space (front = +z) in the world
@@ -6440,6 +6531,42 @@ function makeRestaurant(x,z,ry,{name,wall,roof,stripe,signBg,glow},id){
 function pawSignTex(bg="#ff5fa8"){return texCanvas(256,256,(c,w,h)=>{c.fillStyle="#ffffff";c.beginPath();c.arc(w/2,h/2,124,0,7);c.fill();c.fillStyle=bg;c.beginPath();c.arc(w/2,h/2,110,0,7);c.fill();
   c.fillStyle="#ffffff";c.beginPath();c.ellipse(128,150,46,38,0,0,7);c.fill();
   [[72,104,19,25,-.35],[106,78,19,26,-.12],[150,78,19,26,.12],[184,104,19,25,.35]].forEach(([x,y,rx,ry,a])=>{c.beginPath();c.ellipse(x,y,rx,ry,a,0,7);c.fill();});});}
+// the Members Lounge outside: a little golden pavilion with a crown on top, a red carpet and velvet ropes (between the Furniture and Clothes shops)
+function makeLoungeKiosk(V){
+  const g=new THREE.Group();g.position.set(V.x,0,V.z);g.rotation.y=V.ry;   // front faces +z in local space
+  const W=4,D=3.2,H=3.3,gold=mat("#ffc400",{metalness:.55,roughness:.32,emissive:"#7a4a00",emissiveIntensity:.25}),purple=mat("#6a2bd6",{roughness:.55}),cream=mat("#fff3d0",{emissive:"#fff1d6",emissiveIntensity:.2});
+  g.add(box(W,H,D,purple,0,H/2,0));
+  // gold columns at the corners and a gold band on top
+  [[-W/2,D/2],[W/2,D/2],[-W/2,-D/2],[W/2,-D/2]].forEach(([x,z])=>g.add(cyl(.2,.24,H,gold,x,H/2,z,16)));
+  g.add(box(W+.5,.35,D+.5,gold,0,H+.17,0));
+  // a dome roof and a big crown on it
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(1.75,32,16,0,Math.PI*2,0,Math.PI/2),mat("#8a4aff",{roughness:.45}));dome.position.y=H+.34;dome.scale.y=.62;dome.castShadow=true;g.add(dome);
+  const crown=new THREE.Group();crown.position.y=H+1.35;g.add(crown);
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(.62,.58,.42,28,1,true),gold);band.material=gold.clone();band.material.side=THREE.DoubleSide;band.position.y=.21;band.castShadow=true;crown.add(band);
+  const gems=["#ff3b6b","#1f9bff","#2fd36b","#ff3b6b","#1f9bff"];
+  for(let k=0;k<5;k++){const a=k/5*Math.PI*2,sp=new THREE.Mesh(new THREE.ConeGeometry(.17,.5,8),gold);sp.position.set(Math.cos(a)*.6,.65,Math.sin(a)*.6);sp.castShadow=true;crown.add(sp);
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),mat("#fff6c4",{emissive:"#ffe680",emissiveIntensity:.5}));b.position.set(Math.cos(a)*.6,.95,Math.sin(a)*.6);crown.add(b);
+    const gm=new THREE.Mesh(new THREE.OctahedronGeometry(.1,0),mat(gems[k],{emissive:gems[k],emissiveIntensity:.5,roughness:.2}));gm.position.set(Math.cos(a)*.63,.22,Math.sin(a)*.63);crown.add(gm);}
+  // the door: a golden arch with purple curtains
+  g.add(box(2,2.5,.1,gold,0,1.25,D/2+.05));
+  const arch=new THREE.Mesh(new THREE.CircleGeometry(1,32,0,Math.PI),gold);arch.position.set(0,2.5,D/2+.1);g.add(arch);
+  g.add(box(1.6,2.3,.1,mat("#2a0f5a"),0,1.15,D/2+.12));
+  const archIn=new THREE.Mesh(new THREE.CircleGeometry(.8,32,0,Math.PI),mat("#2a0f5a"));archIn.position.set(0,2.3,D/2+.18);g.add(archIn);
+  const cur=mat("#b23cff",{roughness:.9});[-1,1].forEach(sd=>{const c=box(.42,2.3,.08,cur,sd*.6,1.15,D/2+.2);g.add(c);const tie=cyl(.05,.05,.46,gold,sd*.6,1.1,D/2+.26,8);tie.rotation.z=Math.PI/2;g.add(tie);});
+  // the sign and little crowns on the walls
+  const signMap=textTex("MEMBERS LOUNGE",{bg:"#ffc400",fg:"#5a2a00",stroke:"rgba(255,255,255,.35)",size:84,w:900,h:150});
+  const sign=new THREE.Mesh(new THREE.PlaneGeometry(3.9,.65),new THREE.MeshStandardMaterial({map:signMap,transparent:true,emissive:"#ffffff",emissiveMap:signMap,emissiveIntensity:.35}));sign.position.set(0,H+.17,D/2+.27);g.add(sign);
+  const glass=new THREE.MeshStandardMaterial({color:"#ffe9a8",roughness:.15,emissive:"#ffc400",emissiveIntensity:.45});
+  [-1,1].forEach(sd=>{const w=new THREE.Mesh(new THREE.CircleGeometry(.55,24),glass);w.position.set(sd*W/2+sd*.02,1.9,0);w.rotation.y=sd*Math.PI/2;g.add(w);});
+  // red carpet and velvet ropes on gold posts
+  const carpet=new THREE.Mesh(new THREE.PlaneGeometry(1.5,3.2),mat("#c8283c",{roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));carpet.rotation.x=-Math.PI/2;carpet.position.set(0,.055,D/2+1.65);carpet.receiveShadow=true;g.add(carpet);
+  const rope=mat("#b0122e",{roughness:.7});
+  [-1,1].forEach(sd=>{[D/2+.6,D/2+1.8,D/2+3].forEach(z=>{g.add(cyl(.06,.09,.95,gold,sd*1.05,.48,z,10));const k=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),gold);k.position.set(sd*1.05,.98,z);g.add(k);});
+    const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(sd*1.05,.88,D/2+.6),new THREE.Vector3(sd*1.05,.66,D/2+1.2),new THREE.Vector3(sd*1.05,.88,D/2+1.8),new THREE.Vector3(sd*1.05,.66,D/2+2.4),new THREE.Vector3(sd*1.05,.88,D/2+3)]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,30,.035,6,false),rope));});
+  // the crown turns slowly and twinkles
+  g.userData.tick=t=>{crown.rotation.y=t*.5;crown.position.y=H+1.35+Math.sin(t*1.6)*.06;};
+  return g;}
 function makePetCenter(V){
   const g=new THREE.Group();g.position.set(V.x,0,V.z);g.rotation.y=V.ry;   // front faces +z in local space
   const W=14,D=9,H=5.2,wall=mat("#fff4e0",{emissive:"#fff1d6",emissiveIntensity:.22}),trim=mat("#ffffff"),roofM=mat("#ff5f6d",{roughness:.6}),roofEdge=mat("#d9384a");
@@ -7404,6 +7531,9 @@ function buildPlaza(){
     G.colliders.push({box:[x-2.5-.3,z-3.2-.3,x+2.5+.3,z+3.2+.3],tall:4.6});
     if(id==="club")[-1.25,1.25].forEach(lx=>[3.4,4.9,6.4].forEach(lz=>{const [wx,wz]=venueLocal(V,lx,lz);G.colliders.push({c:[wx,wz],r:.2});}));
     else [-1.9,1.9].forEach(lx=>{const [wx,wz]=venueLocal(V,lx,5.8);G.colliders.push({c:[wx,wz],r:1.25});});});
+  {const V=VENUES.lounge,k=makeLoungeKiosk(V);world.add(k);LOUNGE_TICK=k.userData.tick;
+    G.colliders.push({box:[V.x-1.85,V.z-2.3,V.x+1.85,V.z+2.3],tall:4.6});
+    [-1.05,1.05].forEach(lx=>[2.2,3.4,4.6].forEach(lz=>{const [wx,wz]=venueLocal(V,lx,lz);G.colliders.push({c:[wx,wz],r:.16});}));}
   // benches facing the fountain
   [45,135,225,315].forEach(d=>{const a=d*Math.PI/180,x=Math.sin(a)*6.4,z=Math.cos(a)*6.4;world.add(makeBench(x,z,a+Math.PI));G.colliders.push({c:[x,z],r:1.25});});
   // lamps around the plaza
@@ -7437,6 +7567,7 @@ function buildPlaza(){
 // copy the player's 3D character and dress it in someone else's look
 var wearUniform=null;   // at work: the job whose uniform I wear (JOB_LOOK in public/shared/jobs.js)
 function makeCharacter(look,label,tagColor,lv=0){
+  outfitEnsure(look);
   for(const k in OUTFIT_OBJ)OUTFIT_OBJ[k].forEach((o,i)=>[].concat(o).forEach(p=>p.userData.outfit=k+":"+i));
   const keep={pos:P.root.position.clone(),rot:P.root.rotation.clone()};P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);
   const off=[];   // clothes this character doesn't wear are left out of the copy
@@ -7445,6 +7576,7 @@ function makeCharacter(look,label,tagColor,lv=0){
   if(typeof menuTag!=="undefined"&&menuTag&&menuTag.parent)off.push([menuTag,menuTag.parent]),menuTag.parent.remove(menuTag);   // not the name sign
   const ghosted=typeof myInvisible!=="undefined"&&myInvisible&&inGame;if(ghosted)setGhost(P.root,false);   // copy the real look, not the see-through one
   const root=P.root.clone(true);P.root.position.copy(keep.pos);P.root.rotation.copy(keep.rot);
+  root.traverse(o=>{const tag=o.userData.outfit;if(tag&&tag.startsWith("hair:"))hatHair(o,hatPresses(look.hat)&&+tag.slice(5)===look.hair?look.hat:-1);});
   off.forEach(([p,par])=>par.add(p));if(ghosted)applyMyGhost();
   root.children.filter(o=>o.userData.isAura).forEach(o=>o.removeFromParent());
   root.userData.kick=0;{const B=root.getObjectByName("Body");if(B)B.traverse(o=>{if(o.isMesh)o.onBeforeRender=kickBR;});}   // swim kicks (shared materials: each body sets its own)
@@ -7819,6 +7951,7 @@ function netJoin(){
     socket.on("player:move",d=>{const c=remotes.get(d.id);if(c){c.tx=d.x;c.tz=d.z;c.face=d.face;c.moving=d.moving;c.run=!!d.run;c.pose=d.pose||null;}});
     socket.on("home:update",d=>homeUpdated(d.home));
     socket.on("home:gone",d=>{toast((d&&d.message)||"That home isn't there any more.");leaveHome();});
+    socket.on("place:refused",d=>{if(!HOME.place)return;leaveHome();if(d&&d.code==="members")setTimeout(()=>openMemberOffer(null,null,"lounge"),700);});
     socket.on("player:leave",id=>{if(SHOW.in){SHOW.people.delete(id);return;}removeRemote(id);});
     socket.on("player:look",d=>{if(d.id===socket.id)return;const c=remotes.get(d.id);if(!c)return;
       const keep={id:d.id,status:c.status,pose:c.pose,username:c.username,role:c.role,look:d.look,x:c.tx,z:c.tz,face:c.cur,moving:c.moving,member:c.member,mood:c.mood,pet:c.petObj?c.petObj.info:null,invisible:c.invisible,uniform:c.uniform,phone:!!c.phT,bday:c.bday,hold:c.hold,lv:c.lv};
@@ -8563,9 +8696,13 @@ function vehDrive(dt,ix,iz){const def=vehDef(VEH.mine?VEH.mine.i:0)||VEHICLES[0]
   if(!G.orbiting&&now()-(G.camDragT||0)>3){const back=Math.min(1,(now()-(G.camDragT||0)-3)/1.5);
     let want=G.face-Math.PI,d=want-(G.camYaw||0);d=Math.atan2(Math.sin(d),Math.cos(d));G.camYaw=(G.camYaw||0)+d*Math.min(1,dt*(Math.abs(VEH.speed)>1?2.4:1.1)*back);}}
 // sit a character on a bike (me or another rider)
+// the rider on the vehicle (bikes.js userData): seatY, riderZ, arm (hands forward); stand: standing up (boards, skates) with
+// the arms out for balance; armOut: how far out (default .9); pose(C, t, speed): the vehicle moves the rider itself
 function vehRiderPose(C,v,t,speed,lean){const ud=v.g.userData,y=v.g.position.y+ud.seatY;
   C.root.position.y=y+Math.sin(t*30)*.008*Math.min(1,Math.abs(speed));C.root.rotation.x=0;C.root.rotation.z=lean;
-  C.armL.rotation.set(ud.arm,0,-.14);C.armR.rotation.set(ud.arm,0,.14);}
+  if(ud.stand){const sw=Math.sin(t*3)*.08,o=ud.armOut??.9;C.armL.rotation.set(-.15+sw,0,-o-lean*.6);C.armR.rotation.set(-.15-sw,0,o-lean*.6);C.root.rotation.z=lean*1.4;}
+  else{C.armL.rotation.set(ud.arm,0,-.14);C.armR.rotation.set(ud.arm,0,.14);}
+  if(ud.pose)ud.pose(C,t,speed);}
 // every frame: place every vehicle (parked, or under its rider), spin wheels, signs, trails
 function vehTick(t,dt){
   if(!VEH.list.size)return;const pnow=performance.now();
@@ -8580,6 +8717,7 @@ function vehTick(t,dt){
     v.g.position.set(x,gy+hov,z);v.g.rotation.set(0,f,rider?lean:(ud.hover?Math.sin(t*1.3)*.03:.07));
     if(ud.wf&&dist<3){const sp=dist/((ud.wf.position.y||.35)*(ud.k||1))*(VEH.ride&&rider===P&&VEH.speed<0?-1:1);ud.wf.rotation.x+=sp;ud.wb.rotation.x+=sp;}
     if(ud.glow)ud.glow.material.opacity=.65+Math.sin(t*3+v.i)*.2;
+    if(ud.tick)ud.tick(t,speed,!!rider);   // moving parts of the vehicle itself (bikes.js)
     if(rider)vehRiderPose(rider,v,t,speed,lean);
     // sign: owner name (others' vehicles) and the tow timer
     const near=Math.hypot(x-G.pos.x,z-G.pos.z)<34,left=!v.r&&v.towAt?Math.max(0,v.towAt-pnow):0,mineV=VEH.mine===v;
@@ -8720,8 +8858,13 @@ function gameTick(dt,t,hy){
 }
 
 /* ---------- entering and leaving ---------- */
-// admins have a red name, members a golden one
-const nameColor=(role,member)=>role==="admin"?"#ff4545":role==="mod"?"#3d9bff":member?"#ffd23a":"#fff";
+// admins have a red name, members a golden one (with a little crown, nameTag)
+const MEMBER_GOLD="#ffd23a";
+const nameColor=(role,member)=>role==="admin"?"#ff4545":role==="mod"?"#3d9bff":member?MEMBER_GOLD:"#fff";
+function drawCrownIcon(x,cx,cy,s){const k=s/24;x.save();x.translate(cx-12*k,cy-12*k);x.scale(k,k);x.lineJoin="round";
+  x.beginPath();x.moveTo(3,8.5);x.lineTo(7.2,12.1);x.lineTo(12,5);x.lineTo(16.8,12.1);x.lineTo(21,8.5);x.lineTo(19.3,18);x.lineTo(4.7,18);x.closePath();
+  x.lineWidth=4.5;x.strokeStyle="#000";x.stroke();x.fillStyle="#ffd23a";x.fill();x.lineWidth=1.4;x.strokeStyle="#b8860b";x.stroke();
+  x.fillStyle="#fff6c4";for(const [a,b] of[[12,5],[3,8.5],[21,8.5]]){x.beginPath();x.arc(a,b,1.8,0,7);x.fill();}x.restore();}
 // a remote player's name tag again (membership, birthday or level changed)
 function rebuildRemoteTag(c){const old=c.tag,t=c.bday?nameTag(c.username||"Player",BIRTHDAY_PINK,"bday",c.lv||1):nameTag(c.username||"Player",nameColor(c.role,c.member),Number.isInteger(c.look&&c.look.tag)?c.look.tag:-1,c.lv||1);
   t.position.copy(old.position);(old.parent||world).add(t);old.removeFromParent();old.material.map&&old.material.map.dispose();c.tag=t;}
@@ -8833,7 +8976,7 @@ function trimShadows(root,minR=.28){const v=new THREE.Vector3();let n=0;root.upd
 function enterGame(){
   if(!P)return;
   if(!gameBuilt){buildPlaza();trimShadows(world);setTimeout(batchPrepare,1500);}
-  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);
+  inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);setTimeout(()=>{try{memberTick();}catch(e){}},4000);
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
@@ -9656,15 +9799,16 @@ function renderStoreGrid(){
     let price;
     if(i<0)price='<span class="pr">Take off</span>';
     else if(wearing(slot,i))price='<span class="pr wear">Wearing</span>';
-    else if(slot==="furniture"&&!inv)price=`<span class="pr">${COIN_SVG}${it?it.price.toLocaleString("en-US"):"…"}</span>`;
+    else if(slot==="furniture"&&!inv)price=`<span class="pr">${COIN_SVG}${it?priceOf(it).toLocaleString("en-US"):"…"}</span>`;
     else if(freeEmoteId(id))price='<span class="pr own">Free</span>';
     else if(owns(id))price='<span class="pr own">Owned</span>';
     else if(it&&it.exclusive)price=`<span class="pr storeonly">${it.costume?"Store costume":"Store bundle"}</span>`;
-    else price=`<span class="pr">${COIN_SVG}${it?it.price.toLocaleString("en-US"):"…"}</span>`;
+    else if(it&&it.memberFree)price=`<span class="pr mfree">${MCROWN}Members</span>`;
+    else price=`<span class="pr">${COIN_SVG}${it?priceOf(it).toLocaleString("en-US"):"…"}</span>`;
     const rar=i>=0?itemRarity(slot,i):null,legend=i>=0&&(slot==="aura"||rar==="legendary"),isNew=!legend&&!rar&&!inv&&it&&!it.starter&&!owns(id);if(legend)b.classList.add("legendary");
     if(rar&&!legend)b.classList.add("r-"+rar);
     if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&wearing(slot,i)){b.classList.add("worn");b.title="Tap again to take it off";}
-    b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew&&!(it&&it.member)?'<span class="badge-new">NEW</span>':""}${it&&it.member?'<span class="mchip" title="Members Club">★ MEMBERS</span>':""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
+    b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew&&!(it&&it.member)?'<span class="badge-new">NEW</span>':""}${it&&it.member?`<span class="mbadge" title="Members Club">${MCROWN}</span>`:""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
     b.setAttribute("aria-label",(i<0?"None":itemName(slot,i))+", "+b.querySelector(".pr").textContent);
     b.onclick=()=>selectItem(i);storeGrid.appendChild(b);});
   paintStoreFoot();
@@ -9687,6 +9831,7 @@ function selectItem(i){
 function paintStoreFoot(){
   const slot=storeSlot,i=storeSel,coins=(me&&me.coins)||0;
   document.getElementById("storeCoins").textContent=coins.toLocaleString("en-US");
+  {const m=document.getElementById("storeMem"),d=memberDaysLeft();m.hidden=!(me&&me.subscriber&&me.memberUntil);if(!m.hidden)m.innerHTML=MCROWN+(d<=1?I18N.T("Member · 1 day left"):I18N.T("Member · {n} days left",{n:d}))+(d>0?' <small style="opacity:.85">−10%</small>':"");}
   {const rr=i!==null&&i>=0?itemRarity(slot,i):null;
     document.getElementById("storeSelCat").innerHTML=SLOT_ONE[slot]+(slot==="aura"||rr==="legendary"?' <span class="leg-chip">LEGENDARY</span>':rr?` <span class="rchip r-${rr} in">${RARITY[rr].name.toUpperCase()}</span>`:"");}
   storeAct.className="cta store-act";storeAct.disabled=true;
@@ -9694,42 +9839,43 @@ function paintStoreFoot(){
   document.getElementById("storeSelName").textContent=i<0?"None":itemName(slot,i);
   const id=slot+":"+i,it=catalog&&catalog.get(id);
   if(i>=0&&storeMode!=="inventory"&&it&&it.event&&it.event!==EV.cur&&!(owns(id)&&slot!=="furniture")){storeAct.textContent=(EVENTS[it.event]?EVENTS[it.event].name:"Event")+" only";return;}
-  // the Members Club collection: only members can buy it
-  if(i>=0&&storeMode!=="inventory"&&it&&it.member&&!owns(id)&&!(me&&me.subscriber)){storeAct.textContent="Members only";storeAct.title="Become a member in the Jumpi Store to get this";return;}
+  // the Members Club collection: only members buy and wear it (after a membership it stays in the inventory)
+  if(i>=0&&it&&it.member&&!memberMe()){storeAct.innerHTML=MCROWN+"Members only";storeAct.classList.add("members");storeAct.disabled=false;storeAct.removeAttribute("title");return;}
   if(i<0){storeAct.textContent=wearing(slot,-1)?"Nothing on":"Take off";storeAct.disabled=wearing(slot,-1);storeAct.classList.toggle("ready",!storeAct.disabled);return;}
   if(slot==="emote"){
     if(owns(id)){storeAct.textContent=freeEmoteId(id)?"Free for everyone":"Use it from the chat bar";return;}
     if(!it){storeAct.textContent="Loading…";return;}
-    storeAct.innerHTML=`${COIN_SVG}Buy ${it.price.toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
-    if(coins<it.price)storeAct.title="You need "+(it.price-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
+    storeAct.innerHTML=`${COIN_SVG}Buy ${priceOf(it).toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
+    if(coins<priceOf(it))storeAct.title="You need "+(priceOf(it)-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
   if(slot==="vehicle"){
     if(owns(id)){storeAct.textContent=inGame?"Call it here":"Yours! Call it from the phone";storeAct.disabled=!inGame;storeAct.classList.toggle("ready",inGame);return;}
     if(!it){storeAct.textContent="Loading…";return;}
-    storeAct.innerHTML=`${COIN_SVG}Buy ${it.price.toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
-    if(coins<it.price)storeAct.title="You need "+(it.price-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
+    storeAct.innerHTML=`${COIN_SVG}Buy ${priceOf(it).toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
+    if(coins<priceOf(it))storeAct.title="You need "+(priceOf(it)-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
   if(slot==="furniture"){
     if(storeMode==="inventory"){storeAct.textContent="Place it in My Home";storeAct.title="Go to My Home in the Plaza and press Decorate";return;}
     if(!it){storeAct.textContent="Loading…";return;}
-    storeAct.innerHTML=`${COIN_SVG}${owns(id)?"Buy another":"Buy"} ${it.price.toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
-    if(coins<it.price)storeAct.title="You need "+(it.price-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
+    storeAct.innerHTML=`${COIN_SVG}${owns(id)?"Buy another":"Buy"} ${priceOf(it).toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
+    if(coins<priceOf(it))storeAct.title="You need "+(priceOf(it)-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");return;}
   if(wearing(slot,i)){storeAct.textContent="Wearing";return;}
   if(owns(id)){storeAct.textContent="Wear";storeAct.disabled=false;storeAct.classList.add("ready");return;}
   if(!it){storeAct.textContent="Loading…";return;}
   if(it.exclusive){storeAct.textContent="See it in Special Offers";storeAct.disabled=false;storeAct.classList.add("buy");storeAct.removeAttribute("title");return;}
-  storeAct.innerHTML=`${COIN_SVG}Buy ${it.price.toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
-  if(coins<it.price)storeAct.title="You need "+(it.price-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");
+  storeAct.innerHTML=`${COIN_SVG}Buy ${priceOf(it).toLocaleString("en-US")}`;storeAct.classList.add("buy");storeAct.disabled=false;
+  if(coins<priceOf(it))storeAct.title="You need "+(priceOf(it)-coins).toLocaleString("en-US")+" more coins";else storeAct.removeAttribute("title");
 }
 storeAct.onclick=async()=>{
   if(storeBusy||storeSel===null)return;const slot=storeSlot,i=storeSel,id=slot+":"+i;
+  {const it=catalog&&catalog.get(id);if(i>=0&&it&&it.member&&!memberMe()){openMemberOffer(slot,i);return;}}
   if(slot==="vehicle"&&owns(id)){if(inGame&&GS.open){closeGameStore(true);setTimeout(()=>vehSummon(i),380);}return;}
   {const it=catalog&&catalog.get(id);if(it&&it.exclusive&&!owns(id)){if(GS.open){closeGameStore(true);setTimeout(openOffers,300);}else openStorePage(it.costume?"costumes":"bundles");return;}}
   storeBusy=true;storeAct.disabled=true;
   if((slot==="furniture"&&storeMode!=="shop"&&storeMode!=="spooky")||(slot==="emote"&&owns(id)))return void(storeBusy=false);
   const buying=i>=0&&(!owns(id)||slot==="furniture");
-  {const it=catalog&&catalog.get(id);if(buying&&it&&me&&(me.coins||0)<it.price){storeBusy=false;paintStoreFoot();openCoinBox({price:it.price,name:itemName(slot,i),pic:itemPic(slot,i)});return;}}
+  {const it=catalog&&catalog.get(id);if(buying&&it&&me&&(me.coins||0)<priceOf(it)){storeBusy=false;paintStoreFoot();openCoinBox({price:priceOf(it),name:itemName(slot,i),pic:itemPic(slot,i)});return;}}
   const r=buying?await api("/api/shop/buy",{item:id}):await api("/api/inventory/equip",{slot,index:i});
   storeBusy=false;
-  if(!r.ok){if(coinsShort(r)){paintStoreFoot();return;}storeMsg.className="form-msg";storeMsg.textContent=r.data.error||"Something went wrong.";sfx.error();paintStoreFoot();return;}
+  if(!r.ok){if(coinsShort(r)){paintStoreFoot();return;}if(memberRefusal(r,slot,i)){paintStoreFoot();return;}storeMsg.className="form-msg";storeMsg.textContent=r.data.error||"Something went wrong.";sfx.error();paintStoreFoot();return;}
   setAccount(r.data.user);if(GS.open){refreshMyTag();setPreview(true);}
   if(buying&&slot==="emote"){sfx.success();storeMsg.className="form-msg ok";storeMsg.textContent="You unlocked "+itemName(slot,i)+"! Find it in the chat bar.";paintEmoteButtons();renderStoreGrid();return;}
   if(buying&&slot==="furniture"){sfx.success();doAction("wave",null,true);storeMsg.className="form-msg ok";storeMsg.textContent="You bought "+itemName(slot,i)+"! Place it in My Home.";}
@@ -10505,7 +10651,7 @@ function renderSeason(scroll){const v=SEA.view;if(!v)return;const S=v.season,[c1
   document.getElementById("seaTier").textContent=v.tier;const inTier=v.tier>=v.tiers?v.tierXp:v.xp%v.tierXp;
   document.getElementById("seaBar").style.setProperty("--w",(inTier/v.tierXp*100)+"%");
   document.getElementById("seaXpText").textContent=v.tier>=v.tiers?"Season complete! You're a star.":`${inTier} / ${v.tierXp} XP to tier ${v.tier+1}`;
-  document.getElementById("seaDay").textContent=`Today: ${v.dayXp} / ${v.dayCap} XP`;
+  document.getElementById("seaDay").innerHTML=`<span>Today: ${v.dayXp} / ${v.dayCap} XP</span>`+(v.boost>1?`<span class="sea-boost">${MCROWN}<span>Members: XP ×1.5</span></span>`:"");
   const tr=document.getElementById("seaTrack");tr.innerHTML=v.rewards.map(rw=>{const t=rw.tier,got=v.claimed.includes(t),open=t<=v.tier&&!got,item=rw.item;
     let pic,label;if(item){const [sl,ix]=item.split(":");pic=itemPic(sl,+ix);label=esc(itemName(sl,+ix));}else{pic=`<span class="sea-coins">${COIN_MINI}</span>`;label=`${rw.coins} coins`;}
     return `<div class="sea-tier ${item?"rare":""} ${got?"got":open?"open":"locked"}" data-tier="${t}"><span class="sea-n">${t}</span><span class="sea-pic">${pic}</span><b>${label}</b>
@@ -12290,7 +12436,42 @@ function venuePets(){
   // the pets on display breathe, look around and now and then do a happy spin
   let last=0;C.ticks.push(t=>{const dt=Math.min(.1,t-last||.03);last=t;pens.forEach((P,i)=>{if(Math.random()<.0015)P.happy=1.4;animPet(P,t,dt,false,0);});});
   return C;}
-const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner,pets:venuePets,work:venueWork,delivery:venueDelivery};
+// the Members Lounge: a royal room for members (the door outside is the golden pavilion, makeLoungeKiosk)
+function venueLounge(){
+  const items=[[38,0,-4.75,0],[0,-5.7,-1.4,1],[0,5.7,-1.4,3],[1,-5.6,1.7,1],[1,5.6,1.7,3],[36,-6.75,-4.95,0],[31,-3.3,-5.05,0],[31,3.3,-5.05,0],[14,6.8,-4.95,0],[6,-6.9,4.95,0],[6,6.9,4.95,0],[10,-3.6,2.9,0],[10,3.6,2.9,0]];
+  const DX=0,DZ=-1.3;   // centre of the golden dance floor
+  const C=newVenue({wall:4,floor:1,items:items.map(([f,x,z,r])=>({f,x,z,r}))},{dance:[DX-2.4,DZ-1.6,DX+2.4,DZ+1.6],bg:"#140a2e",music:"club",chairTab:null});
+  const g=C.g,gold=mat("#ffc400",{metalness:.55,roughness:.3,emissive:"#7a4a00",emissiveIntensity:.2});
+  wallSign(C,"MEMBERS LOUNGE",0,3.35,4.2,{bg:"#ffc400",fg:"#4a1f00",glow:true});
+  // a golden dance floor that twinkles
+  const tiles=[];for(let i=0;i<5;i++)for(let j=0;j<3;j++){const m=new THREE.MeshStandardMaterial({color:(i+j)%2?"#ffd84a":"#ffefb0",metalness:.4,roughness:.3,emissive:"#000000"});
+    const t=new THREE.Mesh(new THREE.BoxGeometry(.94,.05,.94),m);t.position.set(DX-2+i,.025,DZ-1+j);t.receiveShadow=true;g.add(t);tiles.push({m,i,j});}
+  [[DX,DZ-1.53,5.1,.08],[DX,DZ+1.53,5.1,.08]].forEach(([x,z,w,d])=>g.add(box(w,.07,d,gold,x,.035,z)));[[DX-2.53,DZ],[DX+2.53,DZ]].forEach(([x,z])=>g.add(box(.08,.07,3.1,gold,x,.035,z)));
+  // a crown chandelier over the dance floor
+  const ch=new THREE.Group();ch.position.set(DX,4.15,DZ+1.2);ch.add(cyl(.02,.02,1.2,gold,0,.6,0,6));
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.75,.06,10,36),gold);ring.rotation.x=Math.PI/2;ch.add(ring);
+  const bulbM=new THREE.MeshStandardMaterial({color:"#fff6c4",emissive:"#ffe680",emissiveIntensity:1.2});
+  for(let k=0;k<8;k++){const a=k/8*Math.PI*2;const sp=new THREE.Mesh(new THREE.ConeGeometry(.08,.3,8),gold);sp.position.set(Math.cos(a)*.75,.18,Math.sin(a)*.75);ch.add(sp);
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),bulbM);b.position.set(Math.cos(a)*.75,.38,Math.sin(a)*.75);ch.add(b);}
+  const chs=[-4.6,4.6].map(x=>{const c=ch.clone();c.position.set(x,4.05,.2);c.scale.setScalar(.8);g.add(c);return c;});
+  const lamp=new THREE.PointLight("#ffd27a",6,10,1.6);lamp.position.set(DX,3.4,DZ+1);g.add(lamp);
+  // purple velvet curtains on the back wall and gold crowns on the side walls
+  const vel=mat("#7a2bd6",{roughness:.95});[-1,1].forEach(sd=>{g.add(box(1.3,4.4,.12,vel,sd*3.25,2.2,-HOME_D+.12));g.add(cyl(.05,.05,1.4,gold,sd*3.25,4.42,-HOME_D+.2,8).rotateZ(Math.PI/2));});
+  const crownTex=texCanvas(256,256,(c,w,h)=>{c.translate(w/2,h/2+10);c.fillStyle="#ffd23a";c.strokeStyle="#b8860b";c.lineWidth=10;c.lineJoin="round";c.beginPath();c.moveTo(-90,50);c.lineTo(-100,-60);c.lineTo(-45,-5);c.lineTo(0,-85);c.lineTo(45,-5);c.lineTo(100,-60);c.lineTo(90,50);c.closePath();c.fill();c.stroke();
+    [["#ff3b6b",-50],["#1f9bff",0],["#2fd36b",50]].forEach(([col,x])=>{c.fillStyle=col;c.beginPath();c.arc(x,22,14,0,7);c.fill();});});
+  [-1,1].forEach(sd=>[-2.2,1.6].forEach(z=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.1),new THREE.MeshStandardMaterial({map:crownTex,transparent:true,emissive:"#ffffff",emissiveMap:crownTex,emissiveIntensity:.3}));
+    m.position.set(sd*(HOME_W-.02),2.9,z);m.rotation.y=-sd*Math.PI/2;g.add(m);}));
+  // a gold podium by the door: how many days of membership are left
+  const pod=new THREE.Group();pod.position.set(-2.4,0,4.2);g.add(pod);pod.add(cyl(.32,.42,1,gold,0,.5,0,20));pod.add(cyl(.48,.48,.08,mat("#7a2bd6"),0,1.04,0,24));
+  const pc=new THREE.Mesh(new THREE.OctahedronGeometry(.22,0),new THREE.MeshStandardMaterial({color:"#ffe680",emissive:"#ffc400",emissiveIntensity:.8,metalness:.3,roughness:.2}));pc.position.y=1.45;pod.add(pc);
+  C.col.push({c:[-2.4,4.2],r:.5});
+  vSpot(C,{k:"shop",label:"MY MEMBERSHIP",x:-2.4,z:3.2,reach:1.3,act:()=>{const d=memberDaysLeft();
+    memberNote("MEMBERS LOUNGE",memberMe()&&me.memberUntil?I18N.T("Your membership has {n} days left. Thank you for being a member!",{n:d}):I18N.T("Thank you for being a member!"),true,MCROWN);}});
+  let last=0;C.ticks.push(t=>{if(t-last<.12)return;last=t;
+    tiles.forEach(({m,i,j})=>{const on=Math.sin(t*2.2+i*1.3+j*2.1)>.55;m.emissive.set(on?"#ffb300":"#000000");m.emissiveIntensity=on?.5:0;});
+    chs.forEach((c,k)=>c.rotation.y=t*(k?.25:-.25));pc.rotation.y=t*1.2;pc.position.y=1.45+Math.sin(t*2)*.05;lamp.intensity=5.5+Math.sin(t*3)*.6;});
+  return C;}
+const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner,pets:venuePets,work:venueWork,delivery:venueDelivery,lounge:venueLounge};
 const venueContent=id=>PLACE.cache[id]||(PLACE.cache[id]=VENUE_BUILD[id]());
 
 /* ---------- food and drinks ---------- */
@@ -12535,7 +12716,9 @@ function doorTick(){
 function roomLights(C){if(!HOME.hemi)return;const dim=!!(C&&C.dim);HOME.hemi.intensity=dim?.55:1.25;HOME.sun.intensity=dim?.35:1.6;HOME.lamp.intensity=dim?0:14;HOME.win.visible=!C;if(HOME.win2)HOME.win2.visible=!C;}
 function placeDetach(){if(PLACE.cur){PLACE.cur.g.removeFromParent();PLACE.cur=null;}HOME.place=null;roomLights(null);Sound.venue(null);closeMenu(true);stopEating();}
 async function enterPlace(id){
-  const V=VENUES[id];if(!inGame||G.home||!V||HOME.leaving||PLACE.busy)return;PLACE.busy=true;
+  const V=VENUES[id];if(!inGame||G.home||!V||HOME.leaving||PLACE.busy)return;
+  if(V.member&&!memberMe()&&!(me&&me.role==="mod")){openMemberOffer(null,null,"lounge");return;}   // the Members Lounge
+  PLACE.busy=true;
   closePlayerCard();closeChat();closeMinigame();clearEmotes();nearStation=null;mgPrompt.hidden=true;clearTimeout(bubbleHide);bubbleEl().classList.remove("show");
   nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");
   if(!HOME.group)buildRoom();
@@ -12941,10 +13124,12 @@ function adoptLoop(){if(!adopt.open)return;requestAnimationFrame(adoptLoop);cons
   const t=performance.now()/1000;adopt.P.g.rotation.y=Math.sin(t*.6)*.7;animPet(adopt.P,t,1/60,false,0);adopt.R.render(adopt.scene,adopt.cam);}
 function paintAdopt(){const K=PET_BY_ID[adopt.kind];
   document.getElementById("adoptKinds").innerHTML=PET_KINDS.map(k=>`<button type="button" class="pa-kind" data-k="${k.id}" aria-pressed="${k.id===adopt.kind}"><img alt="" src="${petThumb(k.id,0)}"><span>${k.name}</span><b>${COIN_SVG}${k.price.toLocaleString("en-US")}</b></button>`).join("");
-  document.getElementById("adoptColors").innerHTML=K.colors.map(([n,c],i)=>`<button type="button" class="pa-col" data-c="${i}" aria-pressed="${i===adopt.color}" style="--sw:${c}" title="${n}" aria-label="${n}"></button>`).join("");
+  document.getElementById("adoptColors").innerHTML=K.colors.map(([n,c,m],i)=>`<button type="button" class="pa-col${m==="member"?" member":""}" data-c="${i}" aria-pressed="${i===adopt.color}" style="--sw:${c}" title="${n}" aria-label="${n}">${m==="member"?MCROWN:""}</button>`).join("");
   document.getElementById("adoptKindName").textContent=K.name+" · "+K.colors[adopt.color][0];
-  const full=PETS.mine.length>=MAX_PETS,poor=!me||me.coins<K.price,b=document.getElementById("adoptGo");
-  b.disabled=adopt.busy||full;b.innerHTML=full?"Your home is full of pets!":adopt.busy?"Adopting…":`Adopt<span class="np-cost">${COIN_SVG}${K.price.toLocaleString("en-US")}</span>`;b.classList.toggle("poor",poor&&!full);}
+  const full=PETS.mine.length>=petMax(),poor=!me||me.coins<K.price,b=document.getElementById("adoptGo"),mcol=memberColor(K,adopt.color)&&!memberMe();
+  b.disabled=adopt.busy||(full&&memberMe());b.classList.toggle("members",!adopt.busy&&(mcol||full)&&!memberMe());
+  b.innerHTML=full?(memberMe()?"Your home is full of pets!":`${MCROWN}Members have room for 7 pets`):adopt.busy?"Adopting…":mcol?`${MCROWN}Members only`:`Adopt<span class="np-cost">${COIN_SVG}${K.price.toLocaleString("en-US")}</span>`;b.classList.toggle("poor",poor&&!full&&!mcol);}
+const petMax=()=>memberMe()?MAX_PETS_MEMBER:MAX_PETS;
 async function openAdopt(kind){if(adopt.open)return;closeMenu(true);G.keys={};G.target=null;
   if(!PETS.loaded)await loadPets();
   adopt.open=true;adopt.kind=PET_BY_ID[kind]?kind:"puppy";adopt.color=0;adoptName.value="";adoptName.classList.remove("bad");adoptMsg.textContent="";adoptStage();adoptShowPet();paintAdopt();
@@ -12963,11 +13148,14 @@ document.getElementById("adoptForm").addEventListener("submit",async e=>{e.preve
   const K=PET_BY_ID[adopt.kind],name=cleanPetName(adoptName.value),bad=petNameProblem(name);
   const say=(t,field)=>{adoptMsg.className="pa-msg";adoptMsg.textContent="";void adoptMsg.offsetWidth;adoptMsg.textContent=t;sfx.error();
     adoptName.classList.remove("bad");if(field){void adoptName.offsetWidth;adoptName.classList.add("bad");adoptName.focus({preventScroll:true});}};
+  if(!memberMe()&&PETS.mine.length>=MAX_PETS){openMemberOffer(null,null,"pets-full");return;}
+  if(memberColor(K,adopt.color)&&!memberMe()){openMemberOffer(null,null,"pet-color");return;}
   if(bad)return say(bad,true);if(!checkName(name).ok)return say("Let's keep Jumpi friendly! Try another name.",true);
   if(!me||me.coins<K.price){openCoinBox({price:K.price,name:"Adopt a "+K.name.toLowerCase()});return;}
   adopt.busy=true;paintAdopt();adoptMsg.className="pa-msg ok";adoptMsg.textContent="Adopting…";
   let r;try{r=await api("/api/pets/adopt",{kind:adopt.kind,color:adopt.color,name});}catch(err){r={ok:false,data:{}};}
   adopt.busy=false;paintAdopt();
+  if(!r.ok&&memberRefusal(r,null,null))return;
   if(!r.ok)return say(r.status===404?"The Pet Center isn't open yet. Ask an adult to restart the game server.":r.data.error||"Couldn't adopt right now. Try again!");
   adoptMsg.textContent="";
   PETS.mine=r.data.pets;PETS.out=r.data.out;PETS.loaded=true;if(me)me.coins=r.data.coins;paintCoins(true);
@@ -14160,6 +14348,86 @@ if(WEB_BUY){
 function coinsShort(r){if(!r||r.status!==402||!me||!cbOv.hidden)return false;const m=/([\d,]+)\s+more coins/i.exec((r.data&&r.data.error)||"");
   openCoinBox({short:m?+m[1].replace(/,/g,""):1});return true;}
 
+/* ---------- MEMBERS: the Members Club in the game ----------
+   - Members' things carry a little crown (store, wardrobe, emotes, pets). Buying or wearing one without a membership
+     opens the members window: what members get (MEMBER_PERKS in public/shared/store.js) and the way to the Jumpi
+     Store on the website (the Microsoft Store program: its own coins window; the phone apps: no links to paid things).
+   - Members pay 10% less in the Shop (memberPrice), have a bigger home and room for more pets, the Members Sparkle
+     aura, two members' emotes, a crown next to the name, the Season track 50% faster, the Members Lounge and a
+     members-only gift every month (routes/member.js).
+   - The days left show in the Shop; a gentle note 3 days before the end. When a membership ends nothing is taken
+     away: the members' things come off the character but stay in the inventory, the home and the pets stay. */
+const MCROWN='<svg class="mcrown" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5l4.2 3.6L12 5l4.8 7.1L21 8.5 19.3 18H4.7z" fill="#ffd23a" stroke="#b8860b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="5" r="1.6" fill="#fff6c4"/></svg>';
+const memberMe=()=>!!(me&&(me.subscriber||me.role==="admin"));
+const priceOf=it=>it?(memberMe()&&me.role!=="admin"&&!it.free&&!it.memberFree?memberPrice(it.price):it.price):0;
+const memberDaysLeft=()=>me&&me.memberUntil?Math.max(0,Math.ceil((new Date(me.memberUntil).getTime()-Date.now())/864e5)):0;
+// the server said "members only" (code "members", also a full home or pet house for a non-member): the members window
+function memberRefusal(r,slot,i){const c=r&&r.data&&r.data.code;if(c==="members"||((c==="home-full"||c==="pets-full")&&!memberMe())){openMemberOffer(slot,i,c);return true;}return false;}
+const MPERK_IC={gift:'<path d="M4 10h16v10H4z" fill="#ff5fb4"/><path d="M3 7h18v4H3z" fill="#ff7cc2"/><path d="M11 7h2v13h-2z" fill="#ffd23a"/><path d="M12 7c-2-4-6-3-5 0zM12 7c2-4 6-3 5 0z" fill="#ffd23a"/>',
+  shirt:'<path d="M8 3l-5 3 2 4 2-1v12h10V9l2 1 2-4-5-3c-1 2-2 3-4 3S9 5 8 3z" fill="#7c5cff"/>',
+  spark:'<path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z" fill="#ffd23a"/><circle cx="19" cy="4" r="1.6" fill="#9fe7ff"/><circle cx="5" cy="19" r="1.3" fill="#ffb3ec"/>',
+  coins:'<circle cx="9" cy="13" r="6.5" fill="#ffc21a"/><circle cx="15" cy="10" r="6.5" fill="#ffd23a" stroke="#e8a300" stroke-width="1.2"/>',
+  tag:'<path d="M3 11V4h7l11 11-7 7z" fill="#2fd36b"/><circle cx="7" cy="8" r="1.6" fill="#fff"/><text x="13.5" y="17" font-size="6" font-family="Lilita One,system-ui" fill="#fff" text-anchor="middle">%</text>',
+  home:'<path d="M3 11l9-8 9 8v10H3z" fill="#2f9bff"/><path d="M10 21v-6h4v6z" fill="#ffd23a"/>',
+  paw:'<circle cx="7" cy="9" r="2.2" fill="#ff8a1c"/><circle cx="12" cy="6.5" r="2.2" fill="#ff8a1c"/><circle cx="17" cy="9" r="2.2" fill="#ff8a1c"/><path d="M12 11c-4 0-6 4-5 6s3 1.5 5 1.5 4 .5 5-1.5-1-6-5-6z" fill="#ff8a1c"/>',
+  star:'<path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7-6.2-3.6-6.2 3.6 1.4-7L2 9.3l7-.8z" fill="#ffc21a" stroke="#c98a00" stroke-width="1.2" stroke-linejoin="round"/>',
+  door:'<path d="M5 21V4h14v17z" fill="#7a3cff"/><path d="M8 21V7h8v14z" fill="#ffd23a"/><circle cx="14" cy="14" r="1" fill="#7a3cff"/>',
+  dance:'<circle cx="12" cy="12" r="9" fill="#ffd23a"/><circle cx="9" cy="10" r="1.4" fill="#7a3e12"/><circle cx="15" cy="10" r="1.4" fill="#7a3e12"/><path d="M7.5 13.5Q12 18.5 16.5 13.5" fill="none" stroke="#7a3e12" stroke-width="1.7" stroke-linecap="round"/>'};
+// the members window: why = the item (slot, index) that was clicked, or what was full
+function openMemberOffer(slot,i,why){
+  let ov=document.getElementById("mofOv");
+  if(!ov){ov=document.createElement("div");ov.id="mofOv";ov.className="idle-overlay msb-overlay mof-overlay";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-labelledby","mofTitle");
+    document.body.appendChild(ov);
+    ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest("[data-mof-x]")){closeMemberOffer();return;}
+      const go=e.target.closest(".mof-go");if(!go)return;press(go);
+      if(go.dataset.go==="web"){closeMemberOffer(true);openStorePage("membership");toast("The Jumpi Store opened in a new tab. Ask a grown-up to help you buy.");}
+      else if(go.dataset.go==="ms"){closeMemberOffer(true);openMsb();}
+      else closeMemberOffer();});
+    ov.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")closeMemberOffer();});}
+  const web=typeof WEB_BUY!=="undefined"&&WEB_BUY,ms=typeof MS_APP!=="undefined"&&MS_APP&&MSB.on;
+  const it=Number.isInteger(i)&&i>=0&&slot?(catalog&&catalog.get(slot+":"+i)):null;
+  const what=why==="home-full"?"Your home is full! Members have room for 90 pieces of furniture.":why==="pets-full"?"Your pet house is full! Members have room for 7 pets.":why==="lounge"?"The Members Lounge is just for members.":why==="pet-color"?"This pet colour is just for members.":it?`${itemName(slot,i)} is a members-only item.`:"";
+  const pic=it?`<span class="mof-pic">${slot==="emote"?`<img alt="" src="${emoteImage(EMOTES[i].id,skinOf({color:lk("color")}))}">`:itemPic(slot,i)}<i class="mof-ribbon">${MCROWN}MEMBERS</i></span>`:`<span class="mof-pic big">${MCROWN}</span>`;
+  ov.innerHTML=`<div class="idle-card msb-card mof-card"><button class="np-x" type="button" data-mof-x aria-label="Close">${I.xS}</button>
+    <div class="mof-head">${pic}<div><h2 id="mofTitle">MEMBERS HAVE MORE FUN!</h2>${what?`<p class="mof-what">${esc(what)}</p>`:""}</div></div>
+    <ul class="mof-perks">${MEMBER_PERKS.map((P,k)=>`<li style="--k:${k}"><svg viewBox="0 0 24 24" aria-hidden="true">${MPERK_IC[P.ic]||MPERK_IC.star}</svg><span>${esc(I18N.lang==="he"?P.he:P.en)}</span></li>`).join("")}</ul>
+    ${web?`<button type="button" class="mof-go" data-go="web">${MCROWN}BECOME A MEMBER</button><p class="mof-small">One payment, never renews by itself. Always ask a grown-up first!<br>When a membership ends, everything you built stays yours.</p>`
+      :ms?`<button type="button" class="mof-go" data-go="ms">${MCROWN}BECOME A MEMBER</button><p class="mof-small">One payment, never renews by itself. When a membership ends, everything you built stays yours.</p>`
+      :`<button type="button" class="mof-go" data-go="ok">OK!</button>`}</div>`;
+  if(inGame){closePhone(true);closeChat();}G.keys={};G.target=null;
+  ov.hidden=false;sfx.whoosh();MOF_FROM=document.activeElement;setTimeout(()=>{const b=ov.querySelector(".mof-go");if(b)b.focus({preventScroll:true});},80);}
+let MOF_FROM=null;
+function closeMemberOffer(quiet){const ov=document.getElementById("mofOv");if(!ov||ov.hidden)return;ov.hidden=true;if(!quiet)sfx.close();if(MOF_FROM&&MOF_FROM.focus&&document.contains(MOF_FROM))MOF_FROM.focus({preventScroll:true});}
+
+// the monthly gift, the days left, the end of a membership
+const MEMB={checked:"",wasKey:"",gift:null,remindDay:""};
+function memberLocal(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+async function memberTick(){
+  if(!me||!inGame)return;const key="jumpi-member-"+me.id,was=memberLocal(key)==="1",now=!!me.subscriber;
+  if(now&&!was)memberLocal(key,"1");
+  // the membership just ended (on this device it was on before): the members' things come off, nothing else changes
+  if(!now&&was&&!me.memberUntil&&me.role!=="admin"){memberLocal(key,"0");const r=await api("/api/member/ended",{});if(r.ok&&r.data.user){setAccount(r.data.user,true);refreshMyTag();}
+    memberNote("YOUR MEMBERSHIP ENDED","Everything you built stays yours: your home, your pets and all your things. The members' clothes wait in your inventory for the next time!",false);return;}
+  if(!now)return;
+  // it runs out while playing: check again with the server
+  if(me.memberUntil&&new Date(me.memberUntil).getTime()<=Date.now()){const r=await api("me");if(r.ok&&r.data.user){setAccount(r.data.user,true);}return;}
+  // a gentle note 3 days before the end (once a day)
+  const d=memberDaysLeft(),today=new Date().toISOString().slice(0,10);
+  if(me.memberUntil&&d<=3&&MEMB.remindDay!==today&&memberLocal("jumpi-member-remind-"+me.id)!==today){MEMB.remindDay=today;memberLocal("jumpi-member-remind-"+me.id,today);
+    toast(d<=1?I18N.T("Your membership ends tomorrow. Everything you built stays yours!"):I18N.T("Your membership ends in {n} days. Everything you built stays yours!",{n:d}));}
+  // the monthly gift
+  const month=new Date().toISOString().slice(0,7);
+  if(MEMB.checked!==month+me.id){MEMB.checked=month+me.id;const g=await api("/api/member/monthly");
+    if(g.ok&&g.data.member&&!g.data.claimed){const r=await api("/api/member/monthly",{});
+      if(r.ok){setAccount(r.data.user,true);const [sl,ix]=(r.data.item||g.data.item).split(":");
+        memberNote("YOUR MEMBERS GIFT!",r.data.item?I18N.T("This month's members-only gift is yours to keep: {item}. Find it in your inventory!",{item:`<b>${esc(itemName(sl,+ix))}</b>`}):I18N.T("You already have this month's gift ({item}), so here are {n} coins instead!",{item:`<b>${esc(itemName(sl,+ix))}</b>`,n:r.data.coins}),true,r.data.item?itemPic(sl,+ix):COIN_SVG);}}}}
+setInterval(()=>{try{memberTick();}catch(e){}},60000);
+function memberNote(title,html,happy,pic){let ov=document.getElementById("mgiftOv");
+  if(!ov){ov=document.createElement("div");ov.id="mgiftOv";ov.className="idle-overlay msb-overlay mof-overlay";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");document.body.appendChild(ov);
+    ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest("[data-x]")){ov.hidden=true;sfx.close();}});ov.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){ov.hidden=true;sfx.close();}});}
+  ov.innerHTML=`<div class="idle-card msb-card mof-card gift"><div class="mof-giftpic">${pic||MCROWN}</div><h2>${esc(title)}</h2><p class="mof-what">${html}</p><button type="button" class="mof-go" data-x>${happy?"YAY!":"OK"}</button></div>`;
+  ov.hidden=false;if(happy){sfx.success();confettiRain();}else sfx.open();setTimeout(()=>{const b=ov.querySelector(".mof-go");if(b)b.focus({preventScroll:true});},80);}
+
 /* ---------- SHOW: the Jumpi Show ("משחקי המשגיחים"), a live show run by a moderator or an admin ----------
    realtime/show.js decides everything; public/shared/show.js has the stage rows and the prize wheel.
    - A show is on (socket "show:on"): a note at the top for everyone in the game with JOIN; it can be closed and
@@ -14167,15 +14435,18 @@ function coinsShort(r){if(!r||r.status!==402||!me||!cbOv.hidden)return false;con
    - Inside, the world isn't drawn: the main loop draws SHOW.scene, a stage with 3 rows. The players on it stand
      straight and face the screen; the host is a big Jumpi on the left, turned a little towards the stage but with
      the face to the screen. Viewers are only a number (eye button). Everyone in the show can chat.
-   - The host (right panel) runs confetti, balloons, the spotlight, funny exits, a quick poll, Country-City, Hangman
-     (balloons pop instead of a hanged man), the prize wheel and coin gifts. A click on a player on the stage opens
-     what the host can do with them; the eye opens the viewers list. */
+   - Only the one who opened the show runs it (right panel): confetti, balloons, the spotlight (it stays on its player
+     until the host turns it off), new players for the stage, funny exits, a quick poll, the prize wheel and coin
+     gifts. Other admins and moderators who come in are like everyone else. A click on a player on the stage opens
+     what the host can do with them; the eye opens the viewers list.
+   - The prize wheel: the player who spins comes down to the front, on the right of the wheel, and the host stands on
+     its left; everyone keeps chatting. */
 const SHOW={on:null,in:false,scene:null,cam:null,st:null,people:new Map(),chars:new Map(),host:null,stage:null,fx:[],spot:null,wheelSpin:null,voted:-1,noteShut:false,hostOpen:true,pending:null,feed:[]};
 const showUi=document.getElementById("showUi");
 const SHOW_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="#fff"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M12 18v3.5M8.5 21.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const EYE_ICON='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" fill="#fff"/><circle cx="12" cy="12" r="3.6" fill="#2a3d6b"/></svg>';
 const isStaffMe=()=>!!(me&&(me.role==="admin"||me.role==="mod"));
-const amHost=()=>!!(SHOW.st&&socket&&SHOW.st.hostSid===socket.id)||(SHOW.in&&me&&me.role==="admin");
+const amHost=()=>!!(SHOW.st&&socket&&SHOW.st.hostSid===socket.id);
 
 /* ---- the note at the top (a show is on) ---- */
 function showNotePaint(){
@@ -14235,12 +14506,12 @@ function showBuild(){
   const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(9,1.76),new THREE.MeshBasicMaterial({map:tex,transparent:true,toneMapped:false}));sign.position.set(0,9.6,-4.6);sc.add(sign);
   // stage floor and the 3 rows (risers: the back rows stand higher)
-  const floor=new THREE.Mesh(new THREE.BoxGeometry(26,.6,12),M("#7b4a2c",{roughness:.55}));floor.position.set(0,-.3,0);floor.receiveShadow=true;sc.add(floor);
-  const edge=new THREE.Mesh(new THREE.BoxGeometry(26,.25,.3),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.5}));edge.position.set(0,.02,6);sc.add(edge);
-  SHOW.rows=SHOW_ROWS.map((n,r)=>{const y=r*.95,z=2.8-r*2.1,w=n*1.2+.8;
-    if(r){const step=new THREE.Mesh(new THREE.BoxGeometry(w,y,2.1),M(r===1?"#5a3ad6":"#7c5cff",{roughness:.5}));step.position.set(1.2,y/2,z);step.receiveShadow=true;step.castShadow=true;sc.add(step);
-      const lip=new THREE.Mesh(new THREE.BoxGeometry(w,.08,.1),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.4}));lip.position.set(1.2,y+.02,z+1.05);sc.add(lip);}
-    return {y,z,n,dx:1.2};});
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(30,.6,12),M("#7b4a2c",{roughness:.55}));floor.position.set(0,-.3,0);floor.receiveShadow=true;sc.add(floor);
+  const edge=new THREE.Mesh(new THREE.BoxGeometry(30,.25,.3),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.5}));edge.position.set(0,.02,6);sc.add(edge);
+  SHOW.rows=SHOW_ROWS.map((n,r)=>{const y=r*.95,z=2.8-r*2.1,dx=SHOW_DX,w=n*dx+.8;
+    if(r){const step=new THREE.Mesh(new THREE.BoxGeometry(w,y,2.1),M(r===1?"#5a3ad6":"#7c5cff",{roughness:.5}));step.position.set(SHOW_X0,y/2,z);step.receiveShadow=true;step.castShadow=true;sc.add(step);
+      const lip=new THREE.Mesh(new THREE.BoxGeometry(w,.08,.1),M("#ffd23a",{emissive:"#ff9a00",emissiveIntensity:.4}));lip.position.set(SHOW_X0,y+.02,z+1.05);sc.add(lip);}
+    return {y,z,n,dx};});
   // the host's spot on the left: a round podium
   const pod=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.8,.5,32),M("#ffb21f",{metalness:.25,roughness:.45}));pod.position.set(-7.3,.25,1.2);pod.receiveShadow=true;sc.add(pod);
   // spotlight (shown when the host uses it)
@@ -14249,17 +14520,22 @@ function showBuild(){
   beam.position.set(0,7,4);sc.add(beam);SHOW.spot={spot,beam,t0:-99,x:0,z:0,to:null};
   SHOW.scene=sc;SHOW.balloons=[];showCam();}
 function showCam(){if(!SHOW.cam)return;const a=innerWidth/innerHeight,c=SHOW.cam;c.aspect=a;
-  const d=a>=1.6?15.5:a>=1.2?18:a>=1?21:29;c.fov=a<1?46:36;c.position.set(-.6,6.2+(a<1?2:0),d);c.lookAt(-.6,1.9,0);c.updateProjectionMatrix();}
+  const d=a>=1.6?18.5:a>=1.2?21.5:a>=1?25:34;c.fov=a<1?46:36;c.position.set(1.1,6.6+(a<1?2:0),d);c.lookAt(1.1,1.9,0);c.updateProjectionMatrix();}
 addEventListener("resize",showCam);
-function seatPos(i){const s=seatSpot(i);if(!s)return null;const R=SHOW.rows[s[0]];return {x:1.2+(s[1]-(R.n-1)/2)*R.dx,y:R.y,z:R.z,row:s[0]};}
+const SHOW_DX=1.55,SHOW_X0=2.1;   // room between the players on a row, and where the rows are centred (the host's podium is on the left)
+function seatPos(i){const s=seatSpot(i);if(!s)return null;const R=SHOW.rows[s[0]];return {x:SHOW_X0+(s[1]-(R.n-1)/2)*R.dx,y:R.y,z:R.z,row:s[0]};}
+// the prize wheel: the one who spins stands at the front on its right, the host on its left
+const WHEEL_SPOT={host:{x:-3.9,y:0,z:4.4,ry:.55},spin:{x:6.1,y:0,z:4.4,ry:-.55}};
+const HOST_SPOT={x:-7.3,y:.5,z:1.2};
 
 /* ---- characters ---- */
 function showMakeChar(p,host){
   const look=socket&&p.id===socket.id?myLook():uniformLook(p.look||{},p.uniform);
   const n=makeCharacter(look,p.username||"Player",nameColor(p.role,p.member),p.lv||1);
   n.root.traverse(o=>{if(o.isMesh)o.castShadow=true;});
-  n.tag.scale.multiplyScalar(host?.75:.42);SHOW.scene.add(n.root,n.tag);
-  return Object.assign(n,{sid:p.id,host:!!host,x:0,y:0,z:0,act:null,actT:-9,exit:null,exitT:0,blinkT:0,blinkStart:-9,phase:Math.random()*6,bubble:makeBubbleEl()});}
+  n.tag.scale.multiplyScalar(host?.8:.62);SHOW.scene.add(n.root,n.tag);   // names big enough to read from the back row
+  const bubble=makeBubbleEl();if(p.role==="admin")bubble.classList.add("admin");else if(p.role==="mod")bubble.classList.add("mod");else paintBubbleRank(bubble,p.lv||1);
+  return Object.assign(n,{sid:p.id,host:!!host,x:0,y:0,z:0,tx:null,exit:null,exitT:0,blinkT:0,blinkStart:-9,phase:Math.random()*6,bubble});}
 function showDropChar(c){c.root.removeFromParent();c.tag.removeFromParent();if(c.tag.material.map)c.tag.material.map.dispose();c.tag.material.dispose();if(c.bubble)c.bubble.remove();if(c.balloon)c.balloon.removeFromParent();dropAura(c);}
 function personOf(sid){if(socket&&sid===socket.id)return{id:sid,username:me.username,role:me.role,look:myLook(),lv:me.lv||1,member:!!(me.subscriber||me.memberUntil)};return SHOW.people.get(sid);}
 // make the characters match the server's state (who is on which seat, who hosts)
@@ -14267,21 +14543,25 @@ function showSync(){
   if(!SHOW.in||!SHOW.scene||!SHOW.st)return;const st=SHOW.st,want=new Map();
   st.seats.forEach((sid,i)=>{if(sid&&personOf(sid))want.set(sid,i);});
   for(const [sid,c] of SHOW.chars)if(!want.has(sid)&&!c.exit){showDropChar(c);SHOW.chars.delete(sid);}
-  for(const [sid,i] of want){let c=SHOW.chars.get(sid);if(!c){c=showMakeChar(personOf(sid));SHOW.chars.set(sid,c);c.popT=now();}
-    const s=seatPos(i);c.x=s.x;c.y=s.y;c.z=s.z;c.seat=i;}
+  const W=st.wheel,spinner=W&&W.sid;
+  for(const [sid,i] of want){let c=SHOW.chars.get(sid);const fresh=!c;if(!c){c=showMakeChar(personOf(sid));SHOW.chars.set(sid,c);c.popT=now();}
+    const s=sid===spinner?WHEEL_SPOT.spin:seatPos(i);c.tx=s.x;c.ty=s.y;c.tz=s.z;c.ry=s.ry||0;c.seat=i;if(fresh){c.x=s.x;c.y=s.y;c.z=s.z;}}
   // the host
   const hs=st.hostSid,hp=hs&&personOf(hs);
   if(SHOW.host&&(!hp||SHOW.host.sid!==hs)){showDropChar(SHOW.host);SHOW.host=null;}
-  if(hp&&!SHOW.host){SHOW.host=showMakeChar(hp,true);Object.assign(SHOW.host,{x:-7.3,y:.5,z:1.2});}}
+  if(hp&&!SHOW.host){SHOW.host=showMakeChar(hp,true);Object.assign(SHOW.host,HOST_SPOT);}
+  if(SHOW.host){const h=W?WHEEL_SPOT.host:HOST_SPOT;Object.assign(SHOW.host,{tx:h.x,ty:h.y,tz:h.z,wheel:!!W});}
+  // the spotlight follows the server: a new player in it → it wanders first, then stops on them; nobody → it fades out
+  const sp=SHOW.spot;if(sp&&(st.spot||null)!==sp.to){if(st.spot){sp.to=st.spot;sp.t0=now();}else{sp.to=null;sp.off=now();}}}
 
 /* ---- each frame ---- */
 function showFrame(t,dt){
   const tn=now();
   const all=[...SHOW.chars.values()];if(SHOW.host)all.push(SHOW.host);
   for(const c of all){
-    let y=c.y,sc=c.host?1.55:1,ry=c.host?.62:0,rx=0;   // everyone faces the screen; the host stands turned towards the stage
-    // fixed animations: a jump, a wave
-    const k=(tn-c.actT)/.9;if(c.act==="jump"&&k>=0&&k<1)y+=jumpY(Math.min(.999,k))*.9;
+    // walking to a new place (down to the wheel and back): a smooth glide with little hops
+    if(c.tx!==null&&c.tx!==undefined){const dx=c.tx-c.x,dz=c.tz-c.z,dy=c.ty-c.y,d=Math.hypot(dx,dz),k=Math.min(1,dt*3.2);c.x+=dx*k;c.z+=dz*k;c.y+=dy*k;c.walk=d>.05?Math.min(1,d):0;}
+    let y=c.y+(c.walk?Math.abs(Math.sin(t*11+c.phase))*.18*c.walk:0),sc=c.host?(c.wheel?1.25:1.55):1,ry=c.host?(c.wheel?WHEEL_SPOT.host.ry:.62):(c.ry||0),rx=0;   // everyone faces the screen; the host stands turned towards the stage
     if(c.popT){const p=Math.min(1,(tn-c.popT)/.45);sc*=p<1?ease(p)*(1+Math.sin(p*Math.PI)*.15):1;if(p>=1)c.popT=0;}
     // funny exits
     if(c.exit){const e=(tn-c.exitT)/1.6;
@@ -14291,18 +14571,19 @@ function showFrame(t,dt){
       if(e>=1.05){showDropChar(c);SHOW.chars.delete(c.sid);continue;}}
     c.root.position.set(c.x,y,c.z);c.root.rotation.set(rx,ry,0);c.root.scale.setScalar(sc);
     // the host turns its head to the screen (the body is diagonal)
-    if(c.host)c.head.rotation.y=-.55;
+    if(c.host)c.head.rotation.y=c.wheel?-.35:-.55;
     const br=Math.sin(t*2.1+c.phase);c.body.scale.set(1+br*.012,1+br*.018,1+br*.012);c.head.position.y=c.headY+br*.012;
-    const wv=c.act==="wave"&&tn-c.actT<1.8;c.armR.rotation.z=wv?-2.4+Math.sin((tn-c.actT)*12)*.35:0;c.armL.rotation.z=0;
+    c.armR.rotation.z=0;c.armL.rotation.z=0;c.armL.rotation.x=c.armR.rotation.x=c.walk?Math.sin(t*11+c.phase)*.5*c.walk:0;
     if(t>c.blinkT){c.blinkT=t+2.5+Math.random()*3;c.blinkStart=t;}const bk=(t-c.blinkStart)/.25;c.eyeL.scale.y=c.eyeR.scale.y=bk<1&&bk>=0?1-.9*Math.sin(Math.PI*bk):1;
     c.tag.position.set(c.x+(c.host?.4:0),y+(c.host?.1:.12),c.z+(c.host?1.7:.62));
     if(c.aura)c.aura.tick(t);
     showBubbleAt(c,y);}
-  // the spotlight: wanders over the stage, then stops on the chosen one
-  const S=SHOW.spot;if(S){const e=tn-S.t0;let on=0;
-    if(e<7){on=Math.min(1,e*3,(7-e)*2);let tx,tz;const tc=S.to&&SHOW.chars.get(S.to);
-      if(e<2.6||!tc){tx=Math.sin(e*2.3)*9;tz=1.5+Math.cos(e*1.7)*1.6;}else{tx=tc.x;tz=tc.z;}
+  // the spotlight: wanders over the stage, then stops on the chosen one and stays there until the host turns it off
+  const S=SHOW.spot;if(S){const e=tn-S.t0;let on=0;const tc=S.to&&SHOW.chars.get(S.to);
+    if(tc){on=Math.min(1,e*3);let tx,tz;
+      if(e<2.6){tx=SHOW_X0+Math.sin(e*2.3)*9;tz=1.5+Math.cos(e*1.7)*1.6;}else{tx=tc.x;tz=tc.z;}
       S.x+=(tx-S.x)*Math.min(1,dt*(e<2.6?3:6));S.z+=(tz-S.z)*Math.min(1,dt*(e<2.6?3:6));}
+    else if(S.off)on=Math.max(0,1-(tn-S.off)*2.5);
     S.spot.intensity=on*90;S.spot.target.position.set(S.x,0,S.z);S.spot.target.updateMatrixWorld();S.beam.material.opacity=on*.22;S.beam.position.set(S.x,7,S.z+1.2);}
   // balloons rising
   for(let i=SHOW.balloons.length-1;i>=0;i--){const b=SHOW.balloons[i],a=tn-b.userData.t0;b.position.y=b.userData.y0+a*b.userData.v;b.position.x+=Math.sin(a*2+b.userData.ph)*.004;if(a>7){b.removeFromParent();SHOW.balloons.splice(i,1);}}
@@ -14326,10 +14607,9 @@ function showFx(d){
   else if(d.k==="balloons"){const C=["#ff5fb4","#ffd23a","#2f9bff","#2fd36b","#ff8a1c","#a77bff"];
     for(let i=0;i<26;i++){const b=showBalloon(C[i%C.length]);b.position.set(-12+Math.random()*24,-1-Math.random()*3,-1+Math.random()*6);Object.assign(b.userData,{t0:tn+Math.random()*1.2,y0:-2-Math.random()*2,v:1.6+Math.random()*1.4,ph:Math.random()*6});SHOW.scene.add(b);SHOW.balloons.push(b);}
     sfx.hop();}
-  else if(d.k==="spot"){Object.assign(SHOW.spot,{t0:tn,to:d.sid});sfx.whoosh();setTimeout(()=>{if(SHOW.in)sfx.success();},2700);}
-  else if(d.k==="act"){const c=SHOW.chars.get(d.sid);if(c){c.act=d.a;c.actT=tn;}}
+  else if(d.k==="spot"){Object.assign(SHOW.spot,{t0:tn,to:d.sid,off:0});sfx.whoosh();setTimeout(()=>{if(SHOW.in)sfx.success();},2700);}
+  else if(d.k==="up"){sfx.success();}
   else if(d.k==="down"){(d.sids||[]).forEach((sid,i)=>{const c=SHOW.chars.get(sid);if(c){c.exit=d.style;c.exitT=tn+i*.06;}});sfx[d.style==="balloon"?"whoosh":"hop"]();}
-  else if(d.k==="guess"){showChatLine({sys:true,text:`${d.by} guessed ${d.l}: ${d.ok?"yes!":"no"}`});}
   else if(d.k==="prize"){showPrize(d);}
   else if(d.k==="gift"){const c=SHOW.chars.get(d.sid);if(c)showBurst(c.x,c.y+1.2,c.z);coinRain(socket&&d.sid===socket.id?24:10);sfx.coin();
     showChatLine({sys:true,text:`${SHOW.st?SHOW.st.host:"The host"} gave ${d.n.toLocaleString("en-US")} coins to ${d.name}!`});}}
@@ -14379,19 +14659,9 @@ function showPaint(){
   document.getElementById("shHost").textContent=st.host?`Hosted by ${st.host}`:"";
   document.getElementById("shViewN").textContent=(st.viewers||0).toLocaleString("en-US");
   document.getElementById("shEye").classList.toggle("can",host);
-  document.getElementById("shMine").hidden=!seated;
   document.getElementById("shWatch").hidden=seated||host;
   document.getElementById("shPanel").hidden=!host;document.getElementById("shPanel").classList.toggle("shut",!SHOW.hostOpen);
-  // Country-City band
-  const cb=document.getElementById("shCountry");cb.hidden=!st.country;if(st.country)cb.innerHTML=`<span>${esc(st.country.cat)}</span><b>${esc(st.country.letter)}</b>`;
-  // Hangman
-  const H=st.hangman,hb=document.getElementById("shHang");hb.hidden=!H;
-  if(H){document.getElementById("shWord").innerHTML=[...H.mask].map(ch=>ch===" "?'<i class="sp"></i>':`<i class="${ch==="_"?"":"on"}">${ch==="_"?"":esc(ch)}</i>`).join("");
-    document.getElementById("shLives").innerHTML=Array.from({length:H.lives},(_,i)=>`<i class="${i<H.lives-H.wrong?"":"pop"}" style="--c:${["#ff5fb4","#ffd23a","#2f9bff","#2fd36b","#ff8a1c","#a77bff"][i%6]}"></i>`).join("");
-    document.getElementById("shHangMsg").textContent=H.done==="win"?"You found it!":H.done==="lose"?"The balloons are gone! The word is above.":"";
-    const he=/[א-ת]/.test(H.mask)||(H.used.some&&H.used.some(l=>/[א-ת]/.test(l)));
-    const keys=document.getElementById("shKeys"),abc=he?"אבגדהוזחטיכלמנסעפצקרשת":"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    keys.hidden=!!H.done||host;keys.innerHTML=[...abc].map(l=>`<button type="button" data-l="${l}" ${H.used.includes(l)?"disabled":""}>${l}</button>`).join("");}
+  document.getElementById("shSpotBtn").textContent=st.spot?"Spotlight off":"Spotlight";
   // the poll
   const Pl=st.poll,pb=document.getElementById("shPoll");pb.hidden=!Pl;
   if(Pl){const tot=Pl.counts?Pl.counts.reduce((a,b)=>a+b,0):0;
@@ -14405,8 +14675,6 @@ setInterval(()=>{if(!SHOW.in)return;const t=document.querySelector("#shPoll .shp
 showUi.addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b||!SHOW.in)return;
   if(b.id==="shLeave"){press(b);leaveShow();return;}
-  if(b.dataset.act){press(b);socket.emit("show:act",{a:b.dataset.act});const c=SHOW.chars.get(socket.id);if(c){c.act=b.dataset.act;c.actT=now();}return;}
-  if(b.dataset.l){press(b);b.disabled=true;socket.emit("show:guess",{l:b.dataset.l});return;}
   if(b.dataset.v!==undefined&&b.closest("#shPoll")){const i=+b.dataset.v;SHOW.voted=i;sfx.tick(true);socket.emit("show:vote",{i});showPaint();return;}
   if(b.id==="shSpin"){press(b);b.hidden=true;socket.emit("show:spin");return;}
   if(b.id==="shEye"){if(amHost())showViewers();return;}
@@ -14429,22 +14697,15 @@ function showDialog(html,onOk){const d=document.getElementById("shDlg");d.innerH
   setTimeout(()=>{const i=f.querySelector("input,select");if(i)i.focus();},40);}
 const showAsk=(ev,data)=>new Promise(r=>{if(!socket||!socket.connected)return r({error:"You're not connected right now."});socket.emit(ev,data,x=>r(x||{}));setTimeout(()=>r({error:"No answer from the server. Try again."}),6000);});
 async function showHostAct(k,b){press(b);
-  if(k==="confetti"||k==="balloons"||k==="spot"){socket.emit("show:fx",{k});return;}
+  if(k==="confetti"||k==="balloons"){socket.emit("show:fx",{k});return;}
+  if(k==="spot"){socket.emit("show:fx",{k:SHOW.st&&SHOW.st.spot?"spotoff":"spot"});return;}
+  if(k==="shuffle"){const r=await showAsk("show:shuffle");if(r.error)toast(r.error);return;}
   if(k==="alldown"){socket.emit("show:down",{all:true,style:"poof"});return;}
   if(k==="close"){showDialog(`<h3>End the show?</h3><p>Everyone goes back to the world.</p>`,async()=>{const r=await showAsk("show:close");return r.error||"";});return;}
   if(k==="poll"){showDialog(`<h3>Quick poll</h3><label>Question<input name="q" maxlength="80" required placeholder="Which game next?"></label>
       ${[1,2,3,4].map(i=>`<label>Answer ${i}${i>2?" (optional)":""}<input name="o${i}" maxlength="30" ${i<=2?"required":""}></label>`).join("")}
       <label>How long<select name="secs">${POLL_SECS.map(s=>`<option value="${s}" ${s===20?"selected":""}>${s} seconds</option>`).join("")}</select></label>`,
       async f=>{const v=n=>f.elements[n].value.trim();const r=await showAsk("show:poll",{q:v("q"),opts:[v("o1"),v("o2"),v("o3"),v("o4")].filter(Boolean),secs:+f.elements.secs.value});return r.error||"";});return;}
-  if(k==="country"){const st=SHOW.st||{};
-    showDialog(`<h3>Country-City</h3><label>Category<input name="cat" list="shCats" maxlength="24" required value="${esc(st.country?st.country.cat:"")}"></label><datalist id="shCats">${COUNTRY_CATEGORIES.map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
-      <label>Letter<input name="letter" maxlength="1" required class="sh-letter" value="${esc(st.country?st.country.letter:"")}"></label>${st.country?'<button type="button" class="sh-b ghost wide" data-clear>Take the band down</button>':""}`,
-      async f=>{socket.emit("show:country",{cat:f.elements.cat.value,letter:f.elements.letter.value});return "";});
-    const c=document.querySelector("#shDlg [data-clear]");if(c)c.onclick=()=>{socket.emit("show:country",{clear:true});document.getElementById("shDlg").hidden=true;};return;}
-  if(k==="hangman"){const on=!!(SHOW.st&&SHOW.st.hangman);
-    showDialog(`<h3>Hangman</h3><p>Pick a word (only you see it). Players guess letters; a wrong letter pops a balloon.</p><label>Word<input name="w" maxlength="20" required autocomplete="off"></label>${on?'<button type="button" class="sh-b ghost wide" data-clear>End this game</button>':""}`,
-      async f=>{const r=await showAsk("show:hangman",{word:f.elements.w.value});return r.error||"";});
-    const c=document.querySelector("#shDlg [data-clear]");if(c)c.onclick=()=>{socket.emit("show:hangman",{clear:true});document.getElementById("shDlg").hidden=true;};return;}
   if(k==="wheel"){const st=SHOW.st||{},on=(st.seats||[]).filter(s=>s&&personOf(s));
     if(!on.length){toast("Put a player on the stage first.");return;}
     showDialog(`<h3>Prize wheel</h3><p>Tip: send everyone down to the viewers and bring the winner up alone.</p><label>Who spins<select name="sid">${on.map(s=>`<option value="${s}">${esc(personOf(s).username)}</option>`).join("")}</select></label>`,
@@ -14453,10 +14714,11 @@ function showGiftDialog(sid){const p=personOf(sid);if(!p)return;
   showDialog(`<h3>Coins for ${esc(p.username)}</h3><label>How many<input name="n" type="number" min="1" max="${SHOW_GIFT_MAX}" value="100" required></label>`,
     async f=>{const r=await showAsk("show:gift",{sid,coins:+f.elements.n.value});return r.error||"";});}
 function showPlayerMenu(sid,e){const p=personOf(sid);if(!p)return;const m=document.getElementById("shMenu");
-  m.innerHTML=`<b>${esc(p.username)}</b><button type="button" data-m="hole">Off the stage: a hole</button><button type="button" data-m="poof">Off the stage: poof!</button><button type="button" data-m="balloon">Off the stage: a balloon</button><button type="button" data-m="wheel">Give the prize wheel</button><button type="button" data-m="gift">Give coins</button><button type="button" data-m="remove" class="red">Send out of the show</button>`;
+  m.innerHTML=`<b>${esc(p.username)}</b><button type="button" data-m="hole">Off the stage: a hole</button><button type="button" data-m="poof">Off the stage: poof!</button><button type="button" data-m="balloon">Off the stage: a balloon</button><button type="button" data-m="spot">Spotlight on ${esc(p.username)}</button><button type="button" data-m="wheel">Give the prize wheel</button><button type="button" data-m="gift">Give coins</button><button type="button" data-m="remove" class="red">Send out of the show</button>`;
   m.hidden=false;m.style.left=Math.min(innerWidth-230,e.clientX+10)+"px";m.style.top=Math.min(innerHeight-300,e.clientY-10)+"px";sfx.open();
   m.onclick=async ev=>{const b=ev.target.closest("button");if(!b)return;m.hidden=true;const k=b.dataset.m;
     if(k==="hole"||k==="poof"||k==="balloon")socket.emit("show:down",{sid,style:k});
+    else if(k==="spot")socket.emit("show:fx",{k:"spot",sid});
     else if(k==="wheel"){const r=await showAsk("show:wheel",{sid});if(r.error)toast(r.error);}
     else if(k==="gift")showGiftDialog(sid);
     else if(k==="remove"){const r=await showAsk("show:remove",{sid});if(r.error)toast(r.error);}};}
@@ -15135,7 +15397,7 @@ async function appHome(tok){
 async function appPets(tok){
   if(!PETS.loaded){phBody.innerHTML=`<div class="ph-empty">Loading…</div>`;await loadPets();if(tok!==PH.tok)return;}
   if(!PETS.mine.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-pet-hero" alt="" src="${petThumb("puppy",0)}"><b>No pets yet</b>Visit the <b class="in">Pet Center</b> at the end of the Park to adopt a puppy, kitten, bunny and more. Your pet walks with you everywhere!</div>`;return;}
-  phBody.innerHTML=`<h4 class="ph-sec">My pets · ${PETS.mine.length}/${MAX_PETS}</h4>`+PETS.mine.map(p=>{const K=PET_BY_ID[p.kind],out=p.id===PETS.out;
+  phBody.innerHTML=`<h4 class="ph-sec">My pets · ${PETS.mine.length}/${petMax()}</h4>`+PETS.mine.map(p=>{const K=PET_BY_ID[p.kind],out=p.id===PETS.out;
     return `<div class="ph-row" data-pet="${p.id}"><img class="ph-pet" alt="" src="${petThumb(p.kind,p.color)}"><span class="ph-who"><b>${esc(p.name)}</b><small class="${out?"on":""}">${out?"Walking with you":K.name+" · at home"}</small></span>
       <span class="ph-acts">${out?actBtn("pethome","gr","Send "+p.name+" home",I.homeS," Home"):actBtn("petwalk","g","Walk with "+p.name,"","Walk")}</span></div>`;}).join("")
     +`<p class="ph-note2">Adopt more pets at the Pet Center at the end of the Park.</p>`;
@@ -15789,6 +16051,7 @@ const EMOTES=[
   {id:"happy",name:"Happy"},{id:"laugh",name:"LOL"},{id:"love",name:"Love"},{id:"wow",name:"Wow"},
   {id:"cool",name:"Cool"},{id:"wink",name:"Wink"},{id:"silly",name:"Silly"},{id:"party",name:"Party"},
   {id:"shy",name:"Shy"},{id:"sad",name:"Sad"},{id:"angry",name:"Angry"},{id:"sleepy",name:"Sleepy"},
+  {id:"starstruck",name:"Starstruck",member:true},{id:"royal",name:"Royal",member:true},   // members only
 ];
 const emoteCache=new Map();
 function shadeHex(hex,f){const c=new THREE.Color(hex);if(f>1)c.lerp(new THREE.Color("#ffffff"),f-1);else c.multiplyScalar(f);return "#"+c.getHexString();}
@@ -15841,6 +16104,14 @@ function emoteImage(id,skinHex){
     case "angry":eye(L[0],L[1]+4,24);eye(R[0],R[1]+4,24);brow(64,96,116,118,11);brow(192,96,140,118,11);
       c.fillStyle="#ffffff";c.beginPath();c.roundRect(100,186,56,22,8);c.fill();c.lineWidth=6;c.strokeStyle=mouthDark;c.stroke();c.lineWidth=3;c.beginPath();c.moveTo(114,186);c.lineTo(114,208);c.moveTo(128,186);c.lineTo(128,208);c.moveTo(142,186);c.lineTo(142,208);c.stroke();
       c.fillStyle="rgba(255,255,255,.9)";for(const [x,y] of[[30,70],[226,70]])for(const [dx,dy,r] of[[0,0,13],[x<128?12:-12,-12,10],[x<128?-6:6,-20,8]]){c.beginPath();c.arc(x+dx,y+dy,r,0,7);c.fill();}break;
+    case "starstruck":{const st=(x,y,r)=>{c.fillStyle="#ffd23a";c.strokeStyle="#c98a00";c.lineWidth=4;c.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,rr=k%2?r*.45:r;c.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}c.closePath();c.fill();c.stroke();
+        c.fillStyle="rgba(255,255,255,.7)";c.beginPath();c.arc(x-r*.25,y-r*.25,r*.16,0,7);c.fill();};
+      st(L[0],L[1],32);st(R[0],R[1],32);openMouth(42,30,178);blush();
+      [[34,70,14],[222,62,11],[30,190,9],[228,196,12]].forEach(([x,y,r])=>{c.fillStyle="#ffffff";c.beginPath();c.moveTo(x,y-r);c.quadraticCurveTo(x+r*.2,y-r*.2,x+r,y);c.quadraticCurveTo(x+r*.2,y+r*.2,x,y+r);c.quadraticCurveTo(x-r*.2,y+r*.2,x-r,y);c.quadraticCurveTo(x-r*.2,y-r*.2,x,y-r);c.fill();});break;}
+    case "royal":{eye(L[0],L[1]+4,25,.2,.1);eye(R[0],R[1]+4,25,.2,.1);c.strokeStyle=mouthDark;c.lineWidth=8;c.beginPath();c.moveTo(104,186);c.quadraticCurveTo(132,204,160,180);c.stroke();
+      c.save();c.translate(128,46);c.fillStyle="#ffd23a";c.strokeStyle="#b8860b";c.lineWidth=5;c.lineJoin="round";c.beginPath();c.moveTo(-58,20);c.lineTo(-60,-26);c.lineTo(-30,-2);c.lineTo(0,-40);c.lineTo(30,-2);c.lineTo(60,-26);c.lineTo(58,20);c.closePath();c.fill();c.stroke();
+      [["#ff3b6b",-32,8],["#1f9bff",0,6],["#2fd36b",32,8]].forEach(([col,x,y])=>{c.fillStyle=col;c.beginPath();c.arc(x,y,7,0,7);c.fill();});
+      c.fillStyle="#fff6c4";[[-60,-26],[0,-40],[60,-26]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,6,0,7);c.fill();});c.restore();break;}
     case "sleepy":closed(L[0],L[1],false);closed(R[0],R[1],false);c.fillStyle=mouthDark;c.beginPath();c.ellipse(128,194,11,9,0,0,7);c.fill();
       c.font='800 46px "Lilita One", sans-serif';c.lineWidth=7;c.strokeStyle="#1f3a7a";c.fillStyle="#ffffff";c.strokeText("Z",196,72);c.fillText("Z",196,72);c.font='800 30px "Lilita One", sans-serif';c.strokeText("z",226,40);c.fillText("z",226,40);
       c.fillStyle="rgba(160,220,255,.85)";c.beginPath();c.arc(150,212,9,0,7);c.fill();break;
@@ -15855,14 +16126,15 @@ const LOCK_SVG='<svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" 
 function paintEmoteButtons(){const skin=skinOf({color:lk("color")});
   emoteTray.querySelectorAll(".emote-pick").forEach(b=>{b.querySelector("img").src=emoteImage(b.dataset.e,skin);const mine=hasEmote(b.dataset.e),i=+b.dataset.i,it=catalog&&catalog.get("emote:"+i);
     b.classList.toggle("locked",!mine);b.querySelector(".ep-price")?.remove();b.querySelector(".ep-lock")?.remove();
-    if(!mine){b.insertAdjacentHTML("beforeend",`<span class="ep-lock">${LOCK_SVG}</span><span class="ep-price">${COIN_SVG}${it?it.price:"…"}</span>`);}
+    if(!mine)b.insertAdjacentHTML("beforeend",EMOTES[i].member?`<span class="ep-lock">${MCROWN}</span>`:`<span class="ep-lock">${LOCK_SVG}</span><span class="ep-price">${COIN_SVG}${it?priceOf(it):"…"}</span>`);
     b.setAttribute("aria-label",EMOTES[i].name+(mine?"":`, locked, costs ${it?it.price:"some"} coins`));});
   if(!catalog)loadCatalog().then(()=>{if(catalog)paintEmoteButtons();});}
 // "Buy this emote?" bubble above the chat bar
 let emoteBuyEl=null;
 function closeEmoteBuy(){if(emoteBuyEl){emoteBuyEl.remove();emoteBuyEl=null;}}
 function offerEmote(e){
-  closeEmoteBuy();const i=EMOTES.findIndex(x=>x.id===e),it=catalog&&catalog.get("emote:"+i),price=it?it.price:0,coins=(me&&me.coins)||0;
+  closeEmoteBuy();const i=EMOTES.findIndex(x=>x.id===e),it=catalog&&catalog.get("emote:"+i),price=it?priceOf(it):0,coins=(me&&me.coins)||0;
+  if(EMOTES[i]&&EMOTES[i].member){openMemberOffer("emote",i);return;}
   const box=document.createElement("div");box.className="emote-buy";box.setAttribute("role","dialog");box.setAttribute("aria-label","Buy emote");
   box.innerHTML=`<img alt="" src="${emoteImage(e,skinOf({color:lk("color")}))}"><span class="eb-txt">${esc(EMOTES[i].name)}<small>${coins>=price?"Unlock it forever!":`You need ${(price-coins).toLocaleString("en-US")} more coins`}</small></span>
     <button type="button" class="eb-yes" ${!it?"disabled":""}>${COIN_SVG}${price}</button><button type="button" class="eb-no" aria-label="Cancel">${I.xS}</button>`;
@@ -15925,6 +16197,8 @@ const EMOTE_FX={
   sad:[["tear",8,"pFall","rain"]],
   angry:[["steam",6,"pSteam","steam"]],
   sleepy:[["z",4,"pRise","zzz"]],
+  starstruck:[["star",6,"pTwinkle","ring"],["sparkle",5,"pTwinkle","ring"]],
+  royal:[["sparkle",6,"pTwinkle","ring"],["star",3,"pRise","rise"]],
 };
 function emoteParts(id){let html="";
   for(const [kind,n,anim,place] of EMOTE_FX[id]||[])for(let i=0;i<n;i++){

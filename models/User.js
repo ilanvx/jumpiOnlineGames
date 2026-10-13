@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { LOOK_SLOTS, STARTER_MAX, lookItems, CATALOG, MOD_ITEMS } from "../catalog.js";
+import { LOOK_SLOTS, STARTER_MAX, lookItems, CATALOG, ITEMS, MOD_ITEMS, MEMBER_FREE } from "../catalog.js";
 
 // admins always have every item in the game (furniture: this many of each). Admins can't trade, so nothing leaks out.
 const ADMIN_FURNITURE_EACH = 10;
@@ -58,6 +58,8 @@ const userSchema = new mongoose.Schema(
     subscriber: { type: Boolean, default: false },
     // membership bought in the store: one payment, never renews by itself; buying again adds days
     memberUntil: { type: Date, default: null },
+    // the month ("2026-10") of the last members' monthly gift (routes/member.js)
+    memberGift: { type: String, default: "" },
     // what the store gave since the player last saw the "thank you" popup in the game (routes/store.js fulfillOne adds to it,
     // POST /api/store/note/seen clears it): coins and membership days added up over every purchase in between
     buyNote: { type: { coins: Number, days: Number, items: Number, kinds: [String], n: Number, at: Date, _id: false }, default: undefined },
@@ -158,10 +160,19 @@ const userSchema = new mongoose.Schema(
   { timestamps: true, optimisticConcurrency: true }
 );
 
-userSchema.methods.publicLook = function () {
+// the look as saved
+userSchema.methods.rawLook = function () {
   const l = this.look || {};
   const out = {};
   for (const name of Object.keys(LOOK_SLOTS)) out[name] = Number.isInteger(l[name]) ? l[name] : LOOK_SLOTS[name].optional ? -1 : 0;
+  return out;
+};
+// the look everyone sees: when a membership is over, the members' things come off the character (they stay in the
+// inventory, and go back on only with a membership)
+userSchema.methods.publicLook = function () {
+  const out = this.rawLook();
+  if (this.role !== "admin" && !this.isMember())
+    for (const name of Object.keys(out)) if (out[name] >= 0 && ITEMS.get(`${name}:${out[name]}`)?.member) out[name] = LOOK_SLOTS[name].optional ? -1 : 0;
   return out;
 };
 
@@ -169,7 +180,8 @@ userSchema.methods.publicLook = function () {
 userSchema.methods.itemCounts = function () {
   const counts = new Map();
   for (const id of this.inventory || []) counts.set(id, (counts.get(id) || 0) + 1);
-  for (const id of lookItems(this.publicLook())) if (!counts.has(id)) counts.set(id, 1);
+  for (const id of lookItems(this.rawLook())) if (!counts.has(id) && (this.isMember() || !MEMBER_FREE.includes(id))) counts.set(id, 1);
+  if (this.isMember()) for (const id of MEMBER_FREE) if (!counts.has(id)) counts.set(id, 1);   // what every member has while the membership lasts
   if (this.role === "mod") for (const id of MOD_ITEMS) if (!counts.has(id)) counts.set(id, 1);
   if (this.role === "admin")
     for (const it of CATALOG) {
@@ -181,7 +193,7 @@ userSchema.methods.itemCounts = function () {
 // make sure everything being worn is also listed in the inventory (keeps doubles)
 userSchema.methods.normalizeInventory = function () {
   const inv = [...(this.inventory || [])];
-  for (const id of lookItems(this.publicLook())) if (!inv.includes(id)) inv.push(id);
+  for (const id of lookItems(this.rawLook())) if (!inv.includes(id) && !MEMBER_FREE.includes(id)) inv.push(id);
   this.inventory = inv;
 };
 

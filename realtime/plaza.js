@@ -51,7 +51,7 @@ const boundsOf = (room) => (room === ROOM ? BOUNDS : homeBounds.get(room) || HOM
 const POSES = new Set(["sit", "sleep", "play", "dance", "lie"]);
 const OUTDOOR_POSES = new Set(["sit", "lie"]);   // benches, picnic tables and sun loungers in the open world
 // the shops on the Plaza you can walk into (each one is its own room, the same size as a home)
-const PLACES = new Set(["furniture", "clothes", "club", "diner", "pets"]);
+const PLACES = new Set(["furniture", "clothes", "club", "diner", "pets", "lounge"]);   // lounge: the Members Lounge (members and staff only)
 const MAX_CHAT = 80;
 const MAX_ANNOUNCE = 160;
 const EMOTES = new Set(EMOTE_LIST);
@@ -429,6 +429,7 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
+        if (place === "lounge" && !me.member && fresh.role !== "admin" && fresh.role !== "mod") return socket.emit("place:refused", { place, code: "members" });
         me.bday = isBirthdayOn(fresh.birthDate);
         me.lv = fresh.role === "admin" ? MAX_LEVEL : levelOf(fresh.levelXp || 0);   // the level badge next to the name (admins: always the top level)   // pink name with a cake all day
         me.invisible = fresh.role === "admin" && fresh.adminInvisible !== false;   // admins come in invisible unless they switched it off
@@ -676,8 +677,8 @@ export function attachPlaza(io) {
       // emotes you haven't bought can't be used (check the database if it was bought after joining)
       if (me.role !== "admin" && !hasEmote(me.inventory, e)) {
         try {
-          const fresh = await User.findById(me.id).select("inventory");
-          if (fresh) me.inventory = fresh.inventory;
+          const fresh = await User.findById(me.id);
+          if (fresh) me.inventory = fresh.toPublic().inventory;   // (with what a member has for free)
         } catch {}
         if (!hasEmote(me.inventory, e)) return reply({ ok: false, why: "locked" });
       }

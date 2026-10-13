@@ -1,8 +1,9 @@
 /*
   The Jumpi Show ("משחקי המשגיחים"): a live show a moderator or an admin opens whenever they want. The players who
   come in stand on a big stage in 3 rows facing the screen; when it's full, the rest watch (viewers are only a number).
-  The host runs activities: a quick poll, Country-City, Hangman (with balloons, nobody gets hanged), confetti,
-  balloons, a spotlight, funny "off the stage" exits, the prize wheel and coin gifts.
+  Only the one who opened it runs it: a quick poll, confetti, balloons, a spotlight (it stays until the host turns it
+  off), funny "off the stage" exits, new players for the stage (the ones who weren't up yet first), the prize wheel
+  and coin gifts.
   Used by the game (index.html, SHOW block) and the server (realtime/show.js), which decides everything.
 */
 
@@ -43,5 +44,3 @@ export const WHEEL_BUDGET = { skull: 0, xp: 0, coins: (s) => s.n, member: () => 
 
 export const SHOW_GIFT_MAX = 1000;            // the most coins the host gives in one gift
 export const POLL_SECS = [10, 20, 30];        // how long a quick poll stays open
-export const HANGMAN_LIVES = 6;               // balloons: a wrong letter pops one
-export const COUNTRY_CATEGORIES = ["Country", "City", "Animal", "Food", "Name", "Plant", "Job", "Thing at home", "Sport", "Colour"];

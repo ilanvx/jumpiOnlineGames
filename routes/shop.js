@@ -1,6 +1,7 @@
 import express from "express";
 import { User } from "../models/User.js";
-import { CATALOG, ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
+import { CATALOG, ITEMS, LOOK_SLOTS, maxFurniture } from "../catalog.js";
+import { memberPrice } from "../public/shared/store.js";
 import { currentUser, requireJson, needsVerify, parentTime } from "./auth.js";
 import { notifyLook, notifyCoins } from "../realtime/plaza.js";
 import { eventShopOpen } from "../realtime/events.js";
@@ -57,28 +58,30 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
     if (item.free) return res.status(409).json({ error: "Everyone already has this one!" });
     if (item.exclusive) return res.status(409).json({ error: "This one is only in the Jumpi Store bundles." });
     if (item.gift) return res.status(409).json({ error: "This is a special prize, it isn't sold in the shop." });
-    if (item.member && !req.user.isMember()) return res.status(403).json({ error: "This one is for members only. Become a member in the Jumpi Store!", code: "members" });
+    if (item.memberFree) return res.status(409).json({ error: "Every member has this one for free!", code: "members" });
+    if (item.member && !req.user.isMember()) return res.status(403).json({ error: "This one is for members only.", code: "members" });
     if (!eventShopOpen(item)) return res.status(409).json({ error: `The ${EVENTS[item.event]?.shop || "event shop"} is closed. These come back next ${EVENTS[item.event]?.name || "event"}!`, code: "event-closed" });
-    const isFurniture = item.category === "furniture";
+    const isFurniture = item.category === "furniture", MAX = maxFurniture(req.user);
+    const price = req.user.isMember() ? memberPrice(item.price) : item.price;   // members: 10% off
     if (!isFurniture && req.user.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });
-    if (isFurniture && (req.user.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX_FURNITURE)
-      return res.status(409).json({ error: `Your home is full! You can have up to ${MAX_FURNITURE} pieces of furniture.` });
+    if (isFurniture && (req.user.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX)
+      return res.status(409).json({ error: `Your home is full! You can have up to ${MAX} pieces of furniture.`, code: MAX < 90 ? "home-full" : "" });
 
     // one atomic update: only succeeds if there are enough coins (and, for clothes, the item isn't owned yet)
     const updated = await User.findOneAndUpdate(
-      { _id: req.user._id, coins: { $gte: item.price }, ...(isFurniture ? { $expr: { $lt: [furnitureCount, MAX_FURNITURE] } } : { inventory: { $ne: item.id } }) },
-      { $inc: { coins: -item.price, __v: 1 }, $push: { inventory: item.id } },
+      { _id: req.user._id, coins: { $gte: price }, ...(isFurniture ? { $expr: { $lt: [furnitureCount, MAX] } } : { inventory: { $ne: item.id } }) },
+      { $inc: { coins: -price, __v: 1 }, $push: { inventory: item.id } },
       { new: true }
     );
     if (!updated) {
       const fresh = await User.findById(req.user._id);
-      if (fresh && isFurniture && (fresh.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX_FURNITURE)
-        return res.status(409).json({ error: `Your home is full! You can have up to ${MAX_FURNITURE} pieces of furniture.` });
+      if (fresh && isFurniture && (fresh.inventory || []).filter((id) => id.startsWith("furniture:")).length >= MAX)
+        return res.status(409).json({ error: `Your home is full! You can have up to ${MAX} pieces of furniture.` });
       if (fresh && !isFurniture && fresh.ownedItems().has(item.id)) return res.status(409).json({ error: "You already own this." });
-      return res.status(402).json({ error: `You need ${(item.price - (fresh?.coins || 0)).toLocaleString("en-US")} more coins.` });
+      return res.status(402).json({ error: `You need ${(price - (fresh?.coins || 0)).toLocaleString("en-US")} more coins.` });
     }
     notifyCoins(updated._id.toString(), updated.coins);
-    res.json({ user: updated.toPublic(), item });
+    res.json({ user: updated.toPublic(), item, paid: price });
   } catch (err) {
     next(err);
   }
@@ -100,6 +103,9 @@ router.post("/inventory/equip", requireJson, requireUser, slowDown, async (req, 
       if (!user) return res.status(401).json({ error: "Please log in first." });
       if (index >= 0 && !user.ownedItems().has(`${slot}:${index}`))
         return res.status(403).json({ error: "You don't own that yet." });
+      // members' things are worn only with a membership (they stay in the inventory after it ends)
+      if (index >= 0 && ITEMS.get(`${slot}:${index}`)?.member && !user.isMember() && user.role !== "admin")
+        return res.status(403).json({ error: "This one is for members only.", code: "members" });
       // keep what they were wearing in the inventory before swapping it out
       user.normalizeInventory();
       user.look = { ...user.publicLook(), [slot]: index };

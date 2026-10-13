@@ -4,6 +4,9 @@
   The position in each list is the item number ("hair:12"), so ONLY ADD AT THE END of a list.
   The first 4 hair / shirts / pants / glasses are the free sign-up choices.
 */
+import { ITEMS as NEW_CLOTHES } from "./items/clothes.js";
+import { ITEMS as NEW_HAIR } from "./items/hair.js";
+import { ITEMS as NEW_HEADS } from "./items/heads.js";
 const out = { hair: [], shirt: [], pants: [], glasses: [], hat: [], neck: [] };
 const add = (slot, o) => out[slot].push(o);
 
@@ -322,5 +325,8 @@ COS("pants", { id: "rapper", name: "Rapper jeans", base: "#33436e", waist: "#1b2
 COS("hat", { id: "cap", name: "Emoji cap", col: "#ff8a1c", col2: "#ffd23a", emoji: true });
 COS("shirt", { id: "emoji", name: "Emoji tee", fill: "#ffb21f", hem: "#e2650a", acc: "#ffd23a" });
 COS("pants", { id: "emoji", name: "Emoji pants", base: "#ff8a1c", waist: "#c75e00", acc: "#ffd23a" });
+
+// ---------- the autumn 2026 wardrobe (public/shared/items/*.js; how they look: public/world/wear-*.js) ----------
+[...NEW_CLOTHES, ...NEW_HAIR, ...NEW_HEADS].forEach(([slot, o]) => add(slot, o));
 
 export const OUTFIT_SLOTS = Object.keys(out);

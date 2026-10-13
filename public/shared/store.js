@@ -60,14 +60,24 @@ export const PRODUCT_BY_ID = Object.fromEntries(PRODUCTS.map((p) => [p.id, p]));
 // Only coins and memberships: costumes and bundles stay on the website.
 export const MS_PRODUCTS = ["coins-800", "coins-1800", "coins-4000", "coins-9000", "coins-20000", "member-7", "member-30", "member-90", "member-365"];
 
-// what members get (shown on the store page and in the game)
+// what members get (shown on the store page and in the game; "ic" = the little picture in the game's members window)
 export const MEMBER_PERKS = [
-  { en: "Double daily gift", he: "מתנה יומית כפולה" },
-  { en: "Twice as many coins from mini-games and jobs every day", he: "פי שניים מטבעות ממיני־משחקים ומעבודות בכל יום" },
-  { en: "Members-only outfits and vehicles", he: "בגדים וכלי רכב רק למנויים" },
-  { en: "Welcome coins with every membership", he: "מטבעות מתנה עם כל מנוי" },
-  { en: "A golden name everyone can see", he: "שם בצבע זהב שכולם רואים" },
+  { ic: "gift", en: "A members-only gift every month, yours to keep", he: "מתנה רק למנויים בכל חודש, שנשארת שלך" },
+  { ic: "shirt", en: "Members-only outfits, vehicles and pets", he: "בגדים, כלי רכב וחיות מחמד רק למנויים" },
+  { ic: "spark", en: "The Members Sparkle aura and a crown by your name", he: "הילת המנויים המנצנצת וכתר ליד השם" },
+  { ic: "coins", en: "Double daily gift, and twice the coins from mini-games and jobs", he: "מתנה יומית כפולה, ופי שניים מטבעות ממיני־משחקים ומעבודות" },
+  { ic: "tag", en: "10% off everything in the Shop", he: "10% הנחה על כל מה שבחנות" },
+  { ic: "home", en: "A bigger home: room for 90 pieces of furniture", he: "בית גדול יותר: מקום ל־90 רהיטים" },
+  { ic: "paw", en: "Room for 7 pets", he: "מקום ל־7 חיות מחמד" },
+  { ic: "star", en: "The Season track goes 50% faster", he: "מסלול העונה מתקדם מהר ב־50%" },
+  { ic: "door", en: "The Members Lounge on the Plaza", he: "טרקלין המנויים בכיכר" },
+  { ic: "dance", en: "Members-only emotes", he: "אימוג'ים רק למנויים" },
 ];
+// members pay less in the Shop (coins): 10% off, rounded
+export const MEMBER_DISCOUNT = 0.1;
+export const memberPrice = (price) => (price > 0 ? Math.max(1, Math.round(price * (1 - MEMBER_DISCOUNT))) : price);
+// a month's key ("2026-10") for the monthly members gift
+export const monthKey = (t = Date.now()) => new Date(t).toISOString().slice(0, 7);
 
 // the weekly special offer in the game: a costume that changes every Sunday (one colour of each)
 export function weeklyOffer(now = Date.now()) {

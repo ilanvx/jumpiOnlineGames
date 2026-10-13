@@ -88,13 +88,16 @@ export const FURNITURE_COUNT = 41;
 
 // emotes (the big faces above your head). Same order as EMOTES in public/index.html.
 // Free ones belong to everybody; the rest are bought once in the shop or from the chat bar.
-export const EMOTE_LIST = ["happy", "laugh", "love", "wow", "cool", "wink", "silly", "party", "shy", "sad", "angry", "sleepy"];
+export const EMOTE_LIST = ["happy", "laugh", "love", "wow", "cool", "wink", "silly", "party", "shy", "sad", "angry", "sleepy", "starstruck", "royal"];
+// members-only emotes: every member has them while the membership lasts
+export const MEMBER_EMOTES = new Set(["starstruck", "royal"]);
 export const FREE_EMOTES = new Set(["happy", "wow", "sad"]);
 const EMOTE_PRICE = { laugh: 150, love: 200, cool: 300, wink: 150, silly: 200, party: 400, shy: 150, angry: 250, sleepy: 150 };
-const EMOTE_NAME = { happy: "Happy", laugh: "LOL", love: "Love", wow: "Wow", cool: "Cool", wink: "Wink", silly: "Silly", party: "Party", shy: "Shy", sad: "Sad", angry: "Angry", sleepy: "Sleepy" };
+const EMOTE_NAME = { happy: "Happy", laugh: "LOL", love: "Love", wow: "Wow", cool: "Cool", wink: "Wink", silly: "Silly", party: "Party", shy: "Shy", sad: "Sad", angry: "Angry", sleepy: "Sleepy", starstruck: "Starstruck", royal: "Royal" };
 EMOTE_LIST.forEach((e, i) => {
-  add("emote", i, EMOTE_NAME[e], FREE_EMOTES.has(e) ? 0 : EMOTE_PRICE[e]);
+  add("emote", i, EMOTE_NAME[e], FREE_EMOTES.has(e) || MEMBER_EMOTES.has(e) ? 0 : EMOTE_PRICE[e]);
   if (FREE_EMOTES.has(e)) items[items.length - 1].free = true;
+  if (MEMBER_EMOTES.has(e)) Object.assign(items[items.length - 1], { member: true, memberFree: true });
 });
 // can this player use this emote?
 export function hasEmote(inventory, e) {
@@ -103,6 +106,8 @@ export function hasEmote(inventory, e) {
   return i >= 0 && (inventory || []).includes(`emote:${i}`);
 }
 export const MAX_FURNITURE = 60;
+export const MAX_FURNITURE_MEMBER = 90;   // members have a bigger home
+export const maxFurniture = (user) => (user?.isMember?.() ? MAX_FURNITURE_MEMBER : MAX_FURNITURE);
 
 // auras: wild LEGENDARY effects all around the character. Same order as AURA_LIST in public/index.html.
 [
@@ -119,6 +124,9 @@ export const MAX_FURNITURE = 60;
 });
 // the Big World collection
 [["Butterfly Garden", 7000], ["Neon Beats", 8000]].forEach(([n, p], k) => { add("aura", 10 + k, n, p); items[items.length - 1].rarity = "legendary"; });
+// the members' sparkle: every member has it for free while the membership lasts (models/User.js MEMBER_FREE)
+add("aura", 12, "Members Sparkle", 0);
+Object.assign(items[items.length - 1], { rarity: "legendary", member: true, memberFree: true });
 
 // vehicles (public/shared/vehicles.js): bought once, summoned from the phone's Garage, ridden in the open world
 VEHICLES.forEach((v, i) => {
@@ -130,6 +138,10 @@ VEHICLES.forEach((v, i) => {
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
 // the moderator set (shirt, pants, cap): moderators always have it while they are moderators
+export const MEMBER_FREE = items.filter((it) => it.memberFree).map((it) => it.id);
+// the monthly members gift goes round the members' clothes, one a month (routes/member.js)
+export const MONTHLY_GIFTS = items.filter((it) => it.member && !it.memberFree && OUTFIT_SLOTS.includes(it.category)).map((it) => it.id);
+export function monthlyGift(key) { const [y, m] = key.split("-").map(Number); return MONTHLY_GIFTS[(y * 12 + m) % MONTHLY_GIFTS.length]; }
 export const MOD_ITEMS = OUTFIT_SLOTS.flatMap((slot) => OUTFITS[slot].map((o, i) => (o.gift === "mod" ? `${slot}:${i}` : null)).filter(Boolean));
 
 // highest index in each look slot (and whether it can be empty)
@@ -143,7 +155,7 @@ export const LOOK_SLOTS = {
   hat: { max: OUTFITS.hat.length - 1, optional: true },
   neck: { max: OUTFITS.neck.length - 1, optional: true },
   tag: { max: 17, optional: true },
-  aura: { max: 11, optional: true },
+  aura: { max: 12, optional: true },
 };
 // what sign-up may choose for free
 export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, hat: -1, neck: -1, tag: -1, aura: -1 };

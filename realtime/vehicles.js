@@ -103,7 +103,8 @@ export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
   };
   const owns = async (userId, i) => {
     const u = await User.findById(userId);
-    return !!u && !u.isBanned() && u.ownedItems().has(`vehicle:${i}`);
+    // a members' vehicle rides only with a membership (it stays in the Garage after the membership ends)
+    return !!u && !u.isBanned() && u.ownedItems().has(`vehicle:${i}`) && (!VEHICLES[i]?.member || u.isMember() || u.role === "admin");
   };
 
   socket.on("veh:summon", async (d, ack) => {

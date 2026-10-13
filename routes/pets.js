@@ -4,7 +4,7 @@ import { User } from "../models/User.js";
 import { requireJson } from "./auth.js";
 import { requireUser } from "./shop.js";
 import { notifyCoins, notifyPet } from "../realtime/plaza.js";
-import { PET_BY_ID, MAX_PETS, petNameProblem, cleanPetName } from "../public/shared/pets.js";
+import { PET_BY_ID, MAX_PETS, MAX_PETS_MEMBER, memberColor, petNameProblem, cleanPetName } from "../public/shared/pets.js";
 import { checkName } from "../public/shared/profanity.js";
 
 /*
@@ -40,20 +40,22 @@ router.post("/pets/adopt", requireJson, requireUser, slowDown, async (req, res, 
     if (!kind) return res.status(400).json({ error: "That pet doesn't exist." });
     const color = Number(req.body.color);
     if (!Number.isInteger(color) || color < 0 || color >= kind.colors.length) return res.status(400).json({ error: "Pick a colour." });
+    if (memberColor(kind, color) && !req.user.isMember()) return res.status(403).json({ error: "This colour is for members only.", code: "members" });
     const name = cleanPetName(req.body.name);
     const bad = petNameProblem(name);
     if (bad) return res.status(400).json({ error: bad });
     if (!checkName(name).ok) return res.status(400).json({ error: "Let's keep Jumpi friendly! Try another name." });
     const id = crypto.randomBytes(5).toString("hex");
     // coins, the pet limit and the new pet all in one write: two clicks can't adopt twice or overspend
+    const LIM = req.user.isMember() ? MAX_PETS_MEMBER : MAX_PETS;   // members have room for more pets
     const user = await User.findOneAndUpdate(
-      { _id: req.user._id, coins: { $gte: kind.price }, [`pets.${MAX_PETS - 1}`]: { $exists: false } },
+      { _id: req.user._id, coins: { $gte: kind.price }, [`pets.${LIM - 1}`]: { $exists: false } },
       { $inc: { coins: -kind.price }, $push: { pets: { id, kind: kind.id, color, name, at: new Date() } }, $set: { petOut: id } },
       { new: true }
     );
     if (!user) {
       const fresh = await User.findById(req.user._id, { coins: 1, pets: 1 });
-      if ((fresh?.pets || []).length >= MAX_PETS) return res.status(409).json({ error: `You already have ${MAX_PETS} pets. That's a full house!` });
+      if ((fresh?.pets || []).length >= LIM) return res.status(409).json({ error: `You already have ${LIM} pets. That's a full house!`, code: LIM < MAX_PETS_MEMBER ? "pets-full" : "" });
       return res.status(402).json({ error: `You need ${kind.price} coins to adopt a ${kind.name.toLowerCase()}.` });
     }
     notifyCoins(user._id.toString(), user.coins);
