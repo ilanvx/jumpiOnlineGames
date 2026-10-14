@@ -137,7 +137,7 @@ async function main() {
   const { MONGODB_URI, MONGODB_DB = "jumpi", JWT_SECRET, PORT = 3000 } = process.env;
   if (!MONGODB_URI || !JWT_SECRET) { console.error("Run this from the game folder on the server (cd ~/jumpi): the .env there is needed."); process.exit(1); }
   const STAGES = String(arg("stages", "50,100,200,400,800")).split(",").map(Number).filter((n) => n > 0);
-  const SECS = Math.max(20, +arg("secs", 60)), WARM = 15, PER_WORKER = 150, RATE = +arg("rate", 40);
+  const SECS = Math.max(20, +arg("secs", 60)), WARM = 15, PER_WORKER = 150, RATE = +arg("rate", 10);
   const MAX = Math.max(...STAGES, 0);
   const url = `ws://127.0.0.1:${PORT}/socket.io/?EIO=4&transport=websocket`;
 
@@ -201,6 +201,9 @@ async function main() {
     await mongoose.disconnect(); process.exit(code);
   }
   process.on("SIGINT", () => finish(130));
+  process.on("SIGTERM", () => finish(143));
+  process.on("SIGHUP", () => finish(129));   // the ssh window closed: still clean up
+  process.on("uncaughtException", (e) => { console.error("Error:", e.message); finish(1); });
 
   const statsNow = () => Promise.all(W.map((c) => new Promise((r) => { c.once("message", (m) => r(m)); c.send({ type: "stats" }); })));
   const pct = (a, p) => (a.length ? a.slice().sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))] : 0);
