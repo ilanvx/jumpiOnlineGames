@@ -121,28 +121,38 @@ function roomSend(p, event, data, { self = true, volatile = false } = {}) {
 /* Moves: instead of one message per step per player, the server collects them and sends each window ONE "moves"
    message 10 times a second with everyone who moved. Players far from you (more than NEAR) only once a second:
    they're small on the screen, and with lots of players in one place that's most of the traffic. */
-const MOVE_MS = 100, NEAR = 70, FAR_EVERY = 10;
+const MOVE_MS = 100, NEAR = 70, FAR_EVERY = 10, CLOSE = 32;   // CLOSE: how many of the nearest players get every step
 let moveTick = 0;
 const r2 = (v) => Math.round(v * 100) / 100;
 function flushMoves() {
   if (!ioRef) return;
   moveTick++;
-  const farTick = moveTick % FAR_EVERY === 0, now = Date.now(), byRoom = new Map();
+  const farTick = moveTick % FAR_EVERY === 0, byRoom = new Map(), anyMoved = new Set();
   for (const p of players.values()) {
-    if (!p.mv && !(farTick && p.farMv)) continue;
     let l = byRoom.get(p.room);
     if (!l) byRoom.set(p.room, (l = []));
     l.push(p);
+    if (p.mv || (farTick && p.farMv)) anyMoved.add(p.room);
   }
-  if (!byRoom.size) return;
+  if (!anyMoved.size) return;
   for (const q of players.values()) {
+    if (!anyMoved.has(q.room)) continue;
     const list = byRoom.get(q.room);
-    if (!list) continue;
+    // every step only for the players close to me (the CLOSE nearest within NEAR: the game draws about 25 around you);
+    // everyone else in the room comes in the once-a-second round. With hundreds of players in one place, sending everyone
+    // to everyone 10 times a second was what slowed the server down (a load test: it got stuck from ~300 players)
+    let lim = NEAR;
+    if (list.length > CLOSE + 1) {
+      const d = DIST.length >= list.length ? DIST : (DIST = new Float64Array(list.length * 2));
+      let n = 0;
+      for (const p of list) if (p !== q) d[n++] = Math.hypot(p.x - q.x, p.z - q.z);
+      if (n > CLOSE) lim = Math.min(NEAR, kth(d, n, CLOSE - 1));
+    }
     const out = [];
     for (const p of list) {
-      if (p === q || !sees(q, p)) continue;
-      const near = Math.hypot(p.x - q.x, p.z - q.z) <= NEAR;
-      // near: every step. Far away: the once-a-second round (with anyone who moved in the last second, so their last spot arrives too)
+      if (p === q || !(p.mv || (farTick && p.farMv)) || !sees(q, p)) continue;
+      const near = Math.hypot(p.x - q.x, p.z - q.z) <= lim;
+      // near: every step. Further away: the once-a-second round (with anyone who moved in the last second, so their last spot arrives too)
       if (near ? !p.mv : !farTick) continue;
       out.push([p.id, r2(p.x), r2(p.z), r2(p.face), (p.moving ? 1 : 0) | (p.run ? 2 : 0), p.pose || 0]);
     }
@@ -152,6 +162,18 @@ function flushMoves() {
     else for (const m of out) ioRef.to(q.id).volatile.emit("player:move", { id: m[0], x: m[1], z: m[2], face: m[3], moving: !!(m[4] & 1), run: !!(m[4] & 2), pose: m[5] || null });
   }
   for (const p of players.values()) { p.mv = false; if (farTick) p.farMv = false; }
+}
+// the k-th smallest of the first n numbers in a (0-based; a is reordered): quickselect, no sorting
+let DIST = new Float64Array(256);
+function kth(a, n, k) {
+  let lo = 0, hi = n - 1;
+  while (lo < hi) {
+    const pv = a[(lo + hi) >> 1];
+    let i = lo, j = hi;
+    while (i <= j) { while (a[i] < pv) i++; while (a[j] > pv) j--; if (i <= j) { const t = a[i]; a[i] = a[j]; a[j] = t; i++; j--; } }
+    if (k <= j) hi = j; else if (k >= i) lo = i; else return a[k];
+  }
+  return a[k];
 }
 // a new version is going live: every window shows a note (in: seconds until the restart; 0 = now)
 export function announceUpdate(seconds) {
@@ -688,7 +710,6 @@ export function attachPlaza(io) {
       roomSend(p, "emote", { id: p.id, e });
       let seen = 0;   // the players around who see it (an invisible admin isn't counted: that would give them away)
       for (const q of players.values()) if (q.room === p.room && q.id !== p.id && sees(q, p) && sees(p, q)) seen++;
-      console.log(`[emote] ${p.username} ${e} in ${p.room} -> seen by ${seen} other player(s)`);
       reply({ ok: true, seen });
     });
 

@@ -7682,7 +7682,7 @@ function say(text){tlEvent("chat");typing=false;myBubble.classList.remove("typin
   clearTimeout(myBubbleHide);myBubbleHide=setTimeout(()=>{if(typing)showDots(myBubble);else hideBubble(myBubble);},Math.min(9000,3500+text.length*80));}
 const _mp=new THREE.Vector3();
 function positionMyBubble(){if(!myBubble.classList.contains("show"))return;
-  _mp.copy(P.root.position);_mp.y+=3.05;_mp.project(cam);myBubble.style.left=((_mp.x+1)/2*innerWidth)+"px";myBubble.style.top=((1-_mp.y)/2*innerHeight)+"px";myBubble.style.scale=distScale(P.root).toFixed(3);}
+  _mp.copy(P.root.position);_mp.y+=3.05;_mp.project(cam);myBubble.style.left=((_mp.x+1)/2*innerWidth)+"px";myBubble.style.top=((1-_mp.y)/2*innerHeight)+"px";myBubble.style.visibility=_mp.z>1?"hidden":"";myBubble.style.scale=distScale(P.root).toFixed(3);}
 document.getElementById("chatBar").addEventListener("submit",e=>{
   e.preventDefault();const text=chatInput.value.replace(/\s+/g," ").trim();if(!text)return;
   if(mutedLeft()){toast(mutedText());sfx.error();return;}
@@ -7700,7 +7700,7 @@ function paintChatLock(){const on=!!(me&&me.chatLock);chatBarEl.classList.toggle
 addEventListener("langchange",paintChatLock);
 chatInput.addEventListener("focus",()=>{G.keys={};});
 function positionBubble(){const b=bubbleEl();if(!b.classList.contains("show")||!G.npc)return;
-  _bp.copy(G.npc.root.position);_bp.y+=3.3;_bp.project(cam);b.style.left=((_bp.x+1)/2*innerWidth)+"px";b.style.top=((1-_bp.y)/2*innerHeight)+"px";}
+  _bp.copy(G.npc.root.position);_bp.y+=3.3;_bp.project(cam);b.style.left=((_bp.x+1)/2*innerWidth)+"px";b.style.top=((1-_bp.y)/2*innerHeight)+"px";b.style.visibility=_bp.z>1?"hidden":"";}
 
 /* =====================================================================
    RESIDENTS + QUESTS (public/shared/quests.js; the server: routes/quests.js)
@@ -7872,7 +7872,7 @@ function updateOnline(){let n=1;for(const c of remotes.values())if(!c.bot)n++;do
 function makeBubbleEl(){const el=document.createElement("div");el.className="bubble";el.setAttribute("aria-hidden","true");document.body.appendChild(el);return el;}
 const _rp=new THREE.Vector3();
 function placeBubbleAt(el,obj,dy){if(!el.classList.contains("show"))return;el.style.scale=distScale(obj).toFixed(3);_rp.copy(obj.position);_rp.y+=dy;_rp.project(cam);
-  el.style.left=((_rp.x+1)/2*innerWidth)+"px";el.style.top=((1-_rp.y)/2*innerHeight)+"px";}
+  el.style.left=((_rp.x+1)/2*innerWidth)+"px";el.style.top=((1-_rp.y)/2*innerHeight)+"px";el.style.visibility=_rp.z>1?"hidden":"";}   // behind the camera: not shown (it would come out mirrored on the screen)
 function remoteSay(c,text){clearTimeout(c.bubbleT);c.typing=false;c.bubble.classList.remove("typing","hide");c.bubble.textContent=text;
   c.bubble.classList.remove("show");void c.bubble.offsetWidth;c.bubble.classList.add("show");
   c.bubbleT=setTimeout(()=>{if(c.typing)showDots(c.bubble);else hideBubble(c.bubble);},Math.min(9000,3500+text.length*80));}
@@ -10439,7 +10439,7 @@ function applyPose(C,pose,t){const r=C.root,br=Math.sin(t*1.4);if(pose.k!=="lie"
 function floatIcon(C,kind,html){
   if(C.zzz&&C.zzz.dataset.kind!==kind){C.zzz.remove();C.zzz=null;}
   if(!C.zzz){C.zzz=document.createElement("div");C.zzz.className="zzz "+kind;C.zzz.dataset.kind=kind;C.zzz.setAttribute("aria-hidden","true");C.zzz.innerHTML=html;document.body.appendChild(C.zzz);}
-  C.head.getWorldPosition(_rp);_rp.y+=.5;_rp.project(cam);C.zzz.style.left=((_rp.x+1)/2*innerWidth)+"px";C.zzz.style.top=((1-_rp.y)/2*innerHeight)+"px";}
+  C.head.getWorldPosition(_rp);_rp.y+=.5;_rp.project(cam);C.zzz.style.left=((_rp.x+1)/2*innerWidth)+"px";C.zzz.style.top=((1-_rp.y)/2*innerHeight)+"px";C.zzz.style.visibility=_rp.z>1?"hidden":"";}
 // piano sound: loud when I play, softer the further away a visitor is playing
 function pianoLevel(){if(!G.home)return 0;let l=G.seat&&G.seat.k==="play"&&!PIANO.open?1:0;
   for(const c of remotes.values())if(c.pose&&c.pose.k==="play")l=Math.max(l,1-Math.hypot(c.root.position.x-G.pos.x,c.root.position.z-G.pos.z)/16);return l;}
@@ -10905,7 +10905,7 @@ function workTick(t){const C=PLACE.cur;if(!C||!C.work)return;const dt=Math.min(.
     if(c.state==="out"&&c.plate){c.plate.removeFromParent();c.plate=null;}}
   // the bubbles follow the heads, with the patience ring running down
   for(const c of WORK.custs){if(c.bub.hidden||c.state==="gone")continue;c.n.head.getWorldPosition(_wv);_wv.y+=.95;_wv.project(cam);
-    c.bub.style.left=((_wv.x+1)/2*innerWidth)+"px";c.bub.style.top=((1-_wv.y)/2*innerHeight)+"px";const p=Math.max(0,c.pat/c.pmax);
+    c.bub.style.left=((_wv.x+1)/2*innerWidth)+"px";c.bub.style.top=((1-_wv.y)/2*innerHeight)+"px";c.bub.style.visibility=_wv.z>1?"hidden":"";const p=Math.max(0,c.pat/c.pmax);
     c.bub.style.setProperty("--p",p.toFixed(3));c.bub.style.setProperty("--pc",p>.45?"#2fd36b":p>.2?"#ffb21f":"#ff4f4f");
     c.bub.classList.toggle("mine",!!(WORK.carry&&WORK.carry.c===c));}
   if(C.bell&&C.bell.userData.ring){const k=t-C.bell.userData.ring;C.bell.rotation.z=k<.6?Math.sin(k*40)*.25*(1-k/.6):0;}
@@ -11161,7 +11161,7 @@ function policeTick(t,dt){
       poseCharacter(b.n,b.x,b.z,b.face,b.moving,b.phase,0,t,b.st);b.n.root.scale.setScalar(b===A&&k.type==="lost"?.68:b===B&&k.type==="lost"?1.05:1);
       if(!b.moving){if((b===B&&k.stage!=="done")||(b===A&&k.type==="lost"&&k.stage==="find")){b.n.armR.rotation.set(0,0,2.3+Math.sin(t*(b===A?6:9))*.3);if(b===A)b.n.armL.rotation.set(0,0,-2.3-Math.sin(t*6)*.3);}
         if(k.stage==="done"&&(k.type==="lost"||b===B)){b.n.armL.rotation.set(-1.4,0,-.6);b.n.armR.rotation.set(-1.4,0,.6);b.n.root.position.y+=Math.abs(Math.sin(t*8))*.12;}}
-      if(!b.bub.hidden){b.n.head.getWorldPosition(_wv);_wv.y+=.95*(b.n.root.scale.x);_wv.project(cam);b.bub.style.left=((_wv.x+1)/2*innerWidth)+"px";b.bub.style.top=((1-_wv.y)/2*innerHeight)+"px";
+      if(!b.bub.hidden){b.n.head.getWorldPosition(_wv);_wv.y+=.95*(b.n.root.scale.x);_wv.project(cam);b.bub.style.left=((_wv.x+1)/2*innerWidth)+"px";b.bub.style.top=((1-_wv.y)/2*innerHeight)+"px";b.bub.style.visibility=_wv.z>1?"hidden":"";
         b.bub.style.scale=distScale(b.n.root,.55,1).toFixed(3);b.bub.style.display=_wv.z>1?"none":"";}}}
   polArrows(targets);
   const cr=document.getElementById("wkCarry");if(!cr.hidden){P.head.getWorldPosition(_wv);_wv.y+=.9;_wv.project(cam);cr.style.left=((_wv.x+1)/2*innerWidth)+"px";cr.style.top=((1-_wv.y)/2*innerHeight)+"px";}}
@@ -13101,7 +13101,7 @@ function patPet(P,quiet){if(!P)return;P.happy=1.4;P.heartsEnd=now()+1.8;
   if(!P.hearts){P.hearts=document.createElement("div");P.hearts.className="pet-hearts";P.hearts.setAttribute("aria-hidden","true");P.hearts.innerHTML="<i>♥</i><i>♥</i><i>♥</i>";document.body.appendChild(P.hearts);}
   P.hearts.hidden=false;P.hearts.classList.remove("go");void P.hearts.offsetWidth;P.hearts.classList.add("go");if(!quiet)sfx.success();}
 function heartsTick(P,t){if(!P.hearts||P.hearts.hidden)return;if(now()>P.heartsEnd){P.hearts.hidden=true;return;}
-  P.head.getWorldPosition(_rp);_rp.y+=.4;_rp.project(cam);P.hearts.style.left=((_rp.x+1)/2*innerWidth)+"px";P.hearts.style.top=((1-_rp.y)/2*innerHeight)+"px";}
+  P.head.getWorldPosition(_rp);_rp.y+=.4;_rp.project(cam);P.hearts.style.left=((_rp.x+1)/2*innerWidth)+"px";P.hearts.style.top=((1-_rp.y)/2*innerHeight)+"px";P.hearts.style.visibility=_rp.z>1?"hidden":"";}
 
 /* ---------- loading and changing my pets ---------- */
 async function loadPets(){const r=await api("/api/pets");if(r.ok){PETS.mine=r.data.pets||[];PETS.out=r.data.out||"";PETS.loaded=true;}return r.ok;}
@@ -16261,7 +16261,7 @@ function popEmote(obj,bubble,id,skin,who){
 const _ep=new THREE.Vector3();
 function placeEmote(r){_ep.copy(r.obj.position);_ep.y+=3.05;_ep.project(cam);
   const lift=bubbleLift(r.bubble);r.el.style.scale=distScale(r.obj,.3,1.1).toFixed(3);
-  r.el.style.left=((_ep.x+1)/2*innerWidth)+"px";r.el.style.top=((1-_ep.y)/2*innerHeight-lift)+"px";}
+  r.el.style.left=((_ep.x+1)/2*innerWidth)+"px";r.el.style.top=((1-_ep.y)/2*innerHeight-lift)+"px";r.el.style.visibility=_ep.z>1?"hidden":"";}   // behind the camera: hidden
 function updateEmotes(){for(const r of activeEmotes.values())placeEmote(r);}
 function clearEmotes(){for(const r of activeEmotes.values())r.el.remove();activeEmotes.clear();toggleTray(false);}
 
