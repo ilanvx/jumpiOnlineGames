@@ -419,7 +419,7 @@ export function attachPlaza(io) {
         room = "home:" + homeOf;
       }
       // fresh look / coins / role from the database (they may have shopped since connecting)
-      let jobsOf = {}, parental = {};
+      let jobsOf = {}, parental = {}, loungeOk = false;
       try {
         const fresh = await User.findById(me.id);
         jobsOf = (fresh && fresh.jobs) || {};
@@ -429,11 +429,13 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
-        if (place === "lounge" && !me.member && fresh.role !== "admin" && fresh.role !== "mod") return socket.emit("place:refused", { place, code: "members" });
+        if (place === "lounge") loungeOk = me.member || fresh.role === "admin" || fresh.role === "mod";
         me.bday = isBirthdayOn(fresh.birthDate);
         me.lv = fresh.role === "admin" ? MAX_LEVEL : levelOf(fresh.levelXp || 0);   // the level badge next to the name (admins: always the top level)   // pink name with a cake all day
         me.invisible = fresh.role === "admin" && fresh.adminInvisible !== false;   // admins come in invisible unless they switched it off
       } catch {}
+      // the Members Lounge: only members (and staff), and only when the account really loaded (a database hiccup = no entry)
+      if (place === "lounge" && !loungeOk) return socket.emit("place:refused", { place, code: "members" });
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
         if (p.userId === me.id && id !== socket.id) {

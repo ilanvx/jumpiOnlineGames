@@ -18,7 +18,7 @@ import { SHOW_SEATS, WHEEL, WHEEL_SPIN_MS, WHEEL_BUDGET, SHOW_GIFT_MAX, POLL_SEC
 const ROOM = "show";
 const S = fresh();
 function fresh() {
-  return { open: false, hostUid: null, hostSid: null, hostName: "", openedAt: 0, seats: Array(SHOW_SEATS).fill(null),
+  return { shuffling: false, open: false, hostUid: null, hostSid: null, hostName: "", openedAt: 0, seats: Array(SHOW_SEATS).fill(null),
     poll: null, wheel: null, spot: null, leaving: new Set(), kicked: new Set(), wasOn: new Set(), hostGoneAt: 0 };
 }
 let ioRef = null, playersRef = null, H = { dropPlayer: () => {}, setInvisible: () => {} };
@@ -139,7 +139,8 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const style = ["hole", "poof", "balloon"].includes(d?.style) ? d.style : "poof";
     ids.forEach((sid) => S.leaving.add(sid));
     fx({ k: "down", sids: ids, style });
-    setTimeout(() => { S.seats = S.seats.map((sid) => (ids.includes(sid) ? null : sid)); ids.forEach((sid) => S.leaving.delete(sid)); push(); }, 1700);
+    const show = S.openedAt;   // the same show still (not closed / reopened meanwhile)
+    setTimeout(() => { if (!S.open || S.openedAt !== show) return; S.seats = S.seats.map((sid) => (ids.includes(sid) ? null : sid)); ids.forEach((sid) => S.leaving.delete(sid)); push(); }, 1700);
   });
   // new players on the stage: everyone goes down, and players picked at random from the whole show come up, first the
   // ones who haven't been on the stage yet in this show (then the rest, and the ones who just went down last of all)
@@ -147,6 +148,7 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const r = ack(cb);
     if (!isHost() || !canHost()) return fail(r, "Only the host can do that.");
     if (S.wheel) return fail(r, "Wait for the wheel to finish.");
+    if (S.shuffling) return fail(r, "New players are already on their way.");
     prune();
     const down = S.seats.filter(Boolean);
     const pool = [...playersRef.values()].filter((p) => p.room === ROOM && p.id !== S.hostSid && p.userId !== S.hostUid && !p.invisible && !S.leaving.has(p.id));
@@ -157,7 +159,10 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     S.spot = null;
     down.forEach((sid) => S.leaving.add(sid));
     if (down.length) fx({ k: "down", sids: down, style: "poof" });
+    const show = S.openedAt;S.shuffling = true;
     setTimeout(() => {
+      if (!S.open || S.openedAt !== show) return;
+      S.shuffling = false;
       down.forEach((sid) => S.leaving.delete(sid));
       S.seats = Array(SHOW_SEATS).fill(null);
       up.filter((sid) => inShow(sid)).forEach((sid, i) => seat(i, sid));
@@ -170,6 +175,8 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     const r = ack(cb);
     if (!isHost() || !canHost()) return fail(r, "Only the host can do that.");
     const sid = String(d?.sid || ""), down = String(d?.swap || "");
+    if (S.shuffling) return fail(r, "Wait a moment: new players are coming up.");
+    if (S.leaving.has(down)) return fail(r, "That player is already going down.");
     const t = inShow(sid);
     if (!t || S.seats.includes(sid) || sid === S.hostSid || t.userId === S.hostUid || t.userId === me.id || t.invisible) return fail(r, "That player isn't watching right now.");
     let i = down && S.seats.includes(down) ? S.seats.indexOf(down) : S.seats.indexOf(null);
@@ -227,6 +234,7 @@ export function attachShow(io, socket, { players, me, limiter, spendModBudget, m
     if (!isHost() || !canHost()) return fail(r, "Only the host can give the wheel.");
     const sid = String(d?.sid || ""), t = inShow(sid);
     if (!t || !S.seats.includes(sid)) return fail(r, "Give the wheel to a player on the stage.");
+    if (S.shuffling || S.leaving.has(sid)) return fail(r, "That player is going down. Pick someone else.");
     if (t.userId === me.id || t.userId === S.hostUid) return fail(r, "Not to yourself.");
     if (S.wheel && S.wheel.state !== "ready") return fail(r, "The wheel is still turning.");
     const u = await freshStaff();

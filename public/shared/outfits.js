@@ -7,7 +7,8 @@
 import { ITEMS as NEW_CLOTHES } from "./items/clothes.js";
 import { ITEMS as NEW_HAIR } from "./items/hair.js";
 import { ITEMS as NEW_HEADS } from "./items/heads.js";
-const out = { hair: [], shirt: [], pants: [], glasses: [], hat: [], neck: [] };
+import { ITEMS as NEW_BEARDS } from "./items/beards.js";
+const out = { hair: [], shirt: [], pants: [], glasses: [], hat: [], neck: [], beard: [] };   // beard: autumn 2026
 const add = (slot, o) => out[slot].push(o);
 
 /* ---------- the original 8 of each (don't change their order) ---------- */
@@ -327,6 +328,6 @@ COS("shirt", { id: "emoji", name: "Emoji tee", fill: "#ffb21f", hem: "#e2650a", 
 COS("pants", { id: "emoji", name: "Emoji pants", base: "#ff8a1c", waist: "#c75e00", acc: "#ffd23a" });
 
 // ---------- the autumn 2026 wardrobe (public/shared/items/*.js; how they look: public/world/wear-*.js) ----------
-[...NEW_CLOTHES, ...NEW_HAIR, ...NEW_HEADS].forEach(([slot, o]) => add(slot, o));
+[...NEW_CLOTHES, ...NEW_HAIR, ...NEW_HEADS, ...NEW_BEARDS].forEach(([slot, o]) => add(slot, o));
 
 export const OUTFIT_SLOTS = Object.keys(out);

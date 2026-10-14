@@ -1456,6 +1456,20 @@ body.mg-open .chat-dock,body.mg-open .mg-result{display:none!important}
 @keyframes slotIn{from{transform:scale(.4) rotate(-12deg)}}
 .slot img{width:78%;height:78%;object-fit:contain}
 .slot .sw{width:58%;height:58%}.slot .eyes2 i{width:22px;height:22px}
+/* the moving eyes (eye-fx.js) in the Shop: the same move in small */
+.eyes2[class*="ea-"] i{position:relative}
+.ea-cat i{background:radial-gradient(ellipse 12% 34% at 50% 50%,#0b0b0b 90%,transparent 100%),radial-gradient(circle,var(--ec) 0 54%,color-mix(in srgb,var(--ec) 55%,#000) 57% 60%,#fbfbfb 63%);animation:eaCat 2.4s ease-in-out infinite alternate}
+@keyframes eaCat{to{background:radial-gradient(ellipse 22% 36% at 50% 50%,#0b0b0b 90%,transparent 100%),radial-gradient(circle,var(--ec) 0 54%,color-mix(in srgb,var(--ec) 55%,#000) 57% 60%,#fbfbfb 63%)}}
+.ea-look i{background:radial-gradient(circle at var(--lx,50%) 50%,#0b0b0b 0 13%,var(--ec) 14% 33%,#fbfbfb 36%);animation:eaLook 3s ease-in-out infinite}
+@keyframes eaLook{0%,20%{--lx:50%}35%,50%{--lx:30%}65%,80%{--lx:70%}100%{--lx:50%}}
+@property --lx{syntax:"<percentage>";inherits:false;initial-value:50%}
+.ea-hearts i::after,.ea-stars i::after{content:"";position:absolute;inset:26%;background:#ff2f6d;clip-path:path("M5.5 10 L1 5.5 A2.6 2.6 0 0 1 5.5 2.2 A2.6 2.6 0 0 1 10 5.5 Z");animation:eaBeat .8s ease-in-out infinite}
+.ea-stars i::after{background:#ffb21f;clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);inset:22%;animation:eaTwinkle 1.4s ease-in-out infinite}
+@keyframes eaBeat{50%{transform:scale(1.2)}}@keyframes eaTwinkle{50%{transform:scale(.85) rotate(18deg)}}
+.ea-sleepy i{clip-path:inset(42% 0 0 0 round 0 0 50% 50%)}
+.ea-wink i:last-child{animation:eaWink 3s infinite}@keyframes eaWink{0%,80%,100%{transform:scaleY(1)}88%{transform:scaleY(.1)}}
+.ea-rainbow i{animation:eaHue 3s linear infinite}@keyframes eaHue{to{filter:hue-rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.eyes2[class*="ea-"] i,.eyes2[class*="ea-"] i::after{animation:none}}
 .slot small{position:absolute;left:3px;right:3px;bottom:3px;font-size:.62rem;font-weight:600;text-align:center;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 0 rgb(0 0 0 / .4)}
 .offer.mine .slot.full{cursor:pointer}
 .offer.mine .slot.full:hover::after{content:"×";position:absolute;top:2px;right:6px;font:600 1rem "Fredoka",sans-serif;color:#ff8a8a}
@@ -4604,6 +4618,8 @@ import {buildBike,makeTrail} from "/world/bikes.js";
 import {SHIRT_PRINTS,SLEEVE_PRINTS,PANTS_PRINTS,shirt3D,pants3D} from "/world/wear-clothes.js";
 import {HAIR_STYLES} from "/world/wear-hair.js";
 import {HAT_STYLES,NECK_STYLES,GLASSES_STYLES} from "/world/wear-heads.js";
+import {buildBeard} from "/world/wear-beard.js";
+import {installEyeFx} from "/world/eye-fx.js";
 import {buildCity,TRAILS as CITY_TRAILS} from "/world/city.js";
 let inGame=false;   // true while walking around the Plaza
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -5047,11 +5063,11 @@ const swatchBox=document.getElementById("swatches");
 // sign-up choices are a draft: they only show on the character while the sign-up screen is open
 let colorIdx=0,previewOn=false,accountLook=null;
 function lk(k){
-  if(previewOn)return {color:colorIdx,eyes:eyeIdx,hair:outfit.hair,shirt:outfit.shirt,pants:outfit.pants,glasses:outfit.glasses,hat:outfit.hat,neck:outfit.neck,tag:outfit.tag,aura:outfit.aura}[k];
+  if(previewOn)return {color:colorIdx,eyes:eyeIdx,hair:outfit.hair,shirt:outfit.shirt,pants:outfit.pants,glasses:outfit.glasses,hat:outfit.hat,neck:outfit.neck,beard:outfit.beard,tag:outfit.tag,aura:outfit.aura}[k];
   if(accountLook)return accountLook[k];
   return k==="color"||k==="eyes"?0:-1;
 }
-const lookNow=()=>({color:lk("color"),eyes:lk("eyes"),hair:lk("hair"),shirt:lk("shirt"),pants:lk("pants"),glasses:lk("glasses"),hat:lk("hat")??-1,neck:lk("neck")??-1,tag:lk("tag")??-1,aura:lk("aura")??-1});
+const lookNow=()=>({color:lk("color"),eyes:lk("eyes"),hair:lk("hair"),shirt:lk("shirt"),pants:lk("pants"),glasses:lk("glasses"),hat:lk("hat")??-1,neck:lk("neck")??-1,beard:lk("beard")??-1,tag:lk("tag")??-1,aura:lk("aura")??-1});
 COLORS.slice(0,STARTER_COLORS).forEach(([name,hex],i)=>{const b=document.createElement("button");b.type="button";b.className="swatch";b.style.setProperty("--sw",hex);
   b.setAttribute("role","radio");b.setAttribute("aria-label",name);b.setAttribute("aria-checked",i===colorIdx);b.tabIndex=i===colorIdx?0:-1;
   b.onclick=()=>pickColor(i,true);swatchBox.appendChild(b);});
@@ -5070,8 +5086,8 @@ function placeSwatches(){if(innerWidth<700){swatchBox.style.left="";swatchBox.st
 /* ---------- outfit: hair, shirts, pants, glasses (built in 3D, attached to the character's parts) ---------- */
 // every item (with its colours) lives in /shared/outfits.js, shared with the server
 const OUTFIT_PARTS=OUTFITS;
-const outfit={hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1};
-const OUTFIT_OBJ={hair:[],shirt:[],pants:[],glasses:[],hat:[],neck:[]};
+const outfit={hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,beard:-1,tag:-1,aura:-1};
+const OUTFIT_OBJ={hair:[],shirt:[],pants:[],glasses:[],hat:[],neck:[],beard:[]};
 // most hats cover the hair (the ear headbands don't)
 // a hat and hair together: the hair stays, pressed down under the hat (hatHair); only a hat that covers the whole
 // head (hideHair in outfits.js) hides it
@@ -6010,6 +6026,12 @@ function WEAR_H(){return WEAR_HV||(WEAR_HV={THREE,solid,mat,clothMat,canvasTex,s
 /* Clothes are built the first time someone wears them (or the Shop draws their picture), not all at the start:
    OUTFIT_OBJ[slot][i] stays empty until outfitGet(slot, i). Each builder hangs the item, hidden, on the base character. */
 let OUTFIT_READY=false;const OUTFIT_MAKE={};
+// where the mouth and the eyes are on the head ellipsoid (beards grow round the real mouth)
+function faceSpots(){if(faceSpots.v)return faceSpots.v;const b=new THREE.Box3(),v=new THREE.Vector3();
+  P.head.traverse(o=>{if(!o.isMesh||o.userData.outfit||![].concat(o.material).some(m=>m&&m.name==="Mouth"))return;const M=toHeadSpace(o),a=o.geometry.attributes.position;for(let i=0;i<a.count;i++)b.expandByPoint(v.fromBufferAttribute(a,i).applyMatrix4(M));});
+  const ang=p=>{const d=p.clone().sub(HC);const x=d.x/HR[0],y=d.y/HR[1],z=d.z/HR[2],r=Math.hypot(x,y,z)||1;return {th:Math.acos(Math.max(-1,Math.min(1,y/r))),ph:Math.atan2(x,z)};};
+  const m=b.isEmpty()?{th:2.0,ph:0}:ang(b.getCenter(new THREE.Vector3())),e=ang(new THREE.Vector3(0,P.eyeL.position.y,.6));
+  return faceSpots.v={th:m.th,ph:m.ph,eyeTh:e.th};}
 function outfitGet(k,i){const L=OUTFIT_OBJ[k];if(!L||!OUTFIT_READY||!Number.isInteger(i)||i<0||!OUTFIT_PARTS[k]||!OUTFIT_PARTS[k][i])return null;
   if(!L[i]){const o=OUTFIT_MAKE[k](i);L[i]=o;[].concat(o).forEach(p=>p.traverse(q=>{q.userData.base=true;}));}
   return L[i];}
@@ -6027,7 +6049,7 @@ function buildOutfit(){
       const sl=shell({center:[s*0.03,-0.2,0],radii:[0.10,0.24,0.11],scale:1.16,t0:0,t1:1.25,rotZ:s*0.18,mat:clothMat(st),seg:[32,12]});
       arm.add(sl);parts.push(sl);});
     if(id==="waiter"){const bow=waiterBow();P.body.add(bow);parts.push(bow);}
-    {const x3=shirt3D(it,WEAR_H());if(x3)[].concat(x3).forEach(o=>{(o.userData.arm==="L"?P.armL:o.userData.arm==="R"?P.armR:P.body).add(o);parts.push(o);});}
+    {const x3=shirt3D(it,WEAR_H(),{body:parts[0],L:parts[1],R:parts[2]});if(x3)[].concat(x3).forEach(o=>{(o.userData.arm==="L"?P.armL:o.userData.arm==="R"?P.armR:P.body).add(o);parts.push(o);});}
     parts.forEach(p=>p.visible=false);return parts;};
   /* ---- pants (lower body + both legs) ---- */
   OUTFIT_MAKE.pants=i=>{const it=OUTFIT_PARTS.pants[i],id=it.id;
@@ -6121,6 +6143,7 @@ function buildOutfit(){
     g.visible=false;P.head.add(g);return g;};
   /* ---- hats (head) and necklaces (body) ---- */
   OUTFIT_MAKE.hat=i=>{const g=buildHat(OUTFIT_PARTS.hat[i]);g.visible=false;P.head.add(g);return g;};
+  OUTFIT_MAKE.beard=i=>{const g=buildBeard(OUTFIT_PARTS.beard[i],faceSpots(),WEAR_H());g.visible=false;P.head.add(g);return g;};
   OUTFIT_MAKE.neck=i=>{const g=buildNeck(OUTFIT_PARTS.neck[i]);g.visible=false;P.body.add(g);return g;};
   P.root.traverse(o=>{o.userData.base=true;});
   OUTFIT_READY=true;   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
@@ -6189,8 +6212,8 @@ function outfitIcon(kind,i){
 }
 
 /* ---------- category buttons: a drawn icon for each kind of item ---------- */
-const CAT_COL={vehicle:"#ff6a1c",emote:"#ff9f1c",furniture:"#c27a3a",hair:"#ff8a1c",shirt:"#ff4f8b",pants:"#1f9bff",glasses:"#9b5cff",hat:"#e8423b",neck:"#e8b923",eyes:"#12b8a0",color:"#ff5f5f",tag:"#ffb21f",aura:"#b44dff"};
-const CAT_NAME={vehicle:"Vehicles",emote:"Emotes",furniture:"Furniture",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:"Glasses",hat:"Hats",neck:"Necklaces",eyes:"Eyes",color:"Body colour",tag:"Name tags",aura:"Auras"};
+const CAT_COL={vehicle:"#ff6a1c",emote:"#ff9f1c",furniture:"#c27a3a",hair:"#ff8a1c",shirt:"#ff4f8b",pants:"#1f9bff",glasses:"#9b5cff",hat:"#e8423b",neck:"#e8b923",beard:"#8a5a34",eyes:"#12b8a0",color:"#ff5f5f",tag:"#ffb21f",aura:"#b44dff"};
+const CAT_NAME={vehicle:"Vehicles",emote:"Emotes",furniture:"Furniture",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:"Glasses",hat:"Hats",neck:"Necklaces",beard:"Beards",eyes:"Eyes",color:"Body colour",tag:"Name tags",aura:"Auras"};
 const CAT_SVG={
   vehicle:'<circle cx="11" cy="31" r="7.5" fill="none" stroke="#fff" stroke-width="3.6"/><circle cx="37" cy="31" r="7.5" fill="none" stroke="#fff" stroke-width="3.6"/><path d="M11 31 L18 20 H28 L37 31 M28 20 L31 13 H37" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 20 Q22 14 29 18 L27 23 H19Z" fill="#fff"/>',
   aura:'<circle cx="24" cy="24" r="17" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="6 5" opacity=".9"/><path d="M24 6 L26.5 14 L24 12 L21.5 14Z M24 42 L26.5 34 L24 36 L21.5 34Z M6 24 L14 21.5 L12 24 L14 26.5Z M42 24 L34 21.5 L36 24 L34 26.5Z" fill="#fff"/><circle cx="24" cy="19.5" r="4.6" fill="#fff"/><rect x="19" y="24" width="10" height="11" rx="4.5" fill="#fff"/>',
@@ -6202,6 +6225,7 @@ const CAT_SVG={
   glasses:'<g fill="rgb(255 255 255 / .3)" stroke="#fff" stroke-width="4" stroke-linecap="round"><circle cx="14.5" cy="26" r="8.5"/><circle cx="33.5" cy="26" r="8.5"/></g><path d="M23 25 Q24 21.5 25 25 M6.5 23 L3 18 M41.5 23 L45 18" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M10 23 L14 20" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>',
   hat:'<path d="M12 29 V18 Q12 8 24 8 Q36 8 36 18 V29 Z" fill="#fff"/><rect x="12" y="23" width="24" height="5" fill="rgb(0 0 0 / .18)"/><ellipse cx="24" cy="31" rx="21" ry="5.5" fill="#fff"/>',
   neck:'<path d="M9 8 Q9 30 24 31 Q39 30 39 8" fill="none" stroke="#fff" stroke-width="3.5" stroke-dasharray="1 4.6" stroke-linecap="round"/><path d="M24 30 C21 26 14 27 14 33 C14 38 20 41 24 44 C28 41 34 38 34 33 C34 27 27 26 24 30 Z" fill="#fff"/>',
+  beard:'<path d="M7 14 Q7 40 24 43 Q41 40 41 14 Q36 26 30 26 Q27 22 24 24 Q21 22 18 26 Q12 26 7 14 Z" fill="#fff"/><path d="M13 21 Q18 16 24 20 Q30 16 35 21 Q30 23 24 22 Q18 23 13 21 Z" fill="rgb(0 0 0 / .25)"/>',
   eyes:'<path d="M3 24 Q24 5 45 24 Q24 43 3 24 Z" fill="#fff"/><circle cx="24" cy="24" r="9.5" style="fill:var(--cc)"/><circle cx="24" cy="24" r="4.6" fill="#1a1a2a"/><circle cx="21" cy="20.8" r="2.2" fill="#fff"/>',
   color:'<path d="M24 5 C24 5 9 21.5 9 30.5 A15 15 0 0 0 39 30.5 C39 21.5 24 5 24 5 Z" fill="#fff"/><path d="M15.5 30 A8.5 8.5 0 0 0 22 38" fill="none" style="stroke:var(--cc)" stroke-width="3.5" stroke-linecap="round" opacity=".6"/>',
   tag:'<path d="M24 4.5 L29.6 16.8 L43 18.3 L33 27.3 L35.8 40.5 L24 33.8 L12.2 40.5 L15 27.3 L5 18.3 L18.4 16.8 Z" fill="#fff"/><circle cx="24" cy="24" r="4.2" style="fill:var(--cc)"/>',
@@ -6232,11 +6256,11 @@ function saveOutfit(){}
 function paintOutfitUI(){document.querySelectorAll(".chip").forEach(b=>{const on=+b.dataset.i===outfit[b.dataset.kind];b.setAttribute("aria-checked",on);});}
 
 /* ----- picker thumbnails: render each item on the character, framed close, into a small image ----- */
-const THUMBS={hair:[],shirt:[],pants:[],glasses:[],hat:[],neck:[]};
+const THUMBS={hair:[],shirt:[],pants:[],glasses:[],hat:[],neck:[],beard:[]};
 let thumbR=null,thumbTimer=null;
 const THUMB_VIEW={hair:{pos:[1.45,2.05,2.35],at:[0,1.48,0]},glasses:{pos:[0.7,1.33,2.25],at:[0,1.23,0]},
   shirt:{pos:[0.7,0.82,1.95],at:[0,0.56,0]},pants:{pos:[0.62,0.45,1.7],at:[0,0.28,0]},
-  hat:{pos:[1.25,2.35,2.75],at:[0,1.72,0]},neck:{pos:[0.45,1.0,1.7],at:[0,0.74,0]}};
+  hat:{pos:[1.25,2.35,2.75],at:[0,1.72,0]},neck:{pos:[0.45,1.0,1.7],at:[0,0.74,0]},beard:{pos:[0.75,1.04,2.2],at:[0,0.95,0]}};
 /* pictures of every clothing item for the shop and the sign-up chips. Made on a separate copy of the character in its own
    little scene, a few per frame, so the real character never freezes or changes pose; redone only when skin or eyes change. */
 const THB={key:"",n:null,scene:null,queue:[],raf:0,done:new Set()};
@@ -6247,9 +6271,12 @@ function renderThumbs(){
   const look={color:lk("color")??0,eyes:lk("eyes")??0},key=JSON.stringify(look);
   if(!THB.n){THB.n=cleanChar(look);THB.n.root.traverse(o=>{if(o.isMesh)o.castShadow=false;});thbScene().add(THB.n.root);}
   if(key!==THB.key){THB.key=key;THB.done.clear();recolorChar(THB.n,look);}
-  // what the player is looking at right now comes first
-  const first=[storeSlot,...Object.keys(OUTFIT_OBJ)].filter((k,i,a)=>OUTFIT_OBJ[k]&&a.indexOf(k)===i);
-  THB.queue=[];first.forEach(k=>OUTFIT_PARTS[k].forEach((o,i)=>{if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
+  // only what can be seen: the open Shop / inventory tab, otherwise the free sign-up choices (clothes are built when first
+  // pictured, so picturing everything at the start would build the whole wardrobe)
+  const storeOpen=document.body.classList.contains("game-store")||(document.body.classList.contains("login-mode")&&panel==="store");
+  THB.queue=[];
+  if(storeOpen&&OUTFIT_OBJ[storeSlot])OUTFIT_PARTS[storeSlot].forEach((o,i)=>{if(!THB.done.has(storeSlot+":"+i))THB.queue.push([storeSlot,i]);});
+  else Object.keys(OUTFIT_OBJ).forEach(k=>OUTFIT_PARTS[k].slice(0,STARTER_ITEMS).forEach((o,i)=>{if(!o.starter)return;if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
   if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
 function thbPump(){
@@ -6264,7 +6291,8 @@ function thbPump(){
     {const R=iconR(120,120,true);R.render(thbScene(),tc);THUMBS[kind][i]=R.domElement.toDataURL("image/png");}added.forEach(q=>q.removeFromParent());
     THB.done.add(kind+":"+i);changed=true;if(kind===storeSlot&&!THB.queue.some(q=>q[0]===storeSlot))slotDone=true;}
   if(changed&&(slotDone||!THB.queue.length)){refreshChipImages();if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
-  else if(changed&&THB.queue.length%40===0)refreshChipImages();
+  else if(changed&&performance.now()-(THB.lastGrid||0)>700){THB.lastGrid=performance.now();refreshChipImages();   // pictures appear as they are made (not all at the end)
+    if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
   if(THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
 function queueThumbs(){clearTimeout(thumbTimer);thumbTimer=setTimeout(renderThumbs,120);}
@@ -6275,16 +6303,20 @@ function refreshChipImages(){document.querySelectorAll(".chip").forEach(b=>{cons
 // [name, left eye, right eye]; the first 8 are the sign-up colours, the rest are two-colour shop eyes
 const EYE_COLORS=[["Brown","#7a3e12"],["Blue","#2a7fff"],["Green","#2fae4f"],["Hazel","#a8742a"],["Gray","#7d8b99"],["Purple","#8a4dff"],["Amber","#e8a114"],["Pink","#ff5fb4"],
   ["Ocean & Forest","#2a7fff","#2fae4f"],["Coffee & Sky","#7a3e12","#4fc3ff"],["Candy & Mint","#ff5fb4","#2fd3a0"],["Fire & Ice","#ff4a1c","#7fe3ff"],["Royal & Gold","#6a2cff","#ffc21a"],["Galaxy","#8a4dff","#22e0ff"],
-  ["Sunset","#ff8a1c","#ff3b8c"],["Emerald & Gold","#14c46a","#ffc21a"],["Ice","#bfefff","#7fd6ff"],["Lava","#ff3b00","#ffd23a"]];
+  ["Sunset","#ff8a1c","#ff3b8c"],["Emerald & Gold","#14c46a","#ffc21a"],["Ice","#bfefff","#7fd6ff"],["Lava","#ff3b00","#ffd23a"],
+  // 18+: eyes that move (public/world/eye-fx.js): [name, left, right, anim]
+  ["Cat eyes","#9bd12a","#9bd12a","cat"],["Wandering eyes","#2a7fff","#2a7fff","look"],["Heart eyes","#ffc2d8","#ffc2d8","hearts"],["Star eyes","#2a3f9e","#2a3f9e","stars"],
+  ["Sleepy eyes","#a8742a","#a8742a","sleepy"],["Winking eyes","#7a3e12","#7a3e12","wink"],["Ice cat eyes","#7fd6ff","#7fd6ff","cat"],["Rainbow eyes","#ff5f5f","#ff5f5f","rainbow"]];
+const eyeAnim=idx=>(EYE_COLORS[idx]||[])[3]||null;
 const eyeHex=(idx,side)=>{const e=EYE_COLORS[idx]||EYE_COLORS[0];return side>0?(e[2]||e[1]):e[1];};
 let eyeIdx=0;
-function applyEyeColor(){if(!P||!P.irisL)return;const i=lk("eyes");P.irisL.color.set(eyeHex(i,-1));P.irisR.color.set(eyeHex(i,1));}
+function applyEyeColor(){if(!P||!P.irisL)return;const i=lk("eyes");P.irisL.color.set(eyeHex(i,-1));P.irisR.color.set(eyeHex(i,1));if((P.eyeFx&&P.eyeFx.kind)!==eyeAnim(i)){installEyeFx(P,eyeAnim(i),THREE);if(P.eyeFx)P.eyeFx.kind=eyeAnim(i);}}
 function setPreview(on){previewOn=on;applyColor();applyEyeColor();applyOutfit();}
 function buildEyeUI(host){host.innerHTML="";
   EYE_COLORS.slice(0,STARTER_EYES).forEach(([name,hex],i)=>{const b=document.createElement("button");b.type="button";b.className="eye-chip";b.style.setProperty("--ec",hex);
     b.setAttribute("role","radio");b.setAttribute("aria-label",name);b.title=name;b.onclick=()=>pickEye(i,true);host.appendChild(b);});
   host.addEventListener("keydown",e=>{const d={ArrowRight:1,ArrowDown:1,ArrowLeft:-1,ArrowUp:-1}[e.key];if(!d)return;e.preventDefault();
-    const i=(eyeIdx+d+EYE_COLORS.length)%EYE_COLORS.length;pickEye(i,true);host.children[i].focus();});
+    const i=(eyeIdx+d+STARTER_EYES)%STARTER_EYES;pickEye(i,true);host.children[i].focus();});
   paintEyeUI(host);}
 function paintEyeUI(host=document.getElementById("eyePicker")){[...host.children].forEach((b,k)=>{b.setAttribute("aria-checked",k===eyeIdx);b.tabIndex=k===eyeIdx?0:-1;});}
 function pickEye(i,user){eyeIdx=i;applyEyeColor();paintEyeUI();queueThumbs();
@@ -7575,7 +7607,9 @@ function makeCharacter(look,label,tagColor,lv=0){
   for(const k in OUTFIT_OBJ)OUTFIT_OBJ[k].forEach((o,i)=>{if(look[k]===i&&!(k==="hair"&&noHair))return;[].concat(o).forEach(p=>{if(p.parent){off.push([p,p.parent]);p.parent.remove(p);}});});
   if(typeof menuTag!=="undefined"&&menuTag&&menuTag.parent)off.push([menuTag,menuTag.parent]),menuTag.parent.remove(menuTag);   // not the name sign
   const ghosted=typeof myInvisible!=="undefined"&&myInvisible&&inGame;if(ghosted)setGhost(P.root,false);   // copy the real look, not the see-through one
+  const myFx=P.eyeFx&&P.eyeFx.kind;if(myFx)installEyeFx(P,null,THREE);   // my own moving eyes stay mine (the copy gets its own below)
   const root=P.root.clone(true);P.root.position.copy(keep.pos);P.root.rotation.copy(keep.rot);
+  if(myFx){installEyeFx(P,myFx,THREE);P.eyeFx.kind=myFx;}
   root.traverse(o=>{const tag=o.userData.outfit;if(tag&&tag.startsWith("hair:"))hatHair(o,hatPresses(look.hat)&&+tag.slice(5)===look.hair?look.hat:-1);});
   off.forEach(([p,par])=>par.add(p));if(ghosted)applyMyGhost();
   root.children.filter(o=>o.userData.isAura).forEach(o=>o.removeFromParent());
@@ -7596,6 +7630,7 @@ function makeCharacter(look,label,tagColor,lv=0){
   n.headY=n.head.position.y;root.userData.isChar=true;
   [n.lookL,n.lookR].forEach(L=>{L.userData.rest=L.position.clone();placeIris(L,L===n.lookL?-1:1,0,0);});
   setAura(n,look.aura);
+  if(eyeAnim(look.eyes))installEyeFx(n,eyeAnim(look.eyes),THREE);
   return n;
 }
 function makeResident(){
@@ -9273,7 +9308,7 @@ function openPanel(name){
   if(body.classList.contains("login-mode"))return;
   panel=name;setMenu(false);body.classList.add("login-mode");
   msg.textContent="";msg.className="form-msg";
-  if(name==="signup"){colorIdx=0;eyeIdx=0;Object.assign(outfit,{hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1});resetSignup();setPreview(true);}
+  if(name==="signup"){colorIdx=0;eyeIdx=0;Object.assign(outfit,{hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,beard:-1,tag:-1,aura:-1});resetSignup();setPreview(true);}
   setTimeout(()=>walkTo(sideX(),()=>{body.classList.add("panel-in",name+"-in");sfx.whoosh();
     if(name==="store")refreshMenuTag();
     if(name==="code")codeSignOn();
@@ -9487,7 +9522,7 @@ function accLabels(){
 }
 addEventListener("pointerdown",e=>{if(!accAddMenu.hidden&&!accAddMenu.contains(e.target)&&!(ACC.plus&&ACC.plus.contains(e.target)))accAddMenu.hidden=true;});
 // adding an account: a plain new Jumpi walks to the side (not the one playing now)
-function accFreshLook(){colorIdx=0;eyeIdx=0;Object.assign(outfit,{hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,tag:-1,aura:-1});setPreview(true);}
+function accFreshLook(){colorIdx=0;eyeIdx=0;Object.assign(outfit,{hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,beard:-1,tag:-1,aura:-1});setPreview(true);}
 document.getElementById("accAddLogin").onclick=e=>{press(e.currentTarget);accAddMenu.hidden=true;ACC.adding=true;user.value="";pass.value="";updateReady();rem.checked=true;accFreshLook();openPanel("login");};
 document.getElementById("accAddNew").onclick=e=>{press(e.currentTarget);accAddMenu.hidden=true;ACC.adding=true;accFreshLook();openPanel("signup");};
 // clicking a character behind also switches to it
@@ -9750,11 +9785,11 @@ showStep(1);
 const storeCard=document.getElementById("storeCard"),storeGrid=document.getElementById("storeGrid"),storeTabs=document.getElementById("storeTabs"),
       storeAct=document.getElementById("storeAct"),storeMsg=document.getElementById("storeMsg");
 const COIN_SVG=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const SLOT_LABEL={vehicle:"Vehicles",aura:"Auras",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:"Glasses",hat:"Hats",neck:"Necklaces",eyes:"Eyes",color:"Body colour",tag:"Tags",furniture:"Furniture",emote:"Emotes"};
-const SLOT_ONE={vehicle:"Vehicle",aura:"Aura",hair:"Hair",shirt:"Shirt",pants:"Pants",glasses:"Glasses",hat:"Hat",neck:"Necklace",eyes:"Eyes",color:"Body colour",tag:"Name tag",furniture:"Furniture",emote:"Emote"};
-const STORE_MODES={shop:{title:"SHOP",slots:["hair","shirt","pants","glasses","hat","neck","eyes","color","emote","furniture","aura","vehicle"]},tags:{title:"TAGS",slots:["tag"]},
+const SLOT_LABEL={vehicle:"Vehicles",aura:"Auras",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:"Glasses",hat:"Hats",neck:"Necklaces",beard:"Beards",eyes:"Eyes",color:"Body colour",tag:"Tags",furniture:"Furniture",emote:"Emotes"};
+const SLOT_ONE={vehicle:"Vehicle",aura:"Aura",hair:"Hair",shirt:"Shirt",pants:"Pants",glasses:"Glasses",hat:"Hat",neck:"Necklace",beard:"Beard",eyes:"Eyes",color:"Body colour",tag:"Name tag",furniture:"Furniture",emote:"Emote"};
+const STORE_MODES={shop:{title:"SHOP",slots:["hair","shirt","pants","glasses","hat","neck","beard","eyes","color","emote","furniture","aura","vehicle"]},tags:{title:"TAGS",slots:["tag"]},
   spooky:{title:"SPOOKY SHOP",slots:["hat","shirt","pants","glasses","neck","hair","tag","furniture"]},   // the Halloween shop (only while the event is on, see EVENT)
-  inventory:{title:"INVENTORY",slots:["hair","shirt","pants","glasses","hat","neck","eyes","color","tag","emote","furniture","aura","vehicle"]}};
+  inventory:{title:"INVENTORY",slots:["hair","shirt","pants","glasses","hat","neck","beard","eyes","color","tag","emote","furniture","aura","vehicle"]}};
 let catalog=null,storeMode="shop",storeSlot="hair",storeSel=null,storeBusy=false,storePets=false;   // storePets: the Pet Center shop (only pet things)
 async function loadCatalog(){if(catalog)return catalog;const r=await api("/api/shop/catalog");if(r.ok)catalog=new Map(r.data.items.map(it=>[it.id,it]));return catalog;}
 const FREE_EMOTES=new Set(["happy","wow","sad"]);   // same as catalog.js: everyone has these
@@ -9774,7 +9809,7 @@ function itemPic(slot,i){
   if(slot==="furniture"){furnThumbs();return `<img alt="" src="${FURN_THUMB[i]}">`;}
   if(slot==="emote")return `<img alt="" src="${emoteImage(EMOTES[i].id,skinOf({color:lk("color")}))}">`;
   if(slot==="color"){const o=COLORS[i][2]||{};const cls=o.metal>.5?"gold":o.glow?"neon":o.rough<.2?"gloss":"";return `<span class="sw ${cls}" style="--sw:${COLORS[i][1]}"></span>`;}
-  if(slot==="eyes")return `<span class="eyes2"><i style="--ec:${eyeHex(i,-1)}"></i><i style="--ec:${eyeHex(i,1)}"></i></span>`;
+  if(slot==="eyes")return `<span class="eyes2${eyeAnim(i)?" ea-"+eyeAnim(i):""}"><i style="--ec:${eyeHex(i,-1)}"></i><i style="--ec:${eyeHex(i,1)}"></i></span>`;
   if(slot==="tag")return `<img alt="" src="${tagIconURL(i)}">`;
   if(slot==="aura")return auraIcon(i);
   if(slot==="vehicle")return `<img alt="" src="${vehThumb(i)}">`;
@@ -9785,6 +9820,7 @@ function renderStoreTabs(){
   slots.forEach(sl=>{storeTabs.appendChild(catTab(sl,sl===storeSlot,()=>{storeSlot=sl;storeSel=null;sfx.hover();renderStoreTabs();renderStoreGrid();refreshMenuTag();}));});
 }
 function renderStoreGrid(){
+  if(OUTFIT_OBJ[storeSlot]&&OUTFIT_PARTS[storeSlot].some((o,i)=>!THB.done.has(storeSlot+":"+i))&&!THB.queue.some(q=>q[0]===storeSlot))queueThumbs();
   const slot=storeSlot,inv=storeMode==="inventory";storeGrid.innerHTML="";
   const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;if(!inv&&OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i].gift)continue;
     if(storeMode==="spooky"){if(evItem(slot,i)!==EV.cur)continue;}   // the event shop: only that event's items
@@ -10000,7 +10036,7 @@ async function openStore(mode){
   storeMode=mode;storeSlot=STORE_MODES[mode].slots[0];storeSel=null;storePets=false;
   document.getElementById("storeTitle").textContent=STORE_MODES[mode].title;storeMsg.textContent="";
   // start the try-on draft from what the player is wearing now
-  const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1});
+  const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,beard:a.beard??-1,tag:a.tag??-1,aura:a.aura??-1});
   setPreview(true);queueThumbs();
   renderStoreTabs();renderStoreGrid();
   openPanel("store");
@@ -10013,7 +10049,7 @@ async function openGameStore(mode,slot,pets=false){
   closePhone(true);closeChat();closePlayerCard();if(G.home)closeDecorate();G.keys={};G.target=null;
   GS.open=true;storeMode=mode;storeSlot=slot&&STORE_MODES[mode].slots.includes(slot)?slot:STORE_MODES[mode].slots[0];storeSel=null;
   document.getElementById("storeTitle").textContent=storePets?"PET SHOP":mode==="spooky"?EVENTS[EV.cur]?EVENTS[EV.cur].shop:"SPOOKY SHOP":mode==="shop"?"SHOP":"MY LOOK";body.classList.toggle("store-spooky",mode==="spooky");storeMsg.textContent="";
-  const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1});
+  const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,beard:a.beard??-1,tag:a.tag??-1,aura:a.aura??-1});
   setPreview(true);queueThumbs();
   renderStoreTabs();renderStoreGrid();
   gsStageOn();body.classList.add("store-in","game-store");sfx.whoosh();
@@ -12592,7 +12628,7 @@ function openMenu(kind,stand){if(!menuOverlay.hidden)return;G.keys={};G.target=n
 // the club bar: the server takes the coins, then you get your order
 Sound.onClubSong=name=>{if(Sound.musicVol>0)toast("Now playing: "+name);};
 // /play?beachtest: jump around the beach (window.__beach.go(x,z,face), .walk(x,z) walks there, .ground(x,z))
-if(testKey("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,stage:()=>GS_STAGE?{wv:world.visible,pIn:P.root.parent===scene,pw:P.root.parent===world,cam:cam.position.toArray().map(v=>+v.toFixed(2)),n:GS_STAGE.vis.length,vis:scene.children.filter(o=>o.visible).map(o=>o.type+":"+o.name)}:null,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures}),scene:()=>scene,route:(x,z)=>{const t0=performance.now();const ok=routeTo(x,z);return {ok,ms:Math.round(performance.now()-t0),pts:ROUTE.pts&&ROUTE.pts.length,left:ROUTE.pts&&Math.round(routeLeft())};},seats:()=>worldSeats(),seated:()=>G.seat,gfx:()=>({mode:GFX.mode,o:GFX.o,pr:GFX.pr,sh:renderer.shadowMap.enabled,fx:GFX.fx,far:cam.far})};
+if(testKey("beachtest"))window.__beach={go:(x,z,f=Math.PI)=>{G.pos.set(x,0,z);G.face=f;G.target=null;G.camPos.set(x,4,z+9);},walk:(x,z)=>{G.target=new THREE.Vector3(x,0,z);G.stall=0;},pos:()=>[G.pos.x,G.pos.z,groundY(G.pos.x,G.pos.z)],ground:(x,z)=>groundY(x,z),py:()=>[P.root.position.y,homePool(G.pos.x,G.pos.z),G.pk],cam:(yaw,pitch)=>{G.camYaw=yaw;if(pitch)G.camPitch=pitch;},take:(k,i)=>takeFood(k,i,{}),hold:n=>holdSlot(n),bite:()=>foodBite(),biteAt:k=>{FB.biteT=now()-k*.5;},spot:id=>useSpot(id),ride:()=>RIDE,city:()=>CITY,cam:()=>cam,P:()=>P,THREE:()=>THREE,stage:()=>GS_STAGE?{wv:world.visible,pIn:P.root.parent===scene,pw:P.root.parent===world,cam:cam.position.toArray().map(v=>+v.toFixed(2)),n:GS_STAGE.vis.length,vis:scene.children.filter(o=>o.visible).map(o=>o.type+":"+o.name)}:null,wear:(o)=>{const a=me.look;colorIdx=o.color??a.color;eyeIdx=o.eyes??a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,beard:a.beard??-1,tag:a.tag??-1,aura:a.aura??-1},o);setPreview(true);},vehTest:(i,tow=300000)=>{vehSet({o:me.id,n:me.username,i,x:G.pos.x+Math.cos(G.face)*1.8,z:G.pos.z-Math.sin(G.face)*1.8,f:G.face,r:null,tow});},vehRide:()=>{if(VEH.mine)vehStartRide(VEH.mine,"me");},vehOther:(o,n,i,x,z,f)=>vehSet({o,n,i,x,z,f,r:null,tow:200000}),VEH:()=>VEH,vdbg:(x,z)=>{const p=new THREE.Vector3(x,0,z),q=p.clone();collide(q);return {ok:vehOk(x,z),walk:walkable(x,z),water:inWater(x,z),wade:wadeK(z,x),pool:homePool(x,z),push:+q.distanceTo(p).toFixed(3),gy:groundY(x,z)};},info:()=>({calls:renderer.info.render.calls,tris:renderer.info.render.triangles,geo:renderer.info.memory.geometries,tex:renderer.info.memory.textures}),scene:()=>scene,route:(x,z)=>{const t0=performance.now();const ok=routeTo(x,z);return {ok,ms:Math.round(performance.now()-t0),pts:ROUTE.pts&&ROUTE.pts.length,left:ROUTE.pts&&Math.round(routeLeft())};},seats:()=>worldSeats(),seated:()=>G.seat,gfx:()=>({mode:GFX.mode,o:GFX.o,pr:GFX.pr,sh:renderer.shadowMap.enabled,fx:GFX.fx,far:cam.far})};
 if(testKey("bartest"))window.__bar={go:()=>enterPlace("club"),menu:()=>openMenu("club"),song:()=>Sound.clubSong};
 function closeMenu(quiet){if(menuOverlay.hidden)return;menuOverlay.hidden=true;if(!quiet)sfx.close();}
 document.getElementById("menuClose").onclick=()=>closeMenu();
@@ -14903,7 +14939,7 @@ function queueSave(){const chip=document.getElementById("decoSaved");chip.textCo
 const pcard=document.getElementById("pcard"),tradeInvite=document.getElementById("tradeInvite"),tradeOverlay=document.getElementById("tradeOverlay"),
       tradeCard=document.getElementById("tradeCard"),tradeMsg=document.getElementById("tradeMsg"),tradeReadyBtn=document.getElementById("tradeReady");
 let pcTarget=null,invite=null,inviteT=null,TR=null;   // TR = the open trade
-const TRADE_SLOTS=["hair","shirt","pants","glasses","hat","neck","eyes","color","tag","furniture","aura"];
+const TRADE_SLOTS=["hair","shirt","pants","glasses","hat","neck","beard","eyes","color","tag","furniture","aura"];
 let tradeSlot="hair";
 const parseItem=id=>{const [s,i]=String(id).split(":");return [s,+i];};
 function slotHTML(id,extra="",n=1){if(!id)return '<div class="slot empty" aria-hidden="true"></div>';const [s,i]=parseItem(id);

@@ -34,6 +34,10 @@ add("eyes", 11, "Fire & Ice", 550);
 add("eyes", 12, "Royal & Gold", 600);
 add("eyes", 13, "Galaxy", 700);
 [["Sunset", 600, "rare"], ["Emerald & Gold", 600, "rare"], ["Ice", 900, "epic"], ["Lava", 900, "epic"]].forEach(([n, p, r], k) => { add("eyes", 14 + k, n, p); items[items.length - 1].rarity = r; });
+// 18+: eyes that move (public/world/eye-fx.js); the rainbow ones are for members
+[["Cat eyes", 1200, "epic"], ["Wandering eyes", 900, "rare"], ["Heart eyes", 1100, "rare"], ["Star eyes", 1100, "rare"], ["Sleepy eyes", 700, "rare"], ["Winking eyes", 800, "rare"],
+  ["Ice cat eyes", 1200, "epic"], ["Rainbow eyes", 1600, "epic", true]]
+  .forEach(([n, p, r, mem], k) => { add("eyes", 18 + k, n, p); Object.assign(items[items.length - 1], { rarity: r }, mem ? { member: true } : {}); });
 
 // hair, shirts, pants, glasses, hats, necklaces: the list lives in public/shared/outfits.js
 // (shared with the game, so the item numbers always match)
@@ -147,18 +151,19 @@ export const MOD_ITEMS = OUTFIT_SLOTS.flatMap((slot) => OUTFITS[slot].map((o, i)
 // highest index in each look slot (and whether it can be empty)
 export const LOOK_SLOTS = {
   color: { max: 21, optional: false },
-  eyes: { max: 17, optional: false },
+  eyes: { max: 25, optional: false },
   hair: { max: OUTFITS.hair.length - 1, optional: true },
   shirt: { max: OUTFITS.shirt.length - 1, optional: true },
   pants: { max: OUTFITS.pants.length - 1, optional: true },
   glasses: { max: OUTFITS.glasses.length - 1, optional: true },
   hat: { max: OUTFITS.hat.length - 1, optional: true },
   neck: { max: OUTFITS.neck.length - 1, optional: true },
+  beard: { max: OUTFITS.beard.length - 1, optional: true },
   tag: { max: 17, optional: true },
   aura: { max: 12, optional: true },
 };
 // what sign-up may choose for free
-export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, hat: -1, neck: -1, tag: -1, aura: -1 };
+export const STARTER_MAX = { color: 7, eyes: 7, hair: 3, shirt: 3, pants: 3, glasses: 3, hat: -1, neck: -1, beard: -1, tag: -1, aura: -1 };
 
 // the item ids a look is wearing
 export function lookItems(look = {}) {

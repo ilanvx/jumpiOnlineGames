@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { ghosts } from "./blocks.js";
 import mongoose from "mongoose";
 import { User } from "../models/User.js";
-import { ITEMS, LOOK_SLOTS, MAX_FURNITURE } from "../catalog.js";
+import { ITEMS, LOOK_SLOTS, maxFurniture } from "../catalog.js";
 import { pruneHome } from "../routes/home.js";
 import { TradeLog, logQuietly } from "../models/Logs.js";
 
@@ -219,10 +219,11 @@ function offerProblem(user, items, who) {
   }
   return null;
 }
-// the furniture limit (catalog.js MAX_FURNITURE) counts for what a trade brings in too
+// the furniture limit (catalog.js maxFurniture: bigger for members) counts for what a trade brings in too
 function roomFor(to, getting, giving, toName) {
   const fur = (list) => list.filter((id) => String(id).startsWith("furniture:")).length;
-  if (fur(getting) && fur(to.inventory || []) + fur(getting) - fur(giving) > MAX_FURNITURE) throw publicError(`${toName}'s home is full (up to ${MAX_FURNITURE} pieces of furniture).`);
+  const MAXF = maxFurniture(to);
+  if (fur(getting) && fur(to.inventory || []) + fur(getting) - fur(giving) > MAXF) throw publicError(`${toName}'s home is full (up to ${MAXF} pieces of furniture).`);
 }
 function check(from, to, items, fromName) {
   const problem = offerProblem(from, items, fromName);

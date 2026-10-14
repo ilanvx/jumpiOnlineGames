@@ -26,6 +26,7 @@ const lookSchema = new mongoose.Schema(
     glasses: slot("glasses"),
     hat: slot("hat"),
     neck: slot("neck"),
+    beard: slot("beard"),
     tag: slot("tag"),
     aura: slot("aura"),
   },
