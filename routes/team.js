@@ -9,6 +9,7 @@ import { teamAlert } from "../discord/pip.js";
   the page. Everyone under 18, in every role, must tick that a parent approves.
 */
 const router = express.Router();
+const MONTH = 30 * 24 * 3600_000;
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,}$/;
 const LANGS = new Set(["he", "en", "ar", "ru", "fr", "es", "other"]);
 const HOURS = new Set(["1-3", "3-6", "6-10", "10+"]);
@@ -64,7 +65,17 @@ router.post("/team/apply", requireJson, async (req, res, next) => {
     const open = await TeamApplication.exists({ email, role, status: { $in: ["new", "reviewing"] } });
     if (open) return res.status(409).json({ error: he ? "כבר קיבלנו ממכם בקשה לתפקיד הזה, והיא אצלנו בבדיקה. נחזור אליכם במייל." : "We already have your application for this role and we're looking at it. We'll get back to you by email." });
 
+    // one application a month: from the same email, or from the same signed-in account (the username typed in the
+    // form isn't used for this: anyone could type someone else's name and block them)
     const user = await currentUser(req).catch(() => null);
+    const since = new Date(Date.now() - MONTH);
+    const who = [{ email }];
+    if (user) who.push({ account: user.username });
+    const last = await TeamApplication.findOne({ $or: who, createdAt: { $gt: since } }).sort({ createdAt: -1 }).select("createdAt").lean();
+    if (last) {
+      const again = new Date(new Date(last.createdAt).getTime() + MONTH).toLocaleDateString(he ? "he-IL" : "en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jerusalem" });
+      return res.status(429).json({ error: he ? `כבר הגשתם בקשה בחודש האחרון. אפשר להגיש בקשה חדשה מ-${again}.` : `You already applied in the last month. You can send a new application from ${again}.` });
+    }
     const saved = await TeamApplication.create({
       role, name, email, age, parentOk: age < 18 && parentOk, country: clean(b.country, 60), username: clean(b.username, 24), account: user ? user.username : "",
       discord: clean(b.discord, 40), languages: pick(b.languages, LANGS), hours, devices, about, why, scenario: adult ? scenario : "", link, lang: he ? "he" : "en",

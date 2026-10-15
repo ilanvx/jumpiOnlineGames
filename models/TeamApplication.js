@@ -5,6 +5,7 @@ import mongoose from "mongoose";
   Read and answered in the admin panel → Team applications (routes/admin.js /team).
   Youngest age per role (TEAM_MIN_AGE): Community Manager 16, Guide (the moderation team) 15, Beta Tester 13.
   Everyone under 18 needs a parent's approval (parentOk). The server checks both.
+  One application a month: a new one is refused for 30 days after the last one from the same email or the same signed-in account.
 */
 export const TEAM_ROLES = ["manager", "guide", "beta"];
 export const TEAM_MIN_AGE = { manager: 16, guide: 15, beta: 13 };
@@ -33,10 +34,13 @@ const teamSchema = new mongoose.Schema(
     status: { type: String, enum: TEAM_STATUS, default: "new" },
     notes: { type: [{ text: String, admin: String, at: { type: Date, default: Date.now } }], default: [] },
     statusBy: { type: String, default: "" },
+    mails: { type: [{ kind: String, admin: String, at: { type: Date, default: Date.now } }], default: [] },   // accepted / declined emails that were sent
   },
   { timestamps: true }
 );
 teamSchema.index({ status: 1, createdAt: -1 });
 teamSchema.index({ email: 1, role: 1 });
+teamSchema.index({ email: 1, createdAt: -1 });     // one application a month per email / account (routes/team.js)
+teamSchema.index({ account: 1, createdAt: -1 });
 
 export const TeamApplication = mongoose.models.TeamApplication || mongoose.model("TeamApplication", teamSchema);

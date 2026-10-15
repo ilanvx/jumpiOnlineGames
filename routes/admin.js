@@ -13,6 +13,7 @@ import { Code, CodeUse, createCode } from "../models/Code.js";
 import { EMAIL_ON, sendMail } from "../mail/send.js";
 import { discordOn, modLog, postGiftCode } from "../discord/pip.js";
 import { contactReplyEmail, ANSWER_SLOT } from "../mail/contactReply.js";
+import { teamDecisionEmail, defaultTeamText, TEAM_SLOT } from "../mail/teamDecision.js";
 import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { PerfDay } from "../models/PerfDay.js";
 import { currentUser } from "./auth.js";
@@ -703,6 +704,19 @@ router.get("/team", async (req, res, next) => {
     next(err);
   }
 });
+// the accept / decline letter: the email as they will get it, a spot for the text, and the ready text to start from
+router.get("/team/:id/letter", async (req, res, next) => {
+  try {
+    if (!isId(req.params.id)) return fail(res, 404, "Not found.");
+    const decision = req.query.decision === "accepted" ? "accepted" : "declined";
+    const a = await TeamApplication.findById(req.params.id).lean();
+    if (!a) return fail(res, 404, "Not found.");
+    const mail = teamDecisionEmail({ name: a.name, decision, text: TEAM_SLOT, lang: a.lang });
+    res.json({ html: mail.html, subject: mail.subject, slot: TEAM_SLOT, text: defaultTeamText({ role: a.role, decision, age: a.age, lang: a.lang }), lang: a.lang, email: a.email, emailOn: EMAIL_ON() });
+  } catch (err) {
+    next(err);
+  }
+});
 router.post("/team/:id", async (req, res, next) => {
   try {
     if (!isId(req.params.id)) return fail(res, 404, "Not found.");
@@ -723,10 +737,22 @@ router.post("/team/:id", async (req, res, next) => {
       return res.json({ ok: true, message: "Note saved.", app: a.toObject() });
     }
     if (!TEAM_STATUS.includes(req.body.status)) return fail(res, 400, "Unknown status.");
+    // accepted / declined can come with the email (sent first: if it fails, nothing changes)
+    let mailed = false;
+    if (req.body.mail !== undefined && (req.body.status === "accepted" || req.body.status === "declined")) {
+      const text = String(req.body.mail ?? "").replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim().slice(0, 5000);
+      if (text.length < 2) return fail(res, 400, "Write the email first.");
+      if (!EMAIL_ON()) return fail(res, 503, "Email isn't set up on the server (RESEND_API_KEY).");
+      const sent = await sendMail({ to: a.email, ...teamDecisionEmail({ name: a.name, decision: req.body.status, text, lang: a.lang }) });
+      if (!sent.ok) return fail(res, 502, sent.error);
+      a.mails.push({ kind: req.body.status, admin: req.admin.username });
+      mailed = true;
+      audit(req, "team-mail", null, `${who} · ${req.body.status} · ${a.email}`);
+    }
     a.status = req.body.status; a.statusBy = req.admin.username;
     await a.save();
     audit(req, "team-status", null, `${who} → ${a.status}`);
-    res.json({ ok: true, message: `Marked as ${a.status}.`, app: a.toObject() });
+    res.json({ ok: true, message: `Marked as ${a.status}${mailed ? ` and the email was sent to ${a.email}` : ""}.`, app: a.toObject() });
   } catch (err) {
     next(err);
   }

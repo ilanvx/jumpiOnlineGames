@@ -792,14 +792,15 @@
             h("span", { class: "muted small" }, fmtDate(a.createdAt) + (a.statusBy ? ` · last change by ${a.statusBy}` : "")), h("span", { style: "flex:1" }),
             h("div", { class: "acts" },
               a.status !== "reviewing" ? h("button", { class: "b b-sm", onclick: () => set("reviewing") }, "Reviewing") : null,
-              a.status !== "accepted" ? h("button", { class: "b b-sm b-green", onclick: () => set("accepted") }, "Accept") : null,
-              a.status !== "declined" ? h("button", { class: "b b-sm b-ghost", onclick: () => set("declined") }, "Decline") : null,
+              a.status !== "accepted" ? h("button", { class: "b b-sm b-green", onclick: () => teamLetter(a, "accepted", rn, () => { load(); refreshCounts(); }).catch(oops) }, "Accept") : null,
+              a.status !== "declined" ? h("button", { class: "b b-sm b-ghost", onclick: () => teamLetter(a, "declined", rn, () => { load(); refreshCounts(); }).catch(oops) }, "Decline") : null,
               a.status !== "new" ? h("button", { class: "b b-sm b-ghost", onclick: () => set("new") }, "Back to new") : null,
               h("button", { class: "b b-sm b-red", onclick: async () => {
                 if (!confirm(`Delete ${a.name}'s application for good? This can't be undone.`)) return;
                 try { toast((await api("/team/" + a._id, { delete: true })).message); load(); refreshCounts(); } catch (e) { oops(e); }
               } }, "Delete"))),
           h("dl", { class: "facts" }, facts.map(([k, v]) => h("div", null, h("dt", null, k), h("dd", null, v)))),
+          (a.mails || []).length ? h("p", { class: "small muted", style: "margin:0 0 10px" }, (a.mails || []).map((m) => `${m.kind === "accepted" ? "Acceptance" : "Decline"} email sent by ${m.admin} · ${fmtDate(m.at)}`).join("  ·  ")) : null,
           h("div", { class: "tm-qas" }, qa("Why they want to join", a.why), qa(a.role === "beta" ? "Testing before" : "Experience", a.about), qa("A player keeps being mean to a younger kid. What do you do?", a.scenario)),
           h("div", { class: "tm-notes" },
             (a.notes || []).map((n) => h("div", { class: "reply-done" }, h("small", null, `${n.admin} · ${fmtDate(n.at)}`), h("p", { dir: "auto" }, n.text))),
@@ -874,6 +875,46 @@
     function close() { $("#modal").hidden = true; card.classList.remove("wide"); }
   }
 
+  /* ---------- accept / decline a team application: the real email with a ready text inside; sending it is optional ---------- */
+  async function teamLetter(a, decision, roleName, after) {
+    const d = await api(`/team/${a._id}/letter?decision=${decision}`), card = $("#modalCard");
+    const he = d.lang === "he", yes = decision === "accepted";
+    const frame = h("iframe", { class: "letter-frame", title: "The email" });
+    const send = h("button", { class: "b " + (yes ? "b-green" : "b-orange"), type: "button", disabled: !d.emailOn }, yes ? "Accept + send email" : "Decline + send email");
+    const quiet = h("button", { class: "b b-ghost", type: "button" }, yes ? "Accept without email" : "Decline without email");
+    const reset = h("button", { class: "b b-sm b-ghost", type: "button" }, "Back to the ready text");
+    card.replaceChildren(...[h("h2", null, `${yes ? "Accept" : "Decline"} ${a.name} · ${roleName}`),
+      h("span", { class: "small muted" }, `To ${d.email} · in ${he ? "Hebrew" : "English"} (the language they applied in) · subject: “${d.subject}”. You can change the text inside the letter. Sending the email is up to you.`),
+      frame,
+      d.emailOn ? null : h("p", { class: "bad small", style: "margin:0" }, "Email isn't set up on the server (RESEND_API_KEY), so you can only mark it for now."),
+      h("div", { class: "row" }, reset, h("span", { style: "flex:1" }), h("button", { class: "b b-ghost", type: "button", onclick: close }, "Cancel"), quiet, send)].filter(Boolean));
+    card.classList.add("wide");
+    $("#modal").hidden = false;
+    const box = `<textarea id="ans" dir="${he ? "rtl" : "ltr"}"></textarea>`;
+    const css = `<style>#ans{display:block;width:100%;box-sizing:border-box;min-height:140px;border:2px dashed #ffc98a;border-radius:14px;background:#fffaf0;padding:12px 14px;
+      font:inherit;font-size:17px;line-height:28px;color:#33456e;resize:none;overflow:hidden;outline:0}#ans:focus{border-color:#ff9a1f;background:#fff}a{pointer-events:none}</style>`;
+    frame.srcdoc = d.html.replace(d.slot, box).replace("</head>", css + "</head>");
+    let ans = null;
+    const fit = () => { const doc = frame.contentDocument; if (!doc) return; if (ans) { ans.style.height = "auto"; ans.style.height = ans.scrollHeight + 4 + "px"; } frame.style.height = doc.documentElement.scrollHeight + "px"; };
+    frame.onload = () => { ans = frame.contentDocument.getElementById("ans"); ans.value = d.text; ans.addEventListener("input", fit); fit(); setTimeout(fit, 400); };
+    reset.onclick = () => { if (ans) { ans.value = d.text; fit(); } };
+    const go = async (withMail) => {
+      const body = { status: decision };
+      if (withMail) {
+        const text = ans ? ans.value.trim() : "";
+        if (text.length < 2) return toast("Write the email inside the letter first.", true);
+        if (!confirm(`${yes ? "Accept" : "Decline"} and send this email to ${d.email}?`)) return;
+        body.mail = text;
+      }
+      send.disabled = quiet.disabled = true;
+      try { toast((await api("/team/" + a._id, body)).message); close(); after(); } catch (e) { oops(e); }
+      send.disabled = !d.emailOn; quiet.disabled = false;
+    };
+    send.onclick = () => go(true);
+    quiet.onclick = () => go(false);
+    function close() { $("#modal").hidden = true; card.classList.remove("wide"); }
+  }
+
   /* ---------- history tables ---------- */
   const chatTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Player", (r) => userLink(r.username, r.userId)],
@@ -889,7 +930,7 @@
   ], list);
   const ACT_NAME = { kick: "Kicked", ban: "Banned", unban: "Unbanned", mute: "Muted", unmute: "Unmuted", coins: "Coins", password: "Password reset", logout: "Signed out everywhere", rename: "Renamed",
     "give-item": "Gave item", "take-item": "Took item", "delete-account": "Deleted account", announce: "Announcement", event: "Holiday event", unlock: "Opened the panel", "unlock-failed": "Wrong panel password",
-    "read-messages": "Read private messages", "contact-done": "Answered contact message", "report-done": "Checked a player report", "report-reopen": "Reopened a player report", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code", "team-status": "Team application", "team-note": "Note on a team application", "team-delete": "Deleted a team application" };
+    "read-messages": "Read private messages", "contact-done": "Answered contact message", "report-done": "Checked a player report", "report-reopen": "Reopened a player report", "contact-reopen": "Reopened contact message", "code-create": "Made a gift code", "contact-reply": "Answered contact message by email", "verify-email": "Checked email by hand", "make-admin": "Made admin", "remove-admin": "Removed admin", "make-mod": "Made moderator", "remove-mod": "Removed moderator", "code-off": "Switched off a code", "code-on": "Switched on a code", "team-status": "Team application", "team-mail": "Emailed a team application", "team-note": "Note on a team application", "team-delete": "Deleted a team application" };
   const logTable = (list) => table([
     ["When", (r) => h("span", { class: "nowrap small" }, fmtDate(r.at))], ["Admin", (r) => r.admin],
     ["Action", (r) => h("span", { class: "tag " + (/ban|kick|delete|failed/.test(r.action) && r.action !== "unban" ? "red" : /mute/.test(r.action) && r.action !== "unmute" ? "orange" : "blue") }, ACT_NAME[r.action] || r.action)],
