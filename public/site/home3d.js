@@ -242,5 +242,7 @@ async function start() {
     renderer.render(scene, cam);
     if (first) { first = false; stage.classList.add("live3d"); }
   }
+  // build every shader before the first frame (no stutter while the still picture hands over to the 3D)
+  try { if (renderer.compileAsync) await renderer.compileAsync(scene, cam); else renderer.compile(scene, cam); } catch (e) {}
   frame();
 }
