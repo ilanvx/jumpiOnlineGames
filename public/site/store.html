@@ -23,7 +23,13 @@
 <link rel="preload" as="image" href="/site/img/store/hero-tall.webp" media="(max-width:760px)">
 <link rel="stylesheet" href="/site/legal.css">
 <link rel="stylesheet" href="/site/chrome.css">
-<link rel="stylesheet" href="/site/store.css?v=3d3">
+<link rel="stylesheet" href="/site/store.css?v=3d4">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+<link rel="modulepreload" href="/vendor/three/build/three.module.js">
+<link rel="modulepreload" href="/vendor/three/examples/jsm/loaders/GLTFLoader.js">
+<link rel="modulepreload" href="/vendor/three/examples/jsm/geometries/RoundedBoxGeometry.js">
+<link rel="modulepreload" href="/site/store-hero3d.js?v=3d3">
+<script>(function(){try{if(window.JUMPI_REDUCE_MOTION||matchMedia("(prefers-reduced-motion: reduce)").matches)return;var l=document.createElement("link");l.rel="preload";l.as="fetch";l.href="/blobby.glb";l.crossOrigin="anonymous";document.head.appendChild(l);}catch(e){}})();</script>
 </head>
 <body>
 <header class="hm-top" id="top">
@@ -164,8 +170,7 @@
   </div>
 </footer>
 
-<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 <script type="module" src="/site/store-page.js?v=pay1"></script>
-<script type="module" src="/site/store-hero3d.js?v=3d2"></script>
+<script type="module" src="/site/store-hero3d.js?v=3d3"></script>
 </body>
 </html>

@@ -402,6 +402,8 @@ async function start() {
     renderer.render(scene, cam);
     if (!shown && ++last > 2) { shown = true; hero.classList.add("is-3d"); }
   };
+  // build the shaders before the first frame (no hitch at the hand-over)
+  try { if (renderer.compileAsync) await renderer.compileAsync(scene, cam); else renderer.compile(scene, cam); } catch (e) {}
   frame();
 }
 

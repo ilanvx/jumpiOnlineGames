@@ -12,10 +12,10 @@ body{--display:"Lilita One","Jumpi He","Secular One","Arial Rounded MT Bold",sys
 .st-hero{position:relative;overflow:hidden;color:#fff;isolation:isolate;min-height:clamp(470px,43vw,700px);display:flex;align-items:center;
   background:radial-gradient(60% 75% at 76% 58%,#5b2bb8 0%,#36208a 35%,transparent 72%),radial-gradient(40% 50% at 70% 20%,rgb(160 110 255 / .35),transparent 70%),linear-gradient(180deg,#14164a,#1d1660)}
 [dir="rtl"] .st-hero{background:radial-gradient(60% 75% at 24% 58%,#5b2bb8 0%,#36208a 35%,transparent 72%),radial-gradient(40% 50% at 30% 20%,rgb(160 110 255 / .35),transparent 70%),linear-gradient(180deg,#14164a,#1d1660)}
-.st-hero-art{position:absolute;inset:0;z-index:-2;transition:opacity .8s}
+.st-hero-art{position:absolute;inset:0;z-index:-2;transition:opacity .4s}
 .st-hero-art img{width:100%;height:100%;object-fit:cover;object-position:100% 50%;display:block}
 [dir="rtl"] .st-hero-art img{transform:scaleX(-1)}
-.st-hero-3d{position:absolute;inset:0;z-index:-1;width:100%;height:100%;display:block;opacity:0;transition:opacity .8s}
+.st-hero-3d{position:absolute;inset:0;z-index:-1;width:100%;height:100%;display:block;opacity:0;transition:opacity .4s}
 .st-hero.is-3d .st-hero-3d{opacity:1}
 .st-hero.is-3d .st-hero-art{opacity:0}
 .st-hero-in{width:100%;max-width:1320px;margin:0 auto;padding:40px clamp(18px,5vw,72px) 70px;box-sizing:border-box;direction:ltr;pointer-events:none}
