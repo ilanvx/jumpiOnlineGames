@@ -3313,6 +3313,9 @@ body.game-store .qtrack,body.phone-open .qtrack{display:none!important}
 .qt-go:active{transform:translateY(2px);box-shadow:0 1px 0 #06488a}
 .qt-go:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
 body.land .qtrack{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 84px);right:calc(var(--lg) + var(--lb) + 10px);transform:scale(.85);transform-origin:100% 0}
+/* phones: the quests go under the needs circles (sideways) / under the top bar (upright), never over them or the offers button */
+body.land.touch .qtrack{top:calc(env(safe-area-inset-top,0px) + var(--lg) + 140px);right:calc(var(--lg) + 80px);transform:scale(.8)}
+@media (max-width:700px){body:not(.land) .qtrack{top:calc(env(safe-area-inset-top,0px) + 132px);right:108px;width:min(170px,44vw)}}
 .npc-prompt{--c:#ff8a1c}
 #npcOv,#famOv{z-index:44}
 .idle-card.npc-card{width:min(520px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;padding:18px 22px 20px;text-align:start}
