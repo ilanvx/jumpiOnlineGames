@@ -10,6 +10,7 @@
 (function () {
   const HE = {
     // ---------- main page ----------
+    "Hide quests": "הסתרת המשימות", "Show quests": "הצגת המשימות",
     "SHOP": "חנות", "NEW": "חדש", "Tags": "תגיות", "Inventory": "מלאי", "TUTORIAL": "מדריך", "LOGIN": "התחברות", "NEW HERE?": "חדשים כאן?",
     "PLAY": "שחקו", "Play": "שחקו", "Start": "התחלה", "Menu": "תפריט", "MENU": "תפריט", "Settings": "הגדרות", "Loading Jumpi": "ג'אמפי נטען",
     "Blobby, the blue character": "הדמות שלך", "LOG OUT": "התנתקות",

@@ -3302,7 +3302,16 @@ body.rtl .lvx-state{right:auto;left:12px}
   background:rgb(30 60 110 / .62);backdrop-filter:blur(4px);color:#fff;font-family:"Fredoka",system-ui,sans-serif}
 body.in-game.logged .qtrack:not([hidden]){display:flex}
 body.game-store .qtrack,body.phone-open .qtrack{display:none!important}
-.qt-h{font:400 .85rem/1 var(--font);letter-spacing:.06em;color:#ffe27a}
+.qt-h{display:flex;align-items:center;gap:6px;width:100%;margin:0;padding:2px 0;border:0;background:none;cursor:pointer;font:400 .85rem/1 var(--font);letter-spacing:.06em;color:#ffe27a;text-align:start}
+.qt-h span:first-child{flex:1}
+.qt-n{display:none;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#ffe27a;color:#1f3355;font:700 .75rem/18px "Fredoka",system-ui,sans-serif;letter-spacing:0;text-align:center}
+.qt-h svg{flex:none;width:18px;height:18px;color:#fff;transition:transform .2s}
+.qt-h:focus-visible{outline:3px solid #ffb547;outline-offset:2px;border-radius:6px}
+.qtrack.min{width:auto;padding:7px 10px}
+.qtrack.min .qt-row{display:none}
+.qtrack.min .qt-n{display:inline-block}
+.qtrack.min .qt-h svg{transform:rotate(180deg)}
+@media (pointer:coarse){.qt-h{min-height:30px}}
 .qt-row{display:flex;align-items:center;gap:8px}
 .qt-txt{flex:1;min-width:0;display:flex;flex-direction:column}
 .qt-txt b{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -7763,12 +7772,16 @@ function showWay(q){const p=stepTarget(q);if(!p)return;if(G.home){toast("Go out 
   if(!routeTo(p[0],p[1])){toast("There's no way to walk there.");sfx.error();return;}sfx.tick(true);}
 /* the tracker: the quests you're doing */
 const qTrack=document.getElementById("qTrack");
+let QT_MIN=false;try{QT_MIN=localStorage.getItem("jumpi-qt-min")==="1";}catch(e){}
 function paintTracker(){if(!QS.data||!me){qTrack.hidden=true;return;}
   const list=QUESTS.filter(q=>{const s=qStatus(q.id);return s==="active"||s==="ready";}).slice(0,3);
   qTrack.hidden=!list.length;if(!list.length)return;
-  qTrack.innerHTML=`<b class="qt-h">${esc(I18N.T("QUESTS"))}</b>`+list.map(q=>{const ready=qStatus(q.id)==="ready",tg=stepTarget(q);
+  qTrack.classList.toggle("min",QT_MIN);
+  qTrack.innerHTML=`<button type="button" class="qt-h" data-qt-toggle aria-expanded="${!QT_MIN}" aria-label="${esc(I18N.T(QT_MIN?"Show quests":"Hide quests"))}" title="${esc(I18N.T(QT_MIN?"Show quests":"Hide quests"))}"><span>${esc(I18N.T("QUESTS"))}</span><span class="qt-n">${list.length}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`+list.map(q=>{const ready=qStatus(q.id)==="ready",tg=stepTarget(q);
     return `<div class="qt-row${ready?" ready":""}"><span class="qt-txt"><b>${esc(q.title)}</b><small>${esc(stepText(q))}</small></span>${tg?`<button type="button" class="qt-go" data-q="${q.id}" aria-label="${esc(I18N.T("Show the way"))}" title="${esc(I18N.T("Show the way"))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 L20 21 L12 16.5 L4 21 Z" fill="#fff"/></svg></button>`:""}</div>`;}).join("");}
-qTrack.addEventListener("click",e=>{const b=e.target.closest("[data-q]");if(b)showWay(QUEST_BY_ID[b.dataset.q]);});
+// the tracker folds into a small "QUESTS 2" pill (remembered on this device)
+qTrack.addEventListener("click",e=>{if(e.target.closest("[data-qt-toggle]")){QT_MIN=!QT_MIN;try{localStorage.setItem("jumpi-qt-min",QT_MIN?"1":"0");}catch(err){}sfx.tick(!QT_MIN);paintTracker();return;}
+  const b=e.target.closest("[data-q]");if(b)showWay(QUEST_BY_ID[b.dataset.q]);});
 /* things to pick up */
 function itemMesh(what){const g=new THREE.Group();
   if(what==="flower"){g.add(cyl(.03,.03,.5,mat("#3fae4a"),0,.25,0,6));const pet=mat("#ff7ac8");for(let i=0;i<5;i++){const a=i/5*Math.PI*2,p=new THREE.Mesh(new THREE.SphereGeometry(.11,10,8),pet);p.position.set(Math.cos(a)*.12,.55,Math.sin(a)*.12);g.add(p);}
