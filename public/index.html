@@ -460,6 +460,9 @@ body.rtl :is(h1,h2,h3,h4,h5,h6,b,strong,small,button,label,.btn){letter-spacing:
   animation:popIn .4s cubic-bezier(.2,1.5,.4,1)}
 .settings-card h2{margin:0 0 4px;font:400 1.7rem/1 var(--font);letter-spacing:.04em;text-shadow:0 3px 0 #1f3355}
 .settings-card h3{margin:6px 0 0;font:400 1.05rem/1 var(--font);letter-spacing:.06em;color:#bcd0ea}
+.map-worlds{position:absolute;top:12px;right:62px;height:40px;border:0;border-radius:12px;padding:0 12px;display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#2a2f6b,#141a45);color:#ffd77a;font-family:var(--font);font-size:16px;cursor:pointer;box-shadow:0 0 0 2px #e8b64a,0 4px 0 #0a0d26}
+.map-worlds svg{width:22px;height:22px}
+
 .set-close{position:absolute;top:12px;right:12px;width:40px;height:40px;border:0;border-radius:12px;background:#ff5a5a;box-shadow:0 4px 0 #8a1c1c;cursor:pointer;display:grid;place-items:center}
 body.rtl .settings-card>.set-close{right:auto;left:12px}
 .set-close svg{width:18px;height:18px}
@@ -3552,6 +3555,62 @@ body.rtl .npc-x{right:auto;left:12px}
 .fam-card p{margin:4px 0 0!important;max-width:none!important;font-size:.85rem!important;line-height:1.35!important}
 body.land .idle-card.npc-card{padding:14px 18px;max-height:calc(100dvh - 16px)}
 body.land .npc-card .idle-face{display:none}
+/* ---------- the world select screen: a neon city at night, gold-framed labels, a white back button ---------- */
+.ws-overlay{position:fixed;inset:0;z-index:25;display:grid;place-items:center;padding:16px;color:#fff;font-family:var(--font);animation:fadeIn .25s;
+  background:radial-gradient(ellipse at 20% 15%,rgb(255 79 216 / .28),transparent 45%),radial-gradient(ellipse at 85% 85%,rgb(89 224 255 / .28),transparent 50%),
+  repeating-linear-gradient(30deg,rgb(120 170 255 / .07) 0 2px,transparent 2px 46px),repeating-linear-gradient(-30deg,rgb(120 170 255 / .07) 0 2px,transparent 2px 46px),linear-gradient(180deg,#0a0f2c,#120a33 60%,#070b1f)}
+.ws-screen{position:relative;width:min(980px,100%);max-height:100%;overflow:auto;padding:58px 8px 18px;scrollbar-width:thin}
+.ws-back{position:absolute;top:6px;left:6px;width:46px;height:46px;border:0;border-radius:50%;background:#fff;box-shadow:0 4px 0 #9aa6c2,0 8px 22px rgb(0 0 0 / .45);cursor:pointer;display:grid;place-items:center;z-index:2}
+.ws-back svg{width:24px;height:24px}
+.ws-back:active{transform:translateY(3px);box-shadow:0 1px 0 #9aa6c2}
+[dir="rtl"] .ws-back{left:auto;right:6px}[dir="rtl"] .ws-back svg{transform:scaleX(-1)}
+.ws-title{margin:0 0 18px;text-align:center;font-family:"HeeboDisplay","Lilita One",sans-serif;font-weight:400;font-size:clamp(28px,5vw,44px);letter-spacing:.04em;color:#fff;text-shadow:0 0 18px #59e0ff,0 3px 0 #1b2a6b}
+.ws-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:22px}
+.ws-card{position:relative;border-radius:22px;padding:10px;background:linear-gradient(160deg,#1c2350,#10142f);box-shadow:0 0 0 2px rgb(255 255 255 / .06),0 18px 40px rgb(0 0 0 / .5);display:flex;flex-direction:column;gap:10px}
+.ws-card.here{box-shadow:0 0 0 3px #59e0ff,0 0 26px rgb(89 224 255 / .45),0 18px 40px rgb(0 0 0 / .5)}
+.ws-pic{position:relative;aspect-ratio:16/10;border-radius:14px;overflow:hidden;background:#0d1433 center/cover no-repeat}
+[data-w="town"] .ws-pic{background-image:url(/world/thumbs/town.jpg),linear-gradient(160deg,#5fd0ff,#2fd36b)}
+[data-w="future"] .ws-pic{background-image:url(/world/thumbs/future.jpg),linear-gradient(160deg,#3b1d8f,#0b6fd6)}
+.ws-card.locked .ws-pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgb(10 8 40 / .15),rgb(10 8 40 / .55))}
+.ws-lock{position:absolute;inset:0;display:grid;place-items:center;z-index:1;pointer-events:none}
+.ws-lock svg{width:86px;height:86px;filter:drop-shadow(0 8px 14px rgb(0 0 0 / .55))}
+.ws-peek{position:absolute;right:10px;bottom:10px;z-index:2;border:2px solid #e8b64a;border-radius:12px;padding:7px 14px;background:rgb(16 20 47 / .88);color:#ffe3a0;font:inherit;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.ws-peek svg{width:18px;height:18px}
+[dir="rtl"] .ws-peek{right:auto;left:10px}
+.ws-label{border:3px solid #e8b64a;border-radius:14px;padding:10px 14px 12px;background:linear-gradient(180deg,#171d3f,#0e1230);box-shadow:inset 0 0 0 2px rgb(0 0 0 / .35),0 0 14px rgb(232 182 74 / .25)}
+.ws-label h3{margin:0 0 4px;font-family:"HeeboDisplay","Lilita One",sans-serif;font-weight:400;font-size:26px;color:#ffd77a;letter-spacing:.03em}
+.ws-label p{margin:0;font-family:"HeeboHe","Fredoka",sans-serif;font-size:15px;line-height:1.35;color:#d9e2ff}
+.ws-prog{display:flex;align-items:center;gap:10px;margin-top:10px}
+.ws-bar{flex:1;height:16px;border-radius:9px;background:#070a1e;box-shadow:inset 0 2px 4px rgb(0 0 0 / .6),0 0 0 2px #3a3f66;overflow:hidden}
+.ws-fill{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#ffb52e,#ffe27a);box-shadow:0 0 12px #ffcc4d;transition:width .6s}
+.ws-num{font-size:14px;color:#ffe3a0;white-space:nowrap;direction:ltr}
+.ws-need{margin-top:6px!important;font-size:13px!important;color:#9fb0e6!important}
+.ws-go{border:0;border-radius:14px;padding:12px;font:inherit;font-size:20px;color:#fff;cursor:pointer;background:linear-gradient(180deg,#36d4ff,#1f7bff);box-shadow:0 5px 0 #0c3f9a;display:flex;align-items:center;justify-content:center;gap:6px}
+.ws-go.buy{background:linear-gradient(180deg,#ffcf4d,#f29a12);box-shadow:0 5px 0 #9a5a06;color:#3a1d00}
+.ws-go:disabled{filter:grayscale(.65) brightness(.75);cursor:default}
+.ws-go:not(:disabled):active{transform:translateY(4px);box-shadow:0 1px 0 #0c3f9a}
+.ws-coin{display:inline-block;width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#ffc21a 45%,#c27a00);box-shadow:inset 0 -2px 0 #9a5a06}
+.ws-ask{position:fixed;inset:0;z-index:3;display:grid;place-items:center;background:rgb(4 6 20 / .6);padding:16px}
+.ws-askbox{width:min(420px,100%);border:3px solid #e8b64a;border-radius:18px;padding:20px;background:linear-gradient(180deg,#1a2048,#0e1230);text-align:center;box-shadow:0 20px 50px rgb(0 0 0 / .6)}
+.ws-askbox p{margin:0 0 16px;font-family:"HeeboHe","Fredoka",sans-serif;font-size:17px;line-height:1.4}
+.ws-askbox div{display:flex;gap:10px;justify-content:center}
+.ws-askbox button{border:0;border-radius:12px;padding:10px 18px;font:inherit;font-size:18px;cursor:pointer;color:#fff}
+.ws-no{background:#fff!important;color:#24305e!important;box-shadow:0 4px 0 #9aa6c2}
+.ws-yes{background:linear-gradient(180deg,#ffcf4d,#f29a12);color:#3a1d00!important;box-shadow:0 4px 0 #9a5a06}
+.ws-prevbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:24;display:flex;align-items:center;gap:12px;padding:6px 16px 6px 6px;border:3px solid #e8b64a;border-radius:30px;background:rgb(14 18 48 / .9);color:#ffd77a;font-family:var(--font);font-size:18px}
+.ws-prevbar .ws-back{position:static;width:38px;height:38px;box-shadow:0 3px 0 #9aa6c2}
+body.ws-previewing>:not(#stage):not(#wsPrev):not(.wipe):not(script){opacity:0!important;pointer-events:none!important;transition:opacity .3s}
+/* the time machine */
+.tmach{position:fixed;inset:0;z-index:40;background:#06041a;color:#fff;font-family:var(--font);transition:opacity .45s}
+.tmach.out{opacity:0}
+.tmach canvas{position:absolute;inset:0;width:100%;height:100%}
+.tm-ui{position:absolute;left:0;right:0;bottom:8vh;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.tm-title{margin:0;font-size:clamp(18px,3vw,26px);letter-spacing:.12em;color:#9ff3ff;text-shadow:0 0 14px #59e0ff}
+.tm-year{margin:0;font-size:clamp(46px,9vw,92px);line-height:1;color:#fff;text-shadow:0 0 22px #ff4fd8,0 0 4px #fff;direction:ltr;font-variant-numeric:tabular-nums}
+.tm-bar{width:min(320px,70vw);height:8px;border-radius:5px;background:rgb(255 255 255 / .15);overflow:hidden}
+.tm-fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#59e0ff,#ff4fd8)}
+.tmach .tm-skip{position:fixed;top:16px;right:16px}
+[dir="rtl"] .tmach .tm-skip{right:auto;left:16px}
 </style>
 </head>
 <body>
@@ -3883,6 +3942,31 @@ body.land .npc-card .idle-face{display:none}
     <button class="btn newhere" id="accAddNew" type="button" role="menuitem"><span>NEW ACCOUNT</span></button>
   </div>
 </div>
+<div class="ws-overlay" id="worldSel" hidden>
+  <div class="ws-screen" role="dialog" aria-modal="true" aria-labelledby="wsTitle">
+    <button class="ws-back" type="button" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="#24305e" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <h2 class="ws-title" id="wsTitle">CHOOSE A WORLD</h2>
+    <div class="ws-list">
+      <article class="ws-card" data-w="town">
+        <div class="ws-pic"></div>
+        <div class="ws-label"><h3>JUMPI TOWN</h3><p>The Plaza, the Beach, the big city and all your friends.</p></div>
+        <button class="ws-go" type="button">TRAVEL</button>
+      </article>
+      <article class="ws-card locked" data-w="future">
+        <div class="ws-pic">
+          <span class="ws-lock"><svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="wsLk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".5" stop-color="#ffc21a"/><stop offset="1" stop-color="#b86e00"/></linearGradient><linearGradient id="wsLs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9aa6c2"/><stop offset=".5" stop-color="#f2f6ff"/><stop offset="1" stop-color="#7c87a6"/></linearGradient></defs><path d="M20 30 V20 A12 12 0 0 1 44 20 V30" fill="none" stroke="url(#wsLs)" stroke-width="7" stroke-linecap="round"/><rect x="12" y="28" width="40" height="30" rx="7" fill="url(#wsLk)"/><rect x="12" y="28" width="40" height="6" rx="3" fill="#fff" opacity=".35"/><circle cx="32" cy="41" r="4.5" fill="#6b3a00"/><rect x="30" y="42" width="4" height="9" rx="2" fill="#6b3a00"/></svg></span>
+          <button class="ws-peek" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12 Q12 3 22 12 Q12 21 2 12 Z" fill="none" stroke="#ffe3a0" stroke-width="2"/><circle cx="12" cy="12" r="3.4" fill="#ffe3a0"/></svg>PREVIEW</button>
+        </div>
+        <div class="ws-label"><h3>FUTURE CITY</h3><p>Flying cars, a giant Sky Mall, the Grand Hotel and towers above the clouds.</p>
+          <div class="ws-prog"><div class="ws-bar"><i class="ws-fill"></i></div><span class="ws-num" data-noi18n></span></div><p class="ws-need"></p></div>
+        <button class="ws-go buy" type="button"></button>
+      </article>
+    </div>
+    <div class="ws-ask" hidden><div class="ws-askbox" role="alertdialog" aria-labelledby="wsAskText"><p id="wsAskText">Open the Future City for 70,000 coins? You'll also get a welcome gift of 2,000 coins.</p><div><button class="ws-no" type="button">CANCEL</button><button class="ws-yes" type="button">OPEN IT</button></div></div></div>
+  </div>
+</div>
+<div class="ws-prevbar" id="wsPrev" hidden><button class="ws-back" id="wsPrevBack" type="button" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="#24305e" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span>PREVIEW · FUTURE CITY</span></div>
+<div class="tmach" id="tmach" hidden><canvas></canvas><button class="tm-skip" type="button">SKIP</button><div class="tm-ui"><p class="tm-title">TIME MACHINE</p><p class="tm-year" data-noi18n>2026</p><div class="tm-bar"><i class="tm-fill"></i></div></div></div>
 <div class="wipe" id="wipe" aria-hidden="true"><img class="wp-logo" src="/jumpi-logo.png" alt=""><div class="ld-track wp-track"><div class="ld-fill wp-fill"></div></div><p class="ld-text wp-text">LOADING…</p></div>
 <div class="bubble" id="bubble" role="status" aria-live="polite"></div>
 <!-- phones in a web browser, when PHONES_NEED_APP is on (public/shared/app.js): get the Android app -->
@@ -4463,6 +4547,7 @@ body.land .npc-card .idle-face{display:none}
     <button class="set-close" id="mapClose" type="button" aria-label="Close map">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
     </button>
+    <button class="map-worlds" id="mapWorlds" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#59e0ff"/><path d="M3.5 10 Q8 12 12 9 Q16 6 20.5 9 M4 15 Q9 13 13 16 Q17 18.5 20 15" fill="none" stroke="#1f6fb5" stroke-width="1.6"/><ellipse cx="12" cy="12" rx="11" ry="3.4" fill="none" stroke="#ffd65a" stroke-width="1.6" transform="rotate(-18 12 12)"/></svg>WORLDS</button>
     <h2 id="mapTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 L9 3.5 L15 6 L21 3.5 V18 L15 20.5 L9 18 L3 20.5 Z" fill="#fff"/><path d="M9 3.5 V18 M15 6 V20.5" stroke="#1f6fb5" stroke-width="1.6"/></svg> MAP</h2>
     <div class="map-host" id="mapHost" title="Click a place to get a route there"></div>
     <div class="map-foot">
@@ -4831,6 +4916,7 @@ import {HAT_STYLES,NECK_STYLES,GLASSES_STYLES} from "/world/wear-heads.js";
 import {buildBeard} from "/world/wear-beard.js";
 import {installEyeFx} from "/world/eye-fx.js";
 import {buildCity,TRAILS as CITY_TRAILS} from "/world/city.js";
+import * as FUT from "/shared/future-layout.js";
 let inGame=false;   // true while walking around the Plaza
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -4971,7 +5057,16 @@ const Sound=(()=>{
     CLUB.el.play().catch(()=>{});}
   function clubPause(){CLUB.want=false;if(CLUB.el)CLUB.el.pause();}
   // a shop can play its own music while you're inside (it doesn't change your chosen track)
-  const VENUE_TRACKS={club:{dj:true},diner:{step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus)}};
+  /* "Neon Future": the Future City's own tune (A minor synthwave, 108 bpm 16ths: a rolling arpeggio, soft pads, a gated beat) */
+  const fRoots=[45,41,48,43],fCh=[[57,60,64],[53,57,60],[55,60,64],[55,59,62]],fMel=[[76,null,null,79,null,81,null,79],[77,null,76,null,74,null,72,null],[79,null,null,84,null,83,null,79],[83,null,81,null,79,null,null,null]];
+  function futureStep(i,t){const rel=t-ctx.currentTime,s=i%16,bar=Math.floor(i/16)%4,root=fRoots[bar],ch=fCh[bar];
+    if(s===0)ch.forEach(n=>tone({f:midi(n),t:rel,dur:2.1,type:"sawtooth",vol:.022,bus:musicBus,att:.35}));                        // pad
+    tone({f:midi(ch[[0,1,2,1][s%4]]+(s>=8?12:0)),t:rel,dur:.11,type:"square",vol:.035,bus:musicBus});                               // arpeggio
+    if(s%2===0)tone({f:midi(root-12),t:rel,dur:.12,type:"sawtooth",vol:.09,bus:musicBus});                                         // pulsing bass
+    if(s%8===0)tone({f:130,f2:40,t:rel,dur:.22,vol:.45,bus:musicBus});if(s===4||s===12)noise({t:rel,dur:.16,vol:.12,type:"bandpass",f:1300,q:.6,bus:musicBus});
+    if(s%2===1)noise({t:rel,dur:.02,vol:.03,type:"highpass",f:8500,bus:musicBus});
+    if(Math.floor(i/64)%2===1&&s%2===0){const m=fMel[bar][s/2];if(m)tone({f:midi(m),t:rel,dur:.34,type:"triangle",vol:.15,bus:musicBus,vib:5});}}
+  const VENUE_TRACKS={club:{dj:true},diner:{step:PSTEP,fn:(i,t)=>pianoStep(i,t,musicBus)},future:{step:60/108/4,fn:futureStep}};
   let venueT=null;
   function venue(k){const T=k&&VENUE_TRACKS[k]||null;if(T===venueT)return;venueT=T;if(T&&T.dj)CLUB.fresh=true;if(timer){stopMusic();startMusic();}}
   let musicOn=true,track=0,analyser=null,levelsBuf=null;
@@ -6926,7 +7021,7 @@ const WALK=[
   {x0:-64,x1:-5,z0:-25,z1:-19},    // the grass slope between the Plaza road and the beach (west of the ramp)
 ];
 const inOldWorld=(x,z)=>WALK.some(r=>x>=r.x0&&x<=r.x1&&z>=r.z0&&z<=r.z1);
-const walkable=(x,z)=>G.home?homeWalk(x,z):inOldWorld(x,z)||!!(CITY&&CITY.walk(x,z));
+const walkable=(x,z)=>G.home?homeWalk(x,z):FUT.inFuture(x,z)?FUT.futureWalk(x,z):inOldWorld(x,z)||!!(CITY&&CITY.walk(x,z));
 const SHORE_Z=-49.5;                                  // past this the water is deep enough to swim
 // the beach: a steep little slope by the boardwalk, a long gentle stretch of dry sand, then it dips faster into the sea
 // (the water shader has the same shape in GLSL: seaSand)
@@ -6960,6 +7055,7 @@ function shipGround(x,z){
 }
 function groundY(x,z){
   if(G.home)return 0;
+  if(x>FUT.OX-400&&FUT.inFuture(x,z))return FUT.futureGround(x,z);   // the Future City (far away in the same scene)
   if(CITY){const cy=CITY.ground(x,z);if(cy!==null)return cy;}
   if(z>=-21)return 0;
   if(Math.abs(x)<4.4&&z>-25.4)return THREE.MathUtils.lerp(0.03,sandY(-25.4),(-21-z)/4.4);  // the ramp
@@ -6968,11 +7064,13 @@ function groundY(x,z){
 }
 const ZONES=[{id:"beach",name:"THE BEACH",spawn:[0,-28]},{id:"park",name:"THE PARK",spawn:[0,30]},{id:"waterpark",name:"WATER PARK",spawn:[31,-.5]},{id:"plaza",name:"THE PLAZA",spawn:[0,9]}];
 function zoneAt(x,z){
+  if(x>FUT.OX-400&&FUT.inFuture(x,z))return FUT.futureZone(x,z);
   if(CITY&&!inOldWorld(x,z)){const c=CITY.zoneAt(x,z);return c||G.zone||"plaza";}   // a new district, or a road (keep the last name)
   if(CITY&&x>42&&z<-19)return "boardwalk";
   return z<-21?"beach":x>24?"waterpark":z>23?"park":"plaza";}
 // the new districts have names too (banner, map, minimap)
 CITY_L.DISTRICTS.forEach(d=>ZONES.push({id:d.id,name:d.name,spawn:d.spawn,short:d.short}));ZONES.push({id:"cave",name:"SECRET CAVE",spawn:CITY_L.CAVE.enter,short:"Secret Cave"});
+FUT.FW_ZONES.forEach(z=>ZONES.push({id:z.id,name:z.name,spawn:FUT.at(...FUT.FW_SPAWNS[z.id]),world:"future",short:z.name.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()),col:z.col}));
 
 /* ---------- small helpers for scenery ---------- */
 function onSand(obj,x,z){obj.position.set(x,sandY(z),z);return obj;}
@@ -7538,12 +7636,12 @@ function ridePose(t){if(!RIDE.on||!P)return;const r=P.root;r.position.set(G.pos.
 
 const PARK_SPOTS=[...PARK_STANDS.map(S=>({id:"stand:"+S.id,x:S.x,z:S.z+(S.f||-1)*2.4,label:{ice:"BUY ICE CREAM",snack:"BUY SNACKS",drink:"BUY A DRINK"}[S.id]||"BUY"})),
   ...PARK_SLIDES.map(S=>({id:"slide:"+S.id,x:S.spot[0],z:S.spot[1],label:"RIDE THE "+S.name}))];
-const SPOT_ICON={shop:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7 H16 L15 17 H5Z" fill="#ff5fa8"/><path d="M7 7 V5.5 A3 3 0 0 1 13 5.5 V7" fill="none" stroke="#ff5fa8" stroke-width="2"/></svg>',dress:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3 Q10 6 13 3 L18 6 L16 9 L14 8 V17 H6 V8 L4 9 L2 6Z" fill="#9b5cff"/></svg>',game:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="6" width="16" height="9" rx="4.5" fill="#9b5cff"/><path d="M6 9 V12 M4.5 10.5 H7.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="9.6" r="1.1" fill="#ffd23a"/><circle cx="15" cy="11.6" r="1.1" fill="#2fd36b"/></svg>',chest:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="8" width="14" height="9" rx="1.5" fill="#a0582a"/><path d="M3 8 Q3 3 10 3 Q17 3 17 8Z" fill="#c26a30"/><rect x="8.6" y="7" width="2.8" height="4" rx="1" fill="#ffc21a"/></svg>',evshop:'<svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx="6.5" cy="12" rx="4.6" ry="5.4" fill="#e8700f"/><ellipse cx="13.5" cy="12" rx="4.6" ry="5.4" fill="#e8700f"/><ellipse cx="10" cy="12" rx="5" ry="6" fill="#ff8a1c"/><path d="M10 6.5 Q10 3.5 12 2.5" stroke="#3f8a2a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M7 10.5 L8.6 12 H5.4Z M13 10.5 L14.6 12 H11.4Z M6.5 14.5 Q10 17.5 13.5 14.5" fill="#2a1404" stroke="#2a1404" stroke-width=".8"/></svg>',stand:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8 L10 18 L14 8Z" fill="#e3a85a"/><circle cx="10" cy="6.5" r="4" fill="#ff7ac8"/></svg>',
+const SPOT_ICON={lift:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="2" width="14" height="16" rx="2.5" fill="#2a3042"/><path d="M10 4.5 L13.5 8.5 H6.5Z" fill="#7dff9b"/><path d="M10 15.5 L13.5 11.5 H6.5Z" fill="#59e0ff"/></svg>',portal:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="#59e0ff" stroke-width="2.4"/><circle cx="10" cy="10" r="4" fill="none" stroke="#ff4fd8" stroke-width="2"/><circle cx="10" cy="10" r="1.6" fill="#ffd65a"/></svg>',shop:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7 H16 L15 17 H5Z" fill="#ff5fa8"/><path d="M7 7 V5.5 A3 3 0 0 1 13 5.5 V7" fill="none" stroke="#ff5fa8" stroke-width="2"/></svg>',dress:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3 Q10 6 13 3 L18 6 L16 9 L14 8 V17 H6 V8 L4 9 L2 6Z" fill="#9b5cff"/></svg>',game:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="6" width="16" height="9" rx="4.5" fill="#9b5cff"/><path d="M6 9 V12 M4.5 10.5 H7.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="13" cy="9.6" r="1.1" fill="#ffd23a"/><circle cx="15" cy="11.6" r="1.1" fill="#2fd36b"/></svg>',chest:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="8" width="14" height="9" rx="1.5" fill="#a0582a"/><path d="M3 8 Q3 3 10 3 Q17 3 17 8Z" fill="#c26a30"/><rect x="8.6" y="7" width="2.8" height="4" rx="1" fill="#ffc21a"/></svg>',evshop:'<svg viewBox="0 0 20 20" aria-hidden="true"><ellipse cx="6.5" cy="12" rx="4.6" ry="5.4" fill="#e8700f"/><ellipse cx="13.5" cy="12" rx="4.6" ry="5.4" fill="#e8700f"/><ellipse cx="10" cy="12" rx="5" ry="6" fill="#ff8a1c"/><path d="M10 6.5 Q10 3.5 12 2.5" stroke="#3f8a2a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M7 10.5 L8.6 12 H5.4Z M13 10.5 L14.6 12 H11.4Z M6.5 14.5 Q10 17.5 13.5 14.5" fill="#2a1404" stroke="#2a1404" stroke-width=".8"/></svg>',stand:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 8 L10 18 L14 8Z" fill="#e3a85a"/><circle cx="10" cy="6.5" r="4" fill="#ff7ac8"/></svg>',
   slide:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4 Q12 4 12 10 T18 17" fill="none" stroke="#1fb6ff" stroke-width="3.2" stroke-linecap="round"/></svg>',
   bike:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4.5" cy="13.5" r="3.2" fill="none" stroke="#ff8a1c" stroke-width="2"/><circle cx="15.5" cy="13.5" r="3.2" fill="none" stroke="#ff8a1c" stroke-width="2"/><path d="M4.5 13.5 L8 8 H12 L15.5 13.5 M12 8 L13.5 5 H16" fill="none" stroke="#ff8a1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'};
 const VEH_SPOTS={"veh:ride":{id:"veh:ride",label:"RIDE",icon:"bike"},"veh:off":{id:"veh:off",label:"GET OFF",icon:"bike"}};
 /* ---------- sitting outside: benches, picnic tables, sun loungers (WORLD_SEATS here + the city's benches) ---------- */
-function worldSeats(){return CITY&&CITY.seats?(WORLD_SEATS._all&&WORLD_SEATS._n===CITY.seats.length?WORLD_SEATS._all:(WORLD_SEATS._n=CITY.seats.length,WORLD_SEATS._all=[...WORLD_SEATS,...CITY.seats])):WORLD_SEATS;}
+function worldSeats(){if(G.world==="future"&&FWX.fw)return FWX.fw.seats;return CITY&&CITY.seats?(WORLD_SEATS._all&&WORLD_SEATS._n===CITY.seats.length?WORLD_SEATS._all:(WORLD_SEATS._n=CITY.seats.length,WORLD_SEATS._all=[...WORLD_SEATS,...CITY.seats])):WORLD_SEATS;}
 // the closest free seat in reach (nobody else sitting there)
 function nearWorldSeat(){const L=worldSeats();let bi=-1,bd=1.35;
   for(let i=0;i<L.length;i++){const S=L[i];if(Math.abs(S.x-G.pos.x)>bd||Math.abs(S.z-G.pos.z)>bd)continue;const d=Math.hypot(S.x-G.pos.x,S.z-G.pos.z);if(d>=bd)continue;
@@ -7551,7 +7649,7 @@ function nearWorldSeat(){const L=worldSeats();let bi=-1,bd=1.35;
 function worldSit(i){const S=worldSeats()[i];if(!S||G.seat||VEH.ride)return;
   G.seat={k:S.k,y:S.y,f:S.f,x:S.x,z:S.z,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(S.x,0,S.z);G.face=S.f;G.target=null;G.keys={};G.marker.visible=false;
   nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");sfx.tick(true);toast(S.k==="lie"?"Time to relax! Move to get up.":"Ahh, comfy! Move to get up.");}
-function useSpot(id){if(!id)return;if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
+function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
   if(k==="evshop"){if(EV.cur)openGameStore("spooky");return;}
   if(k==="stand")openMenu("park",v);else if(k==="slide"){const S=PARK_SLIDES.find(q=>q.id===v);if(S)startSlide(S);}}
 
@@ -8184,7 +8282,7 @@ function updateRemotes(t,dt){
     placeBubbleAt(c.bubble,c.root,3.05);
   }
 }
-function netState(){if(typeof SHOW!=="undefined"&&SHOW.in)return {x:0,z:0,face:0,pose:null,show:true};const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;return st;}
+function netState(){if(typeof SHOW!=="undefined"&&SHOW.in)return {x:0,z:0,face:0,pose:null,show:true};const st={x:+G.pos.x.toFixed(3),z:+G.pos.z.toFixed(3),face:+G.face.toFixed(3),pose:G.seat?{k:G.seat.k,y:G.seat.y,f:+G.seat.f.toFixed(3)}:null};if(PH.open)st.phone=true;{const h=holdInfo();if(h)st.hold=h;}if(wearUniform)st.uniform=wearUniform;if(G.home&&HOME.place==="work")st.work=true;else if(G.home&&HOME.place==="delivery")st.work="delivery";else if(G.home&&HOME.place)st.place=HOME.place;else if(G.home&&HOME.owner)st.home=HOME.owner;if(!G.home&&G.world==="future")st.world="future";return st;}
 let NET_RETRY=0;
 /* A new version of the game went live: the server says so a minute before ("server:update" in: 60) and again when it
    restarts (in: 0). The window reconnects by itself; if the server now has a newer page, it reloads and goes
@@ -8266,6 +8364,7 @@ function netJoin(){
     socket.on("player:invisible",d=>{const c=remotes.get(d.id);if(c){c.invisible=!!d.on;ghostRemote(c,c.invisible);}});
     socket.on("muted",d=>{myMutedUntil=d.until||0;if(myMutedUntil){setTyping(false);toast(mutedText());sfx.error();}else{toast("You can chat again.");sfx.tick(true);}});
     socket.on("chat:muted",d=>{myMutedUntil=d.until||myMutedUntil;myBubble.classList.remove("show");toast(mutedText());sfx.error();});
+    socket.on("world:refused",()=>worldRefused());
     socket.on("coins",d=>{if(me)me.coins=d.coins;paintCoins(true);if(d.delta>0){toast("You got "+d.delta.toLocaleString("en-US")+" coins!");sfx.success();}});
     socket.on("kicked:role",()=>{location.reload();});
     socket.on("parental",d=>{if(me){me.chatLock=!!(d&&d.chatLock);paintChatLock();toast(me.chatLock?"Your parents turned the chat off. You can still say hi with the ready-made messages!":"Your parents turned the chat back on.");}});
@@ -8526,6 +8625,10 @@ const MAP_BOUNDS={x0:-178,x1:292,z0:-90,z1:250};
 const MAP_S=10,ART_K=.5,MAP_PX=MAP_S*ART_K;       // painted at 10 px per step, stored at half that (a 2350×1700 picture, fine on phones)
 const ZONE_COL={plaza:"#ff9a1f",beach:"#1fa3e8",park:"#2fb04e",waterpark:"#00b3c7"};
 let mapArt=null,mapBig=false,mapFrame=0,mapView=null,mapHover=null;
+// each world has its own map (the bounds are swapped in place, so everything that reads MAP_BOUNDS follows)
+const MB_TOWN={...MAP_BOUNDS},MB_FUT={...FUT.FUTURE_BOUNDS},MAPW={cur:"town",art:{},photo:{},init:false};
+function mapWorld(){const w=G.world==="future"?"future":"town";if(MAPW.cur===w)return;MAPW.art[MAPW.cur]=mapArt;MAPW.photo[MAPW.cur]=mapPhoto;MAPW.cur=w;
+  Object.assign(MAP_BOUNDS,w==="future"?MB_FUT:MB_TOWN);mapArt=MAPW.art[w]||null;mapPhoto=MAPW.photo[w]||null;if(MAPW.init){if(!mapArt)mapArt=makeMapArt();paintTravel();}mapFrame=0;}
 const mpX=x=>(x-MAP_BOUNDS.x0)*MAP_S,mpZ=z=>(z-MAP_BOUNDS.z0)*MAP_S;   // painting space
 const mX=x=>(x-MAP_BOUNDS.x0)*MAP_PX,mZ=z=>(z-MAP_BOUNDS.z0)*MAP_PX;   // the stored picture
 function mapRand(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
@@ -8657,6 +8760,7 @@ function paintMapArt(){
 }
 // the compass and the place names on the map (drawn in painting space: call with g scaled by ART_K)
 function mapLabels(g,photo){
+  if(MAPW.cur==="future"){futureMapLabels(g);return;}
   // ---- compass ----
   g.save();g.translate(mpX(MAP_BOUNDS.x0+7),mpZ(MAP_BOUNDS.z0+8));g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.arc(0,0,44,0,Math.PI*2);g.fill();g.strokeStyle="#1f3355";g.lineWidth=4;g.stroke();
   g.fillStyle="#ff4545";g.beginPath();g.moveTo(0,-34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();g.fillStyle="#1f3355";g.beginPath();g.moveTo(0,34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();
@@ -8668,6 +8772,16 @@ function mapLabels(g,photo){
     g.textAlign="center";g.textBaseline="middle";g.lineWidth=7;g.strokeStyle="rgba(0,0,0,.3)";g.strokeText(text,0,3);g.fillStyle="#fff";g.fillText(text,0,3);g.restore();};
   label("THE PLAZA",0,-17.2,ZONE_COL.plaza);label("THE BEACH",24,-29,ZONE_COL.beach);label("THE PARK",-8,30,ZONE_COL.park);label("WATER PARK",64,14,ZONE_COL.waterpark);
   CITY_L.DISTRICTS.forEach(d=>{const [x0,z0,x1,z1]=d.rect,at=MAP_LABEL_AT[d.id]||[(x0+x1)/2,(z0+z1)/2];label(I18N.lang==="he"?d.short:d.short.toUpperCase(),at[0],at[1],d.col);});
+}
+// the Future City's names (neon labels on the dark city)
+function futureMapLabels(g){
+  g.save();g.translate(mpX(MAP_BOUNDS.x0+7),mpZ(MAP_BOUNDS.z0+8));g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.arc(0,0,44,0,Math.PI*2);g.fill();g.strokeStyle="#1f3355";g.lineWidth=4;g.stroke();
+  g.fillStyle="#ff4545";g.beginPath();g.moveTo(0,-34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();g.fillStyle="#1f3355";g.beginPath();g.moveTo(0,34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();g.restore();
+  const AT={"f-landing":[0,92],"f-square":[0,4],"f-mall":[-62,-24],"f-hotel":[62,-24],"f-tower":[0,-62],"f-bridge":[0,-90],"f-park":[-80,58]};
+  FUT.FW_ZONES.forEach(z=>{const [lx,lz]=AT[z.id]||[(z.rect[0]+z.rect[2])/2,(z.rect[1]+z.rect[3])/2],[x,y]=FUT.at(lx,lz),text=I18N.T(z.name);
+    g.save();g.translate(mpX(x),mpZ(y));g.font="44px 'HeeboDisplay','Lilita One',sans-serif";const w=g.measureText(text).width+56;
+    g.fillStyle="rgba(10,14,40,.88)";g.beginPath();g.roundRect(-w/2,-28,w,58,29);g.fill();g.lineWidth=5;g.strokeStyle=z.col||"#59e0ff";g.shadowColor=z.col||"#59e0ff";g.shadowBlur=18;g.stroke();g.shadowBlur=0;
+    g.textAlign="center";g.textBaseline="middle";g.fillStyle="#fff";g.fillText(text,0,3);g.restore();});
 }
 /* THE MAP AS A PHOTO: the real 3D world seen from straight above, at midday, without people (drawn once, in 2×2 tiles on the
    game's own canvas, so it looks exactly like the game). Falls back to the painted map if anything goes wrong. */
@@ -8684,12 +8798,12 @@ function photoMapBase(){
     if(sc){Object.assign(sc,{left:-.01,right:.01,top:.01,bottom:-.01});sc.updateProjectionMatrix();}
     const tw=Math.ceil(W/2),th=Math.ceil(H/2),u=1/MAP_PX;   // world units per pixel
     const cam2=new THREE.OrthographicCamera(-tw*u/2,tw*u/2,th*u/2,-th*u/2,1,600);cam2.up.set(0,0,-1);
-    if(CITY){CITY.setView(1e5);}
+    const FUTW=MAPW.cur==="future"&&FWX.fw;if(FUTW)FWX.fw.setView(1e5);else if(CITY){CITY.setView(1e5);}
     renderer.setPixelRatio(1);renderer.setSize(tw,th,false);
     for(let j=0;j<2;j++)for(let i=0;i<2;i++){
       const cx=MAP_BOUNDS.x0+(i+.5)*tw*u,cz=MAP_BOUNDS.z0+(j+.5)*th*u;
       cam2.position.set(cx,300,cz);cam2.lookAt(cx,0,cz);cam2.updateMatrixWorld();
-      if(CITY)CITY.update(performance.now()/1000,0,cam2);
+      if(FUTW)FWX.fw.update(performance.now()/1000,0,cam2,true);else if(CITY)CITY.update(performance.now()/1000,0,cam2);
       renderer.render(scene,cam2);g.drawImage(renderer.domElement,i*tw,j*th);}
   }catch(err){console.error("[map photo]",err);return null;}
   finally{
@@ -8779,7 +8893,7 @@ function mapPin(g,sx,sy,col,pr,draw,name,sub){
     if(sub){g.font="600 11px HeeboHe,Fredoka,sans-serif";const w2=g.measureText(sub).width+10;g.fillStyle=col;g.beginPath();g.roundRect(-w2/2,-r*3.1-35,w2,16,8);g.fill();g.fillStyle="#fff";g.fillText(sub,0,-r*3.1-27);}}
   g.restore();}
 function drawMapLayers(g,toScreen,pr,near){   // near = zoomed in enough for names
-  if(G.home)return;
+  if(G.home||MAPW.cur==="future")return;
   if(MAPL.mg)MG_STATIONS.forEach(st=>{const [sx,sy]=toScreen(st.x,st.z);mapPin(g,sx,sy,st.color,pr,(g,r)=>{g.fillStyle="#fff";g.beginPath();g.moveTo(-r*.35,-r*.5);g.lineTo(r*.55,0);g.lineTo(-r*.35,r*.5);g.closePath();g.fill();},near&&I18N.T(st.name));});
   if(MAPL.res)RESIDENTS.forEach(R=>{const at=R.at,[sx,sy]=toScreen(at[0],at[1]),q=QS.res.find(x=>x.R.id===R.id),k=q&&q.kind;
     mapPin(g,sx,sy,k==="!"?"#2fd36b":k==="?"?"#ffc21f":"#5a8dee",pr,(g,r)=>{const im=mapFace(R);if(im.complete&&im.naturalWidth)g.drawImage(im,-r*.86,-r*.86,r*1.72,r*1.72);},near&&I18N.T(R.name),near&&(k==="!"?I18N.T("Prize waiting!"):k==="?"?I18N.T("New quest"):""));});
@@ -8792,7 +8906,7 @@ function drawMarkers(g,toScreen,big,size){
     if(name&&big){g.font="600 13px HeeboHe,Fredoka,sans-serif";g.textAlign="center";g.lineWidth=4;g.strokeStyle="rgba(20,40,80,.8)";g.strokeText(name,sx,sy-16);g.fillStyle="#fff";g.fillText(name,sx,sy-16);}};
   for(const c of remotes.values())dot(c.root.position.x,c.root.position.z,c.role==="admin"?"#ff4545":c.role==="mod"?"#2f5bff":"#1fb6ff",c.username);
   if(G.npc&&!G.home)dot(G.npc.root.position.x,G.npc.root.position.z,"#2fd36b","Pip");
-  if(!G.home&&!big)for(const r of QS.res)if(r.kind)dot(r.R.at[0],r.R.at[1],r.kind==="!"?"#2fd36b":"#ffc21f",r.R.name+" "+r.kind);
+  if(!G.home&&!big&&MAPW.cur!=="future")for(const r of QS.res)if(r.kind)dot(r.R.at[0],r.R.at[1],r.kind==="!"?"#2fd36b":"#ffc21f",r.R.name+" "+r.kind);
   if(WORK.active&&WORK.job==="police")POL.tasks.forEach(k=>{if(k.stage==="done")return;const b=k.stage==="return"||k.stage==="follow"?k.b:k.a;dot(b.x,b.z,k.type==="thief"?"#ff4f4f":"#ffb21f",k.type==="thief"?"Pickpocket":"Lost kid");});
   // my parked vehicle: an orange badge with a little bike
   if(VEH.mine&&!VEH.mine.r&&!G.home){const [bx,by]=toScreen(VEH.mine.x,VEH.mine.z),R=11*pr+2;g.beginPath();g.arc(bx,by,R+3,0,Math.PI*2);g.fillStyle="#fff";g.fill();g.beginPath();g.arc(bx,by,R,0,Math.PI*2);g.fillStyle=VEH.mine.towAt?"#ff8a1c":"#2fb84f";g.fill();
@@ -8833,11 +8947,7 @@ function initMap(){
     boardwalk:'<path d="M3 13 Q12 3 21 13Z" fill="#fff"/><path d="M12 12 V18 M3 20 H21" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
     hills:'<path d="M1.5 20 L9 7 L13.5 14 L16 10.5 L22.5 20Z" fill="#fff"/>',
     camp:'<path d="M12 3.5 L21.5 20 H2.5Z" fill="#fff"/><path d="M12 11 L15.5 20 H8.5Z" fill="var(--zc)"/>'};
-  const order=["plaza","beach","park","waterpark",...CITY_L.DISTRICTS.map(d=>d.id)];
-  order.forEach(id=>{const z=ZONES.find(q=>q.id===id);if(!z)return;const d=CITY_L.DISTRICT_BY_ID[id],name=d?d.short:id==="waterpark"?"Water Park":id[0].toUpperCase()+id.slice(1),b=document.createElement("button");
-    b.type="button";b.dataset.zone=id;b.style.setProperty("--zc",d?d.col:ZONE_COL[id]);
-    b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[id]||ICON.plaza}</svg><span>${esc(name)}</span>`;b.setAttribute("aria-label","Go to "+name);
-    b.onclick=()=>travelTo(z);travel.appendChild(b);});
+  MAP_ICON=ICON;MAPW.init=true;paintTravel();
   // zoom buttons on the big map
   const zb=document.createElement("div");zb.className="map-zoom";
   zb.innerHTML='<button type="button" data-z="in" aria-label="Zoom in"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4 V16 M4 10 H16" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></button><button type="button" data-z="out" aria-label="Zoom out"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10 H16" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></button><button type="button" data-z="me" aria-label="Show where I am"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="5.5" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="10" cy="10" r="2" fill="#fff"/><path d="M10 1.5 V4 M10 16 V18.5 M1.5 10 H4 M16 10 H18.5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></button>';
@@ -8845,7 +8955,19 @@ function initMap(){
     if(b.dataset.z==="in")mapSetZoom(mapZoom*1.5);else if(b.dataset.z==="out")mapSetZoom(mapZoom/1.5);else{mapZoom=Math.max(mapZoom,2.4);mapCx=G.pos.x;mapCz=G.pos.z;mapFrame=0;}});
   document.getElementById("mapHost").appendChild(zb);
 }
+let MAP_ICON={};
+// the quick-travel buttons under the map: the places of the world you're in
+function paintTravel(){const travel=document.getElementById("mapTravel");travel.innerHTML="";const ICON=MAP_ICON;
+  if(MAPW.cur==="future"){FUT.FW_ZONES.forEach(Z=>{const z=ZONES.find(q=>q.id===Z.id);if(!z)return;const b=document.createElement("button");b.type="button";b.dataset.zone=Z.id;b.style.setProperty("--zc",Z.col||"#59e0ff");
+    b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[FUT_ICON[Z.id]]||ICON.fun}</svg><span>${esc(z.short)}</span>`;b.setAttribute("aria-label","Go to "+z.short);b.onclick=()=>travelTo(z);travel.appendChild(b);});return;}
+  const order=["plaza","beach","park","waterpark",...CITY_L.DISTRICTS.map(d=>d.id)];
+  order.forEach(id=>{const z=ZONES.find(q=>q.id===id);if(!z)return;const d=CITY_L.DISTRICT_BY_ID[id],name=d?d.short:id==="waterpark"?"Water Park":id[0].toUpperCase()+id.slice(1),b=document.createElement("button");
+    b.type="button";b.dataset.zone=id;b.style.setProperty("--zc",d?d.col:ZONE_COL[id]);
+    b.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[id]||ICON.plaza}</svg><span>${esc(name)}</span>`;b.setAttribute("aria-label","Go to "+name);
+    b.onclick=()=>travelTo(z);travel.appendChild(b);});}
+const FUT_ICON={"f-landing":"airport","f-square":"plaza","f-mall":"shopping","f-hotel":"residential","f-tower":"industrial","f-bridge":"boardwalk","f-park":"centralpark"};
 function renderMap(){
+  if(inGame&&!G.home&&MAPW.init)mapWorld();
   if(!inGame||!mapArt||G.home)return;
   mapFrame++;if(mapFrame%2)return;
   const dpr=Math.min(devicePixelRatio,2);
@@ -8854,7 +8976,7 @@ function renderMap(){
     const f=mapFit(host);if(!f.W)return;
     if(cv.width!==Math.round(f.W*dpr)||cv.height!==Math.round(f.H*dpr)){cv.width=Math.round(f.W*dpr);cv.height=Math.round(f.H*dpr);}
     const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingQuality="high";
-    g.fillStyle="#5fb35a";g.fillRect(0,0,f.W,f.H);g.fillStyle="#1479d6";g.fillRect(0,0,f.W,f.oy+mZ(-34)*f.s);
+    if(MAPW.cur==="future"){g.fillStyle="#0d3b6e";g.fillRect(0,0,f.W,f.H);}else{g.fillStyle="#5fb35a";g.fillRect(0,0,f.W,f.H);g.fillStyle="#1479d6";g.fillRect(0,0,f.W,f.oy+mZ(-34)*f.s);}
     g.drawImage(mapArt,f.ox,f.oy,mapArt.width*f.s,mapArt.height*f.s);
     mapView=f;routeDraw(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],5);{const ts=(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],pr=Math.max(.6,Math.min(1.15,f.W/800)),near=f.s>=.7;drawMapLayers(g,ts,near?pr:pr*.62,near);drawMarkers(g,ts,true,pr);}
     if(mapHover){g.beginPath();g.arc(mapHover[0],mapHover[1],12,0,Math.PI*2);g.strokeStyle=mapHover[2]?"rgba(255,255,255,.9)":"rgba(255,80,80,.9)";g.lineWidth=3;g.setLineDash([5,4]);g.stroke();g.setLineDash([]);}
@@ -8871,11 +8993,12 @@ function renderMap(){
   document.querySelectorAll("#mapTravel button").forEach(b=>b.setAttribute("aria-current",b.dataset.zone===G.zone));
 }
 const mapOverlay=document.getElementById("mapOverlay");
-function openMap(){if(!inGame)return;initMap();mapBig=true;mapOverlay.hidden=false;G.keys={};sfx.open();mapFrame=0;
+function openMap(){if(!inGame)return;initMap();mapWorld();mapBig=true;mapOverlay.hidden=false;G.keys={};sfx.open();mapFrame=0;
   if(G.zone!=="cave"){mapZoom=2.2;mapCx=G.pos.x;mapCz=G.pos.z;}else{mapZoom=1;mapCx=(MAP_BOUNDS.x0+MAP_BOUNDS.x1)/2;mapCz=(MAP_BOUNDS.z0+MAP_BOUNDS.z1)/2;}
   tlEvent("mapOpen");}
 function closeMap(){if(mapOverlay.hidden)return;mapOverlay.hidden=true;mapBig=false;mapHover=null;sfx.close();tlEvent("mapClose");}
 document.getElementById("minimap").onclick=()=>openMap();
+document.getElementById("mapWorlds").onclick=()=>{sfx.tick(true);openWorlds();};
 document.getElementById("mapClose").onclick=closeMap;
 mapOverlay.addEventListener("pointerdown",e=>{if(e.target===mapOverlay)closeMap();});
 addEventListener("keydown",e=>{if(!inGame||SHOW.in)return;if(e.key==="Escape"&&!mapOverlay.hidden){e.stopImmediatePropagation();closeMap();return;}
@@ -9004,6 +9127,139 @@ function travelTo(z){
   setTimeout(()=>{G.pos.set(z.spawn[0],0,z.spawn[1]);G.target=null;if(G.marker)G.marker.visible=false;G.face=Math.PI;
     G.camPos.set(G.pos.x,1.2+5*zoomFactor(),G.pos.z+10.5*zoomFactor());NET.last=0;netMove(false);
     w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),650);},560);
+}
+
+/* =====================================================================
+   OTHER WORLDS: Jumpi Town (this one) and the Future City (public/world/future.js, layout in /shared/future-layout.js).
+   The Future City is far away in the same scene (FUT.OX, FUT.OZ), so nothing of the old world gets in its way;
+   the server gives it its own room ("future") and only lets in players who opened it (POST /api/worlds/unlock).
+   ===================================================================== */
+const FWX={fw:null,loading:null,busy:false,prev:null,lastLift:0};
+G.world="town";
+const worldsOf=()=>(me&&Array.isArray(me.worlds)?me.worlds:[]);
+const futureOpen=()=>worldsOf().includes("future");
+async function loadFuture(){
+  if(FWX.fw)return FWX.fw;if(FWX.loading)return FWX.loading;
+  FWX.loading=import("/world/future.js").then(m=>{const fw=m.buildFuture({me:()=>G.pos});world.add(fw.root);
+    // the colliders live in the same list as the old world's (they're 3,000 steps away, so they never meet)
+    const C=worldSaved&&G.home?worldSaved.colliders:G.colliders;C.push(...fw.colliders);
+    if(fw.setView)fw.setView((({short:96,medium:128,far:175})[gfxEff().view]||175)+40);
+    fw.night(FWX.lights!=null?FWX.lights:.5);FWX.fw=fw;return fw;}).catch(err=>{console.error("[future]",err);FWX.loading=null;throw err;});
+  return FWX.loading;}
+const inFutureNow=()=>G.world==="future"&&!G.home;
+// inside the mall the camera stays under the first floor's ceiling
+function fwCamCap(x,z){const [lx,lz]=FUT.toLocal(x,z),r=FUT.MALL.inside;return lx>=r[0]&&lx<=r[2]&&lz>=r[1]&&lz<=r[3]?FUT.MALL.ceil-.8:0;}
+// the camera shouldn't go inside a tower behind you
+function fwCamClamp(px,pz,cx,cz){let f=1;const gy=FUT.futureGround(px,pz);
+  for(let i=1;i<=10;i++){const k=i/10,x=px+(cx-px)*k,z=pz+(cz-pz)*k;if(!FUT.futureWalk(x,z)&&FUT.futureSolid(x,z,gy)){f=Math.max(.15,(i-1)/10);break;}}return f;}
+
+/* ---------- going there and back ---------- */
+async function goWorld(id,{film=true,spawn}={}){
+  if(FWX.busy||!inGame)return;
+  if(id==="future"&&!futureOpen()){openWorlds();return;}
+  if(G.home){toast("Go outside first, then travel.");return;}
+  FWX.busy=true;vehBeforeLeave();closeMap();closeWorlds();G.keys={};G.target=null;if(G.marker)G.marker.visible=false;if(G.seat)try{standUp(true);}catch(e){}
+  let fw=null;
+  if(id==="future"){const pending=loadFuture();if(film)await timeMachine(pending);try{fw=await pending;}catch(e){FWX.busy=false;toast("The time machine is out of order. Please try again.");return;}}
+  const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
+  await new Promise(r=>setTimeout(r,560));
+  clearRemotes();
+  let x,z,face=Math.PI;
+  if(id==="future"){[x,z]=FUT.at(...(spawn||FUT.LANDING.spawn));G.world="future";Sound.venue("future");}
+  else{[x,z]=spawn||[0,9];G.world="town";Sound.venue(null);}
+  G.pos.set(x,0,z);G.face=face;G.camYaw=0;G.camPos.set(x,1.2+5*zoomFactor(),z+10.5*zoomFactor());G.zone=zoneAt(x,z);
+  if(socket&&socket.connected)socket.emit("join",netState());NET.last=0;
+  if(fw)await warmScene(fw.root,2500);
+  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),650);
+  body.classList.toggle("in-future",G.world==="future");try{localStorage.setItem("jumpi-world",G.world);}catch(e){}
+  setTimeout(()=>showZone(G.zone),500);
+  FWX.busy=false;
+  if(id==="future"&&!me.worldTrip){me.worldTrip=true;api("/api/worlds/trip",{}).catch(()=>{});setTimeout(()=>toast("Welcome to the Future City! Take the lift up the Sky Tower for the best view."),1400);}
+}
+// the server said no (the world isn't open on this account): back home
+function worldRefused(){if(G.world!=="future")return;G.world="town";body.classList.remove("in-future");Sound.venue(null);G.pos.set(0,0,9);G.camPos.set(0,6,20);if(socket&&socket.connected)socket.emit("join",netState());toast("The Future City isn't open on your account yet.");}
+
+/* ---------- the lifts (stand on the green pad, press E) ---------- */
+function fwLift(id){const L=FWX.fw&&FWX.fw.lifts.find(q=>q.id===id);if(!L||FWX.busy)return;FWX.busy=true;G.keys={};G.target=null;
+  const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
+  setTimeout(()=>{const [x,z]=L.to;G.pos.set(x,0,z);G.camYaw=0;G.camPos.set(x,FUT.futureGround(x,z)+1.2+5*zoomFactor(),z+10.5*zoomFactor());NET.last=0;netMove(false);
+    w.classList.remove("in");w.classList.add("out");setTimeout(()=>{w.classList.remove("out");FWX.busy=false;},650);sfx.success();},560);}
+function fwSpots(){if(!FWX.fw||!inFutureNow())return null;const x=G.pos.x,z=G.pos.z;
+  const L=FWX.fw.liftAt(x,z);if(L)return {id:"fw:lift:"+L.id,label:/down/.test(L.id)?"GO DOWN":"GO UP",icon:"lift"};
+  const [px,pz]=FUT.at(...FUT.LANDING.pad);if(Math.hypot(x-px,z-pz)<3.2)return {id:"fw:port",label:"TIME MACHINE",icon:"portal"};
+  return null;}
+
+/* ---------- the world select screen ---------- */
+const wsel=document.getElementById("worldSel");
+function openWorlds(){if(!inGame)return;closeMap();paintWorlds();wsel.hidden=false;G.keys={};sfx.open();}
+function closeWorlds(){if(wsel.hidden)return;wsel.hidden=true;wsel.querySelector(".ws-ask").hidden=true;}
+function paintWorlds(){
+  const coins=(me&&me.coins)||0,open=futureOpen(),k=Math.min(1,coins/FUT.UNLOCK_COST),here=G.world;
+  const fc=wsel.querySelector('[data-w="future"]'),tc=wsel.querySelector('[data-w="town"]');
+  tc.classList.toggle("here",here==="town");fc.classList.toggle("here",here==="future");fc.classList.toggle("locked",!open);
+  tc.querySelector(".ws-go").textContent=here==="town"?I18N.T("YOU ARE HERE"):I18N.T("TRAVEL");tc.querySelector(".ws-go").disabled=here==="town";
+  fc.querySelector(".ws-lock").hidden=open;fc.querySelector(".ws-prog").hidden=open;
+  fc.querySelector(".ws-fill").style.width=(k*100).toFixed(1)+"%";
+  fc.querySelector(".ws-num").textContent=coins.toLocaleString("en-US")+" / "+FUT.UNLOCK_COST.toLocaleString("en-US");
+  const go=fc.querySelector(".ws-go");
+  if(open){go.textContent=here==="future"?I18N.T("YOU ARE HERE"):I18N.T("TRAVEL");go.disabled=here==="future";go.classList.remove("buy");}
+  else{go.innerHTML=`<span>${esc(I18N.T("OPEN"))}</span> <b class="ws-coin"></b>${FUT.UNLOCK_COST.toLocaleString("en-US")}`;go.disabled=coins<FUT.UNLOCK_COST;go.classList.add("buy");}
+  fc.querySelector(".ws-need").textContent=open?"":coins>=FUT.UNLOCK_COST?I18N.T("You have enough coins!"):I18N.T("{n} more coins to go",{n:(FUT.UNLOCK_COST-coins).toLocaleString("en-US")});
+}
+wsel.querySelector(".ws-back").onclick=()=>{sfx.close();closeWorlds();};
+wsel.addEventListener("click",e=>{if(e.target===wsel){sfx.close();closeWorlds();}});
+wsel.querySelector('[data-w="town"] .ws-go').onclick=()=>{if(G.world!=="town")goWorld("town",{spawn:[0,9]});};
+wsel.querySelector('[data-w="future"] .ws-go').onclick=()=>{
+  if(futureOpen()){goWorld("future");return;}
+  if(((me&&me.coins)||0)<FUT.UNLOCK_COST)return;
+  wsel.querySelector(".ws-ask").hidden=false;sfx.tick(true);};
+wsel.querySelector('[data-w="future"] .ws-peek').onclick=()=>worldPreview();
+wsel.querySelector(".ws-no").onclick=()=>{wsel.querySelector(".ws-ask").hidden=true;sfx.close();};
+wsel.querySelector(".ws-yes").onclick=async e=>{const b=e.currentTarget;if(b.disabled)return;b.disabled=true;
+  const r=await api("/api/worlds/unlock",{world:"future"});b.disabled=false;wsel.querySelector(".ws-ask").hidden=true;
+  if(!r.ok){toast((r.data&&r.data.error)||"Something went wrong. Please try again.");sfx.error();return;}
+  me.coins=r.data.coins;me.worlds=r.data.worlds;paintCoins(true);paintWorlds();sfx.success();
+  toast(I18N.T("The Future City is open! Here's a welcome gift of {n} coins.",{n:(r.data.gift||0).toLocaleString("en-US")}));
+  setTimeout(()=>goWorld("future"),900);};
+
+/* ---------- the preview: a flight around the Future City before buying ---------- */
+async function worldPreview(){
+  if(FWX.prev||FWX.busy)return;const btn=wsel.querySelector('[data-w="future"] .ws-peek');btn.disabled=true;
+  let fw;try{fw=await loadFuture();}catch(e){btn.disabled=false;toast("Couldn't load the preview. Please try again.");return;}
+  btn.disabled=false;closeWorlds();
+  FWX.prev={t0:performance.now()/1000,far:cam.far,fogN:scene.fog&&scene.fog.near,fogF:scene.fog&&scene.fog.far};
+  fw.setView(600);document.getElementById("wsPrev").hidden=false;body.classList.add("ws-previewing");G.keys={};}
+function endPreview(){const P0=FWX.prev;if(!P0)return;FWX.prev=null;cam.far=VIEW_FAR;cam.updateProjectionMatrix();
+  if(scene.fog){scene.fog.near=FOG_NEAR;scene.fog.far=FOG_FAR;}
+  FWX.fw.setView((({short:96,medium:128,far:175})[gfxEff().view]||175)+40);
+  document.getElementById("wsPrev").hidden=true;body.classList.remove("ws-previewing");openWorlds();}
+document.getElementById("wsPrevBack").onclick=()=>{sfx.close();endPreview();};
+// called from the frame loop after the normal camera: the preview flies its own camera
+function previewCam(t){const P0=FWX.prev;if(!P0)return;const k=t-P0.t0,[cx,cz]=FUT.at(0,0),a=k*.12+.35,r=175-Math.min(35,k*1.5);
+  cam.position.set(cx+Math.sin(a)*r,118+Math.sin(k*.3)*8,cz+Math.cos(a)*r);cam.lookAt(cx,4,cz);
+  if(cam.far<600){cam.far=600;cam.updateProjectionMatrix();}if(scene.fog){scene.fog.near=180;scene.fog.far=520;}}
+
+/* ---------- the time machine: a short trip through time (Skip to jump right in) ---------- */
+function timeMachine(pending){
+  return new Promise(res=>{const ov=document.getElementById("tmach"),cv=ov.querySelector("canvas"),x=cv.getContext("2d"),skip=ov.querySelector(".tm-skip"),bar=ov.querySelector(".tm-fill");
+    ov.hidden=false;sfx.whoosh();let done=false,raf=0;const t0=performance.now(),LEN=me&&me.worldTrip?2600:5200;let ready=false;Promise.resolve(pending).then(()=>{ready=true;},()=>{ready=true;});
+    const W=()=>{const dpr=Math.min(2,devicePixelRatio||1);cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;};W();
+    const stars=Array.from({length:260},()=>({a:Math.random()*Math.PI*2,r:Math.random(),s:.4+Math.random(),h:Math.random()<.5?190:300}));
+    const yr=ov.querySelector(".tm-year");
+    const end=()=>{if(done)return;done=true;cancelAnimationFrame(raf);ov.classList.add("out");setTimeout(()=>{ov.hidden=true;ov.classList.remove("out");},450);removeEventListener("resize",W);res();};
+    skip.onclick=()=>{sfx.tick(true);end();};addEventListener("resize",W);
+    const frame=()=>{const now=performance.now(),k=Math.min(1,(now-t0)/LEN),w=cv.width,h=cv.height,cx=w/2,cy=h/2,sp=.2+k*k*3.2;
+      x.fillStyle=`rgba(6,4,24,${.28})`;x.fillRect(0,0,w,h);
+      // the tunnel rings
+      for(let i=0;i<14;i++){const z=((i/14)+(now/1000)*sp*.35)%1,rr=Math.pow(z,2.2)*Math.max(w,h)*.9;x.strokeStyle=`hsla(${(190+i*22+now/20)%360},100%,65%,${z*.7})`;x.lineWidth=Math.max(1,z*10);x.beginPath();x.ellipse(cx,cy,rr,rr*.78,now/3000+i,0,Math.PI*2);x.stroke();}
+      // streaks of light
+      for(const s of stars){s.r+=s.s*.006*sp*(1+s.r*3);if(s.r>1.2){s.r=Math.random()*.1;s.a=Math.random()*Math.PI*2;}const r0=s.r*Math.max(w,h)*.7,r1=r0*(1+.08*sp);
+        x.strokeStyle=`hsla(${s.h},100%,75%,${Math.min(1,s.r*1.6)})`;x.lineWidth=1+s.r*2.5;x.beginPath();x.moveTo(cx+Math.cos(s.a)*r0,cy+Math.sin(s.a)*r0);x.lineTo(cx+Math.cos(s.a)*r1,cy+Math.sin(s.a)*r1);x.stroke();}
+      // the glow in the middle grows into a white flash at the end
+      const g=x.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h)*(.08+k*.5));g.addColorStop(0,`rgba(255,255,255,${.5+k*.5})`);g.addColorStop(.4,`rgba(120,240,255,${.25+k*.4})`);g.addColorStop(1,"rgba(0,0,0,0)");x.fillStyle=g;x.fillRect(0,0,w,h);
+      yr.textContent=String(Math.round(2026+(3026-2026)*Math.pow(k,1.6)));bar.style.width=(k*100)+"%";
+      if(k>=1&&ready)return end();raf=requestAnimationFrame(frame);};
+    x.fillStyle="#06041a";x.fillRect(0,0,cv.width,cv.height);frame();});
 }
 
 /* ---------- VEHICLES: your own motorcycle in the open world (public/shared/vehicles.js, public/world/bikes.js, realtime/vehicles.js) ----------
@@ -9254,13 +9510,14 @@ function gameTick(dt,t,hy){
   // shop / wardrobe open: come closer and keep the character on the left, next to the card
   const dress=GS.open,dz=dress?.42:1,side=dress&&innerWidth>700?Math.min(3.2,innerWidth/520)*zf*dz*1.6:0,rx=cy*side,rz=-sy*side;
   const want=new THREE.Vector3(G.pos.x+sy*10.5*zf*dz+rx,gy+1.2+5*zf*pitch*(dress?.32:1),G.pos.z+cy*10.5*zf*dz+rz);
-  if(CITY&&!G.home){const f=Math.min(camBlock(G.pos.x,G.pos.z,want.x,want.z),CITY.camClamp(G.pos.x,G.pos.z,want.x,want.z));if(f<1){want.x=G.pos.x+(want.x-G.pos.x)*f;want.z=G.pos.z+(want.z-G.pos.z)*f;want.y=gy+1.6+(want.y-gy-1.6)*Math.max(.35,f);}}   // a building behind me: the camera comes closer instead of going inside it
-  G.camPos.lerp(want,Math.min(1,dt*(G.orbiting?14:4)));cam.position.copy(G.camPos);const ahead=dress?0:8*zf-3;cam.lookAt(G.pos.x-sy*ahead+rx,gy+(dress?1.25:1.6),G.pos.z-cy*ahead+rz);   // look further ahead when far away, closer to the player when zoomed in
+  if(inFutureNow()){const f=fwCamClamp(G.pos.x,G.pos.z,want.x,want.z);if(f<1){want.x=G.pos.x+(want.x-G.pos.x)*f;want.z=G.pos.z+(want.z-G.pos.z)*f;want.y=gy+1.6+(want.y-gy-1.6)*Math.max(.35,f);}const cap=fwCamCap(G.pos.x,G.pos.z);if(cap&&want.y>cap)want.y=cap;}
+  else if(CITY&&!G.home){const f=Math.min(camBlock(G.pos.x,G.pos.z,want.x,want.z),CITY.camClamp(G.pos.x,G.pos.z,want.x,want.z));if(f<1){want.x=G.pos.x+(want.x-G.pos.x)*f;want.z=G.pos.z+(want.z-G.pos.z)*f;want.y=gy+1.6+(want.y-gy-1.6)*Math.max(.35,f);}}   // a building behind me: the camera comes closer instead of going inside it
+  G.camPos.lerp(want,Math.min(1,dt*(G.orbiting?14:4)));cam.position.copy(G.camPos);const ahead=dress?0:8*zf-3;cam.lookAt(G.pos.x-sy*ahead+rx,gy+(dress?1.25:1.6),G.pos.z-cy*ahead+rz);if(FWX.prev)previewCam(t);   // look further ahead when far away, closer to the player when zoomed in
   // world motion
   if(G.home&&HOME.sun){const sx=Math.round(G.pos.x*2)/2,sz=Math.round(G.pos.z*2)/2;HOME.sun.position.set(sx+5,12,sz+7);HOME.sun.target.position.set(sx,0,sz);HOME.sun.target.updateMatrixWorld();}
   weatherTick(t,dt);   // time of day, weather, sun position, lamps and weather sounds
   policeTick(t,dt);    // on patrol: the cases around the Plaza
-  updateJets(t);updateAreas(t,dt);if(CITY&&!G.home)CITY.update(t,dt,cam);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home){updateResident(t,dt);updateResidents(t,dt);}updateRemotes(t,dt);if(!G.home)vehTick(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
+  updateJets(t);updateAreas(t,dt);if(CITY&&!G.home&&G.world!=="future")CITY.update(t,dt,cam);if(FWX.fw&&!G.home&&(G.world==="future"||FWX.prev))FWX.fw.update(t,dt,cam,!GFX.fx);if(!G.home)updateStations(t);updateRipples(t,dt);if(!G.home){updateResident(t,dt);updateResidents(t,dt);}updateRemotes(t,dt);if(!G.home)vehTick(t,dt);positionMyBubble();updateEmotes();drawPortrait();sidePortraits();updateBadges();netMove(moving);
   if(G.tag)placeTag(G.tag,P.root.position);if(G.npc)placeTag(G.npc.tag,G.npc.root.position);for(const r of QS.res)placeTag(r.n.tag,r.n.root.position);for(const c of remotes.values())placeTag(c.tag,c.root.position);
   if(G.seaU)G.seaU.value=t;
   G.boat.position.x=-25+Math.sin(t*.05)*30;G.boat.rotation.z=Math.sin(t*1.2)*.05;
@@ -9329,7 +9586,7 @@ function gfxApply(){const o=gfxEff();GFX.fx=o.fx!=="off";
   const V={short:[105,38,100,96],medium:[140,48,134,128],far:[185,70,178,175]}[o.view]||[185,70,178,175];
   VIEW_FAR=V[0];FOG_NEAR=V[1];FOG_FAR=V[2];
   if(inGame&&!G.home&&scene.fog){scene.fog.near=FOG_NEAR;scene.fog.far=FOG_FAR;cam.far=VIEW_FAR;cam.updateProjectionMatrix();}
-  if(CITY&&CITY.setView)CITY.setView(V[3]);
+  if(CITY&&CITY.setView)CITY.setView(V[3]);if(typeof FWX!=="undefined"&&FWX.fw&&!FWX.prev)FWX.fw.setView(V[3]+40);
   const shOn=o.shadows!=="off",shType=o.shadows==="high"&&!IS_PHONE?THREE.PCFSoftShadowMap:THREE.PCFShadowMap;
   if(renderer.shadowMap.type!==shType){renderer.shadowMap.type=shType;if(inGame)scene.traverse(q=>{if(q.material){(Array.isArray(q.material)?q.material:[q.material]).forEach(m=>m.needsUpdate=true);}});}
   if(renderer.shadowMap.enabled!==shOn&&G.sun){renderer.shadowMap.enabled=shOn;scene.traverse(q=>{if(q.material){(Array.isArray(q.material)?q.material:[q.material]).forEach(m=>m.needsUpdate=true);}});}
@@ -9386,6 +9643,8 @@ function enterGame(){
   if(!P)return;
   if(!gameBuilt){buildPlaza();trimShadows(world);setTimeout(batchPrepare,1500);}
   inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);setTimeout(()=>{try{memberTick();}catch(e){}},4000);
+  // back to the world you were in last time (the Future City, if it's open on this account)
+  try{if(localStorage.getItem("jumpi-world")==="future"&&futureOpen())setTimeout(()=>{if(inGame&&!G.home&&G.world!=="future")goWorld("future",{film:false});},1200);}catch(e){}
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
@@ -12314,7 +12573,7 @@ function weatherTick(t,dt){
   WX.flash=Math.max(0,WX.flash-dt*5);
   if(outside&&G.sky&&scene.background===G.sky&&t-WX.skyT>.2){WX.skyT=t;const c=G.sky.image.getContext("2d"),gr=c.createLinearGradient(0,0,0,256);
     gr.addColorStop(0,"#"+top.getHexString());gr.addColorStop(.42,"#"+top.clone().lerp(bot,.55).getHexString());gr.addColorStop(1,"#"+bot.getHexString());c.fillStyle=gr;c.fillRect(0,0,16,256);G.sky.needsUpdate=true;}
-  if(outside&&scene.fog){scene.fog.color.copy(bot);scene.fog.near=FOG_NEAR-k.rain*38;scene.fog.far=FOG_FAR-k.rain*70;}
+  if(outside&&scene.fog){scene.fog.color.copy(bot);if(typeof FWX!=="undefined"&&FWX.prev){scene.fog.near=200;scene.fog.far=560;}else{scene.fog.near=FOG_NEAR-k.rain*38;scene.fog.far=FOG_FAR-k.rain*70;}}
   // the sun (or the moon at night) lights the world from where it is in the sky
   const sa=(h-6)/12*Math.PI,ma=((h+6)%24)/12*Math.PI,sunDir=new THREE.Vector3(Math.cos(sa)*.85,Math.sin(sa)*.8,-.55).normalize(),moonDir=new THREE.Vector3(Math.cos(ma)*.85,Math.sin(ma)*.45,-.7).normalize();
   const useMoon=sunDir.y<.06,dir=useMoon?moonDir:sunDir;
@@ -12360,7 +12619,7 @@ function weatherTick(t,dt){
   (G.lamps||[]).forEach(L=>{L.bulb.material.emissiveIntensity=.9+lights*2.4;if(L.halo){L.halo.material.opacity=lights*.85;L.pool.material.opacity=lights*.75;}});
   (WX.windows||[]).forEach(m=>{m.emissive.set("#2d6c88").lerp(_ca.set("#ffc965"),lights);m.emissiveIntensity=.25+lights*.75;});
   (WX.wallGlow||[]).forEach(m=>{m.emissiveIntensity=.22*(1-n*.6);});
-  if(CITY)CITY.night(lights);
+  if(CITY)CITY.night(lights);FWX.lights=lights;if(FWX.fw)FWX.fw.night(lights);
   // a warm golden heat haze over the screen in a heat wave, a dark blue tint at night
   const tint=document.getElementById("wxTint");if(tint){const gold=Math.max(0,1-Math.abs(h-18.2)/1.3)*(1-k.cloud*.8),heat=outside?Math.min(1,k.heat*day+gold*.55):0,nt=outside?n*.55:0;tint.style.setProperty("--heat",heat.toFixed(3));tint.style.setProperty("--night",nt.toFixed(3));}
   // inside a home with a garden: the garden sky follows the time too
@@ -13136,10 +13395,12 @@ function doorTick(){
   else if(inGame&&!G.home&&!GS.open&&!PLACE.busy&&!HOME.leaving&&menuOverlay.hidden&&!RIDE.on){if(vehNearMine())best="veh:ride";else for(const id in VENUES){const [sx,sz]=venueLocal(VENUES[id],0,VENUES[id].door||3.4);if(Math.hypot(G.pos.x-sx,G.pos.z-sz)<1.7){best=id;break;}}
     if(!best&&G.pos.x>30)for(const s of PARK_SPOTS)if(Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<1.9){best=s.id;break;}
     if(!best)for(const s of EV_SPOTS)if(Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<2.1){best=s.id;break;}
-    if(!best&&CITY)for(const s of CITY.spots)if(Math.abs(G.pos.x-s.x)<s.r&&Math.abs(G.pos.z-s.z)<s.r&&Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<s.r){best=s.id;break;}
+    if(!best&&G.world==="future"){const s=fwSpots();if(s)best=s.id;}
+    if(!best&&CITY&&G.world!=="future")for(const s of CITY.spots)if(Math.abs(G.pos.x-s.x)<s.r&&Math.abs(G.pos.z-s.z)<s.r&&Math.hypot(G.pos.x-s.x,G.pos.z-s.z)<s.r){best=s.id;break;}
     if(!best&&!G.seat){const i=nearWorldSeat();if(i>=0)best="seat:"+i;}}
   if(best===nearDoor)return;nearDoor=best;seatPrompt.hidden=!best;body.classList.toggle("at-door",!!best);
   if(best&&best.startsWith("seat:")){const S=worldSeats()[+best.slice(5)];document.getElementById("seatText").textContent=S.k==="lie"?"LIE DOWN":"SIT";document.getElementById("seatIcon").innerHTML=SEAT_ICON[S.k]||SEAT_ICON.sit;sfx.tick(true);return;}
+  if(best&&best.startsWith("fw:")){const s=fwSpots();document.getElementById("seatText").textContent=I18N.T(s?s.label:"GO");document.getElementById("seatIcon").innerHTML=SPOT_ICON[s&&s.icon]||DOOR_ICON;sfx.tick(true);return;}
   if(best){const sp=VEH_SPOTS[best]||PARK_SPOTS.find(q=>q.id===best)||EV_SPOTS.find(q=>q.id===best)||(CITY&&CITY.spots.find(q=>q.id===best));document.getElementById("seatText").textContent=sp?sp.label:VENUES[best].enter;document.getElementById("seatIcon").innerHTML=sp?(SPOT_ICON[sp.icon]||SPOT_ICON[best.split(":")[0]]||DOOR_ICON):DOOR_ICON;sfx.tick(true);}}
 function roomLights(C){if(!HOME.hemi)return;const dim=!!(C&&C.dim);HOME.hemi.intensity=dim?.55:1.25;HOME.sun.intensity=dim?.35:1.6;HOME.lamp.intensity=dim?0:14;HOME.win.visible=!C;if(HOME.win2)HOME.win2.visible=!C;}
 function placeDetach(){if(PLACE.cur){PLACE.cur.g.removeFromParent();PLACE.cur=null;}HOME.place=null;roomLights(null);Sound.venue(null);closeMenu(true);stopEating();}
@@ -15682,6 +15943,7 @@ const whenFmt=ms=>dayFmt(ms)===dayFmt(Date.now())?timeFmt(ms):dayFmt(ms);
 
 /* ---------- icons ---------- */
 const I={
+  worlds:'<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="11" fill="#fff"/><path d="M10 17 Q15 20 20 16 Q25 12 30 16 M10.5 24 Q16 21 21 25 Q26 28 29.5 24" fill="none" stroke="#3b1d8f" stroke-width="2.2"/><ellipse cx="20" cy="20" rx="17" ry="5.4" fill="none" stroke="#ffd65a" stroke-width="2.6" transform="rotate(-18 20 20)"/></svg>',
   garage:'<svg viewBox="0 0 40 40"><circle cx="10" cy="27" r="6" fill="none" stroke="#fff" stroke-width="3.2"/><circle cx="30" cy="27" r="6" fill="none" stroke="#fff" stroke-width="3.2"/><path d="M10 27 L15.5 18 H23.5 L30 27 M23.5 18 L26 12 H31" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 18 Q19 12 25 15.5 L23.5 20 H16.5Z" fill="#fff"/></svg>',
   friends:'<svg viewBox="0 0 40 40"><circle cx="14" cy="17" r="8" fill="#fff"/><circle cx="27" cy="15" r="7" fill="rgb(255 255 255 / .8)"/><path d="M3 34 Q4 25 14 25 Q24 25 25 34 Z" fill="#fff"/><path d="M22 24 Q26 21 30 22 Q37 23 37 31 H27" fill="rgb(255 255 255 / .8)"/><circle cx="11.5" cy="16.5" r="1.3" fill="#a3410a"/><circle cx="16.5" cy="16.5" r="1.3" fill="#a3410a"/><path d="M11.5 20 Q14 22 16.5 20" fill="none" stroke="#a3410a" stroke-width="1.5" stroke-linecap="round"/></svg>',
   chat:'<svg viewBox="0 0 40 40"><path d="M20 5 C11 5 4 11 4 19 C4 23 6 26.5 9 29 L7.5 35.5 L14.5 32 C16.2 32.6 18 33 20 33 C29 33 36 27 36 19 C36 11 29 5 20 5 Z" fill="#fff"/><circle cx="13" cy="19" r="2.3" fill="#13813f"/><circle cx="20" cy="19" r="2.3" fill="#13813f"/><circle cx="27" cy="19" r="2.3" fill="#13813f"/></svg>',
@@ -15718,10 +15980,12 @@ const APPS=[
   {id:"style",name:"My Look",c:"#12b8a0",hi:"#7ff0dc",edge:"#0a7466"},
   {id:"shop",name:"Shop",c:"#ff4f8b",hi:"#ffa3c4",edge:"#9a1a52"},
   {id:"garage",name:"Garage",c:"#ff6a1c",hi:"#ffb37a",edge:"#a33a00"},
+  {id:"worlds",name:"Worlds",c:"#5b3bff",hi:"#a99bff",edge:"#2a1694"},
 ];
 function paintGrid(){phGrid.innerHTML=APPS.map(a=>{const n=a.id==="chat"?PH.unread:a.id==="friends"?PH.reqs:0;
   return `<button class="ph-icon" type="button" data-app="${a.id}" style="--c:${a.c};--hi:${a.hi};--edge:${a.edge}" aria-label="${a.name}${n?`, ${n} new`:""}"><span class="tile">${I[a.id]}</span>${a.name}${n?`<span class="ph-badge">${n>99?"99+":n}</span>`:""}</button>`;}).join("");}
 phGrid.addEventListener("click",e=>{const b=e.target.closest("[data-app]");if(!b)return;sfx.tick(true);
+  if(b.dataset.app==="worlds"){closePhone();setTimeout(openWorlds,420);return;}
   if(b.dataset.app==="style"||b.dataset.app==="shop"){closePhone();setTimeout(()=>openGameStore(b.dataset.app==="shop"?"shop":"inventory"),420);return;}
   openApp(b.dataset.app);});
 function paintBadge(){const n=PH.unread+PH.reqs,b=document.getElementById("phBadge");b.hidden=!n;b.textContent=n>99?"99+":n;

@@ -13,6 +13,7 @@ import { LEVEL_XP } from "../public/shared/levels.js";
 import { PACE, hourEarned, paceCoins, paceView } from "../public/shared/earn.js";
 import { giftFor, DAILY_COINS, nextMemberDay, restoreCost, RESTORE_DAYS } from "../public/shared/daily.js";
 import { notifyMember } from "../realtime/plaza.js";
+import { UNLOCK_COST, START_GIFT } from "../public/shared/future-layout.js";
 
 /*
   Ways to earn coins:
@@ -85,6 +86,35 @@ router.post("/rewards/daily/restore", requireJson, requireUser, async (req, res,
 router.post("/rewards/daily/forget", requireJson, requireUser, async (req, res, next) => {
   try {
     await User.updateOne({ _id: req.user._id }, { $set: { dailyLostSeen: req.user.dailyLast || "" } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------- other worlds: the Future City opens once, for UNLOCK_COST coins, with a one-time START_GIFT ---------- */
+router.post("/worlds/unlock", requireJson, requireUser, async (req, res, next) => {
+  try {
+    if (req.body?.world !== "future") return res.status(400).json({ error: "Unknown world." });
+    if ((req.user.worlds || []).includes("future")) return res.status(409).json({ error: "This world is already open." });
+    // one atomic step: only if they still have the coins and didn't open it in another tab; the gift comes in the same step (never twice)
+    const updated = await User.findOneAndUpdate(
+      { _id: req.user._id, worlds: { $ne: "future" }, coins: { $gte: UNLOCK_COST } },
+      { $addToSet: { worlds: "future" }, $inc: { coins: START_GIFT - UNLOCK_COST } },
+      { new: true }
+    );
+    if (!updated) return res.status(409).json({ error: `You need ${UNLOCK_COST.toLocaleString("en-US")} coins to open the Future City.` });
+    notifyCoins(updated._id.toString(), updated.coins);
+    console.log(`[worlds] ${updated.username} opened the Future City`);
+    res.json({ ok: true, coins: updated.coins, worlds: updated.worlds, gift: START_GIFT });
+  } catch (err) {
+    next(err);
+  }
+});
+// the launch film played (it plays only the first time)
+router.post("/worlds/trip", requireJson, requireUser, async (req, res, next) => {
+  try {
+    await User.updateOne({ _id: req.user._id, worldTripAt: null }, { $set: { worldTripAt: new Date() } });
     res.json({ ok: true });
   } catch (err) {
     next(err);

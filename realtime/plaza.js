@@ -26,6 +26,7 @@ import { JOBS } from "../public/shared/jobs.js";
 import { isBirthdayOn } from "../public/shared/birthday.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "../public/shared/launch.js";
 import { WORLD_BOUNDS } from "../public/shared/city-layout.js";
+import { FUTURE_BOUNDS } from "../public/shared/future-layout.js";
 import { modLog } from "../discord/pip.js";
 import { loadBlocks, ghosts, hasGhosts } from "./blocks.js";
 import { levelOf, MAX_LEVEL } from "../public/shared/levels.js";
@@ -430,6 +431,10 @@ export function attachPlaza(io) {
         room = "place:" + place;
         if (place === "club") homeBounds.set(room, houseShape({ big: true }).bounds);   // the Dance Club is the big room
       }
+      else if (pos?.world === "future") {   // the Future City: its own room (only for players who opened it: checked below)
+        room = "future";
+        homeBounds.set(room, FUTURE_BOUNDS);
+      }
       else if (pos?.work === true || pos?.work === "delivery") {   // at work: a restaurant / a whole town of your own (the customers are bots)
         room = "work:" + me.id;
         if (pos.work === "delivery") homeBounds.set(room, TOWN_BOUNDS);
@@ -447,7 +452,7 @@ export function attachPlaza(io) {
         room = "home:" + homeOf;
       }
       // fresh look / coins / role from the database (they may have shopped since connecting)
-      let jobsOf = {}, parental = {}, loungeOk = false;
+      let jobsOf = {}, parental = {}, loungeOk = false, futureOk = false;
       try {
         const fresh = await User.findById(me.id);
         jobsOf = (fresh && fresh.jobs) || {};
@@ -457,6 +462,7 @@ export function attachPlaza(io) {
         needsOnline(me.id, fresh.needs);
         me.pet = outPet(fresh);
         me.member = fresh.isMember();
+        futureOk = Array.isArray(fresh.worlds) && fresh.worlds.includes("future");
         if (place === "lounge") loungeOk = me.member || fresh.role === "admin" || fresh.role === "mod";
         me.bday = isBirthdayOn(fresh.birthDate);
         me.lv = fresh.role === "admin" ? MAX_LEVEL : levelOf(fresh.levelXp || 0);   // the level badge next to the name (admins: always the top level)   // pink name with a cake all day
@@ -464,6 +470,7 @@ export function attachPlaza(io) {
       } catch {}
       // the Members Lounge: only members (and staff), and only when the account really loaded (a database hiccup = no entry)
       if (place === "lounge" && !loungeOk) return socket.emit("place:refused", { place, code: "members" });
+      if (room === "future" && !futureOk) return socket.emit("world:refused", { world: "future" });
       // the same account in a second window: the older window leaves
       for (const [id, p] of players) {
         if (p.userId === me.id && id !== socket.id) {
@@ -633,7 +640,7 @@ export function attachPlaza(io) {
       p.z = nz;
       p.face = num(d?.face, p.face);
       p.moving = d?.moving === true;
-      p.pose = cleanPose(d?.pose, p.room === ROOM); // outside only sitting and lying down (benches, sun loungers)
+      p.pose = cleanPose(d?.pose, p.room === ROOM || p.room === "future"); // outside only sitting and lying down (benches, sun loungers)
       p.run = p.moving && d?.run === true;
       p.mv = p.farMv = true;   // sent with the next "moves" round (flushMoves)
     });

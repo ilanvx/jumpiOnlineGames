@@ -129,7 +129,9 @@ const userSchema = new mongoose.Schema(
     // daily login bonus: the last day it was claimed ("2026-10-06", Israel time) and the current streak
     dailyLast: { type: String, default: "" },
     dailyStreak: { type: Number, default: 0, min: 0 },
-    dailyLostSeen: { type: String, default: "" },   // the lost streak (its dailyLast) the player already said no to winning back
+    dailyLostSeen: { type: String, default: "" },
+    worlds: { type: [String], default: [] },   // other worlds the player opened with coins ("future": public/shared/future-layout.js)
+    worldTripAt: { type: Date, default: null },   // when the time machine first took them there (the launch film plays once)   // the lost streak (its dailyLast) the player already said no to winning back
     // mini-game coins earned today (capped per day)
     gamesDay: { type: String, default: "" },
     gamesEarned: { type: Number, default: 0, min: 0 },
@@ -228,6 +230,7 @@ userSchema.methods.toPublic = function () {
     tutorialDone: !!this.tutorialAt,
     chatLock: this.parental?.chatLock === true,   // parents turned the chat off: only the ready-made messages (public/shared/parental.js)
     secrets: Array.isArray(this.secrets) ? [...this.secrets] : [],
+    worlds: Array.isArray(this.worlds) ? [...this.worlds] : [],
     mustVerify: !!process.env.RESEND_API_KEY && this.emailVerified !== true,   // the game asks for the email code before playing
   };
 };
