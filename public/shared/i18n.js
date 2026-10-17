@@ -356,7 +356,7 @@
   ];
 
   // languages that are shown but switched off for now (Hebrew is coming soon)
-  const LOCKED = new Set(["he"]);
+  const LOCKED = new Set();
   let lang = (function () {
     try { const s = localStorage.getItem("jumpi-lang"); if ((s === "he" || s === "en") && !LOCKED.has(s)) return s; } catch (e) {}
     return "en"; // English unless the player picked another language
