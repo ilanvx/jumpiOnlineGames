@@ -1610,6 +1610,12 @@ body.mg-open .chat-dock,body.mg-open .mg-result{display:none!important}
   opacity:0;transform:translateY(-4px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:2;box-shadow:0 2px 0 rgb(0 0 0 / .15)}
 .cat-tab[aria-selected="true"] .cat-name{opacity:1;transform:none}
 .store-tabs:has(.cat-tab[aria-selected="true"]){padding-bottom:22px}
+/* phones and tablets: ONE row of categories that you drag sideways (the items get the room), the edges fade to show there's more */
+body.touch .store-tabs:not(.tx-tabs){flex:none;min-height:max-content;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;
+  gap:7px;padding:8px 14px 24px;margin:0 -10px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 16px),transparent)}
+body.touch .store-tabs:not(.tx-tabs)::-webkit-scrollbar{display:none}
+body.touch .store-tabs:not(.tx-tabs) button.cat-tab{flex:none;width:46px;height:46px;padding:5px;border-radius:14px;scroll-snap-align:center}
+body.touch .store-tabs:not(.tx-tabs) button.cat-tab[aria-selected="true"]{transform:translateY(-2px) scale(1.08)}
 .pick-row.with-badge{flex-direction:row;align-items:center;gap:10px}
 .cat-badge{flex:none;width:42px;height:42px;padding:5px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(180deg,color-mix(in srgb,var(--cc) 75%,#fff),var(--cc));
   box-shadow:0 3px 0 color-mix(in srgb,var(--cc) 55%,#000),inset 0 2px 0 rgb(255 255 255 / .35)}
@@ -9833,7 +9839,11 @@ function itemPic(slot,i){
 }
 function renderStoreTabs(){
   const slots=STORE_MODES[storeMode].slots;storeTabs.innerHTML="";if(slots.length<2||storePets)return;
+  const keep=storeTabs.scrollLeft;
   slots.forEach(sl=>{storeTabs.appendChild(catTab(sl,sl===storeSlot,()=>{storeSlot=sl;storeSel=null;sfx.hover();renderStoreTabs();renderStoreGrid();refreshMenuTag();}));});
+  // one sideways row on phones: stay where the player had dragged it, and keep the chosen category in view
+  storeTabs.scrollLeft=keep;const on=storeTabs.querySelector('[aria-selected="true"]');
+  if(on&&storeTabs.scrollWidth>storeTabs.clientWidth+2){const a=on.offsetLeft-storeTabs.scrollLeft,w=storeTabs.clientWidth;if(a<16||a+on.offsetWidth>w-16)storeTabs.scrollTo({left:on.offsetLeft-(w-on.offsetWidth)/2,behavior:"smooth"});}
 }
 function renderStoreGrid(){
   if(OUTFIT_OBJ[storeSlot]&&OUTFIT_PARTS[storeSlot].some((o,i)=>!THB.done.has(storeSlot+":"+i))&&!THB.queue.some(q=>q[0]===storeSlot))queueThumbs();
