@@ -149,7 +149,8 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
 // no daily limit: within an hour the pay slows down (public/shared/earn.js)
 const ROUND_CAP = 40; // most coins one round can give
 const ROUND_SECS = 30; // fruit and shell rounds
-const GAMES = ["fruit", "shell", "dig", "flap"];
+const GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops"];
+const FUTURE_GAMES = new Set(["drone", "robot", "rooftops"]);   // the last three are in the Future City
 const rnd = () => crypto.randomInt(1_000_000) / 1_000_000;
 
 /*
@@ -226,6 +227,64 @@ function flapScore(round, passed, shells) {
   return n + got * 2;
 }
 
+/*
+  THE FUTURE CITY GAMES (scripted here like the fruit and the shells):
+  Drone Race: rings (1), gold rings (3) and storm clouds (-2) come down 5 lanes at speed v; they reach the drone
+    DRONE.fall px later, so nothing counts before t + fall / v.
+  Robo Fix: robots roll along a belt at speed v; each one needs a bolt, a battery or a chip (1, gold robots 3), or
+    needs nothing ("ok": -1 if you fix it anyway). They reach the repair zone ROBO.zone px after they appear.
+  Roof Hop: like Jumpi Flap: roof k+1 can't be reached before (first + (k + 1) * span - jumperX) / speed seconds;
+    a star over gap k counts 2 and can't be picked up before it reaches the jumper.
+*/
+const DRONE = { fall: 420, lanes: 5 };
+const DRONE_KINDS = [["ring", 1, 60], ["gold", 3, 12], ["storm", -2, 22]];
+function droneScript() {
+  const items = [];
+  for (let t = 0.8, i = 0; t < ROUND_SECS - 0.5; i++) {
+    const k = t / ROUND_SECS, [kind, pts] = pickKind(DRONE_KINDS), v = Math.round((260 + k * 220) * (0.9 + rnd() * 0.2));
+    items.push({ i, t: +t.toFixed(3), lane: crypto.randomInt(DRONE.lanes), k: kind, v, pts, catchAt: t + (DRONE.fall - 30) / v });
+    t += (0.62 - k * 0.24) * (0.75 + rnd() * 0.5);
+  }
+  return items;
+}
+const ROBO = { zone: 300, kinds: [["bot", 1, 62], ["gold", 3, 12], ["ok", -1, 20]] };
+function robotScript() {
+  const items = [];
+  for (let t = 0.6, i = 0; t < ROUND_SECS - 2; i++) {
+    const k = t / ROUND_SECS, [kind, pts] = pickKind(ROBO.kinds), v = Math.round((150 + k * 130) * (0.9 + rnd() * 0.2));
+    items.push({ i, t: +t.toFixed(3), need: crypto.randomInt(3), k: kind, v, pts, catchAt: t + (ROBO.zone - 40) / v });
+    t += (1.15 - k * 0.45) * (0.8 + rnd() * 0.4);
+  }
+  return items;
+}
+const HOP = { count: 300, first: 520, span: 300, speed: 260, jumperX: 170 };
+function hopScript() {
+  const items = [];
+  let top = 330;
+  for (let k = 0; k < HOP.count; k++) {
+    const gap = k < 2 ? 50 : Math.round(60 + Math.min(70, k * 1.5) * rnd() + rnd() * 20);   // the gaps get wider
+    top = Math.max(270, Math.min(390, top + Math.round((rnd() - 0.5) * 90)));
+    items.push({ i: k, gap, top, star: k > 1 && rnd() < 0.3 });
+  }
+  return items;
+}
+const hopPassAt = (k) => (HOP.first + (k + 1) * HOP.span - HOP.jumperX) / HOP.speed;
+function hopScore(round, passed, stars) {
+  const elapsed = (Date.now() - round.start) / 1000 + 1;
+  let n = Math.max(0, Math.min(HOP.count, Math.floor(Number(passed) || 0)));
+  while (n > 0 && hopPassAt(n - 1) > elapsed) n--;
+  const seen = new Set();
+  let got = 0;
+  for (const raw of Array.isArray(stars) ? stars.slice(0, HOP.count) : []) {
+    const k = Number(raw);
+    if (!Number.isInteger(k) || seen.has(k) || k > n || !round.items[k]?.star) continue;
+    if ((HOP.first + (k + 1) * HOP.span - round.items[k].gap / 2 - HOP.jumperX) / HOP.speed > elapsed) continue;
+    seen.add(k);
+    got++;
+  }
+  return n + got * 2;
+}
+
 // treasure map for the dig game: built here, never sent to the page
 const DIG_GAP = 350;   // ms between two digs at the least
 const DIG = { cols: 7, rows: 5, shovels: 10, items: [["chest", 10, 2], ["gem", 5, 3], ["coins", 2, 6]] };
@@ -276,6 +335,7 @@ const recentStarts = new Map();
 router.post("/minigame/start", requireJson, requireUser, (req, res) => {
   const game = String(req.body.game || "");
   if (!GAMES.includes(game)) return res.status(400).json({ error: "That game doesn't exist." });
+  if (FUTURE_GAMES.has(game) && !(req.user.worlds || []).includes("future")) return res.status(403).json({ error: "This game is in the Future City. Open the Future City first!" });
   const userId = req.user._id.toString();
   const now = Date.now();
   const list = (recentStarts.get(userId) || []).filter((t) => now - t < 60_000);
@@ -287,7 +347,7 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
   const id = crypto.randomUUID();
   const round = { id, userId, game, start: now, done: false };
   if (game === "dig") Object.assign(round, { board: makeDigBoard(), dug: new Set(), shovels: DIG.shovels, score: 0 });
-  else round.items = game === "fruit" ? fruitScript() : game === "flap" ? flapScript() : shellScript();
+  else round.items = game === "fruit" ? fruitScript() : game === "flap" ? flapScript() : game === "drone" ? droneScript() : game === "robot" ? robotScript() : game === "rooftops" ? hopScript() : shellScript();
   sessions.set(id, round);
   activeByUser.set(userId, id);
   res.json({
@@ -299,6 +359,9 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
     best: bestOf(req.user, game),
     ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels }
       : game === "flap" ? { flap: { first: FLAP.first, gap: FLAP.gap, speed: FLAP.speed, jumpiX: FLAP.jumpiX, half: FLAP.half }, items: round.items }
+      : game === "rooftops" ? { hop: { ...HOP }, items: round.items }
+      : game === "drone" ? { secs: ROUND_SECS, fall: DRONE.fall, items: round.items.map(({ i, t, lane, k, v }) => ({ i, t, lane, k, v })) }
+      : game === "robot" ? { secs: ROUND_SECS, zone: ROBO.zone, items: round.items.map(({ i, t, need, k, v }) => ({ i, t, need, k, v })) }
       : { secs: ROUND_SECS, items: forPage(round.items) }),
   });
 });
@@ -363,7 +426,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
     round.done = true; // before any await: a second finish for the same round gets nothing
     sessions.delete(round.id);
     if (activeByUser.get(round.userId) === round.id) activeByUser.delete(round.userId);
-    const score = round.game === "dig" ? round.score : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
+    const score = round.game === "dig" ? round.score : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : round.game === "rooftops" ? hopScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
 
     // add the coins at this hour's pace (retry if two rounds finish together)
     for (let attempt = 0; attempt < 3; attempt++) {

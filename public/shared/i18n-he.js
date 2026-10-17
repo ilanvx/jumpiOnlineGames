@@ -1034,6 +1034,12 @@ window.JUMPI_HE_EXTRA = {
 "This job is in the Future City. Open the Future City first, then you can work here.": "העבודה הזאת בעיר העתיד. פתחו קודם את עיר העתיד, ואז תוכלו לעבוד כאן.",
 "SEE THE WORLDS": "לעולמות",
 "WORK AT THE HOTEL": "לעבוד במלון",
+"REPAIR ZONE": "אזור תיקון",
+"Fly through the rings over the neon city!": "טוסו דרך הטבעות מעל עיר הניאון!",
+"The robots need your help, quick!": "הרובוטים צריכים את העזרה שלכם, מהר!",
+"Run over the rooftops of the Future City!": "רוצו על הגגות של עיר העתיד!",
+"This game is in the Future City. Open the Future City first!": "המשחק הזה בעיר העתיד. פתחו קודם את עיר העתיד!",
+"Back to the city": "חזרה לעיר",
 "Mint planet tee": "חולצת כוכב לכת מנטה",
 "Mint shorts": "מכנסיים קצרים מנטה",
 "Mocha": "מוקה",
@@ -2172,7 +2178,19 @@ window.JUMPI_HE_EXTRA = {
 "Or play on a computer at <b>jumpigames.com</b>": "או שחקו במחשב בכתובת <b>jumpigames.com</b>",
 "The iPhone app is coming soon! For now, play Jumpi on a computer at <b>jumpigames.com</b>.": "האפליקציה לאייפון תגיע בקרוב! בינתיים שחקו בג'אמפי במחשב בכתובת <b>jumpigames.com</b>.",
 "Visit the <b class=\"in\">Pet Center</b> at the end of the Park to adopt a puppy, kitten, bunny and more. Your pet walks with you everywhere!": "בקרו ב<b class=\"in\">מרכז החיות</b> בקצה הפארק כדי לאמץ גור כלבים, גור חתולים, ארנבון ועוד. חיית המחמד שלכם הולכת איתכם לכל מקום!",
-"Get a scooter or a motorcycle in the <b class=\"in\">Shop</b> (Vehicles), then call it from here and ride it all over Jumpi!": "קנו קטנוע או אופנוע ב<b class=\"in\">חנות</b> (כלי רכב), ואז הזמינו אותו מכאן ורכבו עליו בכל ג'אמפי!"
+"Get a scooter or a motorcycle in the <b class=\"in\">Shop</b> (Vehicles), then call it from here and ride it all over Jumpi!": "קנו קטנוע או אופנוע ב<b class=\"in\">חנות</b> (כלי רכב), ואז הזמינו אותו מכאן ורכבו עליו בכל ג'אמפי!",
+"Move between the lanes with <b>← →</b>, or <b>tap</b> the lane you want.": "עברו בין הנתיבים עם <b>← →</b>, או <b>הקישו</b> על הנתיב שאתם רוצים.",
+"Fly through a <b>ring</b> for <b>1 point</b>.": "טוסו דרך <b>טבעת</b> וקבלו <b>נקודה אחת</b>.",
+"A <b>gold ring</b> is worth <b>3 points</b>!": "<b>טבעת זהב</b> שווה <b>3 נקודות</b>!",
+"Dodge the <b>storm clouds</b>: they take <b>2 points</b> away.": "התחמקו מ<b>ענני הסערה</b>: הם מורידים <b>2 נקודות</b>.",
+"Robots roll along the belt. When one is in the <b>green repair zone</b>, give it a part.": "רובוטים נוסעים על המסוע. כשאחד מהם ב<b>אזור התיקון הירוק</b>, תנו לו חלק.",
+"Tap the part it asks for (or press <b>1</b>, <b>2</b>, <b>3</b>): <b>bolt</b>, <b>battery</b> or <b>chip</b>.": "הקישו על החלק שהוא מבקש (או לחצו <b>1</b>, <b>2</b>, <b>3</b>): <b>בורג</b>, <b>סוללה</b> או <b>שבב</b>.",
+"A fixed robot is <b>1 point</b>, a <b>golden robot 3 points</b>!": "רובוט מתוקן שווה <b>נקודה אחת</b>, <b>רובוט זהב 3 נקודות</b>!",
+"Smiling robots need nothing: fixing them takes <b>1 point</b> away.": "רובוטים מחייכים לא צריכים כלום: תיקון שלהם מוריד <b>נקודה אחת</b>.",
+"<b>Click</b>, <b>tap</b> or press <b>Space</b> to jump.": "<b>לחצו</b>, <b>הקישו</b> או לחצו על <b>רווח</b> כדי לקפוץ.",
+"Jump over the gaps between the roofs. Every roof you reach is <b>1 point</b>.": "קפצו מעל הרווחים בין הגגות. כל גג שמגיעים אליו שווה <b>נקודה אחת</b>.",
+"Grab the <b>stars</b> over the gaps for <b>2 more points</b>!": "תפסו את ה<b>כוכבים</b> מעל הרווחים וקבלו <b>עוד 2 נקודות</b>!",
+"Don't fall into a gap or run into a taller roof, or the round ends.": "אל תיפלו לרווח ואל תתנגשו בגג גבוה יותר, אחרת הסיבוב נגמר."
 },
   patterns: (function () {
     const T = (s) => (window.I18N && window.I18N.T ? window.I18N.T(s) : s);

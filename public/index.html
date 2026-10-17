@@ -8908,7 +8908,7 @@ function mapPin(g,sx,sy,col,pr,draw,name,sub){
   g.restore();}
 function drawMapLayers(g,toScreen,pr,near){   // near = zoomed in enough for names
   if(G.home)return;
-  if(MAPL.mg&&MAPW.cur!=="future")MG_STATIONS.forEach(st=>{const [sx,sy]=toScreen(st.x,st.z);mapPin(g,sx,sy,st.color,pr,(g,r)=>{g.fillStyle="#fff";g.beginPath();g.moveTo(-r*.35,-r*.5);g.lineTo(r*.55,0);g.lineTo(-r*.35,r*.5);g.closePath();g.fill();},near&&I18N.T(st.name));});
+  if(MAPL.mg)(MAPW.cur==="future"?futureStations():MG_STATIONS).forEach(st=>{const [sx,sy]=toScreen(st.x,st.z);mapPin(g,sx,sy,st.color,pr,(g,r)=>{g.fillStyle="#fff";g.beginPath();g.moveTo(-r*.35,-r*.5);g.lineTo(r*.55,0);g.lineTo(-r*.35,r*.5);g.closePath();g.fill();},near&&I18N.T(st.name));});
   if(MAPL.res)RESIDENTS.forEach(R=>{const at=npcAt(R.id,MAPW.cur),[sx,sy]=toScreen(at[0],at[1]),q=QS.res.find(x=>x.R.id===R.id&&x.w===MAPW.cur),k=q&&q.kind;
     mapPin(g,sx,sy,k==="!"?"#2fd36b":k==="?"?"#ffc21f":"#5a8dee",pr,(g,r)=>{const im=mapFace(R);if(im.complete&&im.naturalWidth)g.drawImage(im,-r*.86,-r*.86,r*1.72,r*1.72);},near&&I18N.T(R.name),near&&(k==="!"?I18N.T("Prize waiting!"):k==="?"?I18N.T("New quest"):""));});
   if(MAPL.quest)QUESTS.forEach(q=>{if(questWorld(q)!==MAPW.cur)return;const st=qStatus(q.id);if(st!=="active"&&st!=="ready")return;const p=stepTarget(q);if(!p)return;const [sx,sy]=toScreen(p[0],p[1]);
@@ -17230,8 +17230,12 @@ function buildStations(){
   });
 }
 const mgPrompt=document.getElementById("mgPrompt");let nearStation=null;
+const FUT_MG=[];   // the three stands in the Future City (made from future.js once it's built)
+function futureStations(){if(!FUT_MG.length&&FWX.fw)FWX.fw.stations.forEach(s=>FUT_MG.push({id:s.id,name:s.title,color:s.color,x:s.wx,z:s.wz,spot:[s.wx,s.wz+2]}));return FUT_MG;}
 function updateStations(t){
   let near=null;
+  if(G.world==="future"){for(const s of futureStations())if(Math.hypot(G.pos.x-s.spot[0],G.pos.z-s.spot[1])<2.4)near=s;
+    if(near!==nearStation){nearStation=near;mgPrompt.hidden=!near;if(near){document.getElementById("mgPromptName").textContent=I18N.T(near.name);mgPrompt.style.setProperty("--c",near.color);sfx.tick(true);}}return;}
   for(const s of MG_STATIONS){if(!s.coin)continue;s.coin.rotation.y=t*2;s.coin.position.y=5+Math.sin(t*2+s.x)*.15;
     const k=(t*.8+s.z*.01)%1;s.ring.scale.setScalar(1+k*.25);s.ring.material.opacity=.6*(1-k);
     if(Math.hypot(G.pos.x-s.spot[0],G.pos.z-s.spot[1])<2.6)near=s;}
@@ -17265,6 +17269,12 @@ const MG_INFO={
     tut:[["tap","<b>Click</b> or <b>tap</b> the shells as they pop out of the sand."],["shell:shell","Pink shells are worth <b>1 point</b>."],["shell:pearl","A <b>pearl</b> is worth <b>3 points</b>!"],["shell:crab","Leave the <b>crabs</b> alone: they pinch <b>2 points</b> away."]]},
   dig:{title:"TREASURE DIG",sub:"X marks the spot... somewhere!",color:"#ff8a1c",dark:"#a3410a",bg:"linear-gradient(180deg,#ffd9a0,#f0b766)",stars:[6,14,22],
     tut:[["dig","You have <b>10 shovels</b>. Tap a sand tile to dig it."],["dig:coins","Find <b>coins</b> (2), <b>gems</b> (5) and <b>2 treasure chests</b> (10)."],["dig:hint","An empty hole shows how many <b>steps away</b> the nearest chest is."],["dig:chest","Find both chests to <b>finish early</b>!"]]},
+  drone:{title:"DRONE RACE",sub:"Fly through the rings over the neon city!",color:"#59e0ff",dark:"#1f6fd6",bg:"linear-gradient(180deg,#0b0f2e,#3b1d8f)",stars:[10,22,34],
+    tut:[["dmove","Move between the lanes with <b>← →</b>, or <b>tap</b> the lane you want."],["dring","Fly through a <b>ring</b> for <b>1 point</b>."],["dgold","A <b>gold ring</b> is worth <b>3 points</b>!"],["dstorm","Dodge the <b>storm clouds</b>: they take <b>2 points</b> away."]]},
+  robot:{title:"ROBO FIX",sub:"The robots need your help, quick!",color:"#ffd65a",dark:"#b07800",bg:"linear-gradient(180deg,#1a1f45,#2d2a6b)",stars:[8,16,26],
+    tut:[["rzone","Robots roll along the belt. When one is in the <b>green repair zone</b>, give it a part."],["rparts","Tap the part it asks for (or press <b>1</b>, <b>2</b>, <b>3</b>): <b>bolt</b>, <b>battery</b> or <b>chip</b>."],["rgold","A fixed robot is <b>1 point</b>, a <b>golden robot 3 points</b>!"],["rok","Smiling robots need nothing: fixing them takes <b>1 point</b> away."]]},
+  rooftops:{title:"ROOF HOP",sub:"Run over the rooftops of the Future City!",color:"#ff7af0",dark:"#b0309a",bg:"linear-gradient(180deg,#ff9a6a,#5b3bff)",stars:[5,15,30],
+    tut:[["hjump","<b>Click</b>, <b>tap</b> or press <b>Space</b> to jump."],["hgap","Jump over the gaps between the roofs. Every roof you reach is <b>1 point</b>."],["hstar","Grab the <b>stars</b> over the gaps for <b>2 more points</b>!"],["hfall","Don't fall into a gap or run into a taller roof, or the round ends."]]},
   flap:{title:"JUMPI FLAP",sub:"Bounce over the beach, between the surfboards!",color:"#ff5fa8",dark:"#c2307a",bg:"linear-gradient(180deg,#5fc8ff,#ffe6a8)",stars:[5,15,30],
     tut:[["flap","<b>Click</b>, <b>tap</b> or press <b>Space</b> to bounce Jumpi up."],["board","Fly through the gaps. Each <b>surfboard</b> you pass is <b>1 point</b>."],["gshell","Grab <b>golden shells</b> for <b>2 more points</b>!"],["crash","Don't touch the boards or the sand, or the round ends."]]},
 };
@@ -17285,8 +17295,9 @@ function openMinigame(id){
   mgOverlay.style.setProperty("--mg",info.color);mgOverlay.style.setProperty("--mgd",info.dark);mgOverlay.style.setProperty("--mgbg",info.bg);
   // big bouncy title, one letter at a time
   $mg("mgTitle").dir=/[\u0590-\u05FF]/.test(I18N.T(info.title))?"rtl":"ltr";$mg("mgTitle").innerHTML=[...I18N.T(info.title)].map((ch,i)=>ch===" "?'<span class="sp"> </span>':`<span style="--i:${i}">${ch}</span>`).join("");
-  $mg("mgSub").textContent=info.sub;$mg("mgHudTime").hidden=id==="flap";$mg("mgTimeLabel").textContent=id==="dig"?"SHOVELS":"TIME";
+  $mg("mgSub").textContent=info.sub;$mg("mgHudTime").hidden=id==="flap"||id==="rooftops";$mg("mgTimeLabel").textContent=id==="dig"?"SHOVELS":"TIME";
   $mg("mgScore").textContent="0";$mg("mgTime").textContent=id==="dig"?"10":"30";
+  {const fut=G.world==="future";$mg("mgClose").querySelector("span").textContent=I18N.T(fut?"BACK":"PLAZA");$mg("mgClose").setAttribute("aria-label",I18N.T(fut?"Back to the city":"Back to the Plaza"));$mg("mgQuit").textContent=I18N.T(fut?"Back to the city":"Back to the Plaza");}
   paintMgStatus();api("/api/minigame/status").then(r=>{if(r.ok){mgStatus=r.data;paintMgStatus();}});
   mgFit();mgShow("mgStart");mgOverlay.hidden=false;body.classList.add("mg-open");mgPrompt.hidden=true;sfx.open();
   requestAnimationFrame(mgLoop);setTimeout(()=>$mg("mgGo").focus(),80);
@@ -17320,6 +17331,8 @@ $mg("mgMenu").onclick=e=>{press(e.currentTarget);MG.state="menu";MG.demo=mgDemoI
 addEventListener("keydown",e=>{if(mgOverlay.hidden)return;e.stopImmediatePropagation();
   if(e.key==="Escape"){closeMinigame();return;}
   if(MG&&MG.state==="play"&&MG.game==="flap"&&(e.code==="Space"||e.code==="ArrowUp"||e.code==="KeyW")){e.preventDefault();if(!e.repeat)flapUp();return;}
+  if(MG&&MG.state==="play"&&MG.game==="rooftops"&&(e.code==="Space"||e.code==="ArrowUp"||e.code==="KeyW")){e.preventDefault();if(!e.repeat)hopJump();return;}
+  if(MG&&MG.state==="play"&&MG.game==="robot"){const n={Digit1:0,Digit2:1,Digit3:2,Numpad1:0,Numpad2:1,Numpad3:2,KeyJ:0,KeyK:1,KeyL:2}[e.code];if(n!==undefined){e.preventDefault();if(!e.repeat)robotFix(n);return;}}
   if(MG&&(MG.state==="menu")&&(e.code==="Space"||e.code==="Enter")&&document.activeElement===document.body){e.preventDefault();startCountdown();return;}
   if(MG&&MG.keys&&["ArrowLeft","ArrowRight","KeyA","KeyD"].includes(e.code)){MG.keys[e.code]=true;e.preventDefault();}},true);
 addEventListener("keyup",e=>{if(MG&&MG.keys)MG.keys[e.code]=false;},true);
@@ -17344,6 +17357,14 @@ function tutArt(kind){
   else if(a==="flap"){drawFlapJumpi(c,-10,4,1.25,-.3,1);drawHand(c,46,30,.7);}
   else if(a==="board"){drawBoard(c,-60,-28,50,"#ff5fa8",true,[-80,80]);drawBoard(c,-60,34,50,"#1fb6ff",false,[-80,80]);drawFlapJumpi(c,40,2,.9,0,0);c.strokeStyle="#ff5fa8";c.lineWidth=4;c.setLineDash([6,6]);c.beginPath();c.moveTo(-90,4);c.lineTo(10,4);c.stroke();c.setLineDash([]);}
   else if(a==="gshell"){drawGoldShell(c,0,4,1.6,0);}
+  else if(a==="dmove"){c.fillStyle="#141a3d";c.fillRect(-100,-70,200,140);drawDrone(c,0,10,0,0,.9);arrows(c);}
+  else if(a==="dring"||a==="dgold"){c.fillStyle="#141a3d";c.fillRect(-100,-70,200,140);drawRing(c,0,-14,a==="dgold",0,1.2);drawDrone(c,0,36,0,0,.6);}
+  else if(a==="dstorm"){c.fillStyle="#141a3d";c.fillRect(-100,-70,200,140);drawStorm(c,0,-16,0,1.3);}
+  else if(a==="rzone"||a==="rgold"||a==="rok"){c.fillStyle="#2d2a6b";c.fillRect(-100,-70,200,140);c.scale(.62,.62);c.translate(0,40);
+    if(a==="rzone"){c.fillStyle="rgba(125,255,155,.25)";c.fillRect(-80,-110,160,150);}drawRobot(c,a==="rzone"?-10:0,0,{k:a==="rgold"?"gold":a==="rok"?"ok":"bot",need:1,fixed:a==="rgold"},0);}
+  else if(a==="rparts"){R_PARTS.forEach((p,i)=>drawPart(c,p.k,-60+i*60,0,1.2));}
+  else if(a==="hjump"||a==="hgap"||a==="hstar"||a==="hfall"){c.fillStyle="#7a5bff";c.fillRect(-100,-70,200,140);c.save();c.translate(-100,-200);c.scale(.5,.5);drawRoof(c,0,150,400,0);drawRoof(c,(a==="hfall"?300:250),180,a==="hfall"?330:380,1);c.restore();
+    if(a==="hstar")drawStar(c,0,-30,0,1.2);drawRunner(c,a==="hfall"?10:-40,a==="hfall"?40:-6,0,a!=="hfall",a==="hfall");if(a==="hjump")drawHand(c,50,30,.7);}
   else if(a==="crash"){drawBoard(c,8,-24,60,"#2fd36b",false,[-80,80]);drawFlapJumpi(c,-30,-4,1,.6,0,true);c.fillStyle="#ffd23a";[[-6,-34],[4,-22],[-14,-20]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,4,0,7);c.fill();});}
   c.restore();
   if(a==="dig"&&!b){c.save();c.translate(W/2,H/2);drawHand(c,8,6);c.restore();}
@@ -17368,7 +17389,7 @@ async function startCountdown(){
   if(!r.ok){toast(r.data.error||"Couldn't start the game.");sfx.error();round.state="menu";mgShow("mgStart");return;}
   Object.assign(round,{id:r.data.id,state:"play",score:0,raw:0,caught:[],passed:0,keys:{},t0:performance.now(),last:performance.now(),info:r.data,fx:[],parts:[],shake:0});
   $mg("mgScore").textContent="0";
-  ({fruit:fruitInit,shell:shellInit,dig:digInit,flap:flapInit})[game]();
+  ({fruit:fruitInit,shell:shellInit,dig:digInit,flap:flapInit,drone:droneInit,robot:robotInit,rooftops:hopInit})[game]();
 }
 function mgLoop(now){
   if(!MG||mgOverlay.hidden)return;requestAnimationFrame(mgLoop);
@@ -17376,8 +17397,8 @@ function mgLoop(now){
   mgFit();mgBegin();
   if(MG.state==="play"){
     const t=(now-MG.t0)/1000;
-    if(MG.game==="fruit"||MG.game==="shell"){const left=Math.max(0,(MG.info.secs||30)-t);$mg("mgTime").textContent=Math.ceil(left);if(left<=0){endRound();}}
-    ({fruit:fruitTick,shell:shellTick,dig:digTick,flap:flapTick})[MG.game](dt,t);
+    if(MG.game==="fruit"||MG.game==="shell"||MG.game==="drone"||MG.game==="robot"){const left=Math.max(0,(MG.info.secs||30)-t);$mg("mgTime").textContent=Math.ceil(left);if(left<=0){endRound();}}
+    ({fruit:fruitTick,shell:shellTick,dig:digTick,flap:flapTick,drone:droneTick,robot:robotTick,rooftops:hopTick})[MG.game](dt,t);
   }else mgDemo(dt,T);
   partsTick(dt);drawFx(dt);
   if(MG.flash>0){MG.flash-=dt;mg2d.fillStyle=`rgba(255,255,255,${Math.max(0,MG.flash*2)})`;mg2d.fillRect(X0(),Y0(),VW(),VH());}
@@ -17417,7 +17438,7 @@ function partsTick(dt){const c=mg2d;for(let i=MG.parts.length-1;i>=0;i--){const 
 function mgPoint(e){return [e.clientX/MV.s-MV.ox,e.clientY/MV.s-MV.oy];}
 mgCanvas.addEventListener("pointermove",e=>{if(MG&&MG.state==="play"&&MG.game==="fruit")MG.target=mgPoint(e)[0];});
 mgCanvas.addEventListener("pointerdown",e=>{if(!MG||MG.state!=="play")return;const [x,y]=mgPoint(e);
-  if(MG.game==="fruit")MG.target=x;else if(MG.game==="shell")shellTap(x,y);else if(MG.game==="flap")flapUp();else digTap(x,y);});
+  if(MG.game==="fruit")MG.target=x;else if(MG.game==="shell")shellTap(x,y);else if(MG.game==="flap")flapUp();else if(MG.game==="rooftops")hopJump();else if(MG.game==="drone")droneTap(x);else if(MG.game==="robot")robotTap(x,y);else digTap(x,y);});
 
 /* ---------- shared scenery ---------- */
 function rr2(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);}
@@ -17646,6 +17667,168 @@ function flapTick(dt,t){const c=mg2d,f=MG.fl,items=MG.info.items;
 }
 function flapCrash(t){MG.crashed=true;MG.crashT=t;MG.shake=.4;MG.flash=.4;MG.fv=Math.min(MG.fv,-200);sfx.error();burst(MG.fl.jumpiX,MG.fy,"#ffe0a0",18,240,500,6);burst(MG.fl.jumpiX,MG.fy,"#ffffff",8,200,300,5);}
 
+
+/* =====================================================================
+   THE FUTURE CITY GAMES (the stands next to Neon Square; the server scripts every round: routes/rewards.js)
+   DRONE RACE: fly Jumpi's drone through the rings, dodge the storm clouds (5 lanes)
+   ROBO FIX:   robots roll along the belt; give each one the part it needs (bolt, battery, chip)
+   ROOF HOP:   run over the rooftops of the city and jump the gaps
+   ===================================================================== */
+const D_LANES=[136,248,360,472,584],D_Y=392,D_TOP=-30;
+const neonStroke=(c,col,w,blur=14)=>{c.strokeStyle=col;c.lineWidth=w;c.shadowColor=col;c.shadowBlur=blur;};
+// a night city seen from above, scrolling down
+function droneScene(c,scroll,t){
+  skyFill(c,"#0b0f2e","#1a1250");
+  // buildings on both sides (tops seen from above, with glowing windows)
+  for(let side=0;side<2;side++)for(let k=-1;k<8;k++){const h=110,y=((k*h+scroll*.9)%(h*8)+h*8)%(h*8)-h,x=side?MW+20:X0()-40,w=side?X0()+VW()-MW+20:Math.max(0,-X0()+70);
+    if(w<=0)continue;c.fillStyle=["#1d2547","#24204f","#1a2b4f"][(k+side)&3%3];c.fillRect(x,y,w,h-12);
+    c.fillStyle="rgba(255,214,120,.55)";for(let r=0;r<3;r++)for(let q=0;q<Math.max(1,Math.floor(w/22));q++)if(((k*7+r*3+q)&3)!==0)c.fillRect(x+6+q*22,y+10+r*30,12,14);}
+  // the hover road: dark glass with glowing lane lines
+  const L=96,R=MW-96;c.fillStyle="#141a3d";c.fillRect(L-20,Y0(),R-L+40,VH());
+  for(let i=0;i<=D_LANES.length;i++){const x=L+i*(R-L)/D_LANES.length;c.save();neonStroke(c,i%2?"#ff4fd8":"#59e0ff",3,10);c.setLineDash([26,22]);c.lineDashOffset=-scroll;c.beginPath();c.moveTo(x,Y0());c.lineTo(x,Y0()+VH());c.stroke();c.restore();}
+  // little cars far below, going the other way
+  for(let k=0;k<5;k++){const y=((k*173-scroll*.5)%(VH()+200)+VH()+200)%(VH()+200)+Y0()-100,x=L+30+((k*131)%(R-L-60));c.fillStyle="rgba(255,255,255,.12)";c.beginPath();c.ellipse(x,y,9,16,0,0,7);c.fill();}}
+function drawRing(c,x,y,gold,t,s=1){c.save();c.translate(x,y);c.scale(s,s);const col=gold?"#ffd23a":"#59e0ff";
+  c.save();neonStroke(c,col,9,20);c.beginPath();c.ellipse(0,0,38,16,0,0,7);c.stroke();c.restore();
+  c.strokeStyle="#ffffff";c.lineWidth=3;c.beginPath();c.ellipse(0,0,38,16,0,Math.PI*1.1,Math.PI*1.6);c.stroke();
+  if(gold){c.fillStyle="#fff6c0";for(let k=0;k<3;k++){const a=t*3+k*2.1;c.beginPath();c.arc(Math.cos(a)*44,Math.sin(a)*20,3,0,7);c.fill();}}c.restore();}
+function drawStorm(c,x,y,t,s=1){c.save();c.translate(x,y);c.scale(s,s);c.fillStyle="#3b3f63";c.beginPath();c.arc(-18,0,18,0,7);c.arc(4,-8,22,0,7);c.arc(24,2,16,0,7);c.arc(2,8,18,0,7);c.fill();
+  c.fillStyle="#4c517a";c.beginPath();c.arc(-6,-10,10,0,7);c.fill();
+  if(Math.sin(t*9+x)>.2){c.fillStyle="#ffe14d";c.beginPath();c.moveTo(2,10);c.lineTo(-8,30);c.lineTo(0,28);c.lineTo(-6,46);c.lineTo(10,22);c.lineTo(2,24);c.lineTo(8,10);c.closePath();c.fill();}c.restore();}
+// Jumpi riding a little drone
+function drawDrone(c,x,y,t,tilt=0,s=1){c.save();c.translate(x,y);c.rotate(tilt*.35);c.scale(s,s);
+  c.fillStyle="rgba(89,224,255,.18)";c.beginPath();c.ellipse(0,26,60,14,0,0,7);c.fill();
+  [[-44,-6],[44,-6],[-34,20],[34,20]].forEach(([px,py],k)=>{c.strokeStyle="#c9d2e3";c.lineWidth=5;c.beginPath();c.moveTo(0,8);c.lineTo(px,py);c.stroke();
+    c.fillStyle="rgba(220,240,255,.55)";c.beginPath();c.ellipse(px,py,22,6+Math.abs(Math.sin(t*40+k))*3,0,0,7);c.fill();c.fillStyle="#2a3042";c.beginPath();c.arc(px,py,5,0,7);c.fill();});
+  c.fillStyle="#e9eef7";c.beginPath();c.ellipse(0,10,30,14,0,0,7);c.fill();c.fillStyle="#59e0ff";c.fillRect(-20,14,40,4);
+  drawMiniJumpi(c,0,6,.62,skinHex(),tilt);c.restore();}
+function droneInit(){Object.assign(MG,{lane:2,dx:D_LANES[2],tilt:0,items:[],next:0,caught:[],drag:false});}
+function droneMove(d){if(!MG||MG.state!=="play")return;MG.lane=Math.max(0,Math.min(4,MG.lane+d));sfx.tick(true);}
+function droneTick(dt,t){const c=mg2d,items=MG.info.items;
+  if(MG.keys.ArrowLeft||MG.keys.KeyA){MG.keys.ArrowLeft=MG.keys.KeyA=false;droneMove(-1);}
+  if(MG.keys.ArrowRight||MG.keys.KeyD){MG.keys.ArrowRight=MG.keys.KeyD=false;droneMove(1);}
+  const want=D_LANES[MG.lane],ox=MG.dx;MG.dx+=(want-MG.dx)*Math.min(1,dt*12);MG.tilt+=(((MG.dx-ox)/Math.max(dt,.001))*.004-MG.tilt)*Math.min(1,dt*10);
+  const sh=MG.shake>0?(MG.shake-=dt,Math.sin(t*90)*7):0;c.save();c.translate(sh,0);
+  droneScene(c,t*260,t);
+  while(MG.next<items.length&&items[MG.next].t<=t){MG.items.push({...items[MG.next],y:D_TOP});MG.next++;}
+  for(let i=MG.items.length-1;i>=0;i--){const it=MG.items[i];it.y=D_TOP+(t-it.t)*it.v;const x=D_LANES[it.lane];
+    if(!it.done&&it.y>D_Y-24&&it.y<D_Y+24&&Math.abs(x-MG.dx)<46){it.done=true;MG.caught.push(it.i);
+      if(it.k==="storm"){addScore(-2,x,D_Y-50);MG.flash=.25;}else{addScore(it.k==="gold"?3:1,x,D_Y-50);burst(x,D_Y,it.k==="gold"?"#ffd23a":"#59e0ff",12);}}
+    if(it.y>MH+60||it.done&&it.k!=="storm"){MG.items.splice(i,1);continue;}
+    if(it.k==="storm")drawStorm(c,x,it.y,t,1.05);else drawRing(c,x,it.y,it.k==="gold",t,1+(it.y/MH)*.15);}
+  drawDrone(c,MG.dx,D_Y+Math.sin(t*5)*3,t,MG.tilt);c.restore();}
+function droneTap(x){if(!MG||MG.state!=="play")return;let best=0,bd=1e9;D_LANES.forEach((lx,i)=>{const d=Math.abs(lx-x);if(d<bd){bd=d;best=i;}});if(best!==MG.lane){MG.lane=best;sfx.tick(true);}}
+
+/* ---------- ROBO FIX ---------- */
+const R_BELT=278,R_ZONE=[260,460],R_PARTS=[{k:"bolt",col:"#c9d2e3",key:"1"},{k:"battery",col:"#ffd65a",key:"2"},{k:"chip",col:"#59e0ff",key:"3"}],R_BTN=[[200,428],[360,428],[520,428]];
+function drawPart(c,k,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);
+  if(k==="bolt"){c.fillStyle="#c9d2e3";c.beginPath();for(let i=0;i<6;i++){const a=i/6*Math.PI*2;c.lineTo(Math.cos(a)*16,-14+Math.sin(a)*8);}c.fill();c.fillStyle="#8e98aa";c.fillRect(-6,-10,12,30);c.strokeStyle="#6b7590";c.lineWidth=2;for(let yy=-4;yy<18;yy+=6){c.beginPath();c.moveTo(-6,yy);c.lineTo(6,yy+3);c.stroke();}}
+  else if(k==="battery"){c.fillStyle="#2a3042";c.beginPath();c.roundRect(-12,-18,24,38,5);c.fill();c.fillStyle="#ffd65a";c.beginPath();c.roundRect(-9,-4,18,21,3);c.fill();c.fillStyle="#c9d2e3";c.fillRect(-5,-23,10,6);
+    c.fillStyle="#2a3042";c.beginPath();c.moveTo(2,-1);c.lineTo(-4,8);c.lineTo(1,8);c.lineTo(-2,15);c.lineTo(5,5);c.lineTo(0,5);c.closePath();c.fill();}
+  else{c.fillStyle="#1d2433";c.beginPath();c.roundRect(-18,-16,36,32,4);c.fill();c.fillStyle="#59e0ff";c.fillRect(-9,-8,18,16);c.fillStyle="#c9d2e3";for(let i=-2;i<=2;i++){c.fillRect(i*7-1.5,-21,3,6);c.fillRect(i*7-1.5,15,3,6);}}
+  c.restore();}
+function drawRobot(c,x,y,r,t){const happy=r.fixed||r.k==="ok",sad=r.failed;c.save();c.translate(x,y);
+  const body=r.k==="gold"?"#ffd23a":"#e9eef7",dark=r.k==="gold"?"#c98a00":"#9aa6c2";
+  c.fillStyle="rgba(0,0,0,.2)";c.beginPath();c.ellipse(0,40,34,8,0,0,7);c.fill();
+  c.fillStyle=dark;c.beginPath();c.arc(-18,34,9,0,7);c.arc(18,34,9,0,7);c.fill();
+  c.fillStyle=body;c.beginPath();c.roundRect(-30,-24,60,56,14);c.fill();c.fillStyle=dark;c.fillRect(-18,4,36,4);
+  c.fillStyle=body;c.beginPath();c.roundRect(-24,-62,48,36,12);c.fill();c.fillStyle=dark;c.fillRect(-2,-76,4,14);
+  c.fillStyle=r.fixed?"#7dff9b":r.k==="ok"?"#7dff9b":"#ff6b5b";c.beginPath();c.arc(0,-78,5+(happy?0:Math.abs(Math.sin(t*8))*2),0,7);c.fill();
+  c.fillStyle="#1d2433";c.beginPath();c.roundRect(-18,-56,36,22,8);c.fill();c.fillStyle=happy?"#7dff9b":sad?"#ff6b5b":"#59e0ff";
+  if(happy){c.beginPath();c.arc(-8,-45,4,0,7);c.arc(8,-45,4,0,7);c.fill();c.strokeStyle="#7dff9b";c.lineWidth=2.5;c.beginPath();c.arc(0,-43,7,.3,Math.PI-.3);c.stroke();}
+  else{c.fillRect(-12,-48,8,4);c.fillRect(4,-48,8,4);}
+  if(!r.fixed&&r.k!=="ok"&&!r.failed){c.fillStyle="#fff";c.beginPath();c.roundRect(14,-118,52,44,12);c.fill();c.beginPath();c.moveTo(22,-76);c.lineTo(16,-66);c.lineTo(32,-76);c.fill();drawPart(c,R_PARTS[r.need].k,40,-95,.7);}
+  if(r.fixed){c.fillStyle="#fff6a8";for(let k=0;k<4;k++){const a=t*4+k*1.6;c.beginPath();c.arc(Math.cos(a)*36,-30+Math.sin(a)*30,3,0,7);c.fill();}}
+  c.restore();}
+function robotScene(c,t,scroll){skyFill(c,"#1a1f45","#2d2a6b");
+  // the factory: big windows to the night city, pipes, the scanner zone
+  c.fillStyle="#232a52";c.fillRect(X0(),Y0(),VW(),210-Y0());for(let k=0;k<6;k++){const x=X0()+40+k*((VW()-80)/6);c.fillStyle="#141a3d";c.fillRect(x,40,(VW()-80)/6-24,120);c.fillStyle="rgba(89,224,255,.35)";for(let q=0;q<4;q++)c.fillRect(x+10+q*24,60+(q%2)*30,14,40+(q*13)%30);}
+  c.fillStyle="#3a4470";c.fillRect(X0(),206,VW(),10);
+  c.fillStyle="#2a3155";c.fillRect(X0(),R_BELT+42,VW(),40);c.fillStyle="#1d2340";for(let x=X0()-((scroll)%40);x<X0()+VW();x+=40)c.fillRect(x,R_BELT+44,20,36);
+  c.fillStyle="#46516a";c.fillRect(X0(),R_BELT+36,VW(),8);
+  const zg=c.createLinearGradient(0,150,0,R_BELT+42);zg.addColorStop(0,"rgba(125,255,155,0)");zg.addColorStop(1,"rgba(125,255,155,.22)");c.fillStyle=zg;c.fillRect(R_ZONE[0],150,R_ZONE[1]-R_ZONE[0],R_BELT+42-150);
+  c.save();neonStroke(c,"#7dff9b",3,12);c.setLineDash([10,8]);c.strokeRect(R_ZONE[0],150,R_ZONE[1]-R_ZONE[0],R_BELT+42-150);c.restore();
+  c.fillStyle="#7dff9b";c.font='20px "HeeboDisplay","Lilita One", sans-serif';c.textAlign="center";c.fillText(I18N.T("REPAIR ZONE"),(R_ZONE[0]+R_ZONE[1])/2,142);}
+function drawPartButtons(c,t,press){R_PARTS.forEach((p,i)=>{const [x,y]=R_BTN[i],down=press&&press.i===i&&t-press.t<.15;c.save();c.translate(x,y+(down?4:0));
+  c.fillStyle="rgba(0,0,0,.3)";c.beginPath();c.roundRect(-58,-30+(down?0:6),116,64,18);c.fill();c.fillStyle="#fff";c.beginPath();c.roundRect(-58,-34,116,64,18);c.fill();
+  c.strokeStyle=p.col;c.lineWidth=4;c.stroke();drawPart(c,p.k,-22,-2,.9);c.fillStyle="#24305e";c.font='26px "HeeboDisplay","Lilita One", sans-serif';c.textAlign="center";c.textBaseline="middle";c.fillText(p.key,30,-2);c.restore();});}
+function robotInit(){Object.assign(MG,{bots:[],next:0,caught:[],press:null});}
+const robotX=(r,t)=>-60+(t-r.t)*r.v;
+function robotTick(dt,t){const c=mg2d,items=MG.info.items,sh=MG.shake>0?(MG.shake-=dt,Math.sin(t*90)*7):0;c.save();c.translate(sh,0);
+  robotScene(c,t,t*150);
+  while(MG.next<items.length&&items[MG.next].t<=t){MG.bots.push({...items[MG.next]});MG.next++;}
+  for(let i=MG.bots.length-1;i>=0;i--){const r=MG.bots[i],x=robotX(r,t);if(x>MW+80){MG.bots.splice(i,1);continue;}drawRobot(c,x,R_BELT,r,t);}
+  drawPartButtons(c,t,MG.press);c.restore();}
+function robotFix(i){if(!MG||MG.state!=="play")return;const t=(performance.now()-MG.t0)/1000;MG.press={i,t};
+  const inZone=MG.bots.filter(r=>!r.fixed&&!r.failed&&(()=>{const x=robotX(r,t);return x>R_ZONE[0]&&x<R_ZONE[1];})());
+  if(!inZone.length){sfx.tick(true);return;}
+  const r=inZone.reduce((a,b)=>Math.abs(robotX(a,t)-360)<Math.abs(robotX(b,t)-360)?a:b),x=robotX(r,t);
+  if(r.k==="ok"){r.failed=true;MG.caught.push(r.i);addScore(-1,x,R_BELT-120);return;}   // it didn't need anything!
+  if(r.need===i){r.fixed=true;MG.caught.push(r.i);addScore(r.k==="gold"?3:1,x,R_BELT-120);burst(x,R_BELT-40,r.k==="gold"?"#ffd23a":"#7dff9b",12);}
+  else{r.failed=true;MG.shake=.25;sfx.error();}}
+function robotTap(x,y){if(y>380){let best=-1,bd=1e9;R_BTN.forEach(([bx],i)=>{const d=Math.abs(bx-x);if(d<bd){bd=d;best=i;}});if(bd<80)robotFix(best);}}
+
+/* ---------- ROOF HOP ---------- */
+const H_GRAV=1500,H_JUMP=-600,H_R=20;
+function hopScene(c,scroll,t){skyFill(c,"#ff9a6a","#5b3bff",MH);
+  c.fillStyle="rgba(255,240,200,.85)";c.beginPath();c.arc(MW-160,Y0()+110,46,0,7);c.fill();
+  // far towers (slow) and near towers (faster)
+  [[.15,"#5a4aa8",160,0],[.35,"#3f3590",230,1]].forEach(([k,col,hgt,lay])=>{for(let i=-1;i<12;i++){const span=120+lay*40,x=X0()+((i*span-scroll*k)%(VW()+span*2)+VW()+span*2)%(VW()+span*2)-span,h=hgt+((i*53+lay*31)%90);
+    c.fillStyle=col;c.fillRect(x,MH-h-60,span-20,h+60);c.fillStyle=lay?"rgba(255,214,120,.45)":"rgba(255,214,120,.25)";for(let r=0;r<6;r++)for(let q=0;q<3;q++)if((i+r+q)%3)c.fillRect(x+10+q*((span-40)/3),MH-h-40+r*24,8,10);}});
+  // flying cars far away
+  for(let k=0;k<3;k++){const x=X0()+((k*360+t*90)%(VW()+200))-100,y=Y0()+90+k*40;c.fillStyle="#e9eef7";c.beginPath();c.ellipse(x,y,22,7,0,0,7);c.fill();c.fillStyle="rgba(89,224,255,.6)";c.beginPath();c.ellipse(x,y+8,18,3,0,0,7);c.fill();}}
+function drawRoof(c,x,w,top,k){const col=["#4a5bd6","#6a3fc9","#2f7fc0"][k%3],g=c.createLinearGradient(0,top,0,MH+40);g.addColorStop(0,col);g.addColorStop(1,"#1a1450");c.fillStyle=g;c.fillRect(x,top,w,MH-top+40);
+  c.fillStyle="rgba(255,255,255,.12)";c.fillRect(x,top,8,MH-top+40);
+  c.fillStyle="rgba(255,214,120,.6)";for(let r=0;r<5;r++)for(let q=0;q<Math.floor(w/40);q++)if((k+r+q)%3)c.fillRect(x+14+q*40,top+40+r*36,16,18);
+  c.fillStyle="#c9d2e3";c.fillRect(x-4,top-8,w+8,10);c.save();neonStroke(c,["#59e0ff","#ff4fd8","#7dff9b"][k%3],3,10);c.beginPath();c.moveTo(x-4,top-8);c.lineTo(x+w+4,top-8);c.stroke();c.restore();
+  if(k%4===1){c.fillStyle="#8e98aa";c.fillRect(x+w*.6,top-30,30,22);c.fillStyle="#46516a";c.fillRect(x+w*.6+4,top-26,22,4);}
+  if(k%5===3){c.strokeStyle="#c9d2e3";c.lineWidth=3;c.beginPath();c.moveTo(x+30,top-8);c.lineTo(x+30,top-60);c.stroke();c.fillStyle="#ff5f5f";c.beginPath();c.arc(x+30,top-62,4,0,7);c.fill();}}
+function drawStar(c,x,y,t,s=1){c.save();c.translate(x,y+Math.sin(t*4+x)*4);c.scale(s,s);c.rotate(Math.sin(t*2)*.2);c.fillStyle="rgba(255,230,120,.3)";c.beginPath();c.arc(0,0,24,0,7);c.fill();
+  c.fillStyle="#ffd23a";c.beginPath();for(let k=0;k<10;k++){const a=-Math.PI/2+k*Math.PI/5,r=k%2?7:17;c.lineTo(Math.cos(a)*r,Math.sin(a)*r);}c.closePath();c.fill();c.restore();}
+function drawRunner(c,x,y,t,air,dizzy){c.save();c.translate(x,y);const col=skinHex(),run=air?0:Math.sin(t*22);
+  [-1,1].forEach(sx=>{c.fillStyle=col;c.beginPath();c.ellipse(sx*9+run*sx*5,18,7,5,0,0,7);c.fill();});
+  c.translate(0,-H_R+18);drawMiniJumpi(c,0,0,.62,col,dizzy?0:.6);c.restore();}
+function hopInit(){const h=MG.info.hop;Object.assign(MG,{hp:h,hy:MG.info.items[0].top-8-H_R,hv:0,air:false,scroll:0,crashed:false,crashT:0,passed:0,caught:[]});}
+const roofAt=(h,k,items)=>{const x0=h.first+k*h.span-(k===0?h.first:0),x1=h.first+(k+1)*h.span-items[k].gap;return [x0,x1];};
+function hopJump(){if(!MG||MG.state!=="play"||MG.crashed||MG.air)return;MG.hv=H_JUMP;MG.air=true;sfx.hop();burst(MG.hp.jumperX,MG.hy+H_R,"#ffffff",5,80,200,3);}
+function hopTick(dt,t){const c=mg2d,h=MG.hp,items=MG.info.items,jx=h.jumperX;
+  if(!MG.crashed)MG.scroll=t*h.speed;
+  const wx=MG.scroll+jx;   // the jumper's place in the course
+  // which roof is under the jumper
+  const k=Math.max(0,Math.floor((wx-h.first)/h.span)),[x0,x1]=wx<h.first?[-1e9,h.first+h.span-items[0].gap]:roofAt(h,k,items),onRoof=wx>=x0-H_R*.6&&wx<=x1+H_R*.6,top=wx<h.first?items[0].top:items[k].top;
+  MG.hv+=H_GRAV*dt;MG.hy+=MG.hv*dt;
+  if(onRoof&&!MG.crashed&&MG.hy+H_R>=top-8&&MG.hy+H_R-MG.hv*dt<=top+14&&MG.hv>=0){MG.hy=top-8-H_R;MG.hv=0;MG.air=false;}
+  else if(onRoof&&!MG.crashed&&MG.hy+H_R>top+4){hopCrash(t);}   // ran into the side of a taller roof
+  else MG.air=true;
+  if(!MG.crashed&&MG.hy>MH+40)hopCrash(t);
+  // a gap passed = a point (landing on the next roof)
+  if(!MG.crashed&&!MG.air&&k>MG.passed&&wx>=h.first){MG.passed=k;addScore(1,jx,MG.hy-40);}
+  const sh=MG.shake>0?(MG.shake-=dt,Math.sin(t*90)*8):0;c.save();c.translate(sh,0);hopScene(c,MG.scroll,t);
+  const first=Math.max(0,Math.floor((MG.scroll+X0()-h.first)/h.span)-1),last=Math.min(items.length-1,Math.ceil((MG.scroll+X0()+VW()-h.first)/h.span)+1);
+  if(MG.scroll+X0()<h.first)drawRoof(c,X0()-20,h.first-MG.scroll-X0()+20+h.span-items[0].gap,items[0].top,0);
+  for(let q=Math.max(1,first);q<=last;q++){const [a,b]=roofAt(h,q,items);drawRoof(c,a-MG.scroll,b-a,items[q].top,q);}
+  for(let q=Math.max(0,first);q<=last;q++){const it=items[q];if(!it.star||MG.caught.includes(q))continue;const sx=h.first+(q+1)*h.span-it.gap/2-MG.scroll,sy=Math.min(it.top,(items[q+1]||it).top)-90;
+    drawStar(c,sx,sy,t);if(!MG.crashed&&Math.hypot(sx-jx,sy-MG.hy)<H_R+22){MG.caught.push(q);addScore(2,sx,sy-30);burst(sx,sy,"#ffd23a",14);}}
+  drawRunner(c,jx,MG.hy,t,MG.air,MG.crashed);c.restore();
+  if(MG.crashed&&t-MG.crashT>1.1&&MG.state==="play")endRound();}
+function hopCrash(t){MG.crashed=true;MG.crashT=t;MG.shake=.4;MG.flash=.35;sfx.error();burst(MG.hp.jumperX,Math.min(MH,MG.hy),"#ffffff",14,220,400,5);}
+
+// the start screens of the Future City games play by themselves
+function futureDemo(dt,T,D){const c=mg2d,still=MG.state==="over"||MG.state==="ending"||MG.state==="starting"||MG.state==="count";
+  if(MG.game==="drone"){droneScene(c,T*260,T);if(!still){if(T>D.nextT){D.nextT=T+.5;D.items.push({lane:Math.floor(Math.random()*5),y:D_TOP,k:Math.random()<.2?"gold":Math.random()<.25?"storm":"ring",v:300});}
+      const tgt=D.items.find(it=>it.k!=="storm"&&it.y<D_Y);if(tgt)D.lane=tgt.lane;}
+    D.dx+=(D_LANES[D.lane]-D.dx)*Math.min(1,dt*8);
+    for(let i=D.items.length-1;i>=0;i--){const it=D.items[i];if(!still)it.y+=it.v*dt;if(it.y>MH+40){D.items.splice(i,1);continue;}const x=D_LANES[it.lane];it.k==="storm"?drawStorm(c,x,it.y,T):drawRing(c,x,it.y,it.k==="gold",T);}
+    drawDrone(c,D.dx,D_Y+Math.sin(T*5)*3,T,0);return;}
+  if(MG.game==="robot"){robotScene(c,T,still?0:T*150);if(!still&&T>D.nextT){D.nextT=T+1.4;D.bots.push({t:T,v:170,need:Math.floor(Math.random()*3),k:Math.random()<.2?"gold":"bot"});}
+    for(let i=D.bots.length-1;i>=0;i--){const r=D.bots[i],x=-60+(T-r.t)*r.v;if(x>360&&!r.fixed)r.fixed=true;if(x>MW+80){D.bots.splice(i,1);continue;}drawRobot(c,x,R_BELT,r,T);}drawPartButtons(c,T,null);return;}
+  // roof hop: an autopilot that jumps at the edge
+  const h={first:520,span:300,speed:260,jumperX:170};if(!still)D.scroll+=h.speed*dt;const wx=D.scroll+h.jumperX,k=Math.max(0,Math.floor((wx-h.first)/h.span)),it=D.items[k%80],edge=h.first+(k+1)*h.span-it.gap;
+  D.hv+=H_GRAV*dt;D.hy+=D.hv*dt;const top=D.items[k%80].top;if(D.hy+H_R>=top-8&&D.hv>=0&&wx<edge+4){D.hy=top-8-H_R;D.hv=0;D.air=false;if(edge-wx<40&&!still){D.hv=H_JUMP;D.air=true;}}
+  if(D.hy>MH){D.hy=200;D.hv=0;}hopScene(c,D.scroll,T);
+  for(let q=Math.max(1,k-1);q<k+4;q++){const iq=D.items[q%80],a=h.first+q*h.span,b=h.first+(q+1)*h.span-iq.gap;drawRoof(c,a-D.scroll,b-a,iq.top,q);if(iq.star)drawStar(c,h.first+(q+1)*h.span-iq.gap/2-D.scroll,Math.min(iq.top,D.items[(q+1)%80].top)-90,T);}
+  if(k<1)drawRoof(c,X0()-20,h.first-D.scroll-X0()+20+h.span-D.items[0].gap,D.items[0].top,0);
+  drawRunner(c,h.jumperX,D.hy,T,D.air,false);}
 // testing hook: /play?mgtest opens a game straight away (nothing happens without it)
 if(testKey("mgtest"))window.__openMg=openMinigame;
 /* ---------- the start screen: the game plays itself behind it ---------- */
@@ -17653,9 +17836,13 @@ function mgDemoInit(game){
   if(game==="fruit")return {bx:MW/2,target:MW/2,items:[],nextT:0,wob:0};
   if(game==="shell")return {pops:[],nextT:0};
   if(game==="dig"){const cells=Array(DCOLS*DROWS).fill(null);[[3,"chest"],[9,{hint:2}],[17,"gem"],[25,"coins"],[30,{hint:1}]].forEach(([i,v])=>cells[i]=typeof v==="string"?{item:v}:v);return {cells};}
+  if(game==="drone")return {lane:2,dx:D_LANES[2],items:[],nextT:0,moveT:0};
+  if(game==="robot")return {bots:[],nextT:0,t0:0};
+  if(game==="rooftops")return {scroll:0,hy:272,hv:0,air:false,items:Array.from({length:80},(_,k)=>({gap:70+(k*37)%60,top:300+((k*53)%70),star:k%3===2}))};
   return {fy:MH*.45,fv:0,scroll:0,flapT:-9,items:Array.from({length:60},(_,k)=>({y:170+((k*97)%160),size:190,shell:k%3===1}))};
 }
 function mgDemo(dt,T){const c=mg2d,D=MG.demo;
+  if(MG.game==="drone"||MG.game==="robot"||MG.game==="rooftops"){futureDemo(dt,T,D);return;}
   if(MG.state==="over"||MG.state==="ending"||MG.state==="starting"||MG.state==="count"){   // keep the last picture still
     if(MG.game==="fruit")fruitScene(T);else if(MG.game==="shell")shellScene(T);else if(MG.game==="dig")digScene(T,MG.cells||D.cells);else beachScene(c,MG.scroll||0,T);
     if(MG.game==="flap"&&MG.state!=="over")drawFlapJumpi(c,180,MH*.42+Math.sin(T*3)*8,1.15,0,Math.sin(T*8)>0);return;}
