@@ -12,6 +12,7 @@
 <link rel="preload" href="/jumpi-logo.png" as="image">
 <link rel="preload" href="/blobby.glb" as="fetch" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Secular+One&display=swap">
+<script src="/shared/i18n-he.js"></script>
 <script src="/shared/i18n.js"></script>
 <style>
 /* Hebrew: Heebo (only the Hebrew letters, so English keeps Fredoka / Lilita One). Regular text: HeeboHe (all weights), titles: HeeboDisplay (heavy) */
@@ -9835,7 +9836,10 @@ const itemCount=slot=>OUTFIT_PARTS[slot]?OUTFIT_PARTS[slot].length:({
 // common / rare / epic / legendary (public/shared/vehicles.js RARITY): vehicles and the newer items have one (catalog.js)
 const itemRarity=(slot,i)=>{if(slot==="vehicle")return VEHICLES[i]?VEHICLES[i].rarity:null;const o=OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i];if(o&&o.gift)return o.rarity||null;
   const it=catalog&&catalog.get(slot+":"+i);return (o&&o.rarity)||(it&&!it.gift&&it.rarity)||null;};
-const itemName=(slot,i)=>slot==="vehicle"?VEHICLES[i].name:slot==="aura"?AURA_LIST[i].name:slot==="emote"?EMOTES[i].name:slot==="furniture"?FURN_NAMES[i]:slot==="color"?COLORS[i][0]:slot==="eyes"?EYE_COLORS[i][0]:slot==="tag"?TAGS[i][0]:OUTFIT_PARTS[slot][i].name.replace(/ \((boy|girl)\)/,"");
+const itemNameEn=(slot,i)=>slot==="vehicle"?VEHICLES[i].name:slot==="aura"?AURA_LIST[i].name:slot==="emote"?EMOTES[i].name:slot==="furniture"?FURN_NAMES[i]:slot==="color"?COLORS[i][0]:slot==="eyes"?EYE_COLORS[i][0]:slot==="tag"?TAGS[i][0]:OUTFIT_PARTS[slot][i].name.replace(/ \((boy|girl)\)/,"");
+// in Hebrew: the item's own Hebrew name (items/*.js "he"), else the dictionary (shared/i18n-he.js)
+const itemName=(slot,i)=>{const n=itemNameEn(slot,i);if(!window.I18N||I18N.lang==="en")return n;
+  const o=slot==="vehicle"?VEHICLES[i]:slot==="aura"?AURA_LIST[i]:slot==="emote"?EMOTES[i]:OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i];return (o&&o.he)||I18N.T(n);};
 function itemPic(slot,i){
   if(slot==="furniture"){furnThumbs();return `<img alt="" src="${FURN_THUMB[i]}">`;}
   if(slot==="emote")return `<img alt="" src="${emoteImage(EMOTES[i].id,skinOf({color:lk("color")}))}">`;
@@ -11864,7 +11868,7 @@ async function appJobs(tok,arg){
   if(!arg){phBody.innerHTML=`<p class="ph-jobs-intro">Pick a job, work shifts and earn coins. The better you get, the more you earn!</p>`+list.map(j=>{const J=JOBS[j.id];
     return `<button type="button" class="ph-job ${j.id}" data-a="jobopen" data-job="${j.id}"><span class="art">${JOB_ART[j.id]}</span><span class="txt"><b>${J.name}</b><small>${esc(J.place)}</small>
       <span class="${j.hired?"lv":"pay"}">${j.hired?`Level ${j.level} · ${esc(j.title)}`:`Pays ${payPerOrder(1,j.id)} to ${payPerOrder(maxLevel(j.id),j.id)} coins per ${J.unit}`}</span></span></button>`;}).join("");return;}
-  const j=list.find(x=>x.id===arg),J=JOBS[arg];phTitle.innerHTML=`<span class="t">${esc(J.name)}</span>`;
+  const j=list.find(x=>x.id===arg),J=JOBS[arg];phTitle.innerHTML=`<span class="t">${esc(I18N.T(J.name))}</span>`;
   const today=`<p class="ph-job-today">Job coins today: <b>${r.data.todayEarned.toLocaleString("en-US")}</b> / ${r.data.dailyCap.toLocaleString("en-US")}</p>`;
   if(!j.hired){phBody.innerHTML=`<div class="ph-jobcard ${arg}"><span class="art">${JOB_ART[arg]}</span><b class="h">${J.name.toUpperCase()}</b><small>${esc(J.place)}</small><p>${esc(J.about)}</p>
       <div class="ph-jobpay"><div><b>${payPerOrder(1,arg)}</b><span>coins per ${J.unit} at the start</span></div><div><b>${payPerOrder(maxLevel(arg),arg)}</b><span>coins per ${J.unit} at level ${maxLevel(arg)}</span></div></div>
@@ -15413,7 +15417,7 @@ function renderApp(){
   const app=APPS.find(a=>a.id===top.id)||APPS.find(a=>a.id==="chat");
   phone.style.setProperty("--ac",app.c);phone.dataset.view="app";phone.dataset.app=top.id;
   PH.chat=null;stopBars();phFoot.hidden=true;phFoot.innerHTML="";phExtra.textContent="";phBody.scrollTop=0;
-  phTitle.innerHTML=`<span class="t">${esc(app.name)}</span>`;phBody.innerHTML='<div class="ph-loading" role="status" aria-label="Loading"></div>';
+  phTitle.innerHTML=`<span class="t">${esc(I18N.T(app.name))}</span>`;phBody.innerHTML='<div class="ph-loading" role="status" aria-label="Loading"></div>';
   const tok=++PH.tok;
   ({friends:appFriends,chat:appChats,online:appOnline,home:appHome,pets:appPets,music:appMusic,convo:appConvo,jobs:appJobs,garage:appGarage}[top.id])(tok,top.arg);
   setTimeout(()=>document.getElementById("phBack").focus({preventScroll:true}),50);
@@ -15467,7 +15471,7 @@ async function appHome(tok){
 /* Pets: coming soon */
 async function appPets(tok){
   if(!PETS.loaded){phBody.innerHTML=`<div class="ph-empty">Loading…</div>`;await loadPets();if(tok!==PH.tok)return;}
-  if(!PETS.mine.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-pet-hero" alt="" src="${petThumb("puppy",0)}"><b>No pets yet</b>Visit the <b class="in">Pet Center</b> at the end of the Park to adopt a puppy, kitten, bunny and more. Your pet walks with you everywhere!</div>`;return;}
+  if(!PETS.mine.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-pet-hero" alt="" src="${petThumb("puppy",0)}"><b>No pets yet</b><span>Visit the <b class="in">Pet Center</b> at the end of the Park to adopt a puppy, kitten, bunny and more. Your pet walks with you everywhere!</span></div>`;return;}
   phBody.innerHTML=`<h4 class="ph-sec">My pets · ${PETS.mine.length}/${petMax()}</h4>`+PETS.mine.map(p=>{const K=PET_BY_ID[p.kind],out=p.id===PETS.out;
     return `<div class="ph-row" data-pet="${p.id}"><img class="ph-pet" alt="" src="${petThumb(p.kind,p.color)}"><span class="ph-who"><b>${esc(p.name)}</b><small class="${out?"on":""}">${out?"Walking with you":K.name+" · at home"}</small></span>
       <span class="ph-acts">${out?actBtn("pethome","gr","Send "+p.name+" home",I.homeS," Home"):actBtn("petwalk","g","Walk with "+p.name,"","Walk")}</span></div>`;}).join("")
@@ -15476,7 +15480,7 @@ async function appPets(tok){
 /* Garage: my vehicles (public/shared/vehicles.js): call one, put it away, find it on the map */
 function appGarage(tok){
   const owned=VEHICLES.map((d,i)=>i).filter(i=>owns("vehicle:"+i)).sort((a,b)=>RARITY[VEHICLES[b].rarity].rank-RARITY[VEHICLES[a].rarity].rank||VEHICLES[b].price-VEHICLES[a].price);
-  if(!owned.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-veh-hero" alt="" src="${vehThumb(0)}"><b>No vehicles yet</b>Get a scooter or a motorcycle in the <b class="in">Shop</b> (Vehicles), then call it from here and ride it all over Jumpi!<button type="button" class="ph-cta" data-a="vshop">Open the Shop</button></div>`;return;}
+  if(!owned.length){phBody.innerHTML=`<div class="ph-empty"><img class="ph-veh-hero" alt="" src="${vehThumb(0)}"><b>No vehicles yet</b><span>Get a scooter or a motorcycle in the <b class="in">Shop</b> (Vehicles), then call it from here and ride it all over Jumpi!</span><button type="button" class="ph-cta" data-a="vshop">Open the Shop</button></div>`;return;}
   const out=VEH.mine,d=out?CITY_L.districtAt(out.x,out.z):null,where=out?(d?d.short:ZONES.find(z=>z.id===zoneAt(out.x,out.z))?.name||"the Plaza"):"";
   const left=out&&out.towAt?Math.max(0,out.towAt-performance.now()):0;
   phBody.innerHTML=(out?`<div class="ph-vcard" style="--rc:${RARITY[VEHICLES[out.i].rarity].col}"><img alt="" src="${vehThumb(out.i)}"><div><b>${esc(vehName(out.i))}</b><small>${VEH.ride?"You're riding it!":left?`Parked in ${esc(where)} · towed in ${Math.ceil(left/60000)} min`:`Parked in ${esc(where)} · safe in a parking lot`}</small>
@@ -15517,7 +15521,7 @@ async function appConvo(tok,name){
   const r=await api("/api/dm/with/"+encodeURIComponent(name));if(stale(tok))return;
   if(!r.ok){phBody.innerHTML=`<p class="ph-empty">${esc(r.data.error||"Couldn't open this chat.")}</p>`;return;}
   const w=r.data.with;PH.chat={name:w.username,friend:w.friend,staff:!!w.staff,msgs:r.data.messages,more:r.data.more};
-  phTitle.innerHTML=`${avatarImg(w.look,38)}<span class="t">${esc(w.username)}<small>${esc(w.where?"online · "+whereText(w.where,w.username):"offline")}</small></span>`;
+  phTitle.innerHTML=`${avatarImg(w.look,38)}<span class="t">${esc(w.username)}<small>${esc(w.where?I18N.T("online · ")+whereText(w.where,w.username):I18N.T("offline"))}</small></span>`;
   phExtra.innerHTML=`<button type="button" class="ph-hb" data-h="report" aria-label="Report ${esc(w.username)}" title="Report">${SF_FLAG}</button>${w.staff?"":`<button type="button" class="ph-hb" data-h="block" aria-label="Block ${esc(w.username)}" title="Block">${SF_BAN}</button>`}`;
   paintConvo(true);
   phFoot.hidden=false;

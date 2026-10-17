@@ -300,6 +300,11 @@
     "WHISPER HILLS": "גבעות הלחישה", "PINE LAKE CAMP": "מחנה אגם האורנים",
   };
 
+  // the rest of the game's Hebrew lives in shared/i18n-he.js (loaded just before this file): words, whole sentences
+  // with bold words inside (html) and sentences with names / numbers (patterns)
+  const MORE = window.JUMPI_HE_EXTRA || {};
+  Object.assign(HE, MORE.words || {});
+  const HE_HTML = MORE.html || {};
   const DICT = { he: HE };
   // sentences with names / numbers inside (also messages from the server). $1, $2… are the parts in ( )
   const T1 = (t) => (DICT.he[t] || t);
@@ -354,6 +359,7 @@
     [/^You got ([\d,]+) coins!$/, "קיבלת $1 מטבעות!"], [/^Announcement from (.+)$/, "הודעה מ־$1"],
     [/^Password needs at least (\d+) characters\.$/, "הסיסמה צריכה לפחות $1 תווים."], [/^No player called "(.+)"\.$/, "אין שחקן בשם \"$1\"."],
   ];
+  (MORE.patterns || []).forEach((p) => PATTERNS.push(p));
 
   // languages that are shown but switched off for now (Hebrew is coming soon)
   const LOCKED = new Set();
@@ -392,6 +398,27 @@
     const want = node.__pre + (lang === "en" ? en : T(en)) + node.__post;
     if (cur !== want) node.nodeValue = want;
   }
+  // a sentence with bold words (or a line break) inside is translated as a whole, not word group by word group
+  const norm = (t) => t.replace(/\s+/g, " ").trim();
+  const plain = (h) => norm(h.replace(/<br\s*\/?>/gi, " ").replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+  const HTML_TXT = new Map(Object.keys(HE_HTML).map((k) => [plain(k), k]));
+  function trHTML(el) {
+    if (el.__enKey !== undefined) {   // translated before: switch language, unless the game put new content in it
+      const cur = el.innerHTML;
+      if (cur === el.__heOut || cur === el.__enOut) { const want = lang === "en" ? el.__enOut : el.__heOut; if (cur !== want) el.innerHTML = want; return true; }
+      el.__enKey = undefined;
+    }
+    if (lang === "en" || !HTML_TXT.size || !el.childElementCount || el.childElementCount > 16) return false;
+    let t = "";   // the English text (pieces translated before count in English)
+    const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    for (let n = tw.nextNode(); n; n = tw.nextNode()) t += n.__en !== undefined && lang !== "en" ? n.__pre + n.__en + n.__post : n.nodeValue;
+    if (t.length < 9 || t.length > 2000) return false;
+    const key = HTML_TXT.get(norm(t));
+    if (!key || el.closest(SKIP)) return false;
+    el.__enKey = key; el.__enOut = el.innerHTML; el.__heOut = HE_HTML[key];
+    if (lang !== "en") el.innerHTML = el.__heOut;
+    return true;
+  }
   const ATTRS = ["placeholder", "aria-label", "title"];
   function trAttrs(el) {
     if (el.closest && el.closest("[data-noi18n]")) return;
@@ -409,8 +436,9 @@
     if (root.nodeType === 3) return trText(root);
     if (root.nodeType !== 1) return;
     trAttrs(root);
+    if (trHTML(root)) return;
     const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
-    for (let n = tw.nextNode(); n; n = tw.nextNode()) n.nodeType === 3 ? trText(n) : trAttrs(n);
+    for (let n = tw.nextNode(); n; n = tw.nextNode()) { if (n.nodeType === 3) trText(n); else { trAttrs(n); trHTML(n); } }
   }
   function applyAll() {
     document.documentElement.lang = lang;
@@ -419,7 +447,7 @@
   // translate new things as soon as they appear
   const mo = new MutationObserver((list) => {
     for (const m of list) {
-      if (m.type === "childList") m.addedNodes.forEach(walk);
+      if (m.type === "childList") { if (m.addedNodes.length && m.target.nodeType === 1 && trHTML(m.target)) continue; m.addedNodes.forEach(walk); }
       else if (m.type === "characterData") trText(m.target);
       else if (m.type === "attributes") trAttrs(m.target);
     }
