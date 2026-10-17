@@ -8173,6 +8173,7 @@ function updateResidents(t,dt){
 async function pickItem(it){const r=await questStep(it.q.id,{spot:it.i});
   if(r&&r.ok){sfx.success();const a=qActive(it.q.id),st=it.q.steps.find(s=>s.type==="collect");
     toast(a&&a.step<it.q.steps.length&&qStep(it.q)===st?I18N.T("Found one! {a}/{b}",{a:(a.got||[]).length,b:st.spots.length}):I18N.T("You found them all! Go back to {name}.",{name:I18N.T(RESIDENT_BY_ID[turnInOf(it.q)].name)}));}
+  else if(r&&r.status===425){setTimeout(()=>{it.busy=false;},1500);}   // just arrived by a jump: picked up a moment later
   else{it.busy=false;if(r&&r.data&&r.data.error&&!/closer/.test(r.data.error))toast(r.data.error);}}
 function residentAt(e){if(!QS.res.length||G.home)return null;_ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);_ray.setFromCamera(_ndc,cam);
   let best=null,bd=1e9;for(const r of QS.res){if(r.w!==(G.world==="future"?"future":"town"))continue;const h=_ray.intersectObject(r.n.root,true)[0]||_ray.intersectObject(r.mk,false)[0];if(h&&h.distance<bd){bd=h.distance;best=r;}}return best;}

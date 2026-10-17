@@ -24,6 +24,10 @@ const countSlot = (u, slot) => (u.inventory || []).filter((id) => String(id).sta
 const near = (pos, at, r) => !!pos && Math.hypot(pos.x - at[0], pos.z - at[1]) <= r + SLACK;
 // where the player stands, but only in the quest's own world (Jumpi Town = the "plaza" room, the Future City = "future")
 const posFor = (userId, q) => worldPos(String(userId), [questWorld(q) === "future" ? "future" : "plaza"]);
+// a position the player really walked to: right after a jump (a teleport, a lift, a changed world) it doesn't count for a few seconds
+const STEADY_MS = 2500;
+const settled = (pos) => !!pos && (pos.steady ?? Infinity) >= STEADY_MS;
+const WAIT = "Take a breath and try again in a moment.";
 const isMember = (u) => u.subscriber === true || (!!u.memberUntil && new Date(u.memberUntil).getTime() > Date.now());
 
 function stateOf(u) {
@@ -98,6 +102,7 @@ router.post("/quests/accept", requireJson, requireUser, async (req, res, next) =
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
     const pos = posFor(req.user._id, q);
+    if (near(pos, npcAt(q.giver, questWorld(q)), NPC_REACH) && !settled(pos)) return fail(res, 425, WAIT);
     if (!near(pos, npcAt(q.giver, questWorld(q)), NPC_REACH)) return fail(res, 400, `Go and talk to ${RESIDENT_BY_ID[q.giver].name} first.`);
     const r = await mutate(req.user._id, (u, S) => {
       const st = statusOf(S, q);
@@ -116,6 +121,7 @@ router.post("/quests/step", requireJson, requireUser, async (req, res, next) => 
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
     const pos = posFor(req.user._id, q);
+    if (pos && !settled(pos)) return fail(res, 425, WAIT);
     let wrong = null;
     const r = await mutate(req.user._id, (u, S) => {
       const a = S.active[q.id];
@@ -152,7 +158,9 @@ router.post("/quests/claim", requireJson, requireUser, async (req, res, next) =>
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
     const who = RESIDENT_BY_ID[turnInOf(q)];
-    if (!near(posFor(req.user._id, q), npcAt(turnInOf(q), questWorld(q)), NPC_REACH)) return fail(res, 400, `Go to ${who.name} to get your prize.`);
+    const cpos = posFor(req.user._id, q);
+    if (near(cpos, npcAt(turnInOf(q), questWorld(q)), NPC_REACH) && !settled(cpos)) return fail(res, 425, WAIT);
+    if (!near(cpos, npcAt(turnInOf(q), questWorld(q)), NPC_REACH)) return fail(res, 400, `Go to ${who.name} to get your prize.`);
     let coins = q.reward.coins || 0, item = null;
     const r = await mutate(req.user._id, (u, S) => {
       const a = S.active[q.id];

@@ -1052,6 +1052,7 @@ window.JUMPI_HE_EXTRA = {
 "Mini Planet Lamp": "מנורת כוכב לכת",
 "This is sold in the Future City. Open the Future City first!": "זה נמכר בעיר העתיד. פתחו קודם את עיר העתיד!",
 "Open the Future City first!": "פתחו קודם את עיר העתיד!",
+"Take a breath and try again in a moment.": "קחו נשימה ונסו שוב עוד רגע.",
 "Mint planet tee": "חולצת כוכב לכת מנטה",
 "Mint shorts": "מכנסיים קצרים מנטה",
 "Mocha": "מוקה",
