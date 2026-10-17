@@ -427,6 +427,7 @@ window.JUMPI_HE_EXTRA = {
 "Ready-made tips": "טיפים מוכנים",
 "Every player sees the tip in their own language (Hebrew or English).": "כל שחקן יראה את הטיפ בשפה שלו (עברית או אנגלית).",
 "Only admins can send the ready-made tips.": "רק מנהלים יכולים לשלוח את הטיפים המוכנים.",
+"DAILY GIFTS": "ספר המתנות",
 "Emoji cap": "כובע אימוג'י",
 "Emoji pants": "מכנסי אימוג'י",
 "Emoji tee": "חולצת אימוג'י",

@@ -10,6 +10,8 @@ import { SEASON_XP } from "../public/shared/season.js";
 import { addLevelXp } from "./levels.js";
 import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
+import { giftFor, DAILY_COINS, PAGE, nextMemberDay } from "../public/shared/daily.js";
+import { notifyMember } from "../realtime/plaza.js";
 
 /*
   Ways to earn coins:
@@ -25,8 +27,9 @@ const TZ = "Asia/Jerusalem";
 const dayKey = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 const yesterdayKey = () => dayKey(new Date(Date.now() - 86_400_000));
 
-/* ---------- daily bonus ---------- */
-export const DAILY_REWARDS = [20, 30, 40, 50, 60, 80, 150];
+/* ---------- daily bonus (public/shared/daily.js: the days keep counting; now and then a day of membership) ---------- */
+export const DAILY_REWARDS = DAILY_COINS;
+const DAY_MS = 86_400_000;
 
 function dailyState(user) {
   const today = dayKey();
@@ -41,26 +44,32 @@ function dailyState(user) {
 router.get("/rewards/daily", requireUser, (req, res) => {
   const s = dailyState(req.user);
   res.set("Cache-Control", "no-store");
-  const k = req.user.isMember() ? 2 : 1; // members see (and get) double gifts
-  res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS.map((r) => r * k), member: k === 2 });
+  const member = req.user.isMember(), k = member ? 2 : 1; // members see (and get) double coins
+  // streak = today's day number (the one to collect, or the one already collected today); page: the 10 days around it
+  const from = Math.floor((s.streak - 1) / PAGE) * PAGE + 1;
+  res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS.map((r) => r * k), member,
+    page: Array.from({ length: PAGE }, (_, i) => ({ day: from + i, ...giftFor(from + i, member) })), nextMember: nextMemberDay(s.streak + (s.canClaim ? 0 : 1)) });
 });
 
 router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, next) => {
   try {
     const s = dailyState(req.user);
     if (!s.canClaim) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
-    const reward = DAILY_REWARDS[s.day] * (req.user.isMember() ? 2 : 1); // members get a double gift
+    const gift = giftFor(s.streak, req.user.isMember()), reward = gift.coins || 0, memberDays = gift.memberDays || 0;
+    const now = new Date();
     // only succeeds if nobody claimed in the meantime (two tabs, double clicks)
     const updated = await User.findOneAndUpdate(
       { _id: req.user._id, dailyLast: sameAs(req.user.dailyLast, "") },
-      { $set: { dailyLast: s.today, dailyStreak: s.streak }, $inc: { coins: reward } },
+      [{ $set: { dailyLast: s.today, dailyStreak: s.streak, coins: { $add: [{ $ifNull: ["$coins", 0] }, reward] },
+        ...(memberDays ? { memberUntil: { $add: [{ $cond: [{ $gt: [{ $ifNull: ["$memberUntil", now] }, now] }, "$memberUntil", now] }, memberDays * DAY_MS] } } : {}) } }],
       { new: true }
     );
     if (!updated) return res.status(409).json({ error: "You already took today's gift. Come back tomorrow!" });
     notifyCoins(updated._id.toString(), updated.coins);
+    if (memberDays) notifyMember(updated._id.toString(), true);
     addSeasonXp(updated._id, SEASON_XP.daily);
     addLevelXp(updated._id, LEVEL_XP.daily, { why: "daily" });
-    res.json({ reward, streak: s.streak, day: s.day, coins: updated.coins });
+    res.json({ reward, memberDays, streak: s.streak, day: s.day, coins: updated.coins, ...(memberDays ? { user: updated.toPublic() } : {}) });
   } catch (err) {
     next(err);
   }
