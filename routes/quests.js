@@ -6,7 +6,7 @@ import { notifyCoins, notifyUser, worldPos } from "../realtime/plaza.js";
 import { addLevelXp } from "./levels.js";
 import { levelOf } from "../public/shared/levels.js";
 import { OUTFITS } from "../public/shared/outfits.js";
-import { QUESTS, QUEST_BY_ID, RESIDENT_BY_ID, NPC_REACH, PICK_REACH, turnInOf } from "../public/shared/quests.js";
+import { QUESTS, QUEST_BY_ID, RESIDENT_BY_ID, NPC_REACH, PICK_REACH, turnInOf, npcAt, questWorld } from "../public/shared/quests.js";
 
 /*
   Quests from the people of Jumpi (public/shared/quests.js). The server keeps each player's progress in
@@ -22,6 +22,8 @@ const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const fail = (res, code, error) => res.status(code).json({ error });
 const countSlot = (u, slot) => (u.inventory || []).filter((id) => String(id).startsWith(slot + ":")).length;
 const near = (pos, at, r) => !!pos && Math.hypot(pos.x - at[0], pos.z - at[1]) <= r + SLACK;
+// where the player stands, but only in the quest's own world (Jumpi Town = the "plaza" room, the Future City = "future")
+const posFor = (userId, q) => worldPos(String(userId), [questWorld(q) === "future" ? "future" : "plaza"]);
 const isMember = (u) => u.subscriber === true || (!!u.memberUntil && new Date(u.memberUntil).getTime() > Date.now());
 
 function stateOf(u) {
@@ -95,8 +97,8 @@ router.post("/quests/accept", requireJson, requireUser, async (req, res, next) =
   try {
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
-    const pos = worldPos(String(req.user._id));
-    if (!near(pos, RESIDENT_BY_ID[q.giver].at, NPC_REACH)) return fail(res, 400, `Go and talk to ${RESIDENT_BY_ID[q.giver].name} first.`);
+    const pos = posFor(req.user._id, q);
+    if (!near(pos, npcAt(q.giver, questWorld(q)), NPC_REACH)) return fail(res, 400, `Go and talk to ${RESIDENT_BY_ID[q.giver].name} first.`);
     const r = await mutate(req.user._id, (u, S) => {
       const st = statusOf(S, q);
       if (st !== "available") return { error: [409, st === "locked" ? "You can't take this quest yet." : st === "done" ? "You already finished this quest." : "You already have this quest."] };
@@ -113,14 +115,14 @@ router.post("/quests/step", requireJson, requireUser, async (req, res, next) => 
   try {
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
-    const pos = worldPos(String(req.user._id));
+    const pos = posFor(req.user._id, q);
     let wrong = null;
     const r = await mutate(req.user._id, (u, S) => {
       const a = S.active[q.id];
       if (!a || a.step >= q.steps.length) return { error: [409, "That step is already done."] };
       const st = q.steps[a.step];
       if (st.type === "talk") {
-        if (!near(pos, RESIDENT_BY_ID[st.npc].at, NPC_REACH)) return { error: [400, `Go and talk to ${RESIDENT_BY_ID[st.npc].name}.`] };
+        if (!near(pos, npcAt(st.npc, questWorld(q)), NPC_REACH)) return { error: [400, `Go and talk to ${RESIDENT_BY_ID[st.npc].name}.`] };
       } else if (st.type === "visit") {
         if (!near(pos, st.at, st.r)) return { error: [400, `You're not at ${st.place} yet.`] };
       } else if (st.type === "collect") {
@@ -150,7 +152,7 @@ router.post("/quests/claim", requireJson, requireUser, async (req, res, next) =>
     const id = String(req.body.id || ""), q = has(QUEST_BY_ID, id) ? QUEST_BY_ID[id] : null;
     if (!q) return fail(res, 404, "That quest doesn't exist.");
     const who = RESIDENT_BY_ID[turnInOf(q)];
-    if (!near(worldPos(String(req.user._id)), who.at, NPC_REACH)) return fail(res, 400, `Go to ${who.name} to get your prize.`);
+    if (!near(posFor(req.user._id, q), npcAt(turnInOf(q), questWorld(q)), NPC_REACH)) return fail(res, 400, `Go to ${who.name} to get your prize.`);
     let coins = q.reward.coins || 0, item = null;
     const r = await mutate(req.user._id, (u, S) => {
       const a = S.active[q.id];

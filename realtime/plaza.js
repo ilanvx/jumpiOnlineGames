@@ -942,9 +942,9 @@ export function onlineWhere(userId, seeHidden = true) {
 }
 // where this player stands in the open world right now (the newest window), or null (for routes that need a position: the secret cave)
 // steady = how long (ms) since the position last jumped or the player arrived
-export function worldPos(userId) {
+export function worldPos(userId, rooms = [ROOM]) {   // where a player stands in the open world (or in one of the given rooms, e.g. "future")
   let out = null;
-  for (const p of players.values()) if (p.userId === userId && (p.room || ROOM) === ROOM) out = { x: p.x, z: p.z, steady: Date.now() - (p.warpAt || 0) };
+  for (const p of players.values()) if (p.userId === userId && rooms.includes(p.room || ROOM)) out = { x: p.x, z: p.z, steady: Date.now() - (p.warpAt || 0), room: p.room || ROOM };
   return out;
 }
 export function onlinePlayers(seeHidden = true, selfId = "") {
