@@ -128,6 +128,7 @@ const userSchema = new mongoose.Schema(
     // daily login bonus: the last day it was claimed ("2026-10-06", Israel time) and the current streak
     dailyLast: { type: String, default: "" },
     dailyStreak: { type: Number, default: 0, min: 0 },
+    dailyLostSeen: { type: String, default: "" },   // the lost streak (its dailyLast) the player already said no to winning back
     // mini-game coins earned today (capped per day)
     gamesDay: { type: String, default: "" },
     gamesEarned: { type: Number, default: 0, min: 0 },

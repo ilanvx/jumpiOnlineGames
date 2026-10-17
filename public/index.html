@@ -1388,59 +1388,92 @@ body.in-game.logged .gift-btn{display:flex}
 .gift-btn.ready svg{animation:giftWiggle 1.6s ease-in-out infinite}
 @keyframes giftWiggle{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-12deg) scale(1.08)}80%{transform:rotate(10deg) scale(1.08)}90%{transform:rotate(-6deg)}}
 .gift-dot{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#ffd23a;border:3px solid #8a1c5a}
-/* the daily gift: a page of a gift book; every collected day gets an ink stamp (public/shared/daily.js) */
+/* the daily gift (public/shared/daily.js): a bar of special gifts on every 10th day, this week's 7 days, a stamp on each collected day */
 .dl-ov{background:rgb(10 30 70 / .5)}
-.dl-book{position:relative;width:min(640px,100%);max-height:calc(100dvh - 24px);overflow:auto;padding:0;border:0;background:none;box-shadow:none;scrollbar-width:none}
-.dl-paper{position:relative;margin:18px 6px 10px;padding:26px 26px 22px 54px;border-radius:10px 22px 22px 10px;color:#3d2a14;font-family:"HeeboHe","Fredoka",system-ui,sans-serif;
-  background:repeating-linear-gradient(180deg,transparent 0 33px,rgb(78 140 220 / .18) 33px 35px),linear-gradient(90deg,transparent 40px,rgb(232 66 59 / .35) 40px 42px,transparent 42px),#fff8e7;
-  box-shadow:0 2px 0 #e9dcc0,0 4px 0 #fff8e7,0 6px 0 #e3d3b2,0 8px 0 #fff4dd,0 10px 0 #d9c7a2,0 22px 40px rgb(0 0 0 / .35);transform:rotate(-.6deg)}
-body.rtl .dl-paper{padding:26px 54px 22px 26px;border-radius:22px 10px 10px 22px;background:repeating-linear-gradient(180deg,transparent 0 33px,rgb(78 140 220 / .18) 33px 35px),linear-gradient(270deg,transparent 40px,rgb(232 66 59 / .35) 40px 42px,transparent 42px),#fff8e7;transform:rotate(.6deg)}
-.dl-holes{position:absolute;top:28px;bottom:28px;left:14px;display:flex;flex-direction:column;justify-content:space-around}
-body.rtl .dl-holes{left:auto;right:14px}
-.dl-holes i{width:16px;height:16px;border-radius:50%;background:#1d6fd0;box-shadow:inset 0 3px 0 rgb(0 0 0 / .35)}
-.dl-clip{position:absolute;top:-22px;right:64px;width:30px;height:62px;border:5px solid #b9c4d4;border-radius:16px;border-bottom-color:transparent;transform:rotate(8deg);box-shadow:inset 0 0 0 2px #e6ecf4}
-body.rtl .dl-clip{right:auto;left:64px;transform:rotate(-8deg)}
-.dl-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.dl-head h2{margin:0;font:400 clamp(1.7rem,4.5vw,2.2rem)/1 var(--font);letter-spacing:.03em;color:#e8421f;text-shadow:0 3px 0 #ffd9a8}
-.dl-count{margin-inline-start:auto;display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#ff8a1c;color:#fff;font-weight:700;box-shadow:0 4px 0 #b85a00;white-space:nowrap}
-.dl-count b{font:400 1.35rem/1 var(--font)}
-.dl-sub{margin:8px 0 14px;font-weight:600;color:#6b4a24}
-.dl-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.dl-day{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:104px;padding:9px 4px 8px;border-radius:14px;border:2.5px dashed #d8c39b;background:rgb(255 255 255 / .75);color:#7a5a32;text-align:center}
-.dl-day small{font:400 .9rem/1 var(--font);letter-spacing:.04em;color:#a07a48}
-.dl-day .pic{display:grid;place-items:center;width:40px;height:40px}
-.dl-day .pic svg{width:34px;height:34px}
-.dl-day b{font:400 1.2rem/1 var(--font);color:#3d2a14}
-.dl-day em{font-style:normal;font-weight:700;font-size:.78rem;line-height:1.15;color:#7a3fd6}
-.dl-day.big .pic svg{width:40px;height:40px}
-.dl-day.member{border:2.5px solid #ffc21a;background:linear-gradient(180deg,#fff6cc,#ffe48a);box-shadow:0 0 0 3px rgb(255 194 26 / .25)}
-.dl-day.member b{color:#8a5a00;font-size:1rem}
-.dl-day.member.week{background:linear-gradient(160deg,#fff1fb,#e9dcff 55%,#ffe48a);border-color:#9b5cff;box-shadow:0 0 0 3px rgb(155 92 255 / .25)}
-.dl-day.today{border:3px solid #2fb84f;background:#effff3;box-shadow:0 0 0 4px rgb(47 184 79 / .25);animation:dlToday 1.4s ease-in-out infinite}
-.dl-day.today small{color:#17803d}
-@keyframes dlToday{50%{transform:translateY(-3px) scale(1.04)}}
-.dl-day.done>:not(.dl-stamp){opacity:.38}
-.dl-stamp{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-.dl-stamp span{display:grid;place-items:center;width:78px;height:78px;border-radius:50%;border:4px double #d6332b;color:#d6332b;font:400 .95rem/1.05 var(--font);letter-spacing:.02em;text-align:center;transform:rotate(-14deg);background:rgb(255 255 255 / .2);
-  mask:radial-gradient(circle at 30% 40%,#000 0 60%,rgb(0 0 0 / .75) 61% 100%);-webkit-mask:radial-gradient(circle at 30% 40%,#000 0 60%,rgb(0 0 0 / .75) 61% 100%)}
-.dl-stamp span svg{width:30px;height:30px;margin-bottom:-4px}
-.dl-day.done.member .dl-stamp span{border-color:#7a3fd6;color:#7a3fd6}
-.dl-stamp.slam span{animation:dlSlam .55s cubic-bezier(.2,1.4,.4,1) both}
-@keyframes dlSlam{0%{transform:scale(3.2) rotate(-40deg);opacity:0}55%{transform:scale(.88) rotate(-12deg);opacity:1}75%{transform:scale(1.06) rotate(-15deg)}100%{transform:scale(1) rotate(-14deg)}}
-.dl-ink{position:absolute;inset:-8px;pointer-events:none;background:radial-gradient(circle at 20% 30%,rgb(214 51 43 / .5) 0 3px,transparent 4px),radial-gradient(circle at 80% 25%,rgb(214 51 43 / .45) 0 2.5px,transparent 3.5px),radial-gradient(circle at 70% 82%,rgb(214 51 43 / .5) 0 3px,transparent 4px),radial-gradient(circle at 15% 78%,rgb(214 51 43 / .4) 0 2px,transparent 3px);animation:dlInk .6s ease-out both}
-@keyframes dlInk{0%{transform:scale(.3);opacity:0}40%{opacity:1}100%{transform:scale(1.15);opacity:0}}
-.dl-paper.thud{animation:dlThud .35s ease-out}
-@keyframes dlThud{30%{transform:rotate(-.6deg) translateY(4px) scale(.995)}}
-body.rtl .dl-paper.thud{animation:dlThudR .35s ease-out}
-@keyframes dlThudR{30%{transform:rotate(.6deg) translateY(4px) scale(.995)}}
-.dl-next{display:flex;align-items:center;gap:10px;margin:14px 0 0;padding:10px 14px;border-radius:14px;background:#fff1c2;border:2px solid #ffc21a;font-weight:600;color:#7a4a00}
-.dl-next[hidden]{display:none}
-.dl-next svg{flex:none;width:30px;height:30px}
-.dl-paper .cta{margin-top:16px;width:100%}
-.dl-paper .cta:disabled{opacity:.7;cursor:default}
-.dl-book .set-close{top:6px;right:6px;z-index:2}
-body.rtl .dl-book .set-close{right:auto;left:6px}
-@media (max-width:560px){.dl-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.dl-day{min-height:86px;padding:7px 2px}.dl-day .pic{width:30px;height:30px}.dl-day .pic svg{width:26px;height:26px}.dl-day b{font-size:1rem}.dl-stamp span{width:58px;height:58px;font-size:.75rem}.dl-paper{padding:22px 14px 18px 40px}body.rtl .dl-paper{padding:22px 40px 18px 14px}.dl-holes{left:10px}body.rtl .dl-holes{right:10px}.dl-holes i{width:12px;height:12px}}
+.dlx{position:relative;width:min(720px,100%);max-height:calc(100dvh - 20px);overflow:auto;scrollbar-width:none;padding:44px 16px 16px;border-radius:30px;background:linear-gradient(180deg,#5fc8ff,#2f9bff);
+  box-shadow:inset 0 0 0 4px #fff,inset 0 -8px 0 rgb(0 50 140 / .25),0 10px 0 #0b5fb8,0 26px 50px rgb(0 0 0 / .35);font-family:"HeeboHe","Fredoka",system-ui,sans-serif;color:#5a3a12;animation:dlxIn .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes dlxIn{from{transform:scale(.85);opacity:0}}
+.dlx .set-close{top:12px;right:12px;z-index:3}
+body.rtl .dlx .set-close{right:auto;left:12px}
+.dlx-ribbon{position:absolute;z-index:2;top:-6px;left:50%;translate:-50% 0;display:flex;align-items:center;gap:12px;padding:10px 34px 12px;border-radius:16px;background:linear-gradient(180deg,#b583ff,#8a4dff);box-shadow:0 6px 0 #5a24c7,inset 0 3px 0 rgb(255 255 255 / .35);white-space:nowrap}
+.dlx-ribbon::before,.dlx-ribbon::after{content:"";position:absolute;top:14px;width:26px;height:38px;background:#6c34d9;z-index:-1}
+.dlx-ribbon::before{left:-16px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,40% 50%)}
+.dlx-ribbon::after{right:-16px;clip-path:polygon(0 0,100% 0,60% 50%,100% 100%,0 100%)}
+.dlx-ribbon h2{margin:0;font:400 clamp(1.5rem,4.5vw,2rem)/1 var(--font);letter-spacing:.03em;color:#fff;text-shadow:0 3px 0 #5a24c7}
+.dlx-ribbon i{color:#ffe27a;font-style:normal;font-size:1.3rem;text-shadow:0 2px 0 #b8860b}
+.dlx-in{display:flex;flex-direction:column;gap:12px;padding:18px 16px 16px;border-radius:22px;background:#fff6e2;box-shadow:inset 0 0 0 3px #ffe2a8,0 4px 0 rgb(0 50 140 / .25)}
+/* the bar */
+.dlx-bar{position:relative;height:66px;margin:4px 30px 0 8px}
+body.rtl .dlx-bar{margin:4px 8px 0 30px}
+.dlx-track{position:absolute;left:0;right:0;top:30px;height:16px;border-radius:999px;background:#f0dcc0;box-shadow:inset 0 3px 0 rgb(0 0 0 / .1)}
+.dlx-fill{position:absolute;top:0;bottom:0;left:0;border-radius:999px;background:linear-gradient(180deg,#ff8fd0,#ff4fa8);box-shadow:inset 0 3px 0 rgb(255 255 255 / .35);transition:width .8s cubic-bezier(.2,1,.3,1)}
+body.rtl .dlx-fill{left:auto;right:0}
+.dlx-goal{position:absolute;top:2px;translate:-50% 0;display:flex;flex-direction:column;align-items:center}
+body.rtl .dlx-goal{translate:50% 0}
+.dlx-goal .gift{position:relative;display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:#fff;box-shadow:0 4px 0 #e2c48f}
+.dlx-goal .gift svg{width:40px;height:40px}
+.dlx-goal b{position:absolute;bottom:-4px;inset-inline:0;margin:auto;width:max-content;padding:1px 8px;border-radius:999px;background:#ff8a1c;color:#fff;font:400 .85rem/1.3 var(--font);box-shadow:0 2px 0 #b85a00}
+.dlx-goal.got .gift{background:#e7ffe9;box-shadow:0 4px 0 #2fb84f}
+.dlx-goal.got .gift::after{content:"✓";position:absolute;top:-8px;inset-inline-end:-8px;width:22px;height:22px;border-radius:50%;background:#2fd36b;color:#fff;font-weight:800;display:grid;place-items:center;font-size:.8rem;box-shadow:0 2px 0 #17913f}
+.dlx-goal.member .gift{background:linear-gradient(180deg,#fff6cc,#ffe48a);box-shadow:0 4px 0 #c99400}
+.dlx-goal.next .gift{animation:dlxBob 1.4s ease-in-out infinite}
+@keyframes dlxBob{50%{transform:translateY(-4px) rotate(-5deg)}}
+.dlx-pin{position:absolute;top:22px;translate:-50% 0;padding:2px 9px;border-radius:999px;background:#fff;color:#c2307a;font:400 .9rem/1.3 var(--font);box-shadow:0 2px 0 #ff4fa8;white-space:nowrap;transition:left .8s cubic-bezier(.2,1,.3,1),right .8s cubic-bezier(.2,1,.3,1)}
+body.rtl .dlx-pin{translate:50% 0}
+/* this week */
+.dlx-week{display:grid;grid-template-columns:repeat(3,1fr) 1.25fr;grid-template-rows:1fr 1fr;gap:10px}
+.dlx-day{position:relative;display:flex;flex-direction:column;align-items:center;min-height:118px;border-radius:16px;background:#fff;box-shadow:0 4px 0 #e6cf9f;overflow:hidden}
+.dlx-day .h{width:100%;padding:5px 0;background:linear-gradient(180deg,#ffd75a,#ffbf1f);color:#7a4a00;font:400 1rem/1.2 var(--font);text-align:center;box-shadow:inset 0 -3px 0 rgb(0 0 0 / .08)}
+.dlx-day .c{flex:1;width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 4px 8px;text-align:center}
+.dlx-day .pic svg{width:40px;height:40px}
+.dlx-day .c b{font:400 1.25rem/1 var(--font);color:#5a3a12}
+.dlx-day .c em{font-style:normal;font-weight:700;font-size:.8rem;line-height:1.15;color:#7a3fd6}
+.dlx-day.big{grid-row:1 / span 2;grid-column:4}
+.dlx-day.big .h{background:linear-gradient(180deg,#ff7a7a,#ff4545);color:#fff}
+.dlx-day.big .c{background:linear-gradient(180deg,#fff7c9,#ffe27a)}
+.dlx-day.big .pic svg{width:66px;height:66px}
+.dlx-day.big .c b{font-size:1.6rem}
+.dlx-day.special .h{background:linear-gradient(180deg,#b583ff,#8a4dff);color:#fff}
+.dlx-day.special .c{background:linear-gradient(180deg,#fff1fb,#efe4ff)}
+.dlx-day.today{box-shadow:0 4px 0 #17913f,0 0 0 4px #2fd36b,0 0 22px rgb(47 211 107 / .6);animation:dlxToday 1.4s ease-in-out infinite;z-index:1}
+.dlx-day.today .h{background:linear-gradient(180deg,#5fe08a,#2fd36b);color:#fff}
+@keyframes dlxToday{50%{transform:scale(1.04)}}
+.dlx-day.done .c>*{opacity:.35}
+.dlx-stamp{position:absolute;inset:26px 0 0;display:grid;place-items:center;pointer-events:none}
+.dlx-stamp span{display:grid;place-items:center;align-content:center;width:72px;height:72px;border-radius:50%;border:4px solid #e2322a;color:#e2322a;font:400 .95rem/1 var(--font);background:rgb(255 255 255 / .55);transform:rotate(-14deg);box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 5px #e2322a}
+.dlx-stamp span svg{width:28px;height:28px}
+.dlx-day.big .dlx-stamp span{width:96px;height:96px;font-size:1.15rem}
+.dlx-stamp.slam span{animation:dlxSlam .55s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes dlxSlam{0%{transform:scale(3.2) rotate(-40deg);opacity:0}55%{transform:scale(.86) rotate(-12deg);opacity:1}75%{transform:scale(1.07) rotate(-15deg)}100%{transform:scale(1) rotate(-14deg)}}
+.dlx-ink{position:absolute;inset:16px -6px -6px;pointer-events:none;background:radial-gradient(circle at 20% 30%,rgb(226 50 42 / .55) 0 3px,transparent 4px),radial-gradient(circle at 80% 25%,rgb(226 50 42 / .5) 0 2.5px,transparent 3.5px),radial-gradient(circle at 70% 82%,rgb(226 50 42 / .55) 0 3px,transparent 4px),radial-gradient(circle at 15% 78%,rgb(226 50 42 / .45) 0 2px,transparent 3px);animation:dlxInk .6s .15s ease-out both}
+@keyframes dlxInk{0%{transform:scale(.3);opacity:0}40%{opacity:1}100%{transform:scale(1.15);opacity:0}}
+.dlx.thud .dlx-in{animation:dlxThud .35s ease-out}
+@keyframes dlxThud{30%{transform:translateY(4px) scale(.995)}}
+.dlx-note{margin:0;text-align:center;font-weight:600;color:#7a5a32}
+.dlx-next{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;font-weight:700;color:#7a3fd6}
+.dlx-next[hidden]{display:none}
+.dlx-next svg{flex:none;width:26px;height:26px}
+.dlx-claim{align-self:center;min-width:min(320px,100%);height:58px;padding:0 34px;border:0;border-radius:999px;cursor:pointer;color:#fff;font:400 1.5rem/1 var(--font);letter-spacing:.03em;
+  background:linear-gradient(180deg,#ff8fd0,#ff4fa8);box-shadow:0 6px 0 #c2307a,inset 0 3px 0 rgb(255 255 255 / .35);text-shadow:0 2px 0 #c2307a}
+.dlx-claim:active{transform:translateY(4px);box-shadow:0 2px 0 #c2307a}
+.dlx-claim:disabled{background:#d9c9b0;box-shadow:0 6px 0 #b5a283;text-shadow:none;cursor:default;font-size:1.2rem}
+.dlx-claim:focus-visible{outline:3px solid #ffb547;outline-offset:3px}
+/* a lost streak: win it back? */
+.dlx-lost{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:16px;border-radius:30px;background:rgb(30 20 60 / .55);backdrop-filter:blur(2px)}
+.dlx-lost[hidden]{display:none}
+.dlx-lost-card{width:min(400px,100%);display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 20px 18px;border-radius:24px;background:#fff6e2;box-shadow:0 8px 0 #c99a55,0 20px 40px rgb(0 0 0 / .35);text-align:center;animation:dlxIn .35s cubic-bezier(.2,1.4,.4,1)}
+.dlx-lost-card .flame{font-size:3rem;line-height:1;filter:grayscale(.6)}
+.dlx-lost-card h3{margin:0;font:400 1.6rem/1.15 var(--font);color:#e2322a}
+.dlx-lost-card p{margin:0;font-weight:600;font-size:1.05rem;color:#5a3a12}
+.dlx-lost-card p b{color:#c2307a}
+.dlx-lost-acts{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+.dlx-lost-acts button{min-width:130px;height:50px;padding:0 20px;border:0;border-radius:16px;cursor:pointer;font:600 1.1rem "HeeboHe","Fredoka",system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.dlx-lost-acts .yes{color:#fff;background:linear-gradient(180deg,#5fe08a,#2fd36b);box-shadow:0 5px 0 #17913f}
+.dlx-lost-acts .no{color:#7a5a32;background:#fff;box-shadow:0 5px 0 #d9c39b}
+.dlx-lost-acts .yes svg{width:22px;height:22px}
+.dlx-lost-acts button:disabled{opacity:.6;cursor:progress}
+.dlx-lost-msg{min-height:1.2em;font-weight:600;color:#e2322a;margin:0}
+@media (max-width:560px){.dlx{padding:40px 8px 10px}.dlx-in{padding:14px 8px 12px;gap:10px}.dlx-week{gap:6px;grid-template-columns:repeat(3,1fr) 1.15fr}.dlx-day{min-height:96px}.dlx-day .pic svg{width:30px;height:30px}.dlx-day .c b{font-size:1.05rem}.dlx-day.big .pic svg{width:46px;height:46px}.dlx-stamp span{width:56px;height:56px;font-size:.75rem}.dlx-goal .gift{width:44px;height:44px}.dlx-goal .gift svg{width:32px;height:32px}.dlx-claim{height:52px;font-size:1.3rem}}
 .coin-rain{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
 .rain-coin{position:absolute;top:-50px;width:40px;height:40px;animation:coinFall 1.6s cubic-bezier(.4,.1,.7,1) forwards}
 .rain-coin svg{width:100%;height:100%}
@@ -3177,7 +3210,7 @@ body.land .trade-card,body.land .duel-card,body.land .admin-card,body.land .map-
 body.land .idle-card.hup-card,body.land .idle-card.adopt-card{padding:12px 14px}
 body.land .need-pop{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 100px);right:calc(var(--lg) + 58px);padding:10px 12px}
 body.land .store-card{max-height:calc(100dvh - 16px)}
-body.land .dl-book{width:min(680px,100%)}
+body.land .dlx{width:min(760px,100%)}
 body.land.decorating .joy-zone,body.land.decorating .jump-btn{display:none!important}
 
 body.land .hup-body{grid-template-columns:200px 1fr;gap:12px}
@@ -3876,17 +3909,21 @@ body.land .npc-card .idle-face{display:none}
 <div class="coin-rain" id="coinRain" aria-hidden="true"></div>
 <div class="mg-result" id="mgResult" role="status" aria-live="polite"><div class="mg-res-text"><small id="mgResTitle">ROUND OVER</small><b id="mgResLine"></b></div><span class="mg-res-coins"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b id="mgResCoins">+0</b></span></div>
 <div class="settings-overlay dl-ov" id="dailyOverlay" hidden>
-  <div class="settings-card daily-card dl-book" role="dialog" aria-modal="true" aria-labelledby="dailyTitle">
+  <div class="dlx" id="dailyBox" role="dialog" aria-modal="true" aria-labelledby="dailyTitle">
+    <div class="dlx-ribbon"><i aria-hidden="true">★</i><h2 id="dailyTitle">DAILY GIFT</h2><i aria-hidden="true">★</i></div>
     <button class="set-close" id="dailyClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg></button>
-    <div class="dl-paper" id="dailyPaper">
-      <span class="dl-clip" aria-hidden="true"></span>
-      <span class="dl-holes" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <div class="dl-head"><h2 id="dailyTitle">DAILY GIFTS</h2><span class="dl-count" id="dailyCount"></span></div>
-      <p class="dl-sub" id="dailyStreak"></p>
-      <div class="dl-grid" id="dailyDays"></div>
-      <p class="dl-next" id="dailyNext" hidden></p>
-      <button class="cta ready" id="dailyClaim" type="button">Collect</button>
+    <div class="dlx-in">
+      <div class="dlx-bar" id="dailyBar" aria-hidden="true"></div>
+      <div class="dlx-week" id="dailyDays"></div>
+      <p class="dlx-note" id="dailyStreak"></p>
+      <p class="dlx-next" id="dailyNext" hidden></p>
+      <button class="dlx-claim" id="dailyClaim" type="button">Collect</button>
     </div>
+    <div class="dlx-lost" id="dailyLost" hidden><div class="dlx-lost-card" role="alertdialog" aria-labelledby="dailyLostH" aria-describedby="dailyLostP">
+      <span class="flame" aria-hidden="true">🔥</span><h3 id="dailyLostH"></h3><p id="dailyLostP"></p>
+      <div class="dlx-lost-acts"><button class="yes" id="dailyLostYes" type="button"></button><button class="no" id="dailyLostNo" type="button"></button></div>
+      <p class="dlx-lost-msg" id="dailyLostMsg" role="status"></p>
+    </div></div>
   </div>
 </div>
 <!-- mini-games: full screen -->
@@ -16561,29 +16598,45 @@ async function checkDaily(autoOpen){
   if(autoOpen&&daily.canClaim&&inGame)setTimeout(()=>{if(inGame&&dailyOverlay.hidden&&mgOverlay.hidden)openDaily();},1400);
 }
 const DL_CROWN='<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 11 L10 17 L16 6 L22 17 L28 11 L25 26 H7 Z" fill="#ffc21a" stroke="#a36d00" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="6" r="2.4" fill="#ff5fa8"/><circle cx="4" cy="11" r="2" fill="#5fe0ff"/><circle cx="28" cy="11" r="2" fill="#5fe0ff"/><rect x="7" y="22" width="18" height="4" fill="#ffdc5e"/></svg>';
+const DL_CHEST='<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="16" width="30" height="19" rx="3" fill="#ff5fa8" stroke="#a3226a" stroke-width="2"/><rect x="3" y="11" width="34" height="8" rx="3" fill="#ff8fd0" stroke="#a3226a" stroke-width="2"/><rect x="17" y="11" width="6" height="24" fill="#ffd23a" stroke="#a36d00" stroke-width="1.6"/><path d="M20 11 C15 3 8 5 11 10 M20 11 C25 3 32 5 29 10" fill="none" stroke="#ffd23a" stroke-width="3" stroke-linecap="round"/><circle cx="10" cy="26" r="1.6" fill="#fff"/><circle cx="30" cy="25" r="1.4" fill="#fff"/></svg>';
 const DL_CHECK='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 L8.5 15 L16 6" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const dlMemberWords=(n,he)=>he?(n===7?"שבוע מנוי":n===1?"יום מנוי":n===2?"יומיים מנוי":`${n} ימי מנוי`):(n===7?"a week of membership":n===1?"a day of membership":`${n} days of membership`);
 function dlGiftHtml(g){const he=I18N.lang==="he";
   if(g.memberDays)return he?`<span class="pic">${DL_CROWN}</span><b>מנוי</b><em>${g.memberDays===7?"לשבוע שלם!":g.memberDays===1?"ליום אחד":"ליומיים"}</em>`
     :`<span class="pic">${DL_CROWN}</span><b>${g.memberDays===7?"1 week":g.memberDays===1?"1 day":`${g.memberDays} days`}</b><em>of membership</em>`;
-  return `<span class="pic">${COIN_SVG}</span><b>${g.coins}</b>`;}
+  return `<span class="pic">${g.chest?DL_CHEST:COIN_SVG}</span><b>${g.coins}</b>`;}
 function paintDaily(stampDay){
   if(!daily)return;const he=I18N.lang==="he",grid=document.getElementById("dailyDays"),s=daily.streak;grid.innerHTML="";
-  const page=daily.page||daily.rewards.map((c,i)=>({day:i+1,coins:c}));
-  page.forEach(g=>{const done=g.day<s||(g.day===s&&!daily.canClaim),today=g.day===s&&daily.canClaim;
-    const d=document.createElement("div");d.className="dl-day"+(done?" done":"")+(today?" today":"")+(g.memberDays?" member":"")+(g.memberDays===7?" week":"")+((g.day%7===0&&!g.memberDays)?" big":"");
-    d.innerHTML=`<small>${he?"יום":"DAY"} ${g.day}</small>${dlGiftHtml(g)}`+(done?`<span class="dl-stamp${stampDay===g.day?" slam":""}"><span>${DL_CHECK}${he?"נאסף":"GOT IT"}</span></span>`+(stampDay===g.day?'<span class="dl-ink"></span>':""):"");
+  const week=daily.week||daily.rewards.map((c,i)=>({day:i+1,coins:c}));
+  week.forEach((g,i)=>{const done=g.day<s||(g.day===s&&!daily.canClaim),today=g.day===s&&daily.canClaim;
+    const d=document.createElement("div");d.className="dlx-day"+(i===6?" big":"")+(g.special&&i!==6?" special":"")+(done?" done":"")+(today?" today":"");
+    d.innerHTML=`<span class="h">${he?"יום":"Day"} ${g.day}</span><span class="c">${dlGiftHtml(g)}</span>`+(done?`<span class="dlx-stamp${stampDay===g.day?" slam":""}"><span>${DL_CHECK}${he?"נאסף":"GOT IT"}</span></span>`+(stampDay===g.day?'<span class="dlx-ink"></span>':""):"");
     if(today)d.setAttribute("aria-current","date");grid.appendChild(d);});
-  document.getElementById("dailyCount").innerHTML=he?`יום <b>${s}</b> ברצף`:`Day <b>${s}</b> in a row`;
-  document.getElementById("dailyStreak").textContent=daily.canClaim?(he?"כל יום שחוזרים מקבלים חותמת ומתנה. מפספסים יום? מתחילים מחדש מיום 1.":"Come back every day for a stamp and a gift. Miss a day and you start again at day 1."):(he?"החותמת של היום כבר בספר. המתנה הבאה מחכה מחר!":"Today's stamp is in the book. Your next gift is ready tomorrow!");
+  // the bar: 30 days, a special gift on every 10th
+  const bar=daily.bar,bx=document.getElementById("dailyBar");
+  if(bar){const got=s-(daily.canClaim?1:0),pc=Math.max(0,Math.min(1,(got-bar.from)/30))*100,side=document.body.classList.contains("rtl")?"right":"left";
+    bx.innerHTML=`<div class="dlx-track"><div class="dlx-fill" style="width:${pc}%"></div></div>`+bar.gifts.map(g=>{const reached=got>=g.day,next=!reached&&g.day===bar.gifts.find(x=>got<x.day).day;
+      return `<span class="dlx-goal${reached?" got":""}${g.memberDays?" member":""}${next?" next":""}" style="${side}:${(g.day-bar.from)/30*100}%"><span class="gift">${g.memberDays?DL_CROWN:DL_CHEST}</span><b>${g.day}</b></span>`;}).join("")+
+      `<span class="dlx-pin" style="${side}:${pc}%">${got}</span>`;}
+  document.getElementById("dailyStreak").textContent=daily.canClaim?(s>1?(he?`יום ${s} ברצף! תמשיכו לבוא כל יום.`:`Day ${s} in a row! Keep coming every day.`):(he?"תחזרו כל יום: כל 10 ימים מחכה מתנה מיוחדת.":"Come back every day: every 10 days there's a special gift.")):(he?`יום ${s} נאסף. המתנה הבאה מחכה מחר!`:`Day ${s} collected. Your next gift is ready tomorrow!`);
   const nm=daily.nextMember,nx=document.getElementById("dailyNext");
-  if(nm&&nm>s-(daily.canClaim?1:0)){const left=nm-s+(daily.canClaim?0:0),days=(daily.page||[]).find(x=>x.day===nm)?.memberDays||(nm%100===0?7:nm%50===0?2:1);
-    const what=days===7?(he?"שבוע מנוי":"a week of membership"):days===1?(he?"יום מנוי":"a day of membership"):(he?`${days} ימי מנוי`:`${days} days of membership`);
-    nx.innerHTML=DL_CROWN+`<span>${he?(left<=0?`היום: ${what} במתנה!`:`ביום ${nm} מחכה לכם ${what} במתנה! (עוד ${left} ${left===1?"יום":"ימים"})`):(left<=0?`Today: ${what} as a gift!`:`Day ${nm} gives ${what}! (${left} more ${left===1?"day":"days"})`)}</span>`;nx.hidden=false;}
+  if(nm){const left=nm-s,days=nm%100===0?7:nm%50===0?2:1;
+    nx.innerHTML=DL_CROWN+`<span>${he?(left<=0?`היום: ${dlMemberWords(days,true)} במתנה!`:`ביום ${nm}: ${dlMemberWords(days,true)} במתנה`):(left<=0?`Today: ${dlMemberWords(days)} as a gift!`:`Day ${nm}: ${dlMemberWords(days)} as a gift`)}</span>`;nx.hidden=false;}
   else nx.hidden=true;
-  dailyClaim.disabled=!daily.canClaim;dailyClaim.classList.toggle("ready",daily.canClaim);
-  const g=page.find(x=>x.day===s)||{coins:daily.rewards[daily.day]};
-  dailyClaim.textContent=daily.canClaim?(g.memberDays?(he?"לאסוף את המנוי":"Collect the membership"):(he?`לאסוף ${g.coins} מטבעות`:`Collect ${g.coins} coins`)):(he?"נתראה מחר!":"Come back tomorrow");
+  dailyClaim.disabled=!daily.canClaim;
+  const g=week.find(x=>x.day===s)||{coins:daily.rewards[daily.day]};
+  dailyClaim.textContent=daily.canClaim?(g.memberDays?(he?"לאסוף את המנוי!":"Collect the membership!"):(he?`לאסוף ${g.coins}`:`Collect ${g.coins}`)):(he?"נתראה מחר!":"Come back tomorrow");
+  // a streak that ended: win it back?
+  const L=daily.lost,lo=document.getElementById("dailyLost");lo.hidden=!(L&&daily.canClaim);
+  if(L&&daily.canClaim){document.getElementById("dailyLostH").textContent=he?`הרצף של ${L.days} ימים נגמר`:`Your ${L.days}-day streak ended`;
+    document.getElementById("dailyLostP").innerHTML=he?`פספסתם יום. רוצים לשחזר את הרצף ב־<b>${L.cost.toLocaleString("en-US")} מטבעות</b>?`:`You missed a day. Win your streak back for <b>${L.cost.toLocaleString("en-US")} coins</b>?`;
+    const y=document.getElementById("dailyLostYes");y.innerHTML=`${COIN_SVG}${he?`לשחזר (${L.cost})`:`Win it back (${L.cost})`}`;y.disabled=false;
+    document.getElementById("dailyLostNo").textContent=he?"לא, להתחיל מחדש":"No, start again";document.getElementById("dailyLostMsg").textContent="";}
 }
+document.getElementById("dailyLostYes").onclick=async e=>{const b=e.currentTarget;b.disabled=true;const r=await api("/api/rewards/daily/restore",{});
+  if(!r.ok){b.disabled=false;document.getElementById("dailyLostMsg").textContent=I18N.T(r.data.error||"Something went wrong on our side. Please try again.");sfx.error();return;}
+  setMyCoins(r.data.coins);sfx.success();await checkDaily(false);paintDaily();};
+document.getElementById("dailyLostNo").onclick=async()=>{await api("/api/rewards/daily/forget",{});sfx.tick(true);if(daily)daily.lost=null;await checkDaily(false);paintDaily();};
 async function openDaily(){if(!me)return;if(!daily)await checkDaily(false);if(!daily)return;paintDaily();dailyOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>dailyClaim.focus(),60);}
 function closeDaily(){if(dailyOverlay.hidden)return;dailyOverlay.hidden=true;sfx.close();}
 giftBtn.onclick=e=>{press(e.currentTarget);openDaily();};
@@ -16598,7 +16651,7 @@ dailyClaim.onclick=async()=>{
   setMyCoins(r.data.coins);daily.canClaim=false;daily.streak=r.data.streak;daily.day=r.data.day;if(r.data.user)setAccount(r.data.user,true);
   document.getElementById("giftDot").hidden=true;giftBtn.classList.remove("ready");
   // the stamp comes down on today's gift, the page jumps a little, then the prize
-  paintDaily(r.data.streak);sfx.tick(true);const paper=document.getElementById("dailyPaper");paper.classList.remove("thud");void paper.offsetWidth;setTimeout(()=>{paper.classList.add("thud");sfx.success();},300);
+  paintDaily(r.data.streak);sfx.tick(true);const box=document.getElementById("dailyBox");box.classList.remove("thud");void box.offsetWidth;setTimeout(()=>{box.classList.add("thud");sfx.success();},300);
   setTimeout(()=>{if(r.data.reward)coinRain(18);},650);
   setTimeout(()=>{dailyOverlay.hidden=true;const he=I18N.lang==="he";
     if(r.data.memberDays)toast(he?`קיבלתם ${r.data.memberDays===7?"שבוע":r.data.memberDays===1?"יום":r.data.memberDays+" ימי"} מנוי במתנה! 👑`:`You got ${r.data.memberDays===7?"a week":r.data.memberDays===1?"a day":r.data.memberDays+" days"} of membership! 👑`);

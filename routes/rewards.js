@@ -10,7 +10,7 @@ import { SEASON_XP } from "../public/shared/season.js";
 import { addLevelXp } from "./levels.js";
 import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
-import { giftFor, DAILY_COINS, PAGE, nextMemberDay } from "../public/shared/daily.js";
+import { giftFor, DAILY_COINS, nextMemberDay, restoreCost, RESTORE_DAYS } from "../public/shared/daily.js";
 import { notifyMember } from "../realtime/plaza.js";
 
 /*
@@ -41,14 +41,53 @@ function dailyState(user) {
   return { today, canClaim: true, streak, day: (streak - 1) % 7 };
 }
 
+// a streak that ended (a day was missed) and can still be won back: { days, cost } or null
+function lostStreak(user) {
+  const last = user.dailyLast || "", n = user.dailyStreak || 0;
+  if (!last || n < 2 || last === dayKey() || last === yesterdayKey() || user.dailyLostSeen === last) return null;
+  const gap = (Date.parse(dayKey() + "T00:00:00Z") - Date.parse(last + "T00:00:00Z")) / 86_400_000;
+  if (!(gap >= 2 && gap <= RESTORE_DAYS)) return null;
+  return { days: n, cost: restoreCost(n) };
+}
+
 router.get("/rewards/daily", requireUser, (req, res) => {
   const s = dailyState(req.user);
   res.set("Cache-Control", "no-store");
   const member = req.user.isMember(), k = member ? 2 : 1; // members see (and get) double coins
-  // streak = today's day number (the one to collect, or the one already collected today); page: the 10 days around it
-  const from = Math.floor((s.streak - 1) / PAGE) * PAGE + 1;
+  // streak = today's day number (the one to collect, or the one already collected today)
+  // week: the 7 days of this week of the streak; bar: the 30 days around it, with the special gifts on every 10th day
+  const wk = Math.floor((s.streak - 1) / 7) * 7 + 1, bar = Math.floor((s.streak - 1) / 30) * 30;
   res.json({ canClaim: s.canClaim, streak: s.streak, day: s.day, rewards: DAILY_REWARDS.map((r) => r * k), member,
-    page: Array.from({ length: PAGE }, (_, i) => ({ day: from + i, ...giftFor(from + i, member) })), nextMember: nextMemberDay(s.streak + (s.canClaim ? 0 : 1)) });
+    week: Array.from({ length: 7 }, (_, i) => ({ day: wk + i, ...giftFor(wk + i, member) })),
+    bar: { from: bar, to: bar + 30, gifts: [10, 20, 30].map((x) => ({ day: bar + x, ...giftFor(bar + x, member) })) },
+    nextMember: nextMemberDay(s.streak + (s.canClaim ? 0 : 1)), lost: s.canClaim ? lostStreak(req.user) : null });
+});
+
+// win back a streak that ended: pay the coins, and today counts as the next day of it
+router.post("/rewards/daily/restore", requireJson, requireUser, async (req, res, next) => {
+  try {
+    const lost = lostStreak(req.user);
+    if (!lost) return res.status(409).json({ error: "There's no streak to win back." });
+    const updated = await User.findOneAndUpdate(
+      { _id: req.user._id, dailyLast: req.user.dailyLast, dailyStreak: req.user.dailyStreak, coins: { $gte: lost.cost } },
+      { $set: { dailyLast: yesterdayKey() }, $inc: { coins: -lost.cost } },
+      { new: true }
+    );
+    if (!updated) return res.status(409).json({ error: `You need ${lost.cost.toLocaleString("en-US")} coins to win back your streak.` });
+    notifyCoins(updated._id.toString(), updated.coins);
+    res.json({ ok: true, coins: updated.coins, streak: updated.dailyStreak });
+  } catch (err) {
+    next(err);
+  }
+});
+// no thanks: start again at day 1 (and don't ask about this streak again)
+router.post("/rewards/daily/forget", requireJson, requireUser, async (req, res, next) => {
+  try {
+    await User.updateOne({ _id: req.user._id }, { $set: { dailyLostSeen: req.user.dailyLast || "" } });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, next) => {

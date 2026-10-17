@@ -428,6 +428,7 @@ window.JUMPI_HE_EXTRA = {
 "Every player sees the tip in their own language (Hebrew or English).": "כל שחקן יראה את הטיפ בשפה שלו (עברית או אנגלית).",
 "Only admins can send the ready-made tips.": "רק מנהלים יכולים לשלוח את הטיפים המוכנים.",
 "DAILY GIFTS": "ספר המתנות",
+"There's no streak to win back.": "אין רצף לשחזר.",
 "Emoji cap": "כובע אימוג'י",
 "Emoji pants": "מכנסי אימוג'י",
 "Emoji tee": "חולצת אימוג'י",
@@ -1969,6 +1970,7 @@ window.JUMPI_HE_EXTRA = {
       [/^The (.+) is yours! It's super rare\.$/, (m, a) => T(a) + " שלכם! זה נדיר במיוחד."], [/^(.+) is yours! Find it in your inventory\.$/, (m, a) => T(a) + " שלכם! תמצאו את זה בתיק."],
       [/^Click anywhere to (eat|drink) your (.+)!$/, (m, v, a) => "לחצו בכל מקום כדי " + (v === "drink" ? "לשתות" : "לאכול") + " את " + T(a) + "!"],
       [/^Wait (\d+) seconds before the next announcement\.$/, "חכו $1 שניות לפני ההודעה הבאה."],
+      [/^You need ([\d,]+) coins to win back your streak\.$/, "צריך $1 מטבעות כדי לשחזר את הרצף."],
       [/^Buy (.+)$/, (m, a) => "קנייה: " + T(a)], [/^🎉 You unlocked (.+)!$/, (m, a) => "🎉 פתחתם את " + T(a) + "!"],
     ];
   })(),
