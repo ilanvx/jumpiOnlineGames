@@ -37,6 +37,20 @@ export const JOBS = {
     xp: [0, 3, 8, 14, 22, 32, 44, 58, 75, 95],
     payMul: 2.6, minSecs: 14, unit: "delivery", units: "deliveries", done: "pizzas delivered", shift: 240,
   },
+  // the Grand Hotel in the Future City: only for players who opened that world (world: "future").
+  // Levels 1-3 clean rooms; from level 4 you also check guests in at the front desk; from level 7 you carry their luggage up too.
+  // Pays a little less per second than the jobs in Jumpi Town, so all of them stay worth doing.
+  hotel: {
+    id: "hotel",
+    name: "Hotel Staff",
+    place: "Grand Hotel · Future City",
+    world: "future",
+    about: "Work at the Grand Hotel in the Future City! Start by cleaning the guest rooms: make the bed and tidy up. Level up to work at the front desk, check guests in and show them to their room, and later bring their luggage up too. Quick work = tips!",
+    titles: ["Room Cleaner", "Housekeeper", "Senior Housekeeper", "Front Desk Trainee", "Receptionist", "Senior Receptionist", "Concierge", "Floor Manager", "Hotel Manager", "Legendary Host"],
+    xp: [0, 6, 15, 27, 42, 60, 82, 108, 138, 172],
+    payMul: 1.4, minSecs: 8, unit: "task", units: "tasks", done: "tasks done", shift: 180,
+    stages: { checkin: 4, luggage: 7 },   // the level each new kind of task starts at
+  },
 };
 export const JOB_LIST = Object.values(JOBS);
 // each job's uniform: real clothes (outfits.js, gift: job). Worn during the shift, and all of them are a gift at the top level.

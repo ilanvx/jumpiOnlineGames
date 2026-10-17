@@ -460,6 +460,7 @@ body.rtl :is(h1,h2,h3,h4,h5,h6,b,strong,small,button,label,.btn){letter-spacing:
   animation:popIn .4s cubic-bezier(.2,1.5,.4,1)}
 .settings-card h2{margin:0 0 4px;font:400 1.7rem/1 var(--font);letter-spacing:.04em;text-shadow:0 3px 0 #1f3355}
 .settings-card h3{margin:6px 0 0;font:400 1.05rem/1 var(--font);letter-spacing:.06em;color:#bcd0ea}
+.ph-job.locked .art,.ph-jobcard.locked .art{filter:grayscale(.75) brightness(.85)}.ph-job.locked .pay{color:#b07800!important}
 .map-worlds{position:absolute;top:12px;right:62px;height:40px;border:0;border-radius:12px;padding:0 12px;display:flex;align-items:center;gap:6px;background:linear-gradient(180deg,#2a2f6b,#141a45);color:#ffd77a;font-family:var(--font);font-size:16px;cursor:pointer;box-shadow:0 0 0 2px #e8b64a,0 4px 0 #0a0d26}
 .map-worlds svg{width:22px;height:22px}
 
@@ -7649,7 +7650,7 @@ function nearWorldSeat(){const L=worldSeats();let bi=-1,bd=1.35;
 function worldSit(i){const S=worldSeats()[i];if(!S||G.seat||VEH.ride)return;
   G.seat={k:S.k,y:S.y,f:S.f,x:S.x,z:S.z,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(S.x,0,S.z);G.face=S.f;G.target=null;G.keys={};G.marker.visible=false;
   nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");sfx.tick(true);toast(S.k==="lie"?"Time to relax! Move to get up.":"Ahh, comfy! Move to get up.");}
-function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
+function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id==="fw:hotel"){openPhone();setTimeout(()=>openApp("jobs","hotel"),350);return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
   if(k==="evshop"){if(EV.cur)openGameStore("spooky");return;}
   if(k==="stand")openMenu("park",v);else if(k==="slide"){const S=PARK_SLIDES.find(q=>q.id===v);if(S)startSlide(S);}}
 
@@ -9200,6 +9201,7 @@ function fwLift(id){const L=FWX.fw&&FWX.fw.lifts.find(q=>q.id===id);if(!L||FWX.b
 function fwSpots(){if(!FWX.fw||!inFutureNow())return null;const x=G.pos.x,z=G.pos.z;
   const L=FWX.fw.liftAt(x,z);if(L)return {id:"fw:lift:"+L.id,label:/down/.test(L.id)?"GO DOWN":"GO UP",icon:"lift"};
   const [px,pz]=FUT.at(...FUT.LANDING.pad);if(Math.hypot(x-px,z-pz)<3.2)return {id:"fw:port",label:"TIME MACHINE",icon:"portal"};
+  {const [hx,hz]=FUT.at(...FUT.HOTEL.spot);if(Math.hypot(x-hx,z-hz)<2.6)return {id:"fw:hotel",label:"WORK AT THE HOTEL",icon:"shop"};}
   return null;}
 
 /* ---------- the world select screen ---------- */
@@ -11579,10 +11581,182 @@ function wHud(){const m=Math.floor(WORK.left/60),s=Math.floor(WORK.left%60);docu
 function workClear(){WORK.custs.forEach(c=>{c.bub.remove();c.n.root.visible=false;if(c.plate)c.plate.removeFromParent();});WORK.custs=[];
   WORK.plates.forEach(p=>p.m.removeFromParent());WORK.plates=[];wDropCarry();}
 
+
+/* =====================================================================
+   THE HOTEL JOB (public/shared/jobs.js "hotel", only after opening the Future City).
+   The Grand Hotel's ground floor: the front desk on the left, three guest rooms on the right.
+   Level 1-3: rooms get messy, walk in and tidy every mess (the bed, the rubbish) = one task.
+   Level 4+: guests come to the desk: check them in, walk them to a clean room = one task (their room gets messy when they leave).
+   Level 7+: some guests bring a suitcase: pick it up from the cart by the door and bring it to their room = one task.
+   ===================================================================== */
+const HTL={rooms:[],guests:[],bags:[],carry:null,follow:null,spawnT:0,dirtyT:0,lastT:0};
+const H_ROOMS=[{z0:-5.6,z1:-1.9},{z0:-1.9,z1:1.8},{z0:1.8,z1:5.5}].map((r,i)=>({...r,i,zc:(r.z0+r.z1)/2}));
+const H_DESK=[-4.6,-3.05],H_IN=[-6.4,4.9],H_CART=[-5.2,3.4],H_WALL_X=2.0,H_PATIENCE=40,H_CLEAN_FAST=30;
+const hDoor=R=>[H_WALL_X-.9,R.zc];
+const hStage=()=>{const L=(WORK.shift&&WORK.shift.level)||1,S=JOBS.hotel.stages;return {checkin:L>=S.checkin,luggage:L>=S.luggage};};
+function hotelSpotsIcon(){return {clean:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 2.5 L9 10" stroke="#59e0ff" stroke-width="2.2" stroke-linecap="round"/><path d="M5 10 H13 L15 17.5 H3Z" fill="#59e0ff"/><path d="M6.5 13 V16.5 M9 13 V16.5 M11.5 13 V16.5" stroke="#fff" stroke-width="1.2"/></svg>',
+  key:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="6.5" cy="10" r="4" fill="none" stroke="#ffd65a" stroke-width="2.4"/><path d="M10.5 10 H18 M15 10 V13 M17.5 10 V12.5" stroke="#ffd65a" stroke-width="2.4" stroke-linecap="round"/></svg>',
+  bag:'<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="6" width="12" height="11" rx="2" fill="#ff7af0"/><path d="M7.5 6 V3.5 H12.5 V6" fill="none" stroke="#ff7af0" stroke-width="2"/><path d="M4 10 H16" stroke="#fff" stroke-width="1.2"/></svg>'};}
+Object.assign(SEAT_ICON,hotelSpotsIcon());
+function venueHotel(){
+  const C=newVenue({wall:4,floor:2,items:[]},{music:"future",work:true,hotel:true});const g=C.g;
+  const white=mat("#eef3fb",{roughness:.4}),dark=mat("#1d2433",{roughness:.5,metalness:.4}),gold=mat("#d4a73a",{metalness:.8,roughness:.25}),neonC=mat("#59e0ff",{emissive:"#59e0ff",emissiveIntensity:1.1});
+  // the front desk with a glowing edge, a screen and a key rack on the wall behind
+  g.add(box(4.6,1.05,.9,white,H_DESK[0],.525,-4.25),box(4.72,.08,1.02,gold,H_DESK[0],1.09,-4.25),box(4.6,.06,.04,neonC,H_DESK[0],.9,-3.78));
+  const scr=box(.9,.55,.06,mat("#0b1230",{emissive:"#2a6bff",emissiveIntensity:.6}),H_DESK[0]-1.2,1.4,-4.45);scr.rotation.x=-.25;g.add(scr);
+  g.add(box(2.6,1.1,.08,dark,H_DESK[0],2.3,-5.5));for(let k=0;k<8;k++)g.add(cyl(.05,.05,.18,gold,H_DESK[0]-1.05+k*.3,2.25+(k%2)*.3,-5.42,8));
+  C.col.push({box:[H_DESK[0]-2.4,-4.8,H_DESK[0]+2.4,-3.7]});
+  wallSign(C,"GRAND HOTEL",H_DESK[0],3.7,4.6,{bg:"#2a0f05",fg:"#ffcf6a",glow:true});
+  hangSign(C,"RECEPTION",H_DESK[0],3.0,-3.9,2.4,"#1f6fd6");
+  // a robot at the desk who helps (and waves)
+  const bot=makeNPC(C,{color:0,eyes:4,hair:-1,shirt:0,pants:0,y:0},H_DESK[0]+1.5,-5.0,0,"idle");bot.root.scale.setScalar(.9);
+  // the lobby: sofas, a plant, the luggage cart by the door
+  [[-6.2,.2,Math.PI/2],[-3.4,.2,-Math.PI/2]].forEach(([x,z,r])=>{const s=new THREE.Group();s.add(box(.9,.45,2,mat("#7d5cff",{roughness:.8}),0,.23,0),box(.25,.8,2,mat("#6a48ee",{roughness:.8}),-.4,.55,0));s.position.set(x,0,z);s.rotation.y=r;g.add(s);C.col.push({c:[x,z],r:1.05});});
+  g.add(cyl(.5,.5,.5,white,-4.8,.25,.2,20),cyl(.52,.52,.04,neonC,-4.8,.52,.2,20));C.col.push({c:[-4.8,.2],r:.55});
+  g.add(cyl(.32,.26,.6,white,-6.8,.3,-2.2,14));const pl=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,1),mat("#3fae4a",{emissive:"#1f8a3e",emissiveIntensity:.3}));pl.position.set(-6.8,1.05,-2.2);g.add(pl);C.col.push({c:[-6.8,-2.2],r:.5});
+  const cart=new THREE.Group();cart.add(box(1.2,.08,.7,gold,0,.35,0));[-1,1].forEach(d=>cart.add(cyl(.03,.03,1.4,gold,d*.55,1.05,0,8)));cart.add(box(1.16,.05,.05,gold,0,1.75,0));cart.position.set(H_CART[0],0,H_CART[1]);g.add(cart);C.col.push({c:[H_CART[0],H_CART[1]],r:.6});
+  g.add(box(1.8,.02,1.2,mat("#c4222a",{roughness:.9}),H_IN[0]+.4,.012,H_IN[1]-.5));   // the red carpet at the door
+  // three guest rooms behind low glass-and-white walls (low, so the camera always sees inside)
+  const wallM=mat("#d9e3f2",{roughness:.5}),glass=new THREE.MeshStandardMaterial({color:"#bff1ff",transparent:true,opacity:.28,roughness:.05,metalness:.4,depthWrite:false});
+  H_ROOMS.forEach((R,i)=>{
+    if(i>0){g.add(box(5.4,1.3,.12,wallM,4.7,.65,R.z0));C.col.push({box:[H_WALL_X,R.z0-.12,7.4,R.z0+.12]});}
+    const L=R.z1-R.z0,dz0=R.zc-.75,dz1=R.zc+.75;   // the doorway
+    g.add(box(.12,1.3,dz0-R.z0,wallM,H_WALL_X,.65,(R.z0+dz0)/2),box(.12,1.3,R.z1-dz1,wallM,H_WALL_X,.65,(dz1+R.z1)/2),box(.14,.06,L,neonC,H_WALL_X,1.33,R.zc));
+    C.col.push({box:[H_WALL_X-.1,R.z0,H_WALL_X+.1,dz0]},{box:[H_WALL_X-.1,dz1,H_WALL_X+.1,R.z1]});
+    g.add(box(.06,.9,L-.2,glass,H_WALL_X,1.8,R.zc));
+    // the bed: frame, mattress, pillow; the cover is either neat or messy
+    const bx=5.9,bz=R.zc;g.add(box(2.4,.35,1.6,dark,bx,.18,bz),box(2.3,.22,1.5,white,bx,.46,bz),box(.15,1.1,1.7,mat(["#ff7af0","#59e0ff","#ffd65a"][i],{emissive:["#ff7af0","#59e0ff","#ffd65a"][i],emissiveIntensity:.35}),bx+1.22,.6,bz),box(.5,.14,1.1,white,bx+.85,.64,bz));
+    C.col.push({box:[bx-1.25,bz-.85,bx+1.3,bz+.85]});
+    const neat=box(1.7,.06,1.52,mat(["#ff9ce6","#9fe8ff","#ffe49a"][i],{roughness:.8}),bx-.25,.6,bz);g.add(neat);
+    const messy=new THREE.Group();for(let k=0;k<4;k++){const lump=new THREE.Mesh(new THREE.SphereGeometry(.42,12,8),mat(["#ff9ce6","#9fe8ff","#ffe49a"][i],{roughness:.85}));lump.scale.set(1.2,.35,.9);lump.position.set(-.8+k*.45,.62+Math.random()*.06,(Math.random()-.5)*.6);messy.add(lump);}
+    messy.position.set(bx-.2,0,bz);messy.visible=false;g.add(messy);
+    g.add(box(.5,.5,.5,white,bx+.9,.25,bz+(i===2?-1.25:1.25)),cyl(.12,.16,.3,gold,bx+.9,.65,bz+(i===2?-1.25:1.25),12));
+    const rug=new THREE.Mesh(new THREE.CircleGeometry(.9,24),mat("#3b2f6e",{roughness:.95}));rug.rotation.x=-Math.PI/2;rug.position.set(3.6,.012,bz);g.add(rug);
+    // the room number over the doorway
+    const num=new THREE.Sprite(new THREE.SpriteMaterial({map:numberTex(101+i,"#7d5cff"),transparent:true}));num.scale.set(.55,.55,1);num.position.set(H_WALL_X-.1,1.75,R.zc+.95);g.add(num);
+    // rubbish spots on the floor of this room (two of them get used when the room is messy)
+    const junk=[[3.0,R.z0+.7],[3.5,R.z1-.6],[4.4,R.zc-.1],[2.7,R.zc+.4]].map(([x,z],k)=>{const m=k%2?new THREE.Mesh(new THREE.DodecahedronGeometry(.16,0),mat("#f2f2ea",{roughness:.9})):cyl(.08,.08,.24,mat(["#ff5f5f","#5fd6ff"][k%2?1:0],{metalness:.5}),0,0,0,10);
+      if(!(k%2)){m.rotation.z=Math.PI/2;}m.position.set(x,.1,z);m.visible=false;g.add(m);return {m,x,z};});
+    HTL.rooms[i]={R,neat,messy,junk};});
+  // guests: a few Jumpis in future clothes, dressed up again every visit
+  C.guests=[];for(let k=0;k<4;k++){const n=makeCharacter(wRandomLook(),"");n.root.visible=false;n.root.rotation.order="YXZ";g.add(n.root);C.guests.push(n);}
+  // the suitcases on the cart
+  C.bagMesh=()=>{const s=new THREE.Group();s.add(box(.55,.7,.28,mat(["#ff7af0","#59e0ff","#ffd65a"][Math.floor(Math.random()*3)],{roughness:.5}),0,.35,0),box(.25,.05,.05,dark,0,.75,0));return s;};
+  C.ticks.push(t=>hotelTick(t));
+  return C;}
+
+/* ---------- the rooms ---------- */
+function hRoomState(i){return HTL.rooms[i].state||"clean";}
+function hMakeDirty(i){const H=HTL.rooms[i];H.state="dirty";H.dirtyAt=performance.now()/1000;H.left=new Set(["bed"]);H.neat.visible=false;H.messy.visible=true;
+  const picks=[0,1,2,3].sort(()=>Math.random()-.5).slice(0,2);H.junk.forEach((j,k)=>{j.m.visible=picks.includes(k);if(j.m.visible)H.left.add("j"+k);});
+  if(!H.bub){H.bub=wBubble();H.bub.classList.add("htl");}H.bub.querySelector(".wk-in").innerHTML=SEAT_ICON.clean;H.bub.querySelector(".wk-num").textContent=101+i;H.bub.hidden=false;sfx.tick(true);}
+function hClean(i,what){const H=HTL.rooms[i];if(H.state!=="dirty"||!H.left.has(what))return;H.left.delete(what);sfx.tick(true);
+  if(what==="bed"){H.messy.visible=false;H.neat.visible=true;}else H.junk[+what.slice(1)].m.visible=false;
+  const p=what==="bed"?[5.7,H.R.zc]:[H.junk[+what.slice(1)].x,H.junk[+what.slice(1)].z];wPop(p[0],1.2,p[1],what==="bed"?"✓":"✓","");
+  if(H.left.size)return;
+  H.state="clean";H.bub.hidden=true;const fast=performance.now()/1000-H.dirtyAt<H_CLEAN_FAST;hPay(5.7,H.R.zc,fast,fast?I18N.T("Room {n} is sparkling! A quick job, here's a tip.",{n:101+i}):I18N.T("Room {n} is clean!",{n:101+i}));}
+function hPay(x,z,fast,msg){const pay=WORK.shift.pay+(fast?WORK.shift.tip:0);WORK.served++;if(fast)WORK.fast++;WORK.earn+=pay;wPop(x,1.9,z,"+"+pay,fast?"tip":"");sfx.success();if(fast)setTimeout(()=>sfx.coin(),180);wHud();toast(msg);}
+const hFreeRoom=()=>[0,1,2].find(i=>hRoomState(i)==="clean"&&!HTL.guests.some(g=>g.room===i&&g.state!=="gone"));
+
+/* ---------- guests ---------- */
+function hSpawnGuest(){const C=PLACE.cur;if(!C||!C.guests)return;if(HTL.guests.some(g=>g.state==="in"||g.state==="desk"))return;
+  let n=C.guests.find(m=>!HTL.guests.some(g=>g.n===m&&g.state!=="gone"));if(!n)return;
+  const i=C.guests.indexOf(n),fresh=makeCharacter(wRandomLook(),"");fresh.root.rotation.order="YXZ";n.root.removeFromParent();C.g.add(fresh.root);C.guests[i]=fresh;
+  HTL.guests=HTL.guests.filter(g=>{if(g.n===n){g.bub.remove();return false;}return true;});
+  const gst={n:fresh,bub:wBubble(),state:"in",path:[H_IN,[H_IN[0]+.6,0],[H_DESK[0],H_DESK[1]]],pi:1,x:H_IN[0],z:H_IN[1],face:Math.PI,phase:0,st:{},pat:H_PATIENCE,pmax:H_PATIENCE,room:-1,t:0,bag:hStage().luggage&&Math.random()<.6};
+  gst.bub.hidden=true;fresh.root.visible=true;fresh.root.position.set(gst.x,0,gst.z);HTL.guests.push(gst);sfx.tick(true);}
+function hCheckIn(gst){if(gst.state!=="desk")return;const i=hFreeRoom();if(i===undefined){toast("All the rooms are busy or messy! Clean one first.");sfx.error();return;}
+  gst.room=i;gst.state="follow";gst.fastIn=gst.pat/gst.pmax>.45;HTL.follow=gst;gst.bub.querySelector(".wk-in").innerHTML=SEAT_ICON.key;gst.bub.querySelector(".wk-num").textContent=101+i;gst.bub.classList.add("mine");sfx.tick(true);
+  toast(I18N.T("Room {n}! Walk the guest to the room.",{n:101+i}));
+  if(gst.bag){const C=PLACE.cur,m=C.bagMesh();m.position.set(H_CART[0]+(HTL.bags.length%2?.3:-.3),.4,H_CART[1]);C.g.add(m);
+    const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:numberTex(101+i,"#ff4fd8"),transparent:true}));tag.scale.set(.32,.32,1);tag.position.set(0,1.05,0);m.add(tag);HTL.bags.push({m,room:i,t0:performance.now()/1000});}}
+function hShowRoom(gst){if(HTL.follow!==gst)return;HTL.follow=null;const R=H_ROOMS[gst.room];gst.state="toRoom";gst.path=[[gst.x,gst.z],hDoor(R),[3.6,R.zc],[4.6,R.zc]];gst.pi=1;gst.bub.hidden=true;gst.bub.classList.remove("mine");
+  hPay(gst.x,gst.z,gst.fastIn,gst.fastIn?I18N.T("Welcome to room {n}! The guest left you a tip.",{n:101+gst.room}):I18N.T("The guest is happy with room {n}!",{n:101+gst.room}));}
+function hGuestLeave(gst,angry){gst.state=angry?"angry":"out";gst.path=[[gst.x,gst.z],...(gst.room>=0&&!angry?[hDoor(H_ROOMS[gst.room]),[H_IN[0]+.6,0]]:[[H_IN[0]+.6,0]]),H_IN];gst.pi=1;gst.bub.classList.remove("mine");
+  if(HTL.follow===gst)HTL.follow=null;
+  if(angry){gst.bub.querySelector(".wk-in").innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ff6b5b"/><path d="M8 17q4-3 8 0" fill="none" stroke="#5a1010" stroke-width="2" stroke-linecap="round"/></svg>';gst.bub.hidden=false;sfx.error();toast("A guest got tired of waiting and left.");setTimeout(()=>{gst.bub.hidden=true;},2500);
+    HTL.bags=HTL.bags.filter(b=>{if(b.room===gst.room&&!b.done){b.m.removeFromParent();return false;}return true;});}
+  else gst.bub.hidden=true;}
+/* ---------- the luggage ---------- */
+function hPickBag(b){if(HTL.carry)return;HTL.bags=HTL.bags.filter(q=>q!==b);b.m.removeFromParent();b.m.position.set(0,.55,.55);b.m.rotation.set(0,0,0);P.root.add(b.m);HTL.carry=b;sfx.tick(true);
+  toast(I18N.T("Bring the suitcase to room {n}.",{n:101+b.room}));}
+function hDropBag(i){const b=HTL.carry;if(!b||b.room!==i)return;b.m.removeFromParent();HTL.carry=null;if(P.armL){P.armL.rotation.set(0,0,0);P.armR.rotation.set(0,0,0);}
+  const fast=performance.now()/1000-b.t0<35;hPay(hDoor(H_ROOMS[i])[0],H_ROOMS[i].zc,fast,fast?I18N.T("The suitcase is in room {n}. Super fast!",{n:101+i}):I18N.T("The suitcase is in room {n}.",{n:101+i}));}
+
+/* ---------- what I can do right now ---------- */
+function hotelSpots(){const out=[];if(!WORK.active)return out;
+  HTL.rooms.forEach((H,i)=>{if(H.state!=="dirty")return;
+    if(H.left.has("bed"))out.push({k:"clean",label:"MAKE THE BED",x:4.4,z:H.R.zc,y:0,f:0,reach:1.5,piece:"hb"+i,n:0,act:()=>hClean(i,"bed")});
+    H.junk.forEach((j,k)=>{if(H.left.has("j"+k))out.push({k:"clean",label:"PICK UP RUBBISH",x:j.x,z:j.z,y:0,f:0,reach:1.1,piece:"hj"+i+k,n:0,act:()=>hClean(i,"j"+k)});});});
+  HTL.guests.forEach((gst,k)=>{if(gst.state==="desk")out.push({k:"key",label:"CHECK IN",x:gst.x,z:gst.z,y:0,f:0,reach:2.2,piece:"hg"+k,n:0,act:()=>hCheckIn(gst)});
+    if(gst.state==="follow"){const [dx,dz]=hDoor(H_ROOMS[gst.room]);out.push({k:"key",label:I18N.T("SHOW ROOM {n}",{n:101+gst.room}),x:dx,z:dz,y:0,f:0,reach:1.6,piece:"hs"+k,n:0,act:()=>hShowRoom(gst)});}});
+  if(!HTL.carry)HTL.bags.forEach((b,k)=>out.push({k:"bag",label:I18N.T("PICK UP SUITCASE {n}",{n:101+b.room}),x:H_CART[0],z:H_CART[1]+.9,y:0,f:0,reach:1.4,piece:"hc"+b.room,n:0,act:()=>hPickBag(b)}));
+  else{const [dx,dz]=hDoor(H_ROOMS[HTL.carry.room]);out.push({k:"bag",label:I18N.T("DELIVER TO ROOM {n}",{n:101+HTL.carry.room}),x:dx,z:dz,y:0,f:0,reach:1.6,piece:"hd"+HTL.carry.room,n:0,act:()=>hDropBag(HTL.carry.room)});}
+  return out;}
+const _htv=new THREE.Vector3();
+function hotelTick(t){const C=PLACE.cur;if(!C||!C.hotel)return;const dt=Math.min(.1,t-(HTL.lastT||t));HTL.lastT=t;
+  C.spots=hotelSpots();
+  if(WORK.active){WORK.left=Math.max(0,WORK.shift.seconds-(performance.now()/1000-WORK.t0));const S=hStage();
+    // rooms get messy (guests who already left); fewer of these once guests start coming in
+    HTL.dirtyT-=dt;const dirty=HTL.rooms.filter(H=>H.state==="dirty").length;
+    if(HTL.dirtyT<=0&&WORK.left>10&&dirty<(S.checkin?1:2)){const i=[0,1,2].find(k=>hRoomState(k)==="clean"&&!HTL.guests.some(g=>g.room===k&&g.state!=="gone"));if(i!==undefined)hMakeDirty(i);HTL.dirtyT=(S.checkin?16:9)+Math.random()*5;}
+    if(S.checkin){HTL.spawnT-=dt;if(HTL.spawnT<=0&&WORK.left>15){hSpawnGuest();HTL.spawnT=11+Math.random()*6;}}
+    if(WORK.left<=0)endShift();
+    wHud();}
+  if(HTL.carry&&P.armL){P.armL.rotation.set(-1.1,0,-.25);P.armR.rotation.set(-1.1,0,.25);}
+  for(const gst of HTL.guests){if(gst.state==="gone")continue;const n=gst.n;gst.t+=dt;
+    if(gst.state==="follow"){const tx=G.pos.x-Math.sin(G.face)*1.1,tz=G.pos.z-Math.cos(G.face)*1.1,dx=tx-gst.x,dz=tz-gst.z,d=Math.hypot(dx,dz);
+      if(d>.25){const sp=Math.min(d,3.4*dt);gst.x+=dx/d*sp;gst.z+=dz/d*sp;gst.face=Math.atan2(dx,dz);gst.phase+=dt*11;}poseCharacter(n,gst.x,gst.z,gst.face,d>.25,gst.phase,0,t,gst.st);continue;}
+    if(gst.state==="in"||gst.state==="out"||gst.state==="angry"||gst.state==="toRoom"){const [tx,tz]=gst.path[gst.pi],dx=tx-gst.x,dz=tz-gst.z,d=Math.hypot(dx,dz),sp=(gst.state==="angry"?3.2:2.3)*dt;
+      if(d<=sp){gst.x=tx;gst.z=tz;gst.pi++;if(gst.pi>=gst.path.length){
+        if(gst.state==="in"){gst.state="desk";gst.face=Math.PI;gst.pat=gst.pmax=H_PATIENCE;gst.bub.querySelector(".wk-in").innerHTML="<b>!</b>";gst.bub.querySelector(".wk-num").textContent="";gst.bub.hidden=false;toast("A guest is waiting at the front desk!");}
+        else if(gst.state==="toRoom"){gst.state="stay";gst.t=0;gst.face=-Math.PI/2;}
+        else{gst.state="gone";n.root.visible=false;gst.bub.hidden=true;}}}
+      else{gst.x+=dx/d*sp;gst.z+=dz/d*sp;const want=Math.atan2(dx,dz);let a=want-gst.face;a=Math.atan2(Math.sin(a),Math.cos(a));gst.face+=a*Math.min(1,dt*10);}
+      gst.phase+=dt*11;poseCharacter(n,gst.x,gst.z,gst.face,true,gst.phase,0,t,gst.st);continue;}
+    if(gst.state==="desk"){poseCharacter(n,gst.x,gst.z,gst.face,false,0,0,t,gst.st);gst.pat-=dt;n.armR.rotation.set(0,0,2.3+Math.sin(t*9)*.3);if(gst.pat<=0)hGuestLeave(gst,true);}
+    if(gst.state==="stay"){applyPose(n,{k:"sit",y:.62,f:gst.face},t);if(gst.t>22){const r=gst.room;hGuestLeave(gst,false);setTimeout(()=>{if(WORK.active&&hRoomState(r)==="clean")hMakeDirty(r);},3500);}}}
+  // the bubbles: over the waiting guests, over the messy rooms
+  const place=(el,v,p)=>{v.project(cam);el.style.left=((v.x+1)/2*innerWidth)+"px";el.style.top=((1-v.y)/2*innerHeight)+"px";el.style.visibility=v.z>1?"hidden":"";
+    if(p!=null){el.style.setProperty("--p",p.toFixed(3));el.style.setProperty("--pc",p>.45?"#2fd36b":p>.2?"#ffb21f":"#ff4f4f");}};
+  for(const gst of HTL.guests){if(gst.bub.hidden||gst.state==="gone")continue;gst.n.head.getWorldPosition(_htv);_htv.y+=.95;place(gst.bub,_htv,gst.state==="desk"?Math.max(0,gst.pat/gst.pmax):1);}
+  const now=performance.now()/1000;HTL.rooms.forEach(H=>{if(!H.bub||H.bub.hidden)return;_htv.set(4.6,2.4,H.R.zc);C.g.localToWorld(_htv);place(H.bub,_htv,Math.max(0,1-(now-H.dirtyAt)/H_CLEAN_FAST));});
+  HTL.bags.forEach((b,k)=>{b.m.rotation.y=Math.sin(t*2+k)*.15;});}
+function hotelClear(){HTL.guests.forEach(g=>{g.bub.remove();g.n.root.visible=false;});HTL.guests=[];HTL.follow=null;
+  HTL.bags.forEach(b=>b.m.removeFromParent());HTL.bags=[];if(HTL.carry){HTL.carry.m.removeFromParent();HTL.carry=null;}
+  HTL.rooms.forEach((H,i)=>{H.state="clean";if(H.bub)H.bub.hidden=true;H.neat.visible=true;H.messy.visible=false;H.junk.forEach(j=>j.m.visible=false);});}
+function hotelStartShift(){hotelClear();HTL.dirtyT=1.2;HTL.spawnT=hStage().checkin?4:999;toast(hStage().checkin?"Your shift has started! Clean the messy rooms and check the guests in.":"Your shift has started! Make the messy rooms sparkle.");}
+async function goHotel(){
+  if(!futureOpen()){toast("Open the Future City first to work at the Grand Hotel.");openWorlds();return;}
+  if(!inGame||HOME.leaving||PLACE.busy)return;
+  if(G.home){await leaveHome();await new Promise(r=>setTimeout(r,650));}
+  if(G.home)return;PLACE.busy=true;
+  closePlayerCard();closeChat();closeMinigame();clearEmotes();nearStation=null;mgPrompt.hidden=true;clearTimeout(bubbleHide);bubbleEl().classList.remove("show");
+  nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");
+  if(!HOME.group)buildRoom();setHouse(null);if(HOME.ext)HOME.ext.visible=false;
+  const C=venueContent("hotel");workClear();hotelClear();
+  HOME.layout=C.layout;HOME.owner="";HOME.mine=false;
+  worldSaved={pos:G.pos.clone(),face:G.face,colliders:G.colliders,bg:scene.background,fog:scene.fog,yaw:G.camYaw||0};
+  clearRemotes();
+  const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
+  await new Promise(res=>setTimeout(res,500));
+  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place="work";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);clearHomePets();if(PETS.me)PETS.me.x=undefined;
+  scene.background=new THREE.Color("#120a2e");scene.fog=null;
+  G.pos.set(-2.2,0,2.6);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
+  if(socket&&socket.connected)socket.emit("join",netState());
+  body.classList.add("in-home","at-work");homeTitle.textContent=I18N.T("GRAND HOTEL");document.getElementById("homeDecorate").hidden=true;document.getElementById("homeUpgrade").hidden=true;
+  document.getElementById("homeLeave").lastChild.textContent="Clock out";
+  Sound.venue("future");WORK.on=true;WORK.job="hotel";setUniform(null);
+  await warmScene(HOME.group,2500);
+  w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);
+  PLACE.busy=false;setTimeout(()=>showShiftIntro(),500);}
+
 /* ---------- going to work ---------- */
 async function goToWork(job="waiter"){
   if(job==="police")return goPatrol();
   if(job==="delivery")return goDelivery();
+  if(job==="hotel")return goHotel();
   if(!inGame||HOME.leaving||PLACE.busy)return;
   if(G.home){await leaveHome();await new Promise(r=>setTimeout(r,650));}
   if(G.home)return;PLACE.busy=true;
@@ -11608,20 +11782,21 @@ async function goToWork(job="waiter"){
   PLACE.busy=false;setTimeout(()=>showShiftIntro(),500);}
 // leaving the restaurant (door, Clock out, phone): finish the shift if one is running
 function workExit(){if(!WORK.on||WORK.job==="police")return;WORK.on=false;setUniform(null);const was=WORK.active;if(was)endShift(true);workClear();
-  if(WORK.job==="delivery"){dlvClear();setHouse(null);}body.classList.remove("at-work");document.getElementById("homeLeave").lastChild.textContent="Leave";
+  if(WORK.job==="delivery"){dlvClear();setHouse(null);}if(WORK.job==="hotel")hotelClear();body.classList.remove("at-work");document.getElementById("homeLeave").lastChild.textContent="Leave";
   document.getElementById("wkIntro").hidden=true;if(!WORK.pendingResult)document.getElementById("wkEnd").hidden=true;}
 async function startShift(){const btn=document.getElementById("wkStart");btn.disabled=true;
   const r=await api("/api/jobs/start",{job:WORK.job||"waiter"});btn.disabled=false;
   if(!r.ok){toast(r.data.error||"Couldn't start the shift.");sfx.error();return;}
   document.getElementById("wkIntro").hidden=true;document.getElementById("wkEnd").hidden=true;
   WORK.shift=r.data;WORK.active=true;WORK.t0=performance.now()/1000;WORK.left=r.data.seconds;WORK.served=WORK.fast=WORK.earn=0;WORK.spawnT=1.5;
-  document.getElementById("wkUnit").textContent=WORK.job==="police"?"solved":WORK.job==="delivery"?"delivered":"served";
-  if(WORK.job==="police"){polClear();POL.spawnT=0;POL.next="thief";}else if(WORK.job==="delivery"){dlvStartShift();}else{workClear();setTimeout(()=>{if(WORK.active)wSpawn();},400);}
-  document.getElementById("workHud").hidden=false;wHud();sfx.success();if(WORK.job!=="delivery")toast(WORK.job==="police"?"Your patrol has started! Keep your eyes open, officer.":"Your shift has started! Customers are coming in.");}
+  document.getElementById("wkUnit").textContent=WORK.job==="police"?"solved":WORK.job==="delivery"?"delivered":WORK.job==="hotel"?"done":"served";
+  if(WORK.job==="police"){polClear();POL.spawnT=0;POL.next="thief";}else if(WORK.job==="delivery"){dlvStartShift();}else if(WORK.job==="hotel"){hotelStartShift();}else{workClear();setTimeout(()=>{if(WORK.active)wSpawn();},400);}
+  document.getElementById("workHud").hidden=false;wHud();sfx.success();if(WORK.job!=="delivery"&&WORK.job!=="hotel")toast(WORK.job==="police"?"Your patrol has started! Keep your eyes open, officer.":"Your shift has started! Customers are coming in.");}
 async function endShift(leaving){if(!WORK.active)return;WORK.active=false;document.getElementById("workHud").hidden=true;
   const sh=WORK.shift,served=WORK.served,fast=WORK.fast;
   if(sh.job==="police"||WORK.job==="police")polClear();
   if(WORK.job==="delivery")dlvStop();
+  if(WORK.job==="hotel")HTL.guests.forEach(g=>{if(g.state!=="gone"&&g.state!=="out"&&g.state!=="angry")hGuestLeave(g,false);});
   WORK.custs.forEach(c=>{if(c.state!=="gone"&&c.state!=="out"&&c.state!=="angry"){if(c.state==="in"){c.state="out";c.path=[[c.x,c.z],[W_DOOR[0],W_DOOR[1]]];c.pi=1;c.bub.hidden=true;}else wLeave(c,false);}});
   if(!leaving){sfx.success();}
   const r=await api("/api/jobs/finish",{shiftId:sh.shiftId,served,fast});
@@ -11642,6 +11817,12 @@ function showShiftIntro(){const job=WORK.job||"waiter",J=JOBS[job],v=WORK.view&&
     ["1","Grab a pizza",`<span class="wk-demo dlv">${DLV_PIZZA_SVG}</span>`,"Go to the PICK UP window at Jumpi Pizza and press E."],
     ["2","Ride!",`<span class="wk-demo dlv">${DLV_SCOOTER_SVG}</span>`,"Hop on the scooter (E). W/S or ↑/↓ for gas and brake, A/D or ←/→ to steer. Follow the GPS and the blue line."],
     ["3","Deliver it",`<span class="wk-demo dlv">${DLV_HOUSE_SVG}</span>`,"Stop at the house with the light beam and press E. Then ride back for the next pizza. Fast = tips!"]]
+    .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${touchWords(p)}</p></div>`).join("");
+    document.getElementById("wkIntro").hidden=false;sfx.open();return;}
+  if(job==="hotel"){const S=JOBS.hotel.stages,L=v?v.level:1;document.getElementById("wkSteps").innerHTML=[
+    ["1","Clean the rooms",`<span class="wk-demo dlv">${SEAT_ICON.clean}</span>`,"A room with a broom bubble is messy: walk in, make the bed and pick up the rubbish (press E)."],
+    ["2",L>=S.checkin?"Check guests in":"Front desk (level "+S.checkin+")",`<span class="wk-demo dlv">${SEAT_ICON.key}</span>`,L>=S.checkin?"A guest waits at the desk: press E to check in, then walk them to a clean room and press E at the door.":"From level "+S.checkin+" you also work at the front desk and check guests in."],
+    ["3",L>=S.luggage?"Bring the luggage":"Luggage (level "+S.luggage+")",`<span class="wk-demo dlv">${SEAT_ICON.bag}</span>`,L>=S.luggage?"Some guests leave a suitcase on the cart by the door. Bring it to the room with its number. Quick = tips!":"From level "+S.luggage+" you carry the guests' suitcases up to their rooms too."]]
     .map(([n,h,art,p])=>`<div class="wk-step"><span class="wk-n">${n}</span><div class="wk-art">${art}</div><b>${h}</b><p>${touchWords(p)}</p></div>`).join("");
     document.getElementById("wkIntro").hidden=false;sfx.open();return;}
   if(job==="police"){document.getElementById("wkSteps").innerHTML=[
@@ -12485,23 +12666,27 @@ if(trlQ.has("trailer")){TRL.manual=trlQ.has("render");const iv=setInterval(()=>{
 /* ---------- the Jobs app on the phone ---------- */
 const JOB_ART_WAITER='<svg viewBox="0 0 120 96" aria-hidden="true"><ellipse cx="60" cy="84" rx="44" ry="7" fill="rgb(0 0 0 / .12)"/><path d="M22 70 Q60 82 98 70 L96 76 Q60 88 24 76 Z" fill="#c9d3e3"/><path d="M28 70 Q28 34 60 34 Q92 34 92 70 Z" fill="#eef3f9" stroke="#b3c0d2" stroke-width="3"/><path d="M40 52 Q46 42 56 40" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="60" cy="30" r="6" fill="#ffd23a" stroke="#e0a000" stroke-width="2.5"/><g stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".9"><path d="M44 18 q-4-6 0-12"/><path d="M76 18 q4-6 0-12"/></g></svg>';
 const JOB_ART_POLICE='<svg viewBox="0 0 120 96" aria-hidden="true"><ellipse cx="60" cy="86" rx="40" ry="6" fill="rgb(0 0 0 / .12)"/><path d="M24 50 Q24 22 60 20 Q96 22 96 50 Z" fill="#1f3f8f" stroke="#0e2560" stroke-width="3"/><path d="M18 52 H102 Q104 60 96 62 H24 Q16 60 18 52Z" fill="#14306e"/><path d="M30 62 Q60 76 90 62 L88 68 Q60 82 32 68 Z" fill="#0e2560"/><path d="M60 26 L65 34 L74 35 L67.5 41 L69 50 L60 45.5 L51 50 L52.5 41 L46 35 L55 34 Z" fill="#ffd23a" stroke="#c98a00" stroke-width="2" stroke-linejoin="round"/><rect x="24" y="48" width="72" height="5" fill="#ffd23a"/></svg>';
-const JOB_ART={waiter:JOB_ART_WAITER,police:JOB_ART_POLICE,delivery:'<svg viewBox="0 0 120 96" aria-hidden="true"><ellipse cx="60" cy="86" rx="44" ry="6" fill="rgb(0 0 0 / .12)"/><circle cx="30" cy="72" r="13" fill="#1d1d24"/><circle cx="30" cy="72" r="6" fill="#c9d3e3"/><circle cx="92" cy="72" r="13" fill="#1d1d24"/><circle cx="92" cy="72" r="6" fill="#c9d3e3"/><path d="M30 72 L44 52 H74 L84 34 H94 L92 46 L100 72 Z" fill="#e8423b" stroke="#a3201a" stroke-width="3" stroke-linejoin="round"/><path d="M80 32 H102" stroke="#1d1d24" stroke-width="6" stroke-linecap="round"/><rect x="22" y="24" width="34" height="30" rx="6" fill="#e8423b" stroke="#a3201a" stroke-width="3"/><circle cx="39" cy="39" r="9" fill="#fff"/><path d="M39 39 L35 31 A9 9 0 0 1 46 34 Z" fill="#ffcf4a"/><circle cx="104" cy="50" r="5" fill="#fff6a0"/></svg>'};
+const JOB_ART_HOTEL='<svg viewBox="0 0 120 96" aria-hidden="true"><ellipse cx="60" cy="88" rx="42" ry="6" fill="rgb(0 0 0 / .12)"/><rect x="30" y="18" width="60" height="66" rx="5" fill="#2a3042" stroke="#d4a73a" stroke-width="3"/><g fill="#ffcf6a">'+[0,1,2,3].map(r=>[0,1,2].map(c=>`<rect x="${37+c*17}" y="${25+r*13}" width="12" height="8" rx="2"/>`).join("")).join("")+'</g><path d="M50 84 V70 H70 V84" fill="#c4222a"/><path d="M26 18 H94" stroke="#59e0ff" stroke-width="4" stroke-linecap="round"/><circle cx="96" cy="74" r="10" fill="#ffd65a" stroke="#c98a00" stroke-width="2.5"/><path d="M92 74 H100" stroke="#7a4a00" stroke-width="2.5" stroke-linecap="round"/></svg>';
+const JOB_ART={hotel:JOB_ART_HOTEL,waiter:JOB_ART_WAITER,police:JOB_ART_POLICE,delivery:'<svg viewBox="0 0 120 96" aria-hidden="true"><ellipse cx="60" cy="86" rx="44" ry="6" fill="rgb(0 0 0 / .12)"/><circle cx="30" cy="72" r="13" fill="#1d1d24"/><circle cx="30" cy="72" r="6" fill="#c9d3e3"/><circle cx="92" cy="72" r="13" fill="#1d1d24"/><circle cx="92" cy="72" r="6" fill="#c9d3e3"/><path d="M30 72 L44 52 H74 L84 34 H94 L92 46 L100 72 Z" fill="#e8423b" stroke="#a3201a" stroke-width="3" stroke-linejoin="round"/><path d="M80 32 H102" stroke="#1d1d24" stroke-width="6" stroke-linecap="round"/><rect x="22" y="24" width="34" height="30" rx="6" fill="#e8423b" stroke="#a3201a" stroke-width="3"/><circle cx="39" cy="39" r="9" fill="#fff"/><path d="M39 39 L35 31 A9 9 0 0 1 46 34 Z" fill="#ffcf4a"/><circle cx="104" cy="50" r="5" fill="#fff6a0"/></svg>'};
 async function appJobs(tok,arg){
   const r=await api("/api/jobs");if(stale(tok))return;
   if(!r.ok){phBody.innerHTML=`<p class="ph-empty">${esc(r.data.error||"Couldn't load the jobs.")}</p>`;return;}
   WORK.view=r.data;const list=r.data.jobs;
   if(!arg){phBody.innerHTML=`<p class="ph-jobs-intro">Pick a job, work shifts and earn coins. The better you get, the more you earn!</p>`+list.map(j=>{const J=JOBS[j.id];
+    if(J.world==="future"&&!futureOpen())return `<button type="button" class="ph-job ${j.id} locked" data-a="jobworld"><span class="art">${JOB_ART[j.id]}</span><span class="txt"><b>${J.name}</b><small>${esc(J.place)}</small><span class="pay">${esc(I18N.T("Locked: open the Future City first"))}</span></span></button>`;
     return `<button type="button" class="ph-job ${j.id}" data-a="jobopen" data-job="${j.id}"><span class="art">${JOB_ART[j.id]}</span><span class="txt"><b>${J.name}</b><small>${esc(J.place)}</small>
       <span class="${j.hired?"lv":"pay"}">${j.hired?`Level ${j.level} · ${esc(j.title)}`:`Pays ${payPerOrder(1,j.id)} to ${payPerOrder(maxLevel(j.id),j.id)} coins per ${J.unit}`}</span></span></button>`;}).join("");return;}
   const j=list.find(x=>x.id===arg),J=JOBS[arg];phTitle.innerHTML=`<span class="t">${esc(I18N.T(J.name))}</span>`;
   const today=`<p class="ph-job-today">${esc(I18N.T("Job coins today:"))} <b>${r.data.todayEarned.toLocaleString("en-US")}</b> · ${esc(paceLabel(r.data.pace))}</p>`;
+  if(J.world==="future"&&!futureOpen()){phBody.innerHTML=`<div class="ph-jobcard ${arg} locked"><span class="art">${JOB_ART[arg]}</span><b class="h">${J.name.toUpperCase()}</b><small>${esc(J.place)}</small><p>${esc(J.about)}</p><p>${esc(I18N.T("This job is in the Future City. Open the Future City first, then you can work here."))}</p>
+      <button class="ph-go" type="button" data-a="jobworld">${esc(I18N.T("SEE THE WORLDS"))}</button></div>`;return;}
   if(!j.hired){phBody.innerHTML=`<div class="ph-jobcard ${arg}"><span class="art">${JOB_ART[arg]}</span><b class="h">${J.name.toUpperCase()}</b><small>${esc(J.place)}</small><p>${esc(J.about)}</p>
       <div class="ph-jobpay"><div><b>${payPerOrder(1,arg)}</b><span>coins per ${J.unit} at the start</span></div><div><b>${payPerOrder(maxLevel(arg),arg)}</b><span>coins per ${J.unit} at level ${maxLevel(arg)}</span></div></div>
       <button class="ph-go" type="button" data-a="jobhire" data-job="${arg}">APPLY FOR THE JOB</button></div>`;return;}
   const span=j.to?j.to-j.from:1,pct=j.to?Math.min(100,(j.xp-j.from)/span*100):100;
   phBody.innerHTML=`<div class="ph-jobcard hired ${arg}"><span class="art">${JOB_ART[arg]}</span><b class="h">${esc(j.title.toUpperCase())}</b><small>${esc(J.place)} · Level ${j.level}</small>
     <div class="ph-xp"><i style="--w:${pct}%"></i></div><small class="ph-xp-t">${j.to?`${j.to-j.xp} more ${J.units} to level ${j.level+1}`:"Top level!"}</small>
-    <span class="ph-prize"><span class="ph-prize-pics">${(JOB_GIFTS[arg]||[]).map(id=>{const [sl,ix]=id.split(":");return itemPic(sl,+ix);}).join("")}</span>${j.to?`Reach level ${maxLevel(arg)} to win the whole ${esc(J.name.toLowerCase())} uniform!`:`You won the ${esc(J.name.toLowerCase())} uniform: it's in your inventory!`}</span>
+    ${(JOB_GIFTS[arg]||[]).length?"":"<!--"}<span class="ph-prize"><span class="ph-prize-pics">${(JOB_GIFTS[arg]||[]).map(id=>{const [sl,ix]=id.split(":");return itemPic(sl,+ix);}).join("")}</span>${j.to?`Reach level ${maxLevel(arg)} to win the whole ${esc(J.name.toLowerCase())} uniform!`:`You won the ${esc(J.name.toLowerCase())} uniform: it's in your inventory!`}</span>${(JOB_GIFTS[arg]||[]).length?"":"-->"}
     <div class="ph-jobpay"><div><b>${j.pay}</b><span>coins per ${J.unit}</span></div><div><b>+${j.tip}</b><span>tip when fast</span></div>${j.nextPay?`<div><b>${j.nextPay}</b><span>at level ${j.level+1}</span></div>`:""}</div>
     <button class="ph-go" type="button" data-a="gowork" data-job="${arg}">${arg==="police"?"START PATROL":"GO TO WORK"}</button></div>
     <div class="ph-jobstats"><div><b>${j.shifts}</b><span>shifts</span></div><div><b>${j.served}</b><span>${J.units}</span></div><div><b>${j.earned.toLocaleString("en-US")}</b><span>coins earned</span></div></div>${today}`;}
@@ -13171,7 +13356,7 @@ function venueLounge(){
     tiles.forEach(({m,i,j})=>{const on=Math.sin(t*2.2+i*1.3+j*2.1)>.55;m.emissive.set(on?"#ffb300":"#000000");m.emissiveIntensity=on?.5:0;});
     chs.forEach((c,k)=>c.rotation.y=t*(k?.25:-.25));pc.rotation.y=t*1.2;pc.position.y=1.45+Math.sin(t*2)*.05;lamp.intensity=5.5+Math.sin(t*3)*.6;});
   return C;}
-const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner,pets:venuePets,work:venueWork,delivery:venueDelivery,lounge:venueLounge};
+const VENUE_BUILD={furniture:venueFurniture,clothes:venueClothes,club:venueClub,diner:venueDiner,pets:venuePets,work:venueWork,delivery:venueDelivery,lounge:venueLounge,hotel:venueHotel};
 const venueContent=id=>PLACE.cache[id]||(PLACE.cache[id]=VENUE_BUILD[id]());
 
 /* ---------- food and drinks ---------- */
@@ -16219,6 +16404,7 @@ phBody.addEventListener("click",async e=>{
     if(!r.ok){toast(r.data.error||"Something went wrong.");sfx.error();b.disabled=false;return;}
     sfx.success();confettiRain();toast("You're hired! Welcome to the team.");renderApp();}
   else if(a==="gowork"){sfx.tick(true);closePhone();setTimeout(()=>goToWork(b.dataset.job),380);}
+  else if(a==="jobworld"){sfx.tick(true);closePhone();setTimeout(openWorlds,380);}
   else if(a==="older")loadOlder();
   else if(a==="add"||a==="accept"){b.disabled=true;
     const r=a==="add"?await api("/api/friends/add",{username:u}):await api("/api/friends/respond",{username:u,accept:true});

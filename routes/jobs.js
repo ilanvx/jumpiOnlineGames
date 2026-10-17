@@ -44,6 +44,7 @@ router.post("/jobs/hire", requireJson, requireUser, async (req, res, next) => {
   try {
     const job = String(req.body?.job || "");
     if (!Object.hasOwn(JOBS, job)) return res.status(400).json({ error: "Unknown job." });
+    if (JOBS[job].world === "future" && !(req.user.worlds || []).includes("future")) return res.status(403).json({ error: "Open the Future City first to work at the Grand Hotel." });
     if (recOf(req.user, job)?.hired) return res.json({ ...view(req.user), hired: false });
     const updated = await User.findByIdAndUpdate(req.user._id, { $set: { [`jobs.${job}.hired`]: true, [`jobs.${job}.since`]: new Date() } }, { new: true });
     res.json({ ...view(updated), hired: true });
@@ -57,6 +58,7 @@ router.post("/jobs/start", requireJson, requireUser, (req, res) => {
   if (!Object.hasOwn(JOBS, job)) return res.status(400).json({ error: "Unknown job." });
   const rec = recOf(req.user, job);
   if (!rec?.hired) return res.status(403).json({ error: "You need to get the job first." });
+  if (JOBS[job].world === "future" && !(req.user.worlds || []).includes("future")) return res.status(403).json({ error: "Open the Future City first to work at the Grand Hotel." });
   const uid = req.user._id.toString();
   for (const [id, s] of shifts) if (s.userId === uid) shifts.delete(id);   // a new shift replaces an old unfinished one
   const id = crypto.randomUUID();
