@@ -2,6 +2,7 @@ import { User } from "../models/User.js";
 import { ghosts, hasGhosts } from "./blocks.js";
 import { VEHICLES, VEH_SUMMON_GAP_MS, VEH_REACH, vehicleOf } from "../public/shared/vehicles.js";
 import { PARK_FREE_MS, parkingAt, inCave, inLake, WORLD_BOUNDS } from "../public/shared/city-layout.js";
+import { FUTURE_BOUNDS } from "../public/shared/future-layout.js";
 
 /*
   Vehicles in the open world (public/shared/vehicles.js). The server keeps where every vehicle is and who rides it:
@@ -12,6 +13,9 @@ import { PARK_FREE_MS, parkingAt, inCave, inLake, WORLD_BOUNDS } from "../public
   While someone rides, the vehicle simply goes where that player goes (their normal "move" messages).
 */
 const ROOM = "plaza";
+// vehicles work in both open worlds: Jumpi Town ("plaza") and the Future City ("future"); each vehicle stays in the world it was called in
+const OPEN = new Set([ROOM, "future"]);
+const boundsIn = (room) => (room === "future" ? FUTURE_BOUNDS : WORLD_BOUNDS);
 const OFFLINE_MS = 3 * 60 * 1000;   // a vehicle whose owner is gone this long is put away
 const clampN = (v, a, b) => Math.min(b, Math.max(a, v));
 const num = (v, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -35,8 +39,9 @@ const view = (v) => ({ o: v.owner, n: v.name, i: v.i, x: +v.x.toFixed(2), z: +v.
 // (the vehicle of a player someone blocked: not to them, realtime/blocks.js)
 const seesVeh = (p, v) => p.role === "admin" || (!v.hidden && !ghosts(p.userId, v.owner));
 function send(S, v, event, data) {
-  if (!v.hidden && !hasGhosts(v.owner)) return S.io.to(ROOM).emit(event, data);
-  for (const p of S.players.values()) if (p.room === ROOM && seesVeh(p, v)) S.io.to(p.id).emit(event, data);
+  const room = v.room || ROOM;
+  if (!v.hidden && !hasGhosts(v.owner)) return S.io.to(room).emit(event, data);
+  for (const p of S.players.values()) if (p.room === room && seesVeh(p, v)) S.io.to(p.id).emit(event, data);
 }
 function gone(S, v, why) {
   S.byOwner.delete(v.owner);
@@ -45,17 +50,19 @@ function gone(S, v, why) {
 }
 function park(S, v, x, z, f) {
   v.rider = null;
-  v.x = clampN(x, WORLD_BOUNDS.x0, WORLD_BOUNDS.x1);
-  v.z = clampN(z, WORLD_BOUNDS.z0, WORLD_BOUNDS.z1);
+  const B = boundsIn(v.room);
+  v.x = clampN(x, B.x0, B.x1);
+  v.z = clampN(z, B.z0, B.z1);
   v.f = f;
-  v.towAt = parkingAt(v.x, v.z) ? 0 : Date.now() + PARK_FREE_MS;
+  // the Future City has no tow trucks: hover vehicles can wait anywhere
+  v.towAt = v.room === "future" || parkingAt(v.x, v.z) ? 0 : Date.now() + PARK_FREE_MS;
 }
 
 // the vehicles a player sees when they come into the open world
 export function sendVehicles(io, socket, viewer) {
   const S = io.__veh;
   if (!S) return;
-  socket.emit("veh:all", [...S.byOwner.values()].filter((v) => seesVeh(viewer, v)).map(view));
+  socket.emit("veh:all", [...S.byOwner.values()].filter((v) => (v.room || ROOM) === (viewer.room || ROOM) && seesVeh(viewer, v)).map(view));
 }
 // a player left the open world (closed the game, went home or into a shop): their vehicle stays where it is, parked
 export function vehiclePlayerLeft(io, socketId, p) {
@@ -69,7 +76,7 @@ export function vehiclePlayerLeft(io, socketId, p) {
   }
   // not in the open world any more in any window: start the "owner gone" clock
   setTimeout(() => {
-    if (![...S.players.values()].some((q) => q.userId === p.userId && q.room === ROOM) && S.byOwner.get(p.userId) === v) v.offSince = Date.now();
+    if (![...S.players.values()].some((q) => q.userId === p.userId && q.room === (v.room || ROOM)) && S.byOwner.get(p.userId) === v) v.offSince = Date.now();
   }, 3000);
 }
 // two players blocked each other (on) or not any more: their vehicles vanish from / come back into each other's game
@@ -80,7 +87,7 @@ export function vehiclesGhost(io, aId, bId, on) {
     const v = S.byOwner.get(owner);
     if (!v) continue;
     for (const p of S.players.values()) {
-      if (p.userId !== other || p.room !== ROOM || p.role === "admin") continue;
+      if (p.userId !== other || p.room !== (v.room || ROOM) || p.role === "admin") continue;
       if (on) S.io.to(p.id).emit("veh:gone", { o: v.owner, why: "swap" });
       else if (seesVeh(p, v)) S.io.to(p.id).emit("veh:set", view(v));
     }
@@ -88,7 +95,7 @@ export function vehiclesGhost(io, aId, bId, on) {
 }
 export function vehiclePlayerBack(io, p) {
   const v = io.__veh?.byOwner.get(p.userId);
-  if (v) v.offSince = 0;
+  if (v && (v.room || ROOM) === (p.room || ROOM)) v.offSince = 0;
 }
 
 export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
@@ -99,7 +106,7 @@ export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
   const reply = (ack) => (typeof ack === "function" ? ack : () => {});
   const here = () => {
     const p = players.get(socket.id);
-    return p && p.room === ROOM ? p : null;
+    return p && OPEN.has(p.room) ? p : null;
   };
   const owns = async (userId, i) => {
     const u = await User.findById(userId);
@@ -113,8 +120,8 @@ export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
     if (!canAct()) return r({ error: "Slow down a little!" });
     const i = Number(d?.i), def = vehicleOf(i);
     if (!def) return r({ error: "That vehicle doesn't exist." });
-    if (inCave(p.x, p.z)) return r({ error: "There's no room for a vehicle in here!" });
-    if (inLake(p.x, p.z, 1)) return r({ error: "Get out of the water first!" });
+    if (p.room === ROOM && inCave(p.x, p.z)) return r({ error: "There's no room for a vehicle in here!" });
+    if (p.room === ROOM && inLake(p.x, p.z, 1)) return r({ error: "Get out of the water first!" });
     const old = S.byOwner.get(p.userId);
     if (old?.rider) return r({ error: "Get off your vehicle first." });
     if (old && Date.now() - (old.at || 0) < VEH_SUMMON_GAP_MS) return r({ error: "Wait a moment before calling another one." });
@@ -126,7 +133,7 @@ export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
     if (old) gone(S, old, "swap");
     // next to the player (to their right), facing the same way; the game moves it out of walls if needed
     const f = num(p.face), x = p.x + Math.cos(f) * 1.7, z = p.z - Math.sin(f) * 1.7;
-    const v = { owner: p.userId, name: p.username, i, x: 0, z: 0, f: 0, rider: null, towAt: 0, at: Date.now(), hidden: !!p.invisible, offSince: 0 };
+    const v = { owner: p.userId, name: p.username, i, x: 0, z: 0, f: 0, rider: null, towAt: 0, at: Date.now(), hidden: !!p.invisible, offSince: 0, room: p.room };
     park(S, v, num(d?.x, x), num(d?.z, z), f);
     if (Math.hypot(v.x - p.x, v.z - p.z) > 4) park(S, v, x, z, f);   // the page may pick a free spot, but only right next to you
     S.byOwner.set(p.userId, v);
@@ -140,6 +147,7 @@ export function attachVehicles(io, socket, { players, limiter, emitToUser }) {
     if (!canAct()) return r({ error: "Slow down a little!" });
     const v = S.byOwner.get(p.userId);
     if (!v) return r({ error: "Call your vehicle from the Garage app first." });
+    if ((v.room || ROOM) !== p.room) return r({ error: "Your vehicle is in the other world. Call it again from the Garage app." });
     if (v.rider && v.rider !== socket.id) return r({ error: "You're already riding it in another window." });
     if (Math.hypot(v.x - p.x, v.z - p.z) > VEH_REACH + 1.5) return r({ error: "Walk up to your vehicle first." });
     try {

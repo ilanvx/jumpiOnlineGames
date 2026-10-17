@@ -8,6 +8,7 @@ import { ITEMS as NEW_CLOTHES } from "./items/clothes.js";
 import { ITEMS as NEW_HAIR } from "./items/hair.js";
 import { ITEMS as NEW_HEADS } from "./items/heads.js";
 import { ITEMS as NEW_BEARDS } from "./items/beards.js";
+import { ITEMS as FUTURE_ITEMS } from "./items/future.js";
 const out = { hair: [], shirt: [], pants: [], glasses: [], hat: [], neck: [], beard: [] };   // beard: autumn 2026
 const add = (slot, o) => out[slot].push(o);
 
@@ -329,5 +330,7 @@ COS("pants", { id: "emoji", name: "Emoji pants", base: "#ff8a1c", waist: "#c75e0
 
 // ---------- the autumn 2026 wardrobe (public/shared/items/*.js; how they look: public/world/wear-*.js) ----------
 [...NEW_CLOTHES, ...NEW_HAIR, ...NEW_HEADS, ...NEW_BEARDS].forEach(([slot, o]) => add(slot, o));
+// ---------- the Future City collection (public/shared/items/future.js: sold only in the Sky Mall, world: "future") ----------
+FUTURE_ITEMS.forEach(([slot, o]) => add(slot, o));
 
 export const OUTFIT_SLOTS = Object.keys(out);

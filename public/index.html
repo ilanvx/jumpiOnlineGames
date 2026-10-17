@@ -4915,6 +4915,10 @@ import {SHIRT_PRINTS,SLEEVE_PRINTS,PANTS_PRINTS,shirt3D,pants3D} from "/world/we
 import {HAIR_STYLES} from "/world/wear-hair.js";
 import {HAT_STYLES,NECK_STYLES,GLASSES_STYLES} from "/world/wear-heads.js";
 import {buildBeard} from "/world/wear-beard.js";
+import * as WF from "/world/wear-future.js";
+// the Future City collection draws through the same registries (public/world/wear-future.js)
+Object.assign(SHIRT_PRINTS,WF.SHIRT_PRINTS);Object.assign(SLEEVE_PRINTS,WF.SLEEVE_PRINTS);Object.assign(PANTS_PRINTS,WF.PANTS_PRINTS);
+Object.assign(HAT_STYLES,WF.HAT_STYLES);Object.assign(GLASSES_STYLES,WF.GLASSES_STYLES);Object.assign(NECK_STYLES,WF.NECK_STYLES);
 import {installEyeFx} from "/world/eye-fx.js";
 import {buildCity,TRAILS as CITY_TRAILS} from "/world/city.js";
 import * as FUT from "/shared/future-layout.js";
@@ -6366,6 +6370,7 @@ function buildOutfit(){
       const sl=shell({center:[s*0.03,-0.2,0],radii:[0.10,0.24,0.11],scale:1.16,t0:0,t1:1.25,rotZ:s*0.18,mat:clothMat(st),seg:[32,12]});
       arm.add(sl);parts.push(sl);});
     if(id==="waiter"){const bow=waiterBow();P.body.add(bow);parts.push(bow);}
+    WF.shirt3D(it,WEAR_H(),{body:parts[0],L:parts[1],R:parts[2]});
     {const x3=shirt3D(it,WEAR_H(),{body:parts[0],L:parts[1],R:parts[2]});if(x3)[].concat(x3).forEach(o=>{(o.userData.arm==="L"?P.armL:o.userData.arm==="R"?P.armR:P.body).add(o);parts.push(o);});}
     parts.forEach(p=>p.visible=false);return parts;};
   /* ---- pants (lower body + both legs) ---- */
@@ -6375,6 +6380,7 @@ function buildOutfit(){
     P.body.add(hip);parts.push(hip);
     if(it.legs!=="none")[-1,1].forEach(s=>{const leg=shell({center:[s*0.16,0.12,0.03],radii:[0.15,0.14,0.17],scale:1.08,t0:0,t1:shorts?1.0:1.62,mat,seg:[32,14]});P.body.add(leg);parts.push(leg);});
     if(id==="police"){const belt=policeBelt();P.body.add(belt);parts.push(belt);}
+    WF.pants3D(it,mat,WEAR_H());
     {const x3=pants3D(it,mat,WEAR_H());if(x3)[].concat(x3).forEach(o=>{P.body.add(o);parts.push(o);});}
     parts.forEach(p=>p.visible=false);return parts;};
   /* ---- glasses (on the head, in front of the eyes) ---- */
@@ -7650,7 +7656,8 @@ function nearWorldSeat(){const L=worldSeats();let bi=-1,bd=1.35;
 function worldSit(i){const S=worldSeats()[i];if(!S||G.seat||VEH.ride)return;
   G.seat={k:S.k,y:S.y,f:S.f,x:S.x,z:S.z,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(S.x,0,S.z);G.face=S.f;G.target=null;G.keys={};G.marker.visible=false;
   nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");sfx.tick(true);toast(S.k==="lie"?"Time to relax! Move to get up.":"Ahh, comfy! Move to get up.");}
-function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id==="fw:hotel"){openPhone();setTimeout(()=>openApp("jobs","hotel"),350);return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
+function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id==="fw:hotel"){openPhone();setTimeout(()=>openApp("jobs","hotel"),350);return;}
+  if(id.startsWith("fw:shop:")){const S=FUT.FW_SHOPS.find(q=>q.id===id.slice(8));if(S)openGameStore("future",{shirt:"shirt",glasses:"glasses",vehicle:"vehicle",hair:"hair",furniture:"furniture"}[S.kind]||"shirt",false,S.title);return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
   if(k==="evshop"){if(EV.cur)openGameStore("spooky");return;}
   if(k==="stand")openMenu("park",v);else if(k==="slide"){const S=PARK_SLIDES.find(q=>q.id===v);if(S)startSlide(S);}}
 
@@ -9202,6 +9209,8 @@ function fwSpots(){if(!FWX.fw||!inFutureNow())return null;const x=G.pos.x,z=G.po
   const L=FWX.fw.liftAt(x,z);if(L)return {id:"fw:lift:"+L.id,label:/down/.test(L.id)?"GO DOWN":"GO UP",icon:"lift"};
   const [px,pz]=FUT.at(...FUT.LANDING.pad);if(Math.hypot(x-px,z-pz)<3.2)return {id:"fw:port",label:"TIME MACHINE",icon:"portal"};
   {const [hx,hz]=FUT.at(...FUT.HOTEL.spot);if(Math.hypot(x-hx,z-hz)<2.6)return {id:"fw:hotel",label:"WORK AT THE HOTEL",icon:"shop"};}
+  // the shops in the Sky Mall: stand at the counter
+  for(const S of FUT.FW_SHOPS){const [sx,sz]=FUT.at(S.x,S.z+(S.z<10?3:-3));if(Math.abs(x-sx)<4.2&&Math.abs(z-sz)<1.6)return {id:"fw:shop:"+S.id,label:S.title,icon:"shop"};}
   return null;}
 
 /* ---------- the world select screen ---------- */
@@ -9348,7 +9357,7 @@ function vehStartRide(v,sid){
 // get off: the vehicle stays where it stopped; I step to its side
 function vehDismount(){if(!VEH.ride)return;const v=VEH.mine;const b=vehBikeAt();
   if(socket&&socket.connected)socket.emit("veh:park",{x:+b[0].toFixed(2),z:+b[1].toFixed(2),f:+G.face.toFixed(3)},r=>{if(r&&r.veh)vehSet(r.veh);});
-  if(v){v.x=b[0];v.z=b[1];v.f=G.face;v.r=null;v.towAt=CITY_L.parkingAt(b[0],b[1])?0:performance.now()+CITY_L.PARK_FREE_MS;}
+  if(v){v.x=b[0];v.z=b[1];v.f=G.face;v.r=null;v.towAt=G.world==="future"||CITY_L.parkingAt(b[0],b[1])?0:performance.now()+CITY_L.PARK_FREE_MS;}
   vehStopRide(false);
   if(v&&v.towAt)toast(`Parked outside a parking lot: it will be towed in 5 minutes. Use a P lot to keep it!`);else if(v)toast("Parked in the parking lot. It's safe here!");}
 function vehStopRide(quiet){if(!VEH.ride)return;VEH.ride=false;VEH.speed=0;VEH.drive=null;
@@ -10445,6 +10454,7 @@ const COIN_SVG=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="
 const SLOT_LABEL={vehicle:"Vehicles",aura:"Auras",hair:"Hair",shirt:"Shirts",pants:"Pants",glasses:"Glasses",hat:"Hats",neck:"Necklaces",beard:"Beards",eyes:"Eyes",color:"Body colour",tag:"Tags",furniture:"Furniture",emote:"Emotes"};
 const SLOT_ONE={vehicle:"Vehicle",aura:"Aura",hair:"Hair",shirt:"Shirt",pants:"Pants",glasses:"Glasses",hat:"Hat",neck:"Necklace",beard:"Beard",eyes:"Eyes",color:"Body colour",tag:"Name tag",furniture:"Furniture",emote:"Emote"};
 const STORE_MODES={shop:{title:"SHOP",slots:["hair","shirt","pants","glasses","hat","neck","beard","eyes","color","emote","furniture","aura","vehicle"]},tags:{title:"TAGS",slots:["tag"]},
+  future:{title:"SKY MALL",slots:["shirt","pants","hat","glasses","neck","hair","furniture","vehicle"]},   // the Future City shops (players who opened it)
   spooky:{title:"SPOOKY SHOP",slots:["hat","shirt","pants","glasses","neck","hair","tag","furniture"]},   // the Halloween shop (only while the event is on, see EVENT)
   inventory:{title:"INVENTORY",slots:["hair","shirt","pants","glasses","hat","neck","beard","eyes","color","tag","emote","furniture","aura","vehicle"]}};
 let catalog=null,storeMode="shop",storeSlot="hair",storeSel=null,storeBusy=false,storePets=false;   // storePets: the Pet Center shop (only pet things)
@@ -10452,6 +10462,7 @@ async function loadCatalog(){if(catalog)return catalog;const r=await api("/api/s
 const FREE_EMOTES=new Set(["happy","wow","sad"]);   // same as catalog.js: everyone has these
 const freeEmoteId=id=>id.startsWith("emote:")&&FREE_EMOTES.has((EMOTES[+id.slice(6)]||{}).id);
 // which holiday event an item belongs to ("" = a normal item): outfits.js / catalog.js event field
+const worldItem=(slot,i)=>(OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i]&&OUTFIT_PARTS[slot][i].world)||(slot==="vehicle"&&VEHICLES[i]&&VEHICLES[i].world)||(catalog&&catalog.get(slot+":"+i)||{}).world||"";
 const evItem=(slot,i)=>(OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i]&&OUTFIT_PARTS[slot][i].event)||(catalog&&catalog.get(slot+":"+i)||{}).event||(slot==="tag"&&i>=9&&i<12?"halloween":slot==="furniture"&&i>=HALLOWEEN_FURN&&i<HALLOWEEN_FURN_END?"halloween":"");
 const owns=id=>freeEmoteId(id)||!!(me&&me.inventory&&me.inventory.includes(id));
 const hasEmote=e=>owns("emote:"+EMOTES.findIndex(x=>x.id===e));
@@ -10488,7 +10499,9 @@ function renderStoreGrid(){
   const slot=storeSlot,inv=storeMode==="inventory";storeGrid.innerHTML="";
   const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;if(!inv&&OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i].gift)continue;
     if(storeMode==="spooky"){if(evItem(slot,i)!==EV.cur)continue;}   // the event shop: only that event's items
+    else if(storeMode==="future"){if(worldItem(slot,i)!=="future")continue;}   // the Sky Mall: only the Future City collection
     else if(!inv&&evItem(slot,i))continue;   // event items are never in the normal shops
+    else if(!inv&&worldItem(slot,i))continue;   // Future City items are only in the Sky Mall
     else if(slot==="furniture"&&!inv&&storePets!==isPetFurn(i))continue;   // pet things only at the Pet Center, home furniture only at the furniture shop
     list.push(i);}   // work uniform pieces: never in the shop
   if(inv&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura"))list.unshift(-1);   // "none"
@@ -10507,7 +10520,7 @@ function renderStoreGrid(){
     else price=`<span class="pr">${COIN_SVG}${it?priceOf(it).toLocaleString("en-US"):"…"}</span>`;
     const rar=i>=0?itemRarity(slot,i):null,legend=i>=0&&(slot==="aura"||rar==="legendary"),isNew=!legend&&!rar&&!inv&&it&&!it.starter&&!owns(id);if(legend)b.classList.add("legendary");
     if(rar&&!legend)b.classList.add("r-"+rar);
-    if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&wearing(slot,i)){b.classList.add("worn");b.title="Tap again to take it off";}
+    if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&storeMode!=="future"&&wearing(slot,i)){b.classList.add("worn");b.title="Tap again to take it off";}
     b.innerHTML=`${legend?'<span class="leg">LEGENDARY</span>':rar&&rar!=="common"?`<span class="rchip r-${rar}">${RARITY[rar].name.toUpperCase()}</span>`:""}${i>=0?qtyBadge(itemQty(id)):""}${isNew&&!(it&&it.member)?'<span class="badge-new">NEW</span>':""}${it&&it.member?`<span class="mbadge" title="Members Club">${MCROWN}</span>`:""}<span class="pic">${i<0?outfitIcon("hair",-1):itemPic(slot,i)}</span><span class="nm">${i<0?"None":itemName(slot,i)}</span>${price}`;
     b.setAttribute("aria-label",(i<0?"None":itemName(slot,i))+", "+b.querySelector(".pr").textContent);
     b.onclick=()=>selectItem(i);storeGrid.appendChild(b);});
@@ -10520,13 +10533,13 @@ function selectItem(i){
   if(slot==="vehicle"){vehPreview(i);sfx.tick(true);renderStoreGrid();return;}
   if(slot==="emote"){popEmote(P.root,myBubble,EMOTES[i].id,skinOf({color:lk("color")}),"me");sfx.hop();renderStoreGrid();return;}
   // tapping the thing you're already wearing takes it off (same as the "none" tile)
-  if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura")&&wearing(slot,i)){storeSel=i=-1;}
+  if(i>=0&&storeMode!=="shop"&&storeMode!=="spooky"&&storeMode!=="future"&&(OUTFIT_PARTS[slot]||slot==="tag"||slot==="aura")&&wearing(slot,i)){storeSel=i=-1;}
   if(slot==="color")colorIdx=i;else if(slot==="eyes")eyeIdx=i;else outfit[slot]=i;
   applyColor();applyEyeColor();applyOutfit();refreshMenuTag();
   sfx.tick(true);doAction("hop",null,true);
   renderStoreGrid();
   // wardrobe inside the game: put it on right away, so everyone sees the new look
-  if(GS.open&&storeMode!=="shop"&&storeMode!=="spooky"&&(i<0||owns(slot+":"+i))&&!wearing(slot,i))storeAct.onclick();
+  if(GS.open&&storeMode!=="shop"&&storeMode!=="spooky"&&storeMode!=="future"&&(i<0||owns(slot+":"+i))&&!wearing(slot,i))storeAct.onclick();
 }
 function paintStoreFoot(){
   const slot=storeSlot,i=storeSel,coins=(me&&me.coins)||0;
@@ -10570,7 +10583,7 @@ storeAct.onclick=async()=>{
   if(slot==="vehicle"&&owns(id)){if(inGame&&GS.open){closeGameStore(true);setTimeout(()=>vehSummon(i),380);}return;}
   {const it=catalog&&catalog.get(id);if(it&&it.exclusive&&!owns(id)){if(GS.open){closeGameStore(true);setTimeout(openOffers,300);}else openStorePage(it.costume?"costumes":"bundles");return;}}
   storeBusy=true;storeAct.disabled=true;
-  if((slot==="furniture"&&storeMode!=="shop"&&storeMode!=="spooky")||(slot==="emote"&&owns(id)))return void(storeBusy=false);
+  if((slot==="furniture"&&storeMode!=="shop"&&storeMode!=="spooky"&&storeMode!=="future")||(slot==="emote"&&owns(id)))return void(storeBusy=false);
   const buying=i>=0&&(!owns(id)||slot==="furniture");
   {const it=catalog&&catalog.get(id);if(buying&&it&&me&&(me.coins||0)<priceOf(it)){storeBusy=false;paintStoreFoot();openCoinBox({price:priceOf(it),name:itemName(slot,i),pic:itemPic(slot,i)});return;}}
   const r=buying?await api("/api/shop/buy",{item:id}):await api("/api/inventory/equip",{slot,index:i});
@@ -10708,11 +10721,13 @@ async function openStore(mode){
 }
 // the shop and the wardrobe can also open inside the game (from the phone) without leaving it
 const GS={open:false};
-async function openGameStore(mode,slot,pets=false){
+let FUT_SHOP_TITLE="";
+async function openGameStore(mode,slot,pets=false,title=""){FUT_SHOP_TITLE=title;
+  if(mode==="future"&&!futureOpen()){toast("Open the Future City first!");return;}
   if(!inGame||!me||GS.open||(mode==="spooky"&&!EV.cur))return;storePets=!!pets&&mode==="shop";if(storePets)slot="furniture";
   closePhone(true);closeChat();closePlayerCard();if(G.home)closeDecorate();G.keys={};G.target=null;
   GS.open=true;storeMode=mode;storeSlot=slot&&STORE_MODES[mode].slots.includes(slot)?slot:STORE_MODES[mode].slots[0];storeSel=null;
-  document.getElementById("storeTitle").textContent=storePets?"PET SHOP":mode==="spooky"?EVENTS[EV.cur]?EVENTS[EV.cur].shop:"SPOOKY SHOP":mode==="shop"?"SHOP":"MY LOOK";body.classList.toggle("store-spooky",mode==="spooky");storeMsg.textContent="";
+  document.getElementById("storeTitle").textContent=storePets?"PET SHOP":mode==="future"?I18N.T(FUT_SHOP_TITLE||"SKY MALL"):mode==="spooky"?EVENTS[EV.cur]?EVENTS[EV.cur].shop:"SPOOKY SHOP":mode==="shop"?"SHOP":"MY LOOK";body.classList.toggle("store-spooky",mode==="spooky");storeMsg.textContent="";
   const a=me.look;colorIdx=a.color;eyeIdx=a.eyes;Object.assign(outfit,{hair:a.hair,shirt:a.shirt,pants:a.pants,glasses:a.glasses,hat:a.hat??-1,neck:a.neck??-1,beard:a.beard??-1,tag:a.tag??-1,aura:a.aura??-1});
   setPreview(true);queueThumbs();
   renderStoreTabs();renderStoreGrid();
@@ -10763,7 +10778,8 @@ const FURN_NAMES=["Cozy Sofa","Armchair","Round Table","Wooden Chair","Comfy Bed
   "Pet Bed","Food Bowl","Water Bowl","Bouncy Ball","Chew Bone","Yarn Ball","Squeaky Duck","Cat Tree","Dog House",
   "Jack-o'-lantern","Witch's Cauldron","Spooky Tombstone","Haunted Tree","Candy Bowl","Ghost Lamp",
   // 31+: the Big World collection
-  "Lava Lamp","Disco Ball","Gaming Chair","Bunk Bed","Telescope","Jukebox","Treasure Chest","Royal Throne","Rocket Lamp","Bike Display"];
+  "Lava Lamp","Disco Ball","Gaming Chair","Bunk Bed","Telescope","Jukebox","Treasure Chest","Royal Throne","Rocket Lamp","Bike Display",
+  "Hover Sofa","Holo TV","Capsule Bed","Neon Floor Lamp","Glass Table","Robot Butler","Plant Pod","Smart Fridge","Floating Shelf","Mini Planet Lamp"];
 // 16+: pet things (sold at the Pet Center only). Toys have no collision: pets push and carry them around.
 const PET_FURN=16,HALLOWEEN_FURN=25,HALLOWEEN_FURN_END=31,isPetFurn=f=>f>=PET_FURN&&f<HALLOWEEN_FURN,PF={beds:new Set([16,24]),food:17,water:18,kick:new Set([19,21]),carry:new Set([20,22]),tree:23},NOCOL=new Set([19,20,21,22]);
 const TOYS=new Map();   // toys the pets are pushing around right now (mesh -> speed); only on this screen, not saved
@@ -10773,7 +10789,8 @@ let HOME_W=7.4,HOME_D=5.6,HSHAPE=houseShape({});   // the room size changes with
 const FURN_FP=[[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0],
   [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0],
   [.8,.8,0],[1.2,1.2,0],[.9,.4,0],[1.4,1.4,0],[.6,.6,0],[.6,.6,0],
-  [.5,.5,0],[1,1,0],[.95,.95,0],[2.1,3.1,-.05],[1,1,0],[1.2,.8,0],[1.2,.8,0],[1.5,1.3,0],[.7,.7,0],[1.6,2.8,0]],FLAT=new Set([9]);
+  [.5,.5,0],[1,1,0],[.95,.95,0],[2.1,3.1,-.05],[1,1,0],[1.2,.8,0],[1.2,.8,0],[1.5,1.3,0],[.7,.7,0],[1.6,2.8,0],
+  [3,1.2,0],[2.4,.6,0],[2.1,3.1,-.05],[.6,.6,0],[1.9,1.9,0],[.9,.9,0],[.7,.7,0],[1.1,.8,0],[2,.6,0],[.8,.8,0]],FLAT=new Set([9]);
 function footprint({f,x,z,r}){const [w,d,oz]=FURN_FP[f],t=r%2===1,a=r*Math.PI/2,cx=x+oz*Math.sin(a),cz=z+oz*Math.cos(a),hw=(t?d:w)/2,hd=(t?w:d)/2;return [cx-hw,cz-hd,cx+hw,cz+hd];}
 const fpHits=(a,b)=>a[0]<b[2]-.02&&a[2]>b[0]+.02&&a[1]<b[3]-.02&&a[3]>b[1]+.02;
 function placeProblem(it,others){const fp=footprint(it);
@@ -10972,6 +10989,44 @@ function buildFurniture(f){
       add(new THREE.Mesh(new THREE.TorusGeometry(1.27,.04,6,48),new THREE.MeshStandardMaterial({color:"#ff6a1c",emissive:"#ff6a1c",emissiveIntensity:1.4}))).rotation.x=Math.PI/2;g.children[g.children.length-1].position.y=.2;
       const bike=buildBike(VEHICLES[13]);bike.scale.multiplyScalar(.85);bike.position.y=.2;g.add(bike);bike.traverse(o=>{if(o.isMesh)o.castShadow=true;});
       g.userData.anim=t=>{bike.rotation.y=t*.4;};break;}
+    /* ---------- 41+: Smart Home, the Future City collection ---------- */
+    case 41:{const b=fm("#7d5cff"),c=fm("#9b7dff"),glow=fm("#59e0ff",{emissive:"#59e0ff",emissiveIntensity:1.2});const s=new THREE.Group();g.add(s);
+      [box(2.9,.4,1.1,b,0,.75,0),box(2.9,.9,.28,b,0,1.15,-.42),box(.3,.6,1.1,b,-1.4,1,0),box(.3,.6,1.1,b,1.4,1,0),box(1.3,.18,.85,c,-.68,1.02,.06),box(1.3,.18,.85,c,.68,1.02,.06),box(2.6,.05,.9,glow,0,.53,0)].forEach(m=>{m.castShadow=true;s.add(m);});
+      const pad=new THREE.Mesh(new THREE.CircleGeometry(1.2,32),new THREE.MeshBasicMaterial({color:"#59e0ff",transparent:true,opacity:.25,depthWrite:false}));pad.rotation.x=-Math.PI/2;pad.scale.set(1.3,.6,1);pad.position.y=.02;g.add(pad);
+      g.userData.anim=t=>{s.position.y=Math.sin(t*2)*.05;};break;}
+    case 42:{const fr=fm("#1d2433",{metalness:.5,roughness:.3});add(box(.9,.5,.4,fr,0,.25,0));add(box(.14,.5,.14,fr,0,.75,-.05));
+      const scr=new THREE.Mesh(new THREE.PlaneGeometry(2.3,1.2),new THREE.MeshBasicMaterial({map:textTex("JUMPI 3026",{bg:"#0b1230",fg:"#59e0ff",stroke:"rgba(0,0,0,.2)",size:80,w:640,h:340}),transparent:true,opacity:.85,side:THREE.DoubleSide}));scr.position.set(0,1.75,0);g.add(scr);
+      const beam=new THREE.Mesh(new THREE.CylinderGeometry(1.1,.2,1,4,1,true),new THREE.MeshBasicMaterial({color:"#59e0ff",transparent:true,opacity:.1,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));beam.position.y=1.1;beam.rotation.y=Math.PI/4;beam.scale.z=.15;g.add(beam);
+      g.userData.anim=t=>{scr.material.opacity=.75+.15*Math.sin(t*3);};break;}
+    case 43:{const sh=fm("#eef3fb",{metalness:.3,roughness:.3}),glow=fm("#ff4fd8",{emissive:"#ff4fd8",emissiveIntensity:1});add(box(2,.5,3,sh,0,.25,0));add(box(1.8,.25,2.8,fm("#c9b6ff",{roughness:.8}),0,.62,0));add(box(1.3,.18,.6,fm("#ffffff"),0,.82,-1));
+      const shell=new THREE.Mesh(new THREE.SphereGeometry(1,24,16,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:"#bff1ff",transparent:true,opacity:.28,roughness:.05,metalness:.3,depthWrite:false,side:THREE.DoubleSide}));shell.scale.set(1.05,.9,1.55);shell.position.set(0,.5,0);shell.rotation.x=-.25;g.add(shell);
+      add(box(2.06,.06,3.06,glow,0,.04,0));break;}
+    case 44:{const st=fm("#c9d2e3",{metalness:.6,roughness:.3});add(cyl(.26,.3,.1,st,0,.05,0,24));add(cyl(.04,.04,2.2,st,0,1.15,0,10));
+      const lm=fm("#ffd65a",{emissive:"#ffd65a",emissiveIntensity:1.4}),rings=[0,1,2].map(k=>{const r=new THREE.Mesh(new THREE.TorusGeometry(.22,.025,8,32),lm);r.position.y=1.6+k*.28;r.rotation.x=Math.PI/2;return add(r);});
+      g.userData.anim=t=>{rings.forEach((r,k)=>{r.rotation.z=t*(1+k*.4);r.rotation.x=Math.PI/2+Math.sin(t+k)*.4;});};break;}
+    case 45:{const gl=new THREE.MeshStandardMaterial({color:"#bff1ff",transparent:true,opacity:.4,roughness:.05,metalness:.3});const top=cyl(.95,.95,.06,gl,0,.82,0,40);g.add(top);
+      add(cyl(.06,.2,.78,fm("#c9d2e3",{metalness:.7,roughness:.25}),0,.4,0,16));add(cyl(.4,.45,.06,fm("#c9d2e3",{metalness:.7,roughness:.25}),0,.03,0,24));
+      const rim=new THREE.Mesh(new THREE.TorusGeometry(.95,.02,6,48),fm("#59e0ff",{emissive:"#59e0ff",emissiveIntensity:1.2}));rim.rotation.x=Math.PI/2;rim.position.y=.82;add(rim);break;}
+    case 46:{const bm=fm("#e9eef7",{metalness:.5,roughness:.3}),dk=fm("#1d2433"),eye=fm("#59e0ff",{emissive:"#59e0ff",emissiveIntensity:1.3});const bot=new THREE.Group();g.add(bot);
+      const head=new THREE.Mesh(new THREE.SphereGeometry(.3,20,14),bm);head.position.y=1.55;const bulb=new THREE.Mesh(new THREE.SphereGeometry(.06,10,8),fm("#ff4f6d",{emissive:"#ff4f6d",emissiveIntensity:1}));bulb.position.y=2.1;
+      [cyl(.3,.38,.9,bm,0,.75,0,20),head,box(.4,.16,.05,dk,0,1.62,.24),cyl(.03,.03,.25,bm,0,1.95,0,8),bulb].forEach(m=>{m.castShadow=true;bot.add(m);});
+      [-1,1].forEach(sd=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),eye);e.position.set(sd*.1,1.62,.27);bot.add(e);const arm=cyl(.05,.05,.55,bm,sd*.38,.95,.1,8);arm.rotation.x=-.9;bot.add(arm);});
+      bot.add(box(.6,.04,.4,fm("#d4a73a",{metalness:.8,roughness:.25}),0,1.18,.42));add(cyl(.32,.32,.12,dk,0,.12,0,20));
+      g.userData.anim=t=>{bot.position.y=.05+Math.sin(t*2.2)*.04;bot.rotation.y=Math.sin(t*.7)*.3;};break;}
+    case 47:{const pod=new THREE.Mesh(new THREE.SphereGeometry(.34,20,14),new THREE.MeshStandardMaterial({color:"#bff1ff",transparent:true,opacity:.3,roughness:.05,depthWrite:false}));pod.position.y=.7;g.add(pod);
+      add(cyl(.3,.34,.4,fm("#eef3fb",{metalness:.3}),0,.2,0,20));const pl=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,1),fm("#7dff9b",{emissive:"#2fbf62",emissiveIntensity:.5}));pl.position.y=.68;add(pl);
+      const rg=new THREE.Mesh(new THREE.TorusGeometry(.32,.02,6,32),fm("#7dff9b",{emissive:"#7dff9b",emissiveIntensity:1.2}));rg.rotation.x=Math.PI/2;rg.position.y=.4;add(rg);break;}
+    case 48:{const sh=fm("#eef3fb",{metalness:.4,roughness:.25});add(box(1,2.1,.75,sh,0,1.05,0));add(box(.96,.02,.02,fm("#9aa6c2"),0,1.35,.38));
+      add(box(.4,.28,.03,fm("#0b1230",{emissive:"#59e0ff",emissiveIntensity:.8}),.15,1.65,.39));add(box(.04,.5,.06,fm("#c9d2e3",{metalness:.7}),-.38,1.0,.4));add(box(.04,.4,.06,fm("#c9d2e3",{metalness:.7}),-.38,1.7,.4));break;}
+    case 49:{const sh=fm("#2a3042",{metalness:.4,roughness:.35}),glow=fm("#ff4fd8",{emissive:"#ff4fd8",emissiveIntensity:1.1});const s=new THREE.Group();g.add(s);
+      const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.16),fm("#ffd65a",{emissive:"#ffd65a",emissiveIntensity:.8}));gem.position.set(.4,1.52,0);
+      [box(1.9,.08,.5,sh,0,1.3,0),box(1.9,.08,.5,sh,0,1.9,0),box(1.9,.03,.52,glow,0,1.25,0),box(1.9,.03,.52,glow,0,1.85,0),box(.3,.4,.3,fm("#59e0ff",{emissive:"#59e0ff",emissiveIntensity:.5}),-.6,1.54,0),gem,box(.5,.3,.25,fm("#7d5cff"),.5,2.09,0)].forEach(m=>{m.castShadow=true;s.add(m);});
+      g.userData.anim=t=>{s.position.y=Math.sin(t*1.6)*.05;gem.rotation.y=t;};break;}
+    case 50:{const st=fm("#c9d2e3",{metalness:.6,roughness:.3});add(cyl(.28,.32,.1,st,0,.05,0,24));add(cyl(.03,.03,.9,st,0,.5,0,8));
+      const pl=new THREE.Mesh(new THREE.SphereGeometry(.32,24,16),fm("#ff9a3c",{emissive:"#ff8a3c",emissiveIntensity:.6}));pl.position.y=1.25;add(pl);
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.5,.04,6,48),fm("#ffd65a",{emissive:"#ffd65a",emissiveIntensity:.9}));ring.position.y=1.25;ring.rotation.x=1.2;add(ring);
+      const moon=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),fm("#e9eef7",{emissive:"#ffffff",emissiveIntensity:.4}));add(moon);
+      g.userData.anim=t=>{pl.rotation.y=t*.5;moon.position.set(Math.cos(t*1.2)*.7,1.25+Math.sin(t*1.2)*.2,Math.sin(t*1.2)*.7);};break;}
   }
   g.userData.f=f;return g;
 }
@@ -11038,6 +11093,7 @@ const SEATS={0:{k:"sit",y:.8,at:[[-.7,.08],[.7,.08]]},1:{k:"sit",y:.8,at:[[0,.08
   13:{k:"play",y:.52,at:[[0,1.32]],flip:true},4:{k:"sleep",y:1.38,at:[[0,.95]],reach:2.1},
   // the Big World collection: gaming chair, bunk bed (bottom / top: stand by the ladder for the top), throne, dancing by the jukebox and under the disco ball
   33:{k:"sit",y:.66,at:[[0,.04]]},38:{k:"sit",y:.86,at:[[0,.06]]},
+  41:{k:"sit",y:.95,at:[[-.7,.06],[.7,.06]]},43:{k:"sleep",y:1.1,at:[[0,.95]],reach:2.1},
   34:{k:"sleep",y:1.19,at:[[-.35,.95],[.35,.95,2.49,"TOP BUNK"]],reach:2.1},
   36:{k:"dance",y:0,at:[[0,1.15]],reach:1.4},32:{k:"dance",y:0,at:[[0,.9]],reach:1.5}};
 const seatPrompt=document.getElementById("seatPrompt");

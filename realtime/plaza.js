@@ -353,7 +353,7 @@ export function attachPlaza(io) {
   function removePlayer(id, sock) {
     if (!players.has(id)) return;
     const { room = ROOM, userId } = players.get(id);
-    if (room === ROOM) vehiclePlayerLeft(io, id, players.get(id));   // riding: the vehicle stays parked where they were
+    if (room === ROOM || room === "future") vehiclePlayerLeft(io, id, players.get(id));   // riding: the vehicle stays parked where they were
     players.delete(id);
     sock?.leave(room);
     io.to(room).emit("player:leave", id);
@@ -516,7 +516,7 @@ export function attachPlaza(io) {
       socket.emit("players", [...players.values()].filter((p) => p.id !== socket.id && p.room === room && sees(player, p)).map(publicView));
       socket.emit("self", { role: me.role, coins: me.coins, mutedUntil: mutedUntil.get(me.id) || 0, invisible: !!player.invisible });
       if (!already) roomSend(player, "player:join", publicView(player), { self: false });
-      if (room === ROOM) { sendVehicles(io, socket, player); vehiclePlayerBack(io, player); }
+      if (room === ROOM || room === "future") { sendVehicles(io, socket, player); vehiclePlayerBack(io, player); }
       if (room === "show") showJoined(player); else showLeft();
       sendNeeds(me.id);
       playOn(me.id, deviceOf(socket.handshake.headers["user-agent"]));   // play time for the parents' page

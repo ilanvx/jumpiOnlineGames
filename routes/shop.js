@@ -60,6 +60,7 @@ router.post("/shop/buy", requireJson, requireUser, slowDown, async (req, res, ne
     if (item.gift) return res.status(409).json({ error: "This is a special prize, it isn't sold in the shop." });
     if (item.memberFree) return res.status(409).json({ error: "Every member has this one for free!", code: "members" });
     if (item.member && !req.user.isMember()) return res.status(403).json({ error: "This one is for members only.", code: "members" });
+    if (item.world === "future" && !(req.user.worlds || []).includes("future")) return res.status(403).json({ error: "This is sold in the Future City. Open the Future City first!", code: "world" });
     if (!eventShopOpen(item)) return res.status(409).json({ error: `The ${EVENTS[item.event]?.shop || "event shop"} is closed. These come back next ${EVENTS[item.event]?.name || "event"}!`, code: "event-closed" });
     const isFurniture = item.category === "furniture", MAX = maxFurniture(req.user);
     const price = req.user.isMember() ? memberPrice(item.price) : item.price;   // members: 10% off

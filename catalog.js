@@ -48,6 +48,7 @@ for (const slot of OUTFIT_SLOTS)
     if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
     if (o.rarity) items[items.length - 1].rarity = o.rarity;
     if (o.member) items[items.length - 1].member = true;   // the Members Club collection: only members can buy it
+    if (o.world) items[items.length - 1].world = o.world;   // the Future City collection: sold only in the Sky Mall (players who opened that world)
     if (o.costume) Object.assign(items[items.length - 1], { exclusive: true, costume: true });   // Jumpi Store costumes: not in the coin shop, but tradable
   });
 
@@ -68,7 +69,7 @@ add("tag", 8, "Crown", 1000);
   .forEach(([n, p, r], k) => { add("tag", 12 + k, n, p); items[items.length - 1].rarity = r; });
 
 // furniture for the player's home (can be bought more than once)
-export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25, HALLOWEEN_FURNITURE_END = 31;
+export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25, HALLOWEEN_FURNITURE_END = 31, FUTURE_FURNITURE_FROM = 41;
 [
   ["Cozy Sofa", 300], ["Armchair", 180], ["Round Table", 150], ["Wooden Chair", 80],
   ["Comfy Bed", 400], ["Floor Lamp", 120], ["Potted Plant", 90], ["Bookshelf", 250],
@@ -82,13 +83,16 @@ export const PET_FURNITURE_FROM = 16, HALLOWEEN_FURNITURE_FROM = 25, HALLOWEEN_F
   // 31+: the Big World collection (with a rarity)
   ["Lava Lamp", 400, "common"], ["Disco Ball", 1200, "rare"], ["Gaming Chair", 900, "rare"], ["Bunk Bed", 1300, "rare"], ["Telescope", 1100, "rare"],
   ["Jukebox", 2200, "epic"], ["Treasure Chest", 1000, "rare"], ["Royal Throne", 6000, "legendary"], ["Rocket Lamp", 700, "rare"], ["Bike Display", 3500, "epic"],
+  // 41+: Smart Home, the Future City collection (sold only in the Sky Mall)
+  ["Hover Sofa", 3200, "epic"], ["Holo TV", 4200, "epic"], ["Capsule Bed", 5200, "legendary"], ["Neon Floor Lamp", 1200, "common"], ["Glass Table", 1800, "rare"], ["Robot Butler", 4800, "epic"], ["Plant Pod", 1100, "common"], ["Smart Fridge", 2600, "rare"], ["Floating Shelf", 1500, "rare"], ["Mini Planet Lamp", 2200, "rare"],
 ].forEach(([n, p, r], i) => {
   add("furniture", i, n, p);
   if (i >= PET_FURNITURE_FROM && i < HALLOWEEN_FURNITURE_FROM) items[items.length - 1].pet = true;
   if (i >= HALLOWEEN_FURNITURE_FROM && i < HALLOWEEN_FURNITURE_END) items[items.length - 1].event = "halloween";
   if (r) items[items.length - 1].rarity = r;
+  if (i >= FUTURE_FURNITURE_FROM) items[items.length - 1].world = "future";
 });
-export const FURNITURE_COUNT = 41;
+export const FURNITURE_COUNT = 51;
 
 // emotes (the big faces above your head). Same order as EMOTES in public/index.html.
 // Free ones belong to everybody; the rest are bought once in the shop or from the chat bar.
@@ -137,6 +141,7 @@ VEHICLES.forEach((v, i) => {
   add("vehicle", i, v.name, v.price);
   items[items.length - 1].rarity = v.rarity;
   if (v.member) items[items.length - 1].member = true;
+  if (v.world) items[items.length - 1].world = v.world;
 });
 
 export const CATALOG = items;
@@ -179,7 +184,8 @@ export function lookItems(look = {}) {
 export const FURN_FOOTPRINT = [[3.1,1.25,0],[1.45,1.25,0],[1.9,1.9,0],[.85,.85,0],[2.1,3.1,-.05],[.6,.6,0],[.7,.7,0],[2,.6,0],[2.4,.6,0],[3.2,3.2,0],[1.5,1.5,0],[1.8,.8,0],[1,.95,0],[2.4,1.95,.6],[.8,.8,0],[1.2,.9,0],
   [1.3,1.3,0],[.6,.6,0],[.6,.6,0],[.45,.45,0],[.6,.35,0],[.45,.45,0],[.45,.45,0],[1,1,0],[1.4,1.5,0],
   [.8,.8,0],[1.2,1.2,0],[.9,.4,0],[1.4,1.4,0],[.6,.6,0],[.6,.6,0],
-  [.5,.5,0],[1,1,0],[.95,.95,0],[2.1,3.1,-.05],[1,1,0],[1.2,.8,0],[1.2,.8,0],[1.5,1.3,0],[.7,.7,0],[1.6,2.8,0]];
+  [.5,.5,0],[1,1,0],[.95,.95,0],[2.1,3.1,-.05],[1,1,0],[1.2,.8,0],[1.2,.8,0],[1.5,1.3,0],[.7,.7,0],[1.6,2.8,0],
+  [3.0,1.2,0],[2.4,0.6,0],[2.1,3.1,-0.05],[0.6,0.6,0],[1.9,1.9,0],[0.9,0.9,0],[0.7,0.7,0],[1.1,0.8,0],[2.0,0.6,0],[0.8,0.8,0]];
 export const FLAT_FURNITURE = new Set([9]);
 // the rectangle a placed piece covers on the floor
 export function footprint({ f, x, z, r }) {

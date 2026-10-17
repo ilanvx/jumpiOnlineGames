@@ -68,6 +68,15 @@ export const VEHICLES = [
   { kind: "coinboard", coin: "gold", name: "Gold Coin Board", he: "סקייטבורד מטבע זהב", rarity: "rare", price: 2600, col: "#ffc21a", col2: "#ffffff", speed: 12.5, glow: "#ffd23a" },
   { kind: "coinboard", coin: "rose", name: "Rose Gold Coin Board", he: "סקייטבורד מטבע זהב ורוד", rarity: "rare", price: 2600, col: "#f2a58e", col2: "#ffffff", speed: 12.5, glow: "#ffb3a0" },
   { kind: "coinboard", coin: "rainbow", name: "Rainbow Coin Board", he: "סקייטבורד מטבע קשת", rarity: "epic", price: 4800, col: "#ffffff", col2: "#ffffff", speed: 13, glow: "#ff9ccc", trail: "rainbow" },
+  // the Future City garage (Hover Motors in the Sky Mall; world: "future"): they float above the ground
+  { kind: "hover", name: "Neon Glider", he: "רחפת ניאון", rarity: "rare", price: 2800, col: "#14162a", col2: "#59e0ff", speed: 17, glow: "#59e0ff", world: "future" },
+  { kind: "hover", name: "Pink Pulse Hover", he: "רחפת פולס ורודה", rarity: "rare", price: 2800, col: "#f2f6ff", col2: "#ff4fd8", speed: 17, glow: "#ff4fd8", world: "future" },
+  { kind: "hover", name: "Sky Cruiser", he: "שייטת שמיים", rarity: "epic", price: 4200, col: "#ffd65a", col2: "#1d2433", speed: 18, glow: "#ffd65a", trail: "sparkle", world: "future" },
+  { kind: "bubblecar", name: "Bubble Pod", he: "פוד בועה", rarity: "rare", price: 3200, col: "#9fe8ff", col2: "#ffffff", speed: 15, glow: "#9fe8ff", world: "future" },
+  { kind: "bubblecar", name: "Robo Pod", he: "פוד רובוט", rarity: "epic", price: 4600, col: "#c9d2e3", col2: "#7dff9b", speed: 16, glow: "#7dff9b", metal: true, world: "future" },
+  { kind: "sofa", name: "Hover Couch 3000", he: "ספת ריחוף 3000", rarity: "epic", price: 5200, col: "#7d5cff", col2: "#59e0ff", speed: 15, glow: "#59e0ff", world: "future" },
+  { kind: "cloud", name: "Data Cloud", he: "ענן נתונים", rarity: "epic", price: 5600, col: "#bff6ff", col2: "#59e0ff", speed: 17, glow: "#59e0ff", trail: "stars", world: "future" },
+  { kind: "hover", name: "Star Racer", he: "מרוצת כוכבים", rarity: "legendary", price: 6000, col: "#1b1446", col2: "#ffd65a", speed: 20, glow: "#c58bff", trail: "stars", world: "future" },
 ];
 
 export const VEH_SUMMON_GAP_MS = 5000;     // one summon every few seconds
