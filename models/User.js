@@ -107,6 +107,7 @@ const userSchema = new mongoose.Schema(
     jobs: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
     jobsDay: { type: String, default: "" },
     jobsEarned: { type: Number, default: 0, min: 0 },
+    jobsHour: { at: { type: Date, default: null }, earned: { type: Number, default: 0, min: 0 } },   // public/shared/earn.js: pay slows down within an hour
     // the Season (public/shared/season.js): { id, xp, claimed: [tiers] }, XP earned today (capped), and the last Lucky Wheel spin
     season: { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
     seasonDay: { type: String, default: "" },
@@ -132,6 +133,7 @@ const userSchema = new mongoose.Schema(
     // mini-game coins earned today (capped per day)
     gamesDay: { type: String, default: "" },
     gamesEarned: { type: Number, default: 0, min: 0 },
+    gamesHour: { at: { type: Date, default: null }, earned: { type: Number, default: 0, min: 0 } },
     // adopted pets; petOut = the id of the pet walking with the player ("" = all at home)
     pets: {
       type: [

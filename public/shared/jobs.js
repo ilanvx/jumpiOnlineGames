@@ -7,7 +7,7 @@
 import { OUTFITS } from "./outfits.js";
 export const SHIFT_SECONDS = 150;           // one shift
 export const MIN_SECONDS_PER_ORDER = 6;     // nobody can serve faster than this (checked by the server; per job: minSecs)
-export const JOB_DAILY_CAP = 800;           // most coins jobs can pay in one day (members: twice as much)
+export const JOB_DAILY_CAP = 0;             // no daily limit any more (public/shared/earn.js slows the pay within an hour)
 export const JOBS = {
   waiter: {
     id: "waiter",

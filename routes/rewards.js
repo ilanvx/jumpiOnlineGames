@@ -10,6 +10,7 @@ import { SEASON_XP } from "../public/shared/season.js";
 import { addLevelXp } from "./levels.js";
 import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
+import { PACE, hourEarned, paceCoins, paceView } from "../public/shared/earn.js";
 import { giftFor, DAILY_COINS, nextMemberDay, restoreCost, RESTORE_DAYS } from "../public/shared/daily.js";
 import { notifyMember } from "../realtime/plaza.js";
 
@@ -115,8 +116,7 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
 });
 
 /* ---------- mini-games ---------- */
-const DAILY_GAME_CAP = 200; // most coins mini-games can give in one day (members: twice as much)
-const dailyCapOf = (user) => DAILY_GAME_CAP * (user.isMember() ? 2 : 1);
+// no daily limit: within an hour the pay slows down (public/shared/earn.js)
 const ROUND_CAP = 40; // most coins one round can give
 const ROUND_SECS = 30; // fruit and shell rounds
 const GAMES = ["fruit", "shell", "dig", "flap"];
@@ -197,6 +197,7 @@ function flapScore(round, passed, shells) {
 }
 
 // treasure map for the dig game: built here, never sent to the page
+const DIG_GAP = 350;   // ms between two digs at the least
 const DIG = { cols: 7, rows: 5, shovels: 10, items: [["chest", 10, 2], ["gem", 5, 3], ["coins", 2, 6]] };
 function makeDigBoard() {
   const cells = Array(DIG.cols * DIG.rows).fill(null);
@@ -235,9 +236,10 @@ const sameAs = (v, empty) => (v === empty || v == null ? { $in: [empty, null] } 
 
 const bestOf = (user, game) => (user.gameBest && typeof user.gameBest.get === "function" ? user.gameBest.get(game) : 0) || 0;
 
-// for the start screen of a game: coins left today and your best scores
+// for the start screen of a game: how fast coins come right now, and your best scores
+const paceOf = (user) => paceView("games", user.gamesHour, user.isMember());
 router.get("/minigame/status", requireUser, (req, res) => {
-  res.json({ todayEarned: todayEarned(req.user), dailyCap: dailyCapOf(req.user), best: Object.fromEntries(GAMES.map((g) => [g, bestOf(req.user, g)])) });
+  res.json({ todayEarned: todayEarned(req.user), pace: paceOf(req.user), best: Object.fromEntries(GAMES.map((g) => [g, bestOf(req.user, g)])) });
 });
 
 const recentStarts = new Map();
@@ -262,7 +264,7 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
     id,
     game,
     todayEarned: todayEarned(req.user),
-    dailyCap: dailyCapOf(req.user),
+    pace: paceOf(req.user),
     roundCap: ROUND_CAP,
     best: bestOf(req.user, game),
     ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels }
@@ -288,6 +290,9 @@ router.post("/minigame/dig", requireJson, requireUser, (req, res) => {
   if (!Number.isInteger(cell) || cell < 0 || cell >= DIG.cols * DIG.rows) return res.status(400).json({ error: "Pick a spot in the sand." });
   if (round.dug.has(cell)) return res.status(409).json({ error: "You already dug there." });
   if (round.shovels <= 0) return res.status(409).json({ error: "No shovels left." });
+  const now = Date.now();
+  if (now - (round.lastDig || round.start) < DIG_GAP) return res.status(429).json({ error: "Not so fast!" });   // a person digs, a script doesn't
+  round.lastDig = now;
   round.dug.add(cell);
   round.shovels--;
   const found = round.board[cell];
@@ -330,18 +335,18 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
     if (activeByUser.get(round.userId) === round.id) activeByUser.delete(round.userId);
     const score = round.game === "dig" ? round.score : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
 
-    // add the coins, keeping today's total under the daily cap (retry if two rounds finish together)
+    // add the coins at this hour's pace (retry if two rounds finish together)
     for (let attempt = 0; attempt < 3; attempt++) {
       const user = await User.findById(req.user._id);
       if (!user) return res.status(401).json({ error: "Please log in first." });
-      const today = dayKey();
+      const today = dayKey(), now = Date.now();
       const earnedToday = todayEarned(user);
-      const cap = dailyCapOf(user);
-      const coins = Math.max(0, Math.min(ROUND_CAP, score, cap - earnedToday));
+      const hourOld = hourEarned(user.gamesHour, now), hourAt = hourOld ? user.gamesHour.at : new Date(now);
+      const coins = paceCoins("games", hourOld, Math.max(0, Math.min(ROUND_CAP, score)), user.isMember());
       const oldBest = bestOf(user, round.game);
       const updated = await User.findOneAndUpdate(
         { _id: user._id, gamesDay: sameAs(user.gamesDay, ""), gamesEarned: sameAs(user.gamesEarned, 0) },
-        { $set: { gamesDay: today, gamesEarned: earnedToday + coins }, $inc: { coins }, $max: { ["gameBest." + round.game]: score } },
+        { $set: { gamesDay: today, gamesEarned: earnedToday + coins, gamesHour: { at: hourAt, earned: hourOld + coins } }, $inc: { coins }, $max: { ["gameBest." + round.game]: score } },
         { new: true }
       );
       if (!updated) continue;
@@ -350,7 +355,8 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       if (score > 0) addSeasonXp(updated._id, SEASON_XP.minigame);
       if (score > 0) addLevelXp(updated._id, LEVEL_XP.minigame, { why: "minigame" });   // a round with no points gives no XP
       if (score > 0) questEvent(updated._id, "minigame", 1);   // quests: "play N mini-games"
-      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, dailyCap: cap, best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
+      if (hourOld + coins > PACE.games[2] * 3) console.warn(`[coins] ${updated.username}: ${hourOld + coins} coins from mini-games in one hour`);   // worth a look
+      return res.json({ score, coins, total: updated.coins, todayEarned: earnedToday + coins, pace: paceOf(updated), best: Math.max(oldBest, score), newBest: score > oldBest && score > 0 });
     }
     res.status(409).json({ error: "Something got in the way. Try again." });
   } catch (err) {

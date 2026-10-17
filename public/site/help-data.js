@@ -142,8 +142,8 @@ export const GUIDES = [
     a: { en: `<p>Take a pizza at the PICK UP window (${K("E")}), press ${K("E")} at the scooter to get on, then ${K("W")}/${K("S")} for gas and brake and ${K("A")}/${K("D")} to steer (or click a spot to drive there). Follow the blue line and the GPS on the right to the house with the beam of light, and press ${K("E")} near the customer.</p>`, he: `<p>לוקחים פיצה בחלון PICK UP (${K("E")}), לוחצים ${K("E")} ליד הקטנוע כדי לעלות, ואז ${K("W")}/${K("S")} לגז ולבלם ו-${K("A")}/${K("D")} להיגוי (או לחיצה על מקום כדי לנסוע לשם). עוקבים אחרי הקו הכחול וה-GPS בצד ימין אל הבית עם אלומת האור, ולוחצים ${K("E")} ליד הלקוח.</p>` },
     kw: "scooter drive ride pizza gps deliver קטנוע לנסוע פיצה ג'י פי אס משלוח" },
   { id: "cap", t: "coins",
-    q: { en: "Why did I stop getting coins from jobs or games?", he: "למה הפסקתי לקבל מטבעות מעבודות או ממשחקים?" },
-    a: { en: "<p>Jobs and mini-games have a <b>daily limit</b> (for jobs it's 800 coins a day, 1,600 for members). This keeps the game fair and makes sure nobody has to play all day. It starts again the next day. Quests, the daily gift and the wheel don't count toward it.</p>", he: "<p>לעבודות ולמיני-משחקים יש <b>תקרה יומית</b> (בעבודות 800 מטבעות ביום, 1,600 למנויים). זה שומר על משחק הוגן ודואג שאף אחד לא יצטרך לשחק כל היום. היא מתחילה מחדש למחרת. משימות, המתנה היומית והגלגל לא נספרים בה.</p>" },
+    q: { en: "Why am I getting fewer coins from jobs or games?", he: "למה אני מקבל פחות מטבעות מעבודות או ממשחקים?" },
+    a: { en: "<p>There's <b>no daily limit</b>: you can play and work as much as you like. But within one hour, the more coins you earn, the slower they come: full pay first, then 60%, 35% and 20%. After an hour, full pay is back. Members get full pay for twice as long. Quests, the daily gift and the wheel don't count toward it.</p>", he: "<p><b>אין הגבלה יומית</b>: אפשר לשחק ולעבוד כמה שרוצים. אבל בתוך שעה, ככל שמרוויחים יותר מטבעות, הם מגיעים לאט יותר: קודם תשלום מלא, ואחר כך 60%, 35% ו־20%. אחרי שעה התשלום חוזר למלא. מנויים מקבלים תשלום מלא לזמן כפול. משימות, המתנה היומית והגלגל לא נספרים בזה.</p>" },
     kw: "limit cap no more coins stopped daily max tomorrow הגבלה תקרה לא מקבל מטבעות נגמר יומי מקסימום מחר" },
   { id: "daily", t: "coins", shot: "daily",
     q: { en: "What is the daily gift?", he: "מה זו המתנה היומית?" },
@@ -215,7 +215,7 @@ export const GUIDES = [
     kw: "vehicle bike car scooter garage drive ride park רכב אופניים מכונית קטנוע מוסך לנסוע חניה" },
   { id: "member", t: "look",
     q: { en: "What does a membership give?", he: "מה נותן מנוי?" },
-    a: { en: "<p>Members get a double daily gift, a higher daily job limit (1,600 coins) and can buy members-only clothes and vehicles. A membership is bought by a parent on the Jumpi Store website, is paid once and never renews by itself. The whole game is free without it.</p>", he: "<p>מנויים מקבלים מתנה יומית כפולה, תקרה יומית גבוהה יותר בעבודות (1,600 מטבעות) ויכולים לקנות בגדים וכלי רכב למנויים בלבד. מנוי קונים ההורים בחנות ג'אמפי באתר, משלמים פעם אחת והוא לא מתחדש מעצמו. כל המשחק בחינם גם בלעדיו.</p>" },
+    a: { en: "<p>Members get a double daily gift, full pay for twice as long in jobs and mini-games and can buy members-only clothes and vehicles. A membership is bought by a parent on the Jumpi Store website, is paid once and never renews by itself. The whole game is free without it.</p>", he: "<p>מנויים מקבלים מתנה יומית כפולה, תשלום מלא לזמן כפול בעבודות ובמיני־משחקים ויכולים לקנות בגדים וכלי רכב למנויים בלבד. מנוי קונים ההורים בחנות ג'אמפי באתר, משלמים פעם אחת והוא לא מתחדש מעצמו. כל המשחק בחינם גם בלעדיו.</p>" },
     kw: "membership member vip premium subscription club מנוי חבר מועדון פרימיום מנויים", also: ["buy"] },
 
   /* ---------- places and games ---------- */

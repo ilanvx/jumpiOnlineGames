@@ -740,6 +740,8 @@ window.JUMPI_HE_EXTRA = {
 "Midnight bat mask": "מסכת עטלף של חצות",
 "Mini Pretzels": "מיני בייגלה",
 "Mint Moped": "טוסטוס מנטה",
+"Coins now": "מטבעות עכשיו",
+"Not so fast!": "לא כל כך מהר!",
 "Mint planet tee": "חולצת כוכב לכת מנטה",
 "Mint shorts": "מכנסיים קצרים מנטה",
 "Mocha": "מוקה",

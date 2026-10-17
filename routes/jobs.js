@@ -9,7 +9,8 @@ import { addLevelXp } from "./levels.js";
 import { questEvent } from "./quests.js";
 import { LEVEL_XP } from "../public/shared/levels.js";
 import { SEASON_XP } from "../public/shared/season.js";
-import { JOBS, JOB_LIST, SHIFT_SECONDS, MIN_SECONDS_PER_ORDER, JOB_DAILY_CAP, jobView, jobLevel, maxLevel, payPerOrder, tipFor, JOB_GIFTS, shiftSecs } from "../public/shared/jobs.js";
+import { PACE, hourEarned, paceCoins, paceView } from "../public/shared/earn.js";
+import { JOBS, JOB_LIST, SHIFT_SECONDS, MIN_SECONDS_PER_ORDER, jobView, jobLevel, maxLevel, payPerOrder, tipFor, JOB_GIFTS, shiftSecs } from "../public/shared/jobs.js";
 
 /*
   Jobs: get hired, then work shifts (the game runs the restaurant; the server decides the pay).
@@ -21,13 +22,13 @@ const TZ = "Asia/Jerusalem";
 const dayKey = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 // matches a field that still has its empty value or doesn't exist yet (older accounts)
 const sameAs = (v, empty) => (v === empty || v == null ? { $in: [empty, null] } : v);
-const capOf = (user) => JOB_DAILY_CAP * (user.isMember() ? 2 : 1);
+const paceOf = (user) => paceView("jobs", user.jobsHour, user.isMember());   // no daily limit: the pay slows down within an hour
 const todayEarned = (user) => (user.jobsDay === dayKey() ? user.jobsEarned || 0 : 0);
 const recOf = (user, job) => (user.jobs && (user.jobs.get ? user.jobs.get(job) : user.jobs[job])) || null;
 const view = (user) => ({
   jobs: JOB_LIST.map((J) => jobView(J.id, recOf(user, J.id))),
   todayEarned: todayEarned(user),
-  dailyCap: capOf(user),
+  pace: paceOf(user),
 });
 
 // one shift at a time per player, kept in memory
@@ -61,7 +62,7 @@ router.post("/jobs/start", requireJson, requireUser, (req, res) => {
   const id = crypto.randomUUID();
   shifts.set(id, { id, userId: uid, job, t0: Date.now() });
   const level = jobLevel(job, rec.xp || 0);
-  res.json({ shiftId: id, job, seconds: shiftSecs(job), level, pay: payPerOrder(level, job), tip: tipFor(level, job), todayEarned: todayEarned(req.user), dailyCap: capOf(req.user) });
+  res.json({ shiftId: id, job, seconds: shiftSecs(job), level, pay: payPerOrder(level, job), tip: tipFor(level, job), todayEarned: todayEarned(req.user), pace: paceOf(req.user) });
 });
 
 router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => {
@@ -78,19 +79,21 @@ router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => 
       if (!user) return res.status(401).json({ error: "Please log in first." });
       const rec = recOf(user, s.job) || {};
       const level = jobLevel(s.job, rec.xp || 0);
-      const earnedToday = todayEarned(user), cap = capOf(user);
+      const earnedToday = todayEarned(user), now = Date.now();
       const pay = served * payPerOrder(level, s.job), tips = fast * tipFor(level, s.job);
-      const coins = Math.max(0, Math.min(pay + tips, cap - earnedToday));
+      const hourOld = hourEarned(user.jobsHour, now), hourAt = hourOld ? user.jobsHour.at : new Date(now);
+      const coins = paceCoins("jobs", hourOld, pay + tips, user.isMember());
       const updated = await User.findOneAndUpdate(
         { _id: user._id, jobsDay: sameAs(user.jobsDay, ""), jobsEarned: sameAs(user.jobsEarned, 0) },
         {
-          $set: { jobsDay: dayKey(), jobsEarned: earnedToday + coins },
+          $set: { jobsDay: dayKey(), jobsEarned: earnedToday + coins, jobsHour: { at: hourAt, earned: hourOld + coins } },
           $inc: { coins, [`jobs.${s.job}.xp`]: served, [`jobs.${s.job}.served`]: served, [`jobs.${s.job}.shifts`]: 1, [`jobs.${s.job}.earned`]: coins },
         },
         { new: true }
       );
       if (!updated) continue;
       if (coins) notifyCoins(updated._id.toString(), updated.coins);
+      if (hourOld + coins > PACE.jobs[2] * 3) console.warn(`[coins] ${updated.username}: ${hourOld + coins} coins from jobs in one hour`);
       if (served) { addSeasonXp(updated._id, served * SEASON_XP.jobTask); addLevelXp(updated._id, served * LEVEL_XP.jobTask, { why: "job" }); questEvent(updated._id, "job", served); }
       let after = jobView(s.job, recOf(updated, s.job)), gift = null, owner = updated;
       // top level reached: every piece of the job's uniform goes into the inventory as a gift (only once)
@@ -100,7 +103,7 @@ router.post("/jobs/finish", requireJson, requireUser, async (req, res, next) => 
         if (got) { gift = missing; owner = got; }
       }
       return res.json({
-        served, fast, pay, tips, coins, capped: coins < pay + tips,
+        served, fast, pay, tips, coins, slowed: coins < pay + tips,
         total: updated.coins, levelBefore: level, job: after, levelUp: after.level > level, gift, inventory: owner.toPublic().inventory, ...view(updated),
       });
     }

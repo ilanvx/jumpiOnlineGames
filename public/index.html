@@ -3937,7 +3937,7 @@ body.land .npc-card .idle-face{display:none}
   <section class="mgx-screen mgx-start" id="mgStart">
     <h2 class="mgx-title" id="mgTitle">GAME</h2>
     <p class="mgx-sub" id="mgSub"></p>
-    <div class="mgx-info"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 L14.9 8.4 L21.4 9.3 L16.7 13.9 L17.8 20.4 L12 17.3 L6.2 20.4 L7.3 13.9 L2.6 9.3 L9.1 8.4 Z" fill="#ffd23a"/></svg>Best <b id="mgBest">0</b></span><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/></svg>Coins left today <b id="mgLeft">…</b></span></div>
+    <div class="mgx-info"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 L14.9 8.4 L21.4 9.3 L16.7 13.9 L17.8 20.4 L12 17.3 L6.2 20.4 L7.3 13.9 L2.6 9.3 L9.1 8.4 Z" fill="#ffd23a"/></svg>Best <b id="mgBest">0</b></span><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/></svg><span id="mgPaceLbl">Coins now</span> <b id="mgLeft">…</b></span></div>
     <div class="mgx-btns"><button class="mgx-btn tut" id="mgTutBtn" type="button">TUTORIAL</button><button class="mgx-btn play" id="mgGo" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5 Q7 3 8.4 3.8 L19.5 10.6 Q21 11.6 19.5 12.6 L8.4 19.4 Q7 20.2 7 18.7 Z" fill="#fff"/></svg>PLAY</button></div>
   </section>
   <section class="mgx-screen mgx-tut" id="mgTut" hidden>
@@ -11310,11 +11310,11 @@ function showShiftIntro(){const job=WORK.job||"waiter",J=JOBS[job],v=WORK.view&&
   document.getElementById("wkIntro").hidden=false;sfx.open();}
 function showShiftResult(d,leaving){const el=document.getElementById("wkEnd");
   if(d.error){document.getElementById("wkEndBody").innerHTML=`<p class="wk-err">${esc(d.error)}</p>`;el.hidden=false;return;}
-  if(d.jobs)WORK.view={jobs:d.jobs,todayEarned:d.todayEarned,dailyCap:d.dailyCap};if(me){me.coins=d.total;if(d.inventory)me.inventory=d.inventory;}paintCoins(true);
+  if(d.jobs)WORK.view={jobs:d.jobs,todayEarned:d.todayEarned,pace:d.pace};if(me){me.coins=d.total;if(d.inventory)me.inventory=d.inventory;}paintCoins(true);
   const j=d.job,span=j.to?j.to-j.from:1,pct=j.to?Math.min(100,(j.xp-j.from)/span*100):100;
   document.getElementById("wkEndBody").innerHTML=`
     <div class="wk-stats"><div><b>${d.served}</b><span>${JOBS[j.id].done}</span></div><div><b>${d.fast}</b><span>fast tips</span></div><div class="coin"><b data-count="${d.coins}">0</b><span>coins earned</span></div></div>
-    ${d.capped?`<p class="wk-cap">You reached today's job pay limit (${d.dailyCap.toLocaleString("en-US")} coins). Come back tomorrow for more!</p>`:""}
+    ${d.slowed?`<p class="wk-cap">${esc(paceNote(d.pace))}</p>`:""}
     ${d.gift&&d.gift.length?`<div class="wk-gift"><span class="wk-gift-pics">${d.gift.map(id=>{const [sl,ix]=id.split(":");return `<span title="${esc(itemName(sl,+ix))}">${itemPic(sl,+ix)}</span>`;}).join("")}</span><span><b>TOP LEVEL PRIZE!</b>The whole uniform is now yours: ${d.gift.map(id=>{const [sl,ix]=id.split(":");return esc(itemName(sl,+ix));}).join(", ")}. Find them in your inventory and wear them anywhere!</span></div>`:""}
     ${d.levelUp?`<div class="wk-lvup"><b>LEVEL UP!</b><span>You're now a <b>${esc(j.title)}</b>. Every ${JOBS[j.id].unit} now pays <b>${j.pay}</b> coins!</span></div>`:""}
     <div class="wk-xp"><div class="wk-xp-top"><b>${esc(j.title)}</b><span>Level ${j.level}</span></div><div class="wk-bar"><i style="--w:${pct}%"></i></div>
@@ -12146,7 +12146,7 @@ async function appJobs(tok,arg){
     return `<button type="button" class="ph-job ${j.id}" data-a="jobopen" data-job="${j.id}"><span class="art">${JOB_ART[j.id]}</span><span class="txt"><b>${J.name}</b><small>${esc(J.place)}</small>
       <span class="${j.hired?"lv":"pay"}">${j.hired?`Level ${j.level} · ${esc(j.title)}`:`Pays ${payPerOrder(1,j.id)} to ${payPerOrder(maxLevel(j.id),j.id)} coins per ${J.unit}`}</span></span></button>`;}).join("");return;}
   const j=list.find(x=>x.id===arg),J=JOBS[arg];phTitle.innerHTML=`<span class="t">${esc(I18N.T(J.name))}</span>`;
-  const today=`<p class="ph-job-today">Job coins today: <b>${r.data.todayEarned.toLocaleString("en-US")}</b> / ${r.data.dailyCap.toLocaleString("en-US")}</p>`;
+  const today=`<p class="ph-job-today">${esc(I18N.T("Job coins today:"))} <b>${r.data.todayEarned.toLocaleString("en-US")}</b> · ${esc(paceLabel(r.data.pace))}</p>`;
   if(!j.hired){phBody.innerHTML=`<div class="ph-jobcard ${arg}"><span class="art">${JOB_ART[arg]}</span><b class="h">${J.name.toUpperCase()}</b><small>${esc(J.place)}</small><p>${esc(J.about)}</p>
       <div class="ph-jobpay"><div><b>${payPerOrder(1,arg)}</b><span>coins per ${J.unit} at the start</span></div><div><b>${payPerOrder(maxLevel(arg),arg)}</b><span>coins per ${J.unit} at level ${maxLevel(arg)}</span></div></div>
       <button class="ph-go" type="button" data-a="jobhire" data-job="${arg}">APPLY FOR THE JOB</button></div>`;return;}
@@ -16731,6 +16731,11 @@ const MG_INFO={
 };
 let MG=null;   // the open game: {game, state:"menu"|"tut"|"count"|"play"|"over"|..., ...}
 let mgStatus=null;
+// no daily limit: the pay slows down within an hour (public/shared/earn.js). Label and note for the page
+function paceLabel(p){const he=I18N.lang==="he";if(!p)return "";const pc=Math.round(p.factor*100);return pc>=100?(he?"מלא":"Full pay"):(he?`${pc}% מהרגיל`:`${pc}% of normal`);}
+function paceNote(p){const he=I18N.lang==="he";if(!p||p.factor>=1)return he?"תמשיכו לשחק כמה שרוצים!":"Keep playing as much as you like!";
+  const m=p.resetAt?Math.max(1,Math.ceil((p.resetAt-Date.now())/60000)):60,pc=Math.round(p.factor*100);
+  return he?`הרווחתם הרבה בשעה האחרונה, אז עכשיו מקבלים ${pc}% מהרגיל. בעוד ${m} דקות זה חוזר למלא.`:`You've earned a lot this hour, so you now get ${pc}% of the normal coins. Full pay is back in ${m} min.`;}
 const mgScreens=["mgStart","mgTut","mgEnd"];
 function mgShow(id){mgScreens.forEach(s=>$mg(s).hidden=s!==id);mgOverlay.classList.toggle("playing",!id);}
 function skinHex(){return (COLORS[(me&&me.look&&me.look.color)||0]||COLORS[0])[1];}
@@ -16749,7 +16754,7 @@ function openMinigame(id){
 }
 function paintMgStatus(){if(!MG)return;const st=mgStatus,best=st&&st.best?st.best[MG.game]||0:0;
   $mg("mgBest").textContent=best.toLocaleString("en-US");
-  $mg("mgLeft").textContent=st?Math.max(0,st.dailyCap-st.todayEarned).toLocaleString("en-US"):"…";}
+  $mg("mgLeft").textContent=st&&st.pace?paceLabel(st.pace):"…";}
 function closeMinigame(){if(mgOverlay.hidden)return;const round=MG;mgOverlay.hidden=true;body.classList.remove("mg-open");MG=null;nearStation=null;$mg("mgCount").hidden=true;
   if(round&&round.state==="play"&&round.id){round.state="left";finishRound(round).then(r=>showRoundResult(round,r));}
   else{if(round)round.state="closed";sfx.close();}}
@@ -16843,15 +16848,14 @@ async function endRound(){
   const r=await finishRound(round);
   if(MG!==round){showRoundResult(round,r);return;}round.state="over";
   const coins=r.ok?r.data.coins:0,score=r.ok?r.data.score:round.score,info=MG_INFO[round.game];
-  if(r.ok){mgStatus={...(mgStatus||{best:{}}),todayEarned:r.data.todayEarned,dailyCap:r.data.dailyCap};mgStatus.best={...(mgStatus.best||{}),[round.game]:r.data.best};}
+  if(r.ok){mgStatus={...(mgStatus||{best:{}}),todayEarned:r.data.todayEarned,pace:r.data.pace};mgStatus.best={...(mgStatus.best||{}),[round.game]:r.data.best};}
   // the result card: the score counts up, stars pop in, coins
   const stars=info.stars.filter(s=>score>=s).length;
   $mg("mgStars").innerHTML=[0,1,2].map(i=>`<i class="${i<stars?"on":""}" style="--i:${i}"></i>`).join("");
   $mg("mgNewBest").hidden=!(r.ok&&r.data.newBest);
   $mg("mgWon").textContent="+"+coins;
-  const capLeft=r.ok?r.data.dailyCap-r.data.todayEarned:0;
-  $mg("mgNote").textContent=!r.ok?(r.data.error||"Couldn't save this round."):
-    capLeft<=0?"That's all the game coins for today. Come back tomorrow for more!":`You can still win ${capLeft} game coins today.`;
+    $mg("mgNote").textContent=!r.ok?(r.data.error||"Couldn't save this round."):
+    paceNote(r.data.pace);
   $mg("mgEndTitle").textContent=round.game==="flap"&&round.crashed?"OUCH!":stars===3?"AMAZING!":stars===2?"GREAT JOB!":stars===1?"NICE!":"GOOD TRY!";
   mgShow("mgEnd");const fin=$mg("mgFinal");const t0=performance.now();
   (function count(){const k=Math.min(1,(performance.now()-t0)/700);fin.textContent=Math.round(score*k).toLocaleString("en-US");if(k<1&&MG===round)requestAnimationFrame(count);})();
