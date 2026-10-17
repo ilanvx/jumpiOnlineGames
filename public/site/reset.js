@@ -59,7 +59,7 @@ function oops(form, msgEl, text) {
 /* 1. ask for a link */
 let lastEmail = "", againT = 0;
 async function sendLink(email) {
-  const r = await post("forgot", { email });
+  const r = await post("forgot", { email, lang });
   if (!r.ok) return r;
   lastEmail = email;
   $("sTo").textContent = email;

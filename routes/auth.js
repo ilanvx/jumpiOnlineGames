@@ -635,7 +635,7 @@ router.post("/forgot", requireJson, forgotLimiter, async (req, res, next) => {
     user.markModified("reset");
     await user.save();
     done();   // answer first (the same speed whether or not the account exists), then send
-    sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN }) })
+    sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN, lang: req.body.lang === "he" ? "he" : "en" }) })
       .then((r) => { if (!r.ok) console.error("reset email failed for", user.username); });
   } catch (err) {
     next(err);
@@ -661,7 +661,7 @@ router.post("/password/change", requireJson, changeLimiter, async (req, res, nex
     user.reset = { hash: resetHash(token), expires: now + RESET_MIN * 60_000, sends: [...sends, now] };
     user.markModified("reset");
     await user.save();
-    const sent = await sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN }) });
+    const sent = await sendMail({ to: user.email, ...resetEmail({ username: user.username, link: `${PUBLIC_URL()}/reset-password?token=${token}`, minutes: RESET_MIN, lang: req.body.lang === "he" ? "he" : "en" }) });
     if (!sent.ok) return res.status(502).json({ error: "We couldn't send the email right now. Try again in a few minutes." });
     res.json({ ok: true, email: maskEmail(user.email), minutes: RESET_MIN });
   } catch (err) {

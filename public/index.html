@@ -4505,7 +4505,7 @@ body.land .npc-card .idle-face{display:none}
     <span class="box"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 L8.5 15 L16 6" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     Remember me
   </label>
-  <a class="forgot-link" href="/forgot-password">Forgot password?</a>
+  <a class="forgot-link" id="forgotLink" href="/forgot-password">Forgot password?</a>
   </div>
   <p class="form-msg" id="formMsg" role="status"></p>
   <button class="cta" id="loginSubmit" type="submit">Log In</button>
@@ -9222,7 +9222,7 @@ function paintAccount(){
 document.getElementById("sxPwForm").onsubmit=async e=>{e.preventDefault();
   const inp=document.getElementById("sxPwCur"),btn=document.getElementById("sxPwGo"),msg=document.getElementById("sxPwMsg");
   if(!inp.value){inp.focus();return;}btn.disabled=true;msg.className="sx-msg";msg.textContent="";
-  const r=await api("/api/auth/password/change",{current:inp.value});btn.disabled=false;
+  const r=await api("/api/auth/password/change",{current:inp.value,lang:I18N.lang});btn.disabled=false;
   if(r.ok){inp.value="";msg.className="sx-msg ok";msg.textContent=I18N.T("We sent a link to {email}. Open it to choose your new password (it works for {n} minutes).",{email:r.data.email,n:r.data.minutes||30});sfx.success();}
   else{msg.textContent=r.data.error||"Something went wrong. Try again.";sfx.error();if(r.data.code==="wrong"){inp.select();}}};
 // EXIT: the Android app closes, the computer program closes, in a web browser it goes to the Jumpi home page
@@ -9748,6 +9748,7 @@ function showSub(k){sub=k;subs.forEach(d=>{const on=+d.dataset.sub===k;d.hidden=
 function paintWelcomeTitle(){const h=document.querySelector(".welcome-title");if(!h)return;const he=I18N.lang==="he",w=he?"ברוכים הבאים!":"WELCOME!",cols=["#ff9a1f","#ffd23a","#2fd36b","#1fb6ff","#ff5fb4","#9b5cff"];
   h.dir=he?"rtl":"ltr";h.setAttribute("aria-label",he?"ברוכים הבאים!":"Welcome!");h.innerHTML=[...w].map((ch,i)=>ch===" "?'<span style="width:.28em"></span>':`<span style="--i:${i};--c:${cols[i%cols.length]}">${ch}</span>`).join("");}
 paintWelcomeTitle();window.addEventListener("langchange",paintWelcomeTitle);
+const forgotHref=()=>{const f=document.getElementById("forgotLink");if(f)f.href="/forgot-password"+(I18N.lang==="he"?"?lang=he":"");};forgotHref();window.addEventListener("langchange",forgotHref);
 function showStep(n,k=0){
   step=n;
   stepItems.forEach((li,i)=>{const k=i+1;li.classList.toggle("done",k<n);li.classList.toggle("current",k===n);
