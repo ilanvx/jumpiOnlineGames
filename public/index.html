@@ -1024,6 +1024,12 @@ body.in-game .minimap{display:block}
   box-shadow:0 0 0 4px #fff,0 0 0 7px #1f3355,0 8px 0 7px #1f3355}
 .map-host::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:18px;box-shadow:inset 0 0 40px rgb(10 30 70 / .35)}
 .map-host canvas{display:block;width:100%!important;height:100%!important}
+.map-show{display:flex;gap:8px;flex-wrap:wrap}
+.map-show button{display:flex;align-items:center;gap:7px;height:36px;padding:0 13px;border:0;border-radius:999px;cursor:pointer;color:#dbe7f7;font:600 .92rem "HeeboHe","Fredoka",system-ui,sans-serif;background:rgb(255 255 255 / .12);box-shadow:inset 0 0 0 2px rgb(255 255 255 / .18)}
+.map-show button i{width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:0 0 0 2px #fff;opacity:.45}
+.map-show button[aria-pressed="true"]{background:#fff;color:#1f3355;box-shadow:0 3px 0 #0b3a77}
+.map-show button[aria-pressed="true"] i{opacity:1}
+.map-show button:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
 .map-foot{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-top:6px}
 .map-legend{display:flex;gap:14px;flex-wrap:wrap;color:#dbe7f7;font-weight:500;font-size:.95rem}
 .map-legend span{display:flex;align-items:center;gap:6px}
@@ -4461,6 +4467,11 @@ body.land .npc-card .idle-face{display:none}
     <div class="map-host" id="mapHost" title="Click a place to get a route there"></div>
     <div class="map-foot">
       <div class="map-legend"><span><i class="lg me"></i>You</span><span><i class="lg other"></i>Players</span><span><i class="lg admin"></i>Admins</span></div>
+      <div class="map-show" id="mapShow" role="group" aria-label="Show on the map">
+        <button type="button" data-l="res" aria-pressed="true"><i style="--c:#2fd36b"></i>Residents</button>
+        <button type="button" data-l="mg" aria-pressed="true"><i style="--c:#ff8a1c"></i>Mini-games</button>
+        <button type="button" data-l="quest" aria-pressed="true"><i style="--c:#ffc21f"></i>Active quests</button>
+      </div>
       <div class="map-travel" id="mapTravel" aria-label="Travel to"></div>
     </div>
   </div>
@@ -8641,6 +8652,11 @@ function paintMapArt(){
   spot(9,37.5,"#2fb84f",()=>{g.fillStyle="#ff3b3b";g.beginPath();g.arc(0,2,8,0,Math.PI*2);g.fill();g.fillStyle="#7a4a22";g.fillRect(-1.5,-10,3,6);g.fillStyle="#2fd36b";g.beginPath();g.ellipse(5,-8,5,2.5,-.4,0,Math.PI*2);g.fill();});
   spot(17.5,-25.8,"#ff5fa8",()=>{g.fillStyle="#fff";g.beginPath();g.arc(0,1,7,0,Math.PI*2);g.fill();g.beginPath();g.ellipse(-9,-2,6,3,-.6,0,Math.PI*2);g.ellipse(9,-2,6,3,.6,0,Math.PI*2);g.fill();});
   spot(6.5,-30.5,"#ff8a1c",()=>{g.strokeStyle="#fff";g.lineWidth=4;g.lineCap="round";g.beginPath();g.moveTo(-6,8);g.lineTo(6,-8);g.stroke();g.fillStyle="#fff";g.beginPath();g.ellipse(-7,9,4,5,.6,0,Math.PI*2);g.fill();});
+  mapLabels(g);
+  return c;
+}
+// the compass and the place names on the map (drawn in painting space: call with g scaled by ART_K)
+function mapLabels(g,photo){
   // ---- compass ----
   g.save();g.translate(mpX(MAP_BOUNDS.x0+7),mpZ(MAP_BOUNDS.z0+8));g.fillStyle="rgba(255,255,255,.9)";g.beginPath();g.arc(0,0,44,0,Math.PI*2);g.fill();g.strokeStyle="#1f3355";g.lineWidth=4;g.stroke();
   g.fillStyle="#ff4545";g.beginPath();g.moveTo(0,-34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();g.fillStyle="#1f3355";g.beginPath();g.moveTo(0,34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();
@@ -8652,7 +8668,44 @@ function paintMapArt(){
     g.textAlign="center";g.textBaseline="middle";g.lineWidth=7;g.strokeStyle="rgba(0,0,0,.3)";g.strokeText(text,0,3);g.fillStyle="#fff";g.fillText(text,0,3);g.restore();};
   label("THE PLAZA",0,-17.2,ZONE_COL.plaza);label("THE BEACH",24,-29,ZONE_COL.beach);label("THE PARK",-8,30,ZONE_COL.park);label("WATER PARK",64,14,ZONE_COL.waterpark);
   CITY_L.DISTRICTS.forEach(d=>{const [x0,z0,x1,z1]=d.rect,at=MAP_LABEL_AT[d.id]||[(x0+x1)/2,(z0+z1)/2];label(I18N.lang==="he"?d.short:d.short.toUpperCase(),at[0],at[1],d.col);});
-  return c;
+}
+/* THE MAP AS A PHOTO: the real 3D world seen from straight above, at midday, without people (drawn once, in 2×2 tiles on the
+   game's own canvas, so it looks exactly like the game). Falls back to the painted map if anything goes wrong. */
+let mapPhoto=null;
+function photoMapBase(){
+  if(!world||G.home||!renderer)return null;
+  const W=Math.round((MAP_BOUNDS.x1-MAP_BOUNDS.x0)*MAP_PX),H=Math.round((MAP_BOUNDS.z1-MAP_BOUNDS.z0)*MAP_PX);
+  const out=document.createElement("canvas");out.width=W;out.height=H;const g=out.getContext("2d");
+  const keep={fh:WX.fh,fk:WX.fk,fk2:WX.fk2,lk:WX.lastKey,fog:scene.fog,pr:renderer.getPixelRatio(),size:renderer.getSize(new THREE.Vector2())};
+  const hidden=[];scene.traverse(o=>{if(o.visible&&(o.isSprite||o.userData.isChar||o===G.marker||o===spot||o===shadow)){o.visible=false;hidden.push(o);}});
+  const sc=G.sun&&G.sun.shadow&&G.sun.shadow.camera,sb=sc&&{l:sc.left,r:sc.right,t:sc.top,b:sc.bottom};
+  try{
+    WX.fh=12.5;WX.fk="sunny";WX.fk2=null;WX.lastKey="";weatherTick(performance.now()/1000,0);scene.fog=null;
+    if(sc){Object.assign(sc,{left:-.01,right:.01,top:.01,bottom:-.01});sc.updateProjectionMatrix();}
+    const tw=Math.ceil(W/2),th=Math.ceil(H/2),u=1/MAP_PX;   // world units per pixel
+    const cam2=new THREE.OrthographicCamera(-tw*u/2,tw*u/2,th*u/2,-th*u/2,1,600);cam2.up.set(0,0,-1);
+    if(CITY){CITY.setView(1e5);}
+    renderer.setPixelRatio(1);renderer.setSize(tw,th,false);
+    for(let j=0;j<2;j++)for(let i=0;i<2;i++){
+      const cx=MAP_BOUNDS.x0+(i+.5)*tw*u,cz=MAP_BOUNDS.z0+(j+.5)*th*u;
+      cam2.position.set(cx,300,cz);cam2.lookAt(cx,0,cz);cam2.updateMatrixWorld();
+      if(CITY)CITY.update(performance.now()/1000,0,cam2);
+      renderer.render(scene,cam2);g.drawImage(renderer.domElement,i*tw,j*th);}
+  }catch(err){console.error("[map photo]",err);return null;}
+  finally{
+    hidden.forEach(o=>o.visible=true);
+    WX.fh=keep.fh;WX.fk=keep.fk;WX.fk2=keep.fk2;WX.lastKey="";scene.fog=keep.fog;weatherTick(performance.now()/1000,0);
+    if(sc){Object.assign(sc,{left:sb.l,right:sb.r,top:sb.t,bottom:sb.b});sc.updateProjectionMatrix();}
+    renderer.setPixelRatio(keep.pr);renderer.setSize(keep.size.x,keep.size.y,false);gfxApply();resize();
+  }
+  return out;
+}
+// the map picture = the photo (or the painted map) + the names on top
+function makeMapArt(){
+  if(!mapPhoto)mapPhoto=photoMapBase();
+  if(!mapPhoto)return paintMapArt();
+  const c=document.createElement("canvas");c.width=mapPhoto.width;c.height=mapPhoto.height;const g=c.getContext("2d");
+  g.drawImage(mapPhoto,0,0);g.save();g.scale(ART_K,ART_K);mapLabels(g,true);g.restore();return c;
 }
 // the city around the old heart, painted from the real layout (public/shared/city-layout.js) and the city's own walls
 const MAP_LABEL_AT={boardwalk:[150,-31],airport:[206,64],hills:[-84,212],camp:[112,222],harbor:[-118,-58]};
@@ -8710,13 +8763,36 @@ function mapSetZoom(z,px,py){const host=document.getElementById("mapHost");if(!m
   const wx=(px-f.ox)/f.s/MAP_PX+MAP_BOUNDS.x0,wz=(py-f.oy)/f.s/MAP_PX+MAP_BOUNDS.z0;   // keep the spot under the finger where it is
   mapZoom=z;const s2=Math.min(f.W/mapArt.width,f.H/mapArt.height)*z;mapCx=wx+(f.W/2-px)/s2/MAP_PX;mapCz=wz+(f.H/2-py)/s2/MAP_PX;mapClampC();mapFrame=0;}
 function mapClampC(){mapCx=Math.max(MAP_BOUNDS.x0,Math.min(MAP_BOUNDS.x1,mapCx));mapCz=Math.max(MAP_BOUNDS.z0,Math.min(MAP_BOUNDS.z1,mapCz));}
+// what the big map shows on top of the players (remembered on the device)
+const MAPL={res:true,mg:true,quest:true};try{Object.assign(MAPL,JSON.parse(localStorage.getItem("jumpi-map-layers")||"{}"));}catch(e){}
+document.querySelectorAll("#mapShow [data-l]").forEach(b=>{b.setAttribute("aria-pressed",String(!!MAPL[b.dataset.l]));
+  b.onclick=()=>{MAPL[b.dataset.l]=!MAPL[b.dataset.l];b.setAttribute("aria-pressed",String(MAPL[b.dataset.l]));sfx.tick(true);mapFrame=0;try{localStorage.setItem("jumpi-map-layers",JSON.stringify(MAPL));}catch(e){}};});
+const MAP_FACE=new Map();
+function mapFace(R){let im=MAP_FACE.get(R.id);if(!im){im=new Image();im.src=faceOf(R);MAP_FACE.set(R.id,im);}return im;}
+function mapPin(g,sx,sy,col,pr,draw,name,sub){
+  const r=15*pr;g.save();g.translate(sx,sy);
+  g.beginPath();g.moveTo(0,0);g.arc(0,-r*1.55,r+3,Math.PI*.78,Math.PI*.22);g.closePath();g.fillStyle="rgba(0,0,0,.25)";g.save();g.translate(1.5,2);g.fill();g.restore();
+  g.fillStyle="#fff";g.fill();g.beginPath();g.arc(0,-r*1.55,r,0,Math.PI*2);g.fillStyle=col;g.fill();
+  g.save();g.translate(0,-r*1.55);draw(g,r);g.restore();
+  if(name){g.font="700 12.5px HeeboHe,Fredoka,sans-serif";g.textAlign="center";const w=g.measureText(name).width+12;
+    g.fillStyle="rgba(20,40,80,.82)";g.beginPath();g.roundRect(-w/2,-r*3.1-17,w,18,9);g.fill();g.fillStyle="#fff";g.textBaseline="middle";g.fillText(name,0,-r*3.1-8);
+    if(sub){g.font="600 11px HeeboHe,Fredoka,sans-serif";const w2=g.measureText(sub).width+10;g.fillStyle=col;g.beginPath();g.roundRect(-w2/2,-r*3.1-35,w2,16,8);g.fill();g.fillStyle="#fff";g.fillText(sub,0,-r*3.1-27);}}
+  g.restore();}
+function drawMapLayers(g,toScreen,pr,near){   // near = zoomed in enough for names
+  if(G.home)return;
+  if(MAPL.mg)MG_STATIONS.forEach(st=>{const [sx,sy]=toScreen(st.x,st.z);mapPin(g,sx,sy,st.color,pr,(g,r)=>{g.fillStyle="#fff";g.beginPath();g.moveTo(-r*.35,-r*.5);g.lineTo(r*.55,0);g.lineTo(-r*.35,r*.5);g.closePath();g.fill();},near&&I18N.T(st.name));});
+  if(MAPL.res)RESIDENTS.forEach(R=>{const at=R.at,[sx,sy]=toScreen(at[0],at[1]),q=QS.res.find(x=>x.R.id===R.id),k=q&&q.kind;
+    mapPin(g,sx,sy,k==="!"?"#2fd36b":k==="?"?"#ffc21f":"#5a8dee",pr,(g,r)=>{const im=mapFace(R);if(im.complete&&im.naturalWidth)g.drawImage(im,-r*.86,-r*.86,r*1.72,r*1.72);},near&&I18N.T(R.name),near&&(k==="!"?I18N.T("Prize waiting!"):k==="?"?I18N.T("New quest"):""));});
+  if(MAPL.quest)QUESTS.forEach(q=>{const st=qStatus(q.id);if(st!=="active"&&st!=="ready")return;const p=stepTarget(q);if(!p)return;const [sx,sy]=toScreen(p[0],p[1]);
+    mapPin(g,sx,sy,"#ffc21f",pr,(g,r)=>{g.fillStyle="#fff";g.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.32:r*.72;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();},near&&I18N.T(q.title),near&&stepText(q));});
+}
 function drawMarkers(g,toScreen,big,size){
   const t=performance.now()/1000,pr=size||(big?1:.8);
   const dot=(x,z,col,name,ring)=>{const [sx,sy]=toScreen(x,z);g.beginPath();g.arc(sx,sy,8*pr+3,0,Math.PI*2);g.fillStyle="#fff";g.fill();g.beginPath();g.arc(sx,sy,8*pr,0,Math.PI*2);g.fillStyle=col;g.fill();
     if(name&&big){g.font="600 13px HeeboHe,Fredoka,sans-serif";g.textAlign="center";g.lineWidth=4;g.strokeStyle="rgba(20,40,80,.8)";g.strokeText(name,sx,sy-16);g.fillStyle="#fff";g.fillText(name,sx,sy-16);}};
   for(const c of remotes.values())dot(c.root.position.x,c.root.position.z,c.role==="admin"?"#ff4545":c.role==="mod"?"#2f5bff":"#1fb6ff",c.username);
   if(G.npc&&!G.home)dot(G.npc.root.position.x,G.npc.root.position.z,"#2fd36b","Pip");
-  if(!G.home)for(const r of QS.res)if(r.kind)dot(r.R.at[0],r.R.at[1],r.kind==="!"?"#2fd36b":"#ffc21f",r.R.name+" "+r.kind);
+  if(!G.home&&!big)for(const r of QS.res)if(r.kind)dot(r.R.at[0],r.R.at[1],r.kind==="!"?"#2fd36b":"#ffc21f",r.R.name+" "+r.kind);
   if(WORK.active&&WORK.job==="police")POL.tasks.forEach(k=>{if(k.stage==="done")return;const b=k.stage==="return"||k.stage==="follow"?k.b:k.a;dot(b.x,b.z,k.type==="thief"?"#ff4f4f":"#ffb21f",k.type==="thief"?"Pickpocket":"Lost kid");});
   // my parked vehicle: an orange badge with a little bike
   if(VEH.mine&&!VEH.mine.r&&!G.home){const [bx,by]=toScreen(VEH.mine.x,VEH.mine.z),R=11*pr+2;g.beginPath();g.arc(bx,by,R+3,0,Math.PI*2);g.fillStyle="#fff";g.fill();g.beginPath();g.arc(bx,by,R,0,Math.PI*2);g.fillStyle=VEH.mine.towAt?"#ff8a1c":"#2fb84f";g.fill();
@@ -8732,9 +8808,9 @@ function drawMarkers(g,toScreen,big,size){
 }
 function initMap(){
   if(mapArt)return;
-  mapArt=paintMapArt();
-  if(document.fonts)document.fonts.ready.then(()=>{mapArt=paintMapArt();});   // repaint once the game font is ready
-  window.addEventListener("langchange",()=>{const go=()=>{mapArt=paintMapArt();};if(document.fonts)document.fonts.load("44px HeeboDisplay","אב").then(go,go);else go();});
+  mapArt=makeMapArt();
+  if(document.fonts)document.fonts.ready.then(()=>{mapArt=makeMapArt();});   // repaint once the game font is ready
+  window.addEventListener("langchange",()=>{const go=()=>{mapArt=makeMapArt();};if(document.fonts)document.fonts.load("44px HeeboDisplay","אב").then(go,go);else go();});
   ["mapHost","mmHost"].forEach(id=>{const h=document.getElementById(id);h.innerHTML="";const cv=document.createElement("canvas");h.appendChild(cv);});
   const travel=document.getElementById("mapTravel");travel.innerHTML="";
   const ICON={plaza:'<circle cx="12" cy="13" r="7" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="12" cy="13" r="2.6" fill="#fff"/><path d="M12 3 V6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>',
@@ -8780,7 +8856,7 @@ function renderMap(){
     const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.imageSmoothingQuality="high";
     g.fillStyle="#5fb35a";g.fillRect(0,0,f.W,f.H);g.fillStyle="#1479d6";g.fillRect(0,0,f.W,f.oy+mZ(-34)*f.s);
     g.drawImage(mapArt,f.ox,f.oy,mapArt.width*f.s,mapArt.height*f.s);
-    mapView=f;routeDraw(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],5);drawMarkers(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],true,Math.max(.6,Math.min(1.15,f.W/800)));
+    mapView=f;routeDraw(g,(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],5);{const ts=(x,z)=>[f.ox+mX(x)*f.s,f.oy+mZ(z)*f.s],pr=Math.max(.6,Math.min(1.15,f.W/800)),near=f.s>=.7;drawMapLayers(g,ts,near?pr:pr*.62,near);drawMarkers(g,ts,true,pr);}
     if(mapHover){g.beginPath();g.arc(mapHover[0],mapHover[1],12,0,Math.PI*2);g.strokeStyle=mapHover[2]?"rgba(255,255,255,.9)":"rgba(255,80,80,.9)";g.lineWidth=3;g.setLineDash([5,4]);g.stroke();g.setLineDash([]);}
   }else{
     const host=document.getElementById("mmHost"),cv=host.firstChild;if(!cv)return;
