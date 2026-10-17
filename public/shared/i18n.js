@@ -51,7 +51,7 @@
     "Unlock new emotes in the shop and show them off!": "פתחו אימוג'ים חדשים בחנות ותשוויצו בהם!",
     "Be kind in chat, and never share your password or where you live.": "היו נחמדים בצ'אט, ואף פעם אל תשתפו סיסמה או איפה אתם גרים.",
     // log in
-    "Username": "שם משתמש", "Enter your username...": "הקלידו שם משתמש...", "Password": "סיסמה", "Enter your password...": "הקלידו סיסמה...",
+    "Username": "שם משתמש", "Enter your username...": "הקלידו שם משתמש", "Password": "סיסמה", "Enter your password...": "הקלידו סיסמה",
     "Remember me": "זכור אותי", "Log In": "התחברות", "Logging in…": "מתחברים…", "Enter your username.": "הקלידו שם משתמש.", "Enter your password.": "הקלידו סיסמה.",
     "Welcome back, {name}!": "ברוכים השבים, {name}!", "Back to menu": "חזרה לתפריט",
     "Wrong username or password.": "שם המשתמש או הסיסמה לא נכונים.", "Enter your username and password.": "הקלידו שם משתמש וסיסמה.",
@@ -59,7 +59,7 @@
     "Can't reach the server. Is it running?": "אין חיבור לשרת. הוא פועל?", "Please log in first.": "צריך להתחבר קודם.",
     "This account is banned.": "החשבון הזה חסום.", "Please log in again to see other players.": "התחברו שוב כדי לראות שחקנים אחרים.",
     // sign up
-    "CREATE ACCOUNT": "יצירת חשבון", "Pick a username...": "בחרו שם משתמש...", "Email": "אימייל", "At least 8 characters": "לפחות 8 תווים",
+    "CREATE ACCOUNT": "יצירת חשבון", "Pick a username...": "בחרו שם משתמש", "Email": "אימייל", "At least 8 characters": "לפחות 8 תווים",
     "Confirm password": "אימות סיסמה", "Type it again": "הקלידו שוב", "EYE COLOR": "צבע עיניים", "Pick a colour, then confirm.": "בחרו צבע ואשרו.",
     "CUSTOMIZE": "עיצוב הדמות", "TERMS & CONSENT": "תנאים ואישור", "Please read and confirm both to continue.": "קראו ואשרו את שניהם כדי להמשיך.",
     "I have read and agree to Jumpi's": "קראתי ואני מסכים/ה עם", "Terms of Use": "תנאי השימוש", "and": "ועם", "Privacy Policy": "מדיניות הפרטיות",

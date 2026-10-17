@@ -446,7 +446,7 @@ body.rtl .btn span,body.rtl .tut-body h2,body.rtl .tl-say,body.rtl .idle-card h2
    so a Hebrew sentence reads right to left (with its "!" and "?" at the end) and English names / numbers inside it stay whole */
 body.rtl :is(p,h1,h2,h3,h4,h5,h6,li,label,dd,dt,td,th,figcaption,blockquote,small,b,strong,em,span,a,button,div,summary,legend,option,output){unicode-bidi:plaintext}
 body.rtl :is(input,textarea){unicode-bidi:plaintext;text-align:start}
-body.rtl h2.mgx-title,body.rtl #hbTitle,body.rtl #tyTitle{unicode-bidi:normal}body.rtl h2.mgx-title>span,body.rtl #hbTitle>span,body.rtl #tyTitle>span{unicode-bidi:normal}
+body.rtl h2.mgx-title,body.rtl #hbTitle,body.rtl #tyTitle,body.rtl .welcome-title{unicode-bidi:normal}body.rtl h2.mgx-title>span,body.rtl #hbTitle>span,body.rtl #tyTitle>span,body.rtl .welcome-title>span{unicode-bidi:normal}body.rtl .welcome-title{font-size:clamp(2rem,6vw,2.6rem);letter-spacing:0}
 body.rtl :is(h1,h2,h3,h4,h5,h6,b,strong,small,button,label,.btn){letter-spacing:0}
 .sound{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 18px);right:18px;width:58px;height:58px;border-radius:16px;padding:0}
 .sound svg{width:32px;height:32px}
@@ -9704,7 +9704,10 @@ function vfCountdown(sec){const b=document.getElementById("vfAgain");clearInterv
   VF.timer=setInterval(()=>{n--;if(n<=0){clearInterval(VF.timer);b.disabled=false;b.textContent="Send a new code";}else b.textContent=`Send a new code (${n})`;},1000);}
 function openVerify(o){VF.pending=o.pending||null;VF.onDone=o.onDone;VF.email=o.email;vfSay(o.error||"");
   document.getElementById("vfTitle").textContent=o.fresh?"CHECK YOUR EMAIL":"ONE QUICK THING!";
-  document.getElementById("vfText").innerHTML=o.sent||o.fresh?`We sent a 6-digit code to <b>${esc(o.email||"your email")}</b>. Type it here to unlock your account. Can't see it? Check the spam folder.`
+  const vfMail=`<b dir="ltr">${esc(o.email||(I18N.lang==="he"?"האימייל שלכם":"your email"))}</b>`;
+  if(I18N.lang==="he")document.getElementById("vfText").innerHTML=o.sent||o.fresh?`שלחנו קוד של 6 ספרות אל ${vfMail}. הקלידו אותו כאן כדי לפתוח את החשבון. לא רואים אותו? בדקו בתיקיית הספאם.`
+    :`לפני שמשחקים, בואו נוודא שהאימייל הזה באמת שלכם: ${vfMail}. נשלח לכם קוד.`;
+  else document.getElementById("vfText").innerHTML=o.sent||o.fresh?`We sent a 6-digit code to <b>${esc(o.email||"your email")}</b>. Type it here to unlock your account. Can't see it? Check the spam folder.`
     :`Before you play, let's make sure this email is really yours: <b>${esc(o.email||"your email")}</b>. We'll send you a code.`;
   document.getElementById("vfSend").hidden=!!(o.sent||o.fresh);document.getElementById("vfForm").hidden=!(o.sent||o.fresh);
   if(o.sent||o.fresh){vfCodeStage();vfCountdown(55);}
@@ -9741,6 +9744,10 @@ let step=1,sub=0;
 const subs=[...suForm.querySelectorAll(".sub")];
 function showSub(k){sub=k;subs.forEach(d=>{const on=+d.dataset.sub===k;d.hidden=!on;if(on){d.classList.remove("enter");void d.offsetWidth;d.classList.add("enter");}});
   eyeFocus=step===2&&k===0;suNext.textContent=step===2&&k===0?"Confirm":"Next";}
+// the big rainbow "WELCOME!" at the end of sign-up follows the language
+function paintWelcomeTitle(){const h=document.querySelector(".welcome-title");if(!h)return;const he=I18N.lang==="he",w=he?"ברוכים הבאים!":"WELCOME!",cols=["#ff9a1f","#ffd23a","#2fd36b","#1fb6ff","#ff5fb4","#9b5cff"];
+  h.dir=he?"rtl":"ltr";h.setAttribute("aria-label",he?"ברוכים הבאים!":"Welcome!");h.innerHTML=[...w].map((ch,i)=>ch===" "?'<span style="width:.28em"></span>':`<span style="--i:${i};--c:${cols[i%cols.length]}">${ch}</span>`).join("");}
+paintWelcomeTitle();window.addEventListener("langchange",paintWelcomeTitle);
 function showStep(n,k=0){
   step=n;
   stepItems.forEach((li,i)=>{const k=i+1;li.classList.toggle("done",k<n);li.classList.toggle("current",k===n);
