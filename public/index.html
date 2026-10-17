@@ -877,7 +877,6 @@ body.in-game.is-staff .admin-btn:not([hidden]){display:flex}
 /* moderators: a blue shield, a blue name and a blue chat bubble */
 body.is-mod .admin-btn{--c:#2f7bff;--hi:#8fbcff;--lo:#1a56d6;--edge:#0b3a99}
 body.is-mod .admin-btn svg g path{fill:#0b3a99}body.is-mod .admin-btn svg>path:last-child{fill:#2f7bff}
-body.is-mod .admin-card{border-color:#0b3a99;box-shadow:0 10px 0 #0b3a99,0 24px 40px rgb(0 0 0 / .35)}
 body.is-mod .adm-admin-only{display:none!important}
 .adm-budget{margin:0;color:#dbe7f7;font-size:.95rem}.adm-budget b{color:#ffd23a}
 .bubble.mod{--bb:#2f7bff;--bl:#0b3a99;--bt:#fff;box-shadow:inset 0 -4px 0 rgb(0 0 0 / .12),inset 0 3px 0 rgb(255 255 255 / .35)}
@@ -893,39 +892,46 @@ body.is-mod .adm-admin-only{display:none!important}
 .announce .atext{display:flex;flex-direction:column;min-width:0}
 .announce small{font-size:.8rem;opacity:.9;letter-spacing:.04em}
 .announce b{font-weight:600;font-size:1.1rem;line-height:1.3;overflow-wrap:anywhere}
-.admin-card{width:min(460px,100%);max-height:calc(100vh - 32px);overflow:auto;gap:10px;border-color:#5a1414;box-shadow:0 10px 0 #5a1414,0 24px 40px rgb(0 0 0 / .35)}
-.admin-card h2{color:#fff}
-.adm-sec{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:12px;background:rgb(0 0 0 / .16)}
-.adm-sec h3{margin:0}
-.adm-row{display:flex;gap:8px;flex-wrap:wrap}
-.adm-input,.adm-select{height:42px;border:0;border-radius:10px;padding:0 12px;background:#fff;color:#33456e;font:500 1rem "HeeboHe","Fredoka",system-ui,sans-serif;box-shadow:inset 0 4px 0 #dbe5ee;min-width:0}
+/* the admin / moderator panel: the same look as Settings (tabs on the side, boxes on the right) */
+.adm .sx-box{gap:10px}
+.adm .sx-box>p.adm-budget,.adm .adm-invis-txt{margin:0;color:#fff;opacity:.95;font-size:.98rem}
+.adm .adm-budget b{color:#ffe27a}
+.adm-who{margin:auto 4px 0;padding:10px 12px;border-radius:14px;background:rgb(255 255 255 / .16);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;white-space:nowrap}
+.adm-who:empty{display:none}
+.adm-who::before{content:"";flex:none;width:10px;height:10px;border-radius:50%;background:#ff5a5a;box-shadow:0 0 0 3px rgb(255 255 255 / .5)}
+.adm-who.mod::before{background:#ffd23a}
+.adm-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.adm-input,.adm-select{height:48px;border:0;border-radius:14px;padding:0 14px;background:#fff;color:#1d3a66;font:500 1rem "HeeboHe","Fredoka",system-ui,sans-serif;box-shadow:inset 0 4px 0 #dbe5ee;min-width:0}
 .adm-row .adm-input{flex:1}
-.adm-sec>.adm-input{flex:none;width:100%;box-sizing:border-box}
-.adm-text{height:auto;padding:10px 12px;resize:vertical;font-family:"HeeboHe","Fredoka",system-ui,sans-serif}
+.adm .sx-box>.adm-input{flex:none;width:100%;box-sizing:border-box}
+.adm-text{height:auto;min-height:90px;padding:12px 14px;resize:vertical;font-family:"HeeboHe","Fredoka",system-ui,sans-serif}
 .adm-input:focus,.adm-select:focus{outline:3px solid #ffb547;outline-offset:1px}
-.adm-btn{height:42px;padding:0 14px;border:0;border-radius:10px;cursor:pointer;color:#fff;font:600 1rem "HeeboHe","Fredoka",system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-.adm-btn svg{width:20px;height:20px}
-.adm-btn.red{background:#ff4b4b;box-shadow:0 4px 0 #9c1c1c}
-.adm-btn.orange{background:#ff9a1f;box-shadow:0 4px 0 #a3410a}
-.adm-btn.gold{background:#ffbf1f;color:#5a3400;box-shadow:0 4px 0 #a36d00}
-.adm-btn.blue{background:#1fb6ff;box-shadow:0 4px 0 #06488a}
-.adm-btn.ghost{background:#2c4468;color:#dbe7f7;box-shadow:0 4px 0 #1b2c47}
+.adm-btn{height:48px;padding:0 18px;border:0;border-radius:14px;cursor:pointer;color:#fff;font:600 1rem "HeeboHe","Fredoka",system-ui,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.adm-btn svg{width:22px;height:22px}
+.adm-btn.red{background:linear-gradient(180deg,#ff7a7a,#ff4545);box-shadow:0 5px 0 #8a1c1c}
+.adm-btn.orange{background:linear-gradient(180deg,#ffb04a,#ff8a1c);box-shadow:0 5px 0 #a3410a}
+.adm-btn.gold{background:linear-gradient(180deg,#ffd75a,#ffbf1f);color:#5a3400;box-shadow:0 5px 0 #a36d00}
+.adm-btn.blue{background:#fff;color:#0b5cb8;box-shadow:0 5px 0 #06488a}
+.adm-btn.ghost{background:rgb(255 255 255 / .22);color:#fff;box-shadow:0 5px 0 rgb(0 40 110 / .35)}
 .adm-btn.wide{width:100%}
-.adm-invis-txt{margin:0;color:#e6dcff;font-size:.95rem}
-.adm-btn.violet{background:#8a4dff;box-shadow:0 4px 0 #3a1192}
-.adm-btn.green{background:#2fd36b;box-shadow:0 4px 0 #17a24a}
-.adm-row .adm-input.adm-code{flex:2 1 150px;text-transform:uppercase}.adm-row .adm-input.adm-num{flex:1 1 80px}
-.adm-code-out{margin:0;padding:10px;border-radius:10px;background:#fff;color:#17803d;text-align:center;font:400 1.5rem/1 "HeeboDisplay","Lilita One",system-ui,sans-serif;letter-spacing:.08em;user-select:all}
+.adm-btn.violet{background:#8a4dff;box-shadow:0 5px 0 #3a1192}
+.adm-btn.green{background:linear-gradient(180deg,#5fe08a,#2fd36b);box-shadow:0 5px 0 #17913f}
+.adm-row .adm-input.adm-code{flex:2 1 150px;text-transform:uppercase}.adm-row .adm-input.adm-num{flex:1 1 90px}
+.adm-code-out{margin:0;padding:12px;border-radius:14px;background:#fff;color:#17803d;text-align:center;font:400 1.6rem/1 "HeeboDisplay","Lilita One",system-ui,sans-serif;letter-spacing:.08em;user-select:all}
 .adm-btn:active{transform:translateY(3px);box-shadow:none}
 .adm-btn:disabled{opacity:.6;cursor:progress}
 .adm-btn:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
-.adm-online{display:flex;gap:6px;flex-wrap:wrap}
-.adm-online button{border:0;border-radius:999px;padding:5px 12px;background:#2c4468;color:#dbe7f7;font:500 .9rem "HeeboHe","Fredoka",system-ui,sans-serif;cursor:pointer}
-.adm-online button[aria-pressed="true"]{background:#fff;color:#33456e}
-.adm-online .none{color:#bcd0ea;font-size:.9rem}
-.adm-msg{margin:0;min-height:1.3em;font-weight:500}
-.adm-msg.ok{color:#b8ffcf}.adm-msg.err{color:#ffd2d2}
+.adm-online{display:flex;gap:8px;flex-wrap:wrap}
+.adm-online button{border:0;border-radius:999px;padding:7px 14px;background:rgb(255 255 255 / .22);color:#fff;font:600 .95rem "HeeboHe","Fredoka",system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 0 rgb(0 40 110 / .3)}
+.adm-online button[aria-pressed="true"]{background:#fff;color:#0b5cb8;box-shadow:0 3px 0 #06488a}
+.adm-online .none{opacity:.9;font-size:.95rem}
+.adm-status{position:sticky;bottom:0;max-width:780px;margin:12px auto 0;display:flex;flex-direction:column;gap:8px}
+.adm-msg{margin:0;padding:0 14px;min-height:0;border-radius:14px;font-weight:600}
+.adm-msg:not(:empty){padding:12px 16px;background:#fff;color:#0b5cb8;box-shadow:0 5px 0 #06488a}
+.adm-msg.ok:not(:empty){color:#17803d;box-shadow:0 5px 0 #17913f}.adm-msg.err:not(:empty){color:#c62828;box-shadow:0 5px 0 #8a1c1c}
+.adm-pw{padding:12px;border-radius:18px;background:rgb(0 30 90 / .35)}
 .adm-pw[hidden]{display:none}
+.sx-tab.adm-admin-only[hidden]{display:none}
 .bubble.admin{--bb:#ff4a4a;--bl:#8a1414;--bt:#fff;box-shadow:inset 0 -4px 0 rgb(0 0 0 / .12),inset 0 3px 0 rgb(255 255 255 / .35)}
 .bubble.admin .dots i{background:#fff}
 .zone-banner{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 92px);left:50%;translate:-50% 0;pointer-events:none;
@@ -2593,7 +2599,7 @@ body.in-game.logged .side-rail{display:flex}
 body.land .side-rail{left:calc(var(--lg) + env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + var(--lg) + 52px);gap:8px}
 .rail-items{display:flex;flex-direction:column;align-items:center;gap:14px;transform-origin:50% 0;transition:transform .32s cubic-bezier(.2,1.3,.4,1),opacity .22s,visibility 0s}
 body.land .rail-items{gap:8px}
-.rail-items>.btn{position:relative!important;top:auto!important;left:auto!important;flex:none}
+.rail-items>.btn{position:relative!important;top:auto!important;left:auto!important;right:auto!important;flex:none}
 .side-rail.shut .rail-items{transform:translateY(-40px) scale(.4);opacity:0;visibility:hidden;pointer-events:none;transition:transform .25s ease-in,opacity .2s,visibility 0s .25s}
 .rail-tog{--c:#8a4dff;--hi:#c3a2ff;--lo:#6a2fe0;--edge:#3a1192;width:58px;height:46px;border-radius:16px;padding:0}
 body.land .rail-tog{width:var(--lb);height:34px;border-radius:12px}
@@ -4379,40 +4385,29 @@ body.land .npc-card .idle-face{display:none}
 <button class="btn admin-btn" id="adminBtn" type="button" aria-label="Admin panel" aria-haspopup="dialog" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)"><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#8a1c1c"/></g><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#fff"/><path d="M16 9 L17.8 13.4 L22.5 13.7 L18.9 16.7 L20 21.3 L16 18.8 L12 21.3 L13.1 16.7 L9.5 13.7 L14.2 13.4 Z" fill="#ff4545"/></svg></button>
 <div class="announce" id="announce" role="alert" aria-live="assertive"><span class="mega"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></span><span class="atext"><small id="announceBy">Announcement</small><b id="announceText"></b></span></div>
 
-<div class="settings-overlay admin-overlay" id="adminOverlay" hidden>
-  <div class="settings-card admin-card" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
+<div class="settings-overlay sx-ov admin-overlay" id="adminOverlay" hidden>
+  <div class="sx adm" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
     <button class="set-close" id="adminClose" type="button" aria-label="Close admin panel">
       <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
     </button>
-    <h2 id="adminTitle">ADMIN PANEL</h2>
-
-    <section class="adm-sec">
-      <h3>JUMPI SHOW</h3>
-      <p class="adm-budget">A live show on a big stage: everyone in the game gets a note to join.</p>
-      <button class="adm-btn wide" id="admShow" type="button">Open a show</button>
-    </section>
-
-    <section class="adm-sec adm-admin-only">
-      <h3>SPEED METER</h3>
-      <button class="adm-btn wide" id="admMeter" type="button" aria-pressed="false">Show the speed meter</button>
-    </section>
-
-    <section class="adm-sec adm-invis adm-admin-only" id="admInvis">
-      <h3>INVISIBLE</h3>
-      <p class="adm-invis-txt" id="admInvisTxt">Only other admins can see you.</p>
-      <button class="adm-btn wide" id="admInvisBtn" type="button" aria-pressed="false">Become visible</button>
-    </section>
-
-    <section class="adm-sec">
-      <h3>PLAYER</h3>
-      <input class="adm-input" id="admUser" type="text" list="admOnline" placeholder="Username" autocomplete="off" maxlength="32" aria-label="Player username">
+    <nav class="sx-side">
+      <h2 id="adminTitle">ADMIN PANEL</h2>
+      <div class="sx-tabs" role="tablist" aria-label="Admin panel" aria-orientation="vertical">
+        <button class="sx-tab" type="button" role="tab" id="admTab-players" data-tab="players" aria-controls="admPane-players" aria-selected="false" style="--c:#ff8a1c"><i aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="12" cy="11" r="5.5" fill="#fff"/><path d="M2.5 27 Q3 18 12 18 Q21 18 21.5 27 Z" fill="#fff"/><circle cx="23" cy="12" r="4" fill="#fff" opacity=".8"/><path d="M20 19.5 Q22 18.5 23 18.5 Q30 18.5 30 26 H23.5" fill="#fff" opacity=".8"/></svg></i>Players</button>
+        <button class="sx-tab" type="button" role="tab" id="admTab-show" data-tab="show" aria-controls="admPane-show" aria-selected="false" style="--c:#ff5fa8"><i aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 9 H28 V25 H4 Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M13 13 L20 17 L13 21 Z" fill="#fff"/><path d="M10 4 L16 9 L22 4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Jumpi Show</button>
+        <button class="sx-tab adm-admin-only" type="button" role="tab" id="admTab-announce" data-tab="announce" aria-controls="admPane-announce" aria-selected="false" style="--c:#1f9bff"><i aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></i>Announcement</button>
+        <button class="sx-tab adm-admin-only" type="button" role="tab" id="admTab-codes" data-tab="codes" aria-controls="admPane-codes" aria-selected="false" style="--c:#2fb84f"><i aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="4" y="11" width="24" height="16" rx="3" fill="#fff"/><rect x="4" y="11" width="24" height="5" fill="#ffe08a"/><path d="M16 11 V27" stroke="#2fb84f" stroke-width="3"/><path d="M16 11 Q10 3 8 8 Q8 11 16 11 Q24 11 24 8 Q22 3 16 11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg></i>Gift codes</button>
+        <button class="sx-tab adm-admin-only" type="button" role="tab" id="admTab-tools" data-tab="tools" aria-controls="admPane-tools" aria-selected="false" style="--c:#9b5cff"><i aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M19.5 4.5 a7 7 0 0 0 -6.6 9.3 L4.6 22.1 a2.7 2.7 0 0 0 3.8 3.8 L16.7 17.6 a7 7 0 0 0 9.3 -6.6 L22 15 L18 14 L17 10 Z" fill="#fff"/></svg></i>Tools</button>
+      </div>
+      <p class="adm-who" id="admWho"></p>
+    </nav>
+    <div class="sx-main">
+      <section class="sx-pane" id="admPane-players" role="tabpanel" aria-labelledby="admTab-players" hidden>
+        <h3>PLAYERS</h3>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#ff8a1c"><svg viewBox="0 0 32 32"><circle cx="12" cy="11" r="5.5" fill="#fff"/><path d="M2.5 27 Q3 18 12 18 Q21 18 21.5 27 Z" fill="#fff"/><circle cx="23" cy="12" r="4" fill="#fff" opacity=".8"/><path d="M20 19.5 Q22 18.5 23 18.5 Q30 18.5 30 26 H23.5" fill="#fff" opacity=".8"/></svg></i>Pick a player</h4><input class="adm-input" id="admUser" type="text" list="admOnline" placeholder="Username" autocomplete="off" maxlength="32" aria-label="Player username">
       <datalist id="admOnline"></datalist>
-      <div class="adm-online" id="admOnlineChips" aria-label="Players in the Plaza"></div>
-    </section>
-
-    <section class="adm-sec">
-      <h3>MODERATION</h3>
-      <div class="adm-row">
+      <div class="adm-online" id="admOnlineChips" aria-label="Players in the Plaza"></div></div>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#ff4b4b"><svg viewBox="0 0 32 32"><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#fff"/></svg></i>Moderation</h4><div class="adm-row">
         <button class="adm-btn red" id="admKick" type="button">Kick</button>
         <select class="adm-select" id="admBanTime" aria-label="Ban length">
           <option value="60">1 hour</option><option value="1440" selected>1 day</option><option value="10080">7 days</option><option value="43200" class="adm-admin-only">30 days</option><option value="0" class="adm-admin-only">Forever</option>
@@ -4427,27 +4422,26 @@ body.land .npc-card .idle-face{display:none}
         </select>
         <button class="adm-btn orange" id="admMute" type="button">Mute chat</button>
         <button class="adm-btn ghost" id="admUnmute" type="button">Unmute</button>
-      </div>
-    </section>
-
-    <section class="adm-sec">
-      <h3>COINS</h3>
-      <p class="adm-budget" id="admBudget" hidden></p>
+      </div></div>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#ffbf1f"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#fff"/><circle cx="16" cy="16" r="7" fill="none" stroke="#ffbf1f" stroke-width="2.6"/></svg></i>Coins</h4><p class="adm-budget" id="admBudget" hidden></p>
       <div class="adm-row">
         <input class="adm-input" id="admAmount" type="number" min="-1000000" max="1000000" step="1" value="100" aria-label="Coins to give">
         <button class="adm-btn gold" id="admCoins" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Give coins</button>
-      </div>
-    </section>
-
-    <section class="adm-sec adm-admin-only">
-      <h3>ANNOUNCEMENT</h3>
-      <textarea class="adm-input adm-text" id="admAnnounce" maxlength="160" rows="2" placeholder="A message everyone in the Plaza will see"></textarea>
-      <button class="adm-btn blue wide" id="admSend" type="button"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Send to everyone</button>
-    </section>
-
-    <section class="adm-sec adm-admin-only">
-      <h3>GIFT CODE</h3>
-      <div class="adm-row">
+      </div></div>
+      </section>
+      <section class="sx-pane" id="admPane-show" role="tabpanel" aria-labelledby="admTab-show" hidden>
+        <h3>JUMPI SHOW</h3>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#ff5fa8"><svg viewBox="0 0 32 32"><path d="M4 9 H28 V25 H4 Z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/><path d="M13 13 L20 17 L13 21 Z" fill="#fff"/><path d="M10 4 L16 9 L22 4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Live show</h4><p class="adm-budget">A live show on a big stage: everyone in the game gets a note to join.</p>
+      <button class="adm-btn wide" id="admShow" type="button">Open a show</button></div>
+      </section>
+      <section class="sx-pane adm-admin-only" id="admPane-announce" role="tabpanel" aria-labelledby="admTab-announce" hidden>
+        <h3>ANNOUNCEMENT</h3>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#1f9bff"><svg viewBox="0 0 32 32"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg></i>A message to everyone</h4><textarea class="adm-input adm-text" id="admAnnounce" maxlength="160" rows="2" placeholder="A message everyone in the Plaza will see"></textarea>
+      <button class="adm-btn blue wide" id="admSend" type="button"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Send to everyone</button></div>
+      </section>
+      <section class="sx-pane adm-admin-only" id="admPane-codes" role="tabpanel" aria-labelledby="admTab-codes" hidden>
+        <h3>GIFT CODES</h3>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#2fb84f"><svg viewBox="0 0 32 32"><rect x="4" y="11" width="24" height="16" rx="3" fill="#fff"/><rect x="4" y="11" width="24" height="5" fill="#ffe08a"/><path d="M16 11 V27" stroke="#2fb84f" stroke-width="3"/><path d="M16 11 Q10 3 8 8 Q8 11 16 11 Q24 11 24 8 Q22 3 16 11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round"/></svg></i>Make a code</h4><div class="adm-row">
         <input class="adm-input adm-code" id="admCode" type="text" maxlength="20" placeholder="Code (empty = random)" autocomplete="off" aria-label="Code">
         <input class="adm-input adm-num" id="admCodeCoins" type="number" min="1" max="100000" value="500" aria-label="Coins">
         <select class="adm-select" id="admCodeUses" aria-label="How many players">
@@ -4455,14 +4449,22 @@ body.land .npc-card .idle-face{display:none}
         </select>
       </div>
       <button class="adm-btn green wide" id="admCodeGo" type="button">Make code</button>
-      <p class="adm-code-out" id="admCodeOut" hidden></p>
-    </section>
-
-    <div class="adm-row adm-pw" id="admPwRow" hidden>
+      <p class="adm-code-out" id="admCodeOut" hidden></p></div>
+      </section>
+      <section class="sx-pane adm-admin-only" id="admPane-tools" role="tabpanel" aria-labelledby="admTab-tools" hidden>
+        <h3>TOOLS</h3>
+        <div class="sx-box"><h4><i aria-hidden="true" style="background:#1f9bff"><svg viewBox="0 0 32 32"><path d="M4 22 A12 12 0 0 1 28 22" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/><path d="M16 22 L22 12" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/></svg></i>Speed meter</h4><button class="adm-btn wide" id="admMeter" type="button" aria-pressed="false">Show the speed meter</button></div>
+        <div class="sx-box adm-invis" id="admInvis"><h4><i aria-hidden="true" style="background:#9b5cff"><svg viewBox="0 0 32 32"><path d="M3 16 Q16 4 29 16 Q16 28 3 16 Z" fill="#fff"/><circle cx="16" cy="16" r="4.5" fill="#9b5cff"/><path d="M5 27 L27 5" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg></i>Invisible</h4><p class="adm-invis-txt" id="admInvisTxt">Only other admins can see you.</p>
+      <button class="adm-btn wide" id="admInvisBtn" type="button" aria-pressed="false">Become visible</button></div>
+      </section>
+      <div class="adm-status">
+        <div class="adm-row adm-pw" id="admPwRow" hidden>
       <input class="adm-input" id="admPw" type="password" maxlength="200" autocomplete="current-password" placeholder="Your password" aria-label="Your password">
       <button class="adm-btn green" id="admPwGo" type="button">Unlock</button>
     </div>
-    <p class="adm-msg" id="admMsg" role="status"></p>
+        <p class="adm-msg" id="admMsg" role="status"></p>
+      </div>
+    </div>
   </div>
 </div>
 <div class="online" id="online" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="onlineText">1 online</span></div>
@@ -8125,7 +8127,7 @@ function showAnnouncement(text,by){
   clearTimeout(announceT);announceT=setTimeout(()=>a.classList.remove("show"),Math.min(14000,6000+text.length*60));
 }
 function applyRoleUI(){const admin=!!(me&&me.role==="admin"),mod=!!(me&&me.role==="mod");document.body.classList.toggle("is-admin",admin);document.body.classList.toggle("is-mod",mod);document.body.classList.toggle("is-staff",admin||mod);
-  const b=document.getElementById("adminBtn");b.hidden=!(admin||mod);b.setAttribute("aria-label",mod?"Moderator panel":"Admin panel");
+  const b=document.getElementById("adminBtn");b.hidden=!(admin||mod);b.setAttribute("aria-label",mod?"Moderator panel":"Admin panel");{const t=b.querySelector(".rail-tip");if(t)t.textContent=I18N.T(mod?"Moderator panel":"Admin panel");}
   document.getElementById("adminTitle").textContent=mod?"MODERATOR PANEL":"ADMIN PANEL";
   const amt=document.getElementById("admAmount");amt.min=mod?"1":"-1000000";amt.max=mod?"10000":"1000000";}
 const adminOverlay=document.getElementById("adminOverlay"),admUser=document.getElementById("admUser"),admMsg=document.getElementById("admMsg");
@@ -8141,8 +8143,18 @@ admUser.addEventListener("input",refreshAdminOnline);
 document.getElementById("admShow").onclick=async e=>{press(e.currentTarget);if(SHOW.on&&SHOW.on.host!==me.username){closeAdmin();enterShow();return;}if(SHOW.on){closeAdmin();enterShow();return;}await openShowAsHost();};
 {const b=document.getElementById("admMeter");const paint=()=>{b.setAttribute("aria-pressed",String(PERF.meter));b.textContent=PERF.meter?"Hide the speed meter":"Show the speed meter";};paint();
   b.onclick=()=>{if(!(me&&me.role==="admin"))return;perfMeter(!PERF.meter);paint();};}
-function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;document.getElementById("admShow").textContent=SHOW.on?"Go to the show":"Open a show";applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>admUser.focus(),50);}
+function openAdmin(){if(!(me&&(me.role==="admin"||me.role==="mod")))return;document.getElementById("admShow").textContent=SHOW.on?"Go to the show":"Open a show";applyRoleUI();if(me.role==="mod")modBudget();refreshAdminOnline();admMsg.textContent="";
+  {let t="players";try{t=localStorage.getItem("jumpi-adm-tab")||t;}catch(e){}admShowTab(t);}
+  document.getElementById("admWho").textContent=me.username;document.getElementById("admWho").className="adm-who "+me.role;
+  adminOverlay.hidden=false;G.keys={};sfx.open();setTimeout(()=>{if(!document.getElementById("admPane-players").hidden)admUser.focus();},50);}
 function closeAdmin(){if(adminOverlay.hidden)return;adminOverlay.hidden=true;sfx.close();}
+// the panel is laid out like Settings: tabs on the side (moderators only see Players and the Show)
+const admTabs=[...adminOverlay.querySelectorAll(".sx-tab")];
+function admShowTab(tab,focus){const mod=!!(me&&me.role==="mod");if(mod&&!["players","show"].includes(tab))tab="players";if(!document.getElementById("admTab-"+tab))tab="players";
+  admTabs.forEach(b=>{const on=b.dataset.tab===tab;b.setAttribute("aria-selected",String(on));b.tabIndex=on?0:-1;document.getElementById("admPane-"+b.dataset.tab).hidden=!on;});
+  try{localStorage.setItem("jumpi-adm-tab",tab);}catch(e){}adminOverlay.querySelector(".sx-main").scrollTop=0;if(focus)document.getElementById("admTab-"+tab).focus();}
+admTabs.forEach(b=>{b.onclick=()=>{sfx.tick(true);admShowTab(b.dataset.tab);};
+  b.onkeydown=e=>{if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;e.preventDefault();const vis=admTabs.filter(x=>x.offsetParent),k=vis.indexOf(b);const nx=vis[(k+(e.key==="ArrowDown"?1:vis.length-1))%vis.length];if(nx)admShowTab(nx.dataset.tab,true);};});
 // big actions (coins, gift codes, permanent bans) ask an admin for their password first; then the action is sent again
 let admRetry=null;
 function askAdminPw(retry){admRetry=retry;const row=document.getElementById("admPwRow");row.hidden=false;const i=document.getElementById("admPw");i.value="";setTimeout(()=>i.focus(),30);}
@@ -9498,7 +9510,7 @@ function closeDiscord(){if(dcOv.hidden)return;dcOv.hidden=true;sfx.close();disco
 discordBtn.onclick=openDiscord;
 /* ---------- RAIL: the side menu (gift, home, phone, season) opens and closes with the button on top; remembered per device ---------- */
 const sideRail=document.getElementById("sideRail"),railTog=document.getElementById("railTog");
-["giftBtn","homeBtn","phoneBtn","seasonBtn"].forEach((id,i)=>{const b=document.getElementById(id);document.getElementById("railItems").appendChild(b);
+["giftBtn","homeBtn","phoneBtn","seasonBtn","adminBtn"].forEach((id,i)=>{const b=document.getElementById(id);document.getElementById("railItems").appendChild(b);
   b.style.setProperty("--i",i);const t=document.createElement("span");t.className="rail-tip";t.setAttribute("aria-hidden","true");t.textContent=b.getAttribute("aria-label");b.appendChild(t);});   // a name tag that slides out on hover
 function railSet(open,save){sideRail.classList.toggle("shut",!open);railTog.setAttribute("aria-expanded",open);railTog.setAttribute("aria-label",open?"Close the menu":"Open the menu");
   if(save)try{localStorage.setItem("jumpi-rail",open?"open":"shut");}catch(e){}}
@@ -11062,7 +11074,9 @@ function touchWords(t){if(!(document.body.classList.contains("touch")&&document.
 function showShiftIntro(){const job=WORK.job||"waiter",J=JOBS[job],v=WORK.view&&WORK.view.jobs.find(j=>j.id===job);
   document.getElementById("wkIntroTitle").textContent=job==="police"?"ON PATROL!":job==="delivery"?"PIZZA TIME!":"TIME TO WORK!";
   document.getElementById("wkStart").textContent=job==="police"?"START PATROL":"START SHIFT";
-  document.getElementById("wkIntroPay").innerHTML=v?`You're a <b>${esc(v.title)}</b> (level ${v.level}). Every ${J.unit} pays <b>${v.pay}</b> coins, and <b>+${v.tip}</b> tip when you're quick!`:`Every ${J.unit} pays coins, and quick work gets tips!`;
+  {const U={order:"הזמנה",case:"משימה",delivery:"משלוח"}[J.unit]||J.unit;
+  document.getElementById("wkIntroPay").innerHTML=I18N.lang==="he"?(v?`אתם <b>${esc(I18N.T(v.title))}</b> (רמה ${v.level}). כל ${U} שווה <b>${v.pay}</b> מטבעות, ועוד <b>+${v.tip}</b> טיפ כשאתם מהירים!`:`כל ${U} שווה מטבעות, ועבודה מהירה מביאה טיפים!`)
+    :v?`You're a <b>${esc(v.title)}</b> (level ${v.level}). Every ${J.unit} pays <b>${v.pay}</b> coins, and <b>+${v.tip}</b> tip when you're quick!`:`Every ${J.unit} pays coins, and quick work gets tips!`;}
   if(job==="delivery"){document.getElementById("wkSteps").innerHTML=[
     ["1","Grab a pizza",`<span class="wk-demo dlv">${DLV_PIZZA_SVG}</span>`,"Go to the PICK UP window at Jumpi Pizza and press E."],
     ["2","Ride!",`<span class="wk-demo dlv">${DLV_SCOOTER_SVG}</span>`,"Hop on the scooter (E). W/S or ↑/↓ for gas and brake, A/D or ←/→ to steer. Follow the GPS and the blue line."],
