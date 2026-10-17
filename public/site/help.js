@@ -8,8 +8,11 @@ import { TOPICS, GUIDES, SYN, TRY } from "/site/help-data.js";
 import "/site/guide-lang.js";
 
 // where each mark sits on its picture, measured when the pictures were taken (help/shots/marks.json)
-const MARKS = await fetch("/site/help/shots/marks.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
-const rectOf = (g, m) => m.r || (MARKS[g.shot] || [])[m.i] || null;
+// the Hebrew pictures (help/shots/he/, taken from the game in Hebrew) have their own marks file
+const [MARKS, MARKS_HE] = await Promise.all(["marks", "he/marks"].map((f) => fetch(`/site/help/shots/${f}.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({}))));
+const heShot = (id) => lang === "he" && !!MARKS_HE[id];
+const shotSrc = (id) => `/site/help/shots/${heShot(id) ? "he/" : ""}${id}.jpg`;
+const rectOf = (g, m) => (heShot(g.shot) ? (m.r ? (MARKS_HE["r:" + g.id] || [])[g.marks.indexOf(m)] || m.r : (MARKS_HE[g.shot] || [])[m.i]) : m.r || (MARKS[g.shot] || [])[m.i]) || null;
 
 const $ = (id) => document.getElementById(id);
 let lang = document.documentElement.lang === "he" ? "he" : "en";
@@ -113,7 +116,7 @@ function search(query) {
 /* ---------- drawing ---------- */
 function figure(g, big) {
   const f = el("figure", "hp-fig" + (big ? " big" : ""));
-  const img = el("img"); img.src = `/site/help/shots/${g.shot}.jpg`; img.alt = tx(g.alt || g.q); img.loading = "lazy"; img.width = 1280; img.height = 720;
+  const img = el("img"); img.src = shotSrc(g.shot); img.alt = tx(g.alt || g.q); img.loading = "lazy"; img.width = 1280; img.height = 720;
   f.append(img);
   marksOf(g).forEach((m, i) => {
     const [x, y, w, h] = m.rect, pad = 0.006;
@@ -161,7 +164,7 @@ function paintTopics() {
     const n = GUIDES.filter((g) => g.t === t.id).length;
     const a = el("a", "hp-topic"); a.href = "#t-" + t.id;
     a.style.setProperty("--c", t.c || "#1f9bff");
-    const pic = el("span", "hp-topic-pic"); const img = el("img"); img.src = `/site/help/shots/${t.shot}.jpg`; img.alt = ""; img.loading = "lazy"; pic.append(img);
+    const pic = el("span", "hp-topic-pic"); const img = el("img"); img.src = shotSrc(t.shot); img.alt = ""; img.loading = "lazy"; pic.append(img);
     if (t.pos) img.style.objectPosition = t.pos;
     a.append(pic, el("b", null, esc(tx(t))), el("small", null, lang === "he" ? `${n} מדריכים` : `${n} guides`));
     box.append(a);
@@ -204,7 +207,7 @@ function runSearch() {
   $("resList").replaceChildren(...found.map(({ g }) => {
     const li = el("li"), a = el("a", "hp-res"); a.href = "#g-" + g.id;
     const t = topicOf(g.t);
-    { const im = el("img"); im.src = `/site/help/shots/${g.shot || t.shot}.jpg`; im.alt = ""; im.loading = "lazy"; a.append(im); }
+    { const im = el("img"); im.src = shotSrc(g.shot || t.shot); im.alt = ""; im.loading = "lazy"; a.append(im); }
     const body = el("span", "hp-res-txt");
     body.append(el("small", null, esc(tx(t))), el("b", null, esc(tx(g.q))), el("span", null, esc(plain(tx(g.a)).slice(0, 150)) + "…"));
     a.append(body);

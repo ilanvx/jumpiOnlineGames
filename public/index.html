@@ -15595,10 +15595,11 @@ const PH={open:false,k:0,target:0,stack:[],tok:0,unread:0,reqs:0,chat:null,mesh:
 const esc=t=>String(t??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const avatarImg=(look,size=46)=>`<img class="ph-av" style="--s:${size}px" alt="" src="${emoteImage("happy",skinOf(look||{}))}">`;
 const lower=n=>String(n||"").toLowerCase();
-function whereText(w,name){if(!w)return "Offline";if(w==="online")return "Online";if(w==="plaza")return "In the Plaza";
+function whereText(w,name){return I18N.T(whereTextEn(w,name));}
+function whereTextEn(w,name){if(!w)return "Offline";if(w==="online")return "Online";if(w==="plaza")return "In the Plaza";
   if(w.startsWith("place:")){const V=VENUES[w.slice(6)];return V?"At the "+V.title.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):"In the Plaza";}const owner=w.slice(5);
   if(me&&owner===lower(me.username))return lower(name)===owner?"At home":"At your home";return lower(name)===owner?"At home":`At ${owner}'s home`;}
-const timeFmt=ms=>new Date(ms).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+const timeFmt=ms=>new Date(ms).toLocaleTimeString(I18N.lang==="he"?"he-IL":[],{hour:"2-digit",minute:"2-digit"});
 function dayFmt(ms){const d=new Date(ms),t=new Date();const same=(a,b)=>a.toDateString()===b.toDateString();if(same(d,t))return I18N.lang==="he"?"היום":"Today";
   const y=new Date(t);y.setDate(t.getDate()-1);if(same(d,y))return I18N.lang==="he"?"אתמול":"Yesterday";return d.toLocaleDateString(I18N.lang==="he"?"he-IL":"en-US",{weekday:"short",month:"short",day:"numeric"});}
 const whenFmt=ms=>dayFmt(ms)===dayFmt(Date.now())?timeFmt(ms):dayFmt(ms);
@@ -15812,7 +15813,7 @@ async function appConvo(tok,name){
 }
 function paintConvo(toBottom){
   const C=PH.chat;if(!C)return;let h=C.more?`<button type="button" class="ph-more" data-a="older">Show earlier messages</button>`:"";
-  h+=`<p class="ph-tip">🔒 Only friends can message you. Never share your password or where you live.</p>`;
+  h+=`<p class="ph-tip">🔒 ${esc(I18N.T("Only friends can message you. Never share your password or where you live."))}</p>`;
   let lastDay="";
   for(const m of C.msgs){const d=dayFmt(m.at);if(d!==lastDay){h+=`<p class="ph-day">${d}</p>`;lastDay=d;}
     const mine=lower(m.from)===lower(me.username);
