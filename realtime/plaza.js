@@ -9,6 +9,7 @@ import { attachShow, showJoined, showLeft, showIsOpen, showBanner, showTick, ini
 import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
+import { ANN_STYLES, MOD_STYLE, TIP_BY_ID } from "../public/shared/announce.js";
 const MOD_ANNOUNCE_GAP = 2 * 60 * 1000, modAnnounceAt = new Map();   // moderators: one announcement every 2 minutes
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { Report } from "../models/Report.js";
@@ -297,11 +298,14 @@ export const moderation = {
     for (const s of socketsOfUser(user._id.toString())) s.emit("coins", { coins: result.coins, delta });
     return result.coins;
   },
-  // role: "admin" (orange) or "mod" (blue); center: a window in the middle of the screen with an OK button (otherwise a strip at the top)
-  announce(text, by, { role = "admin", center = false } = {}) {
-    const msg = cleanText(text, MAX_ANNOUNCE);
+  // style: public/shared/announce.js (moderators: always "mod", blue); center: a window in the middle of the screen with an OK
+  // button (otherwise a strip at the top); tip: a ready-made safety tip, shown in each player's own language
+  announce(text, by, { role = "admin", center = false, style = "admin", tip = "" } = {}) {
+    const T = TIP_BY_ID[tip];
+    const msg = T ? T.en : cleanText(text, MAX_ANNOUNCE);
     if (!msg) return null;
-    ioRef?.emit("announce", { text: msg, by, role: role === "mod" ? "mod" : "admin", center: center === true }); // the Plaza and every home
+    const st = role === "mod" ? MOD_STYLE : T ? "tip" : ANN_STYLES.includes(style) ? style : "admin";
+    ioRef?.emit("announce", { text: msg, by, role: role === "mod" ? "mod" : "admin", center: center === true, style: st, ...(T ? { tip: T.id } : {}) }); // the Plaza and every home
     return msg;
   },
   // the player's look, coins or inventory were changed by an admin: refresh open windows
@@ -857,18 +861,19 @@ export function attachPlaza(io) {
     }, { heavy: () => true });
 
     // moderators may announce too (blue), through the chat filter and at most once every 2 minutes
-    adminAction("admin:announce", async ({ text, center }, admin) => {
+    adminAction("admin:announce", async ({ text, center, style, tip }, admin) => {
       const mod = admin.role === "mod";
+      if (mod && tip) throw fail("Only admins can send the ready-made tips.");
       if (mod) {
         const chk = checkText(cleanText(text, MAX_ANNOUNCE) || "");
         if (!chk.ok) throw fail("That message can't be sent: it has a word or private details the chat filter stops.");
         const last = modAnnounceAt.get(admin._id.toString()) || 0;
         if (Date.now() - last < MOD_ANNOUNCE_GAP) throw fail(`Wait ${Math.ceil((MOD_ANNOUNCE_GAP - (Date.now() - last)) / 1000)} seconds before the next announcement.`);
       }
-      const msg = moderation.announce(text, admin.username, { role: admin.role, center: center === true });
+      const msg = moderation.announce(text, admin.username, { role: admin.role, center: center === true, style: String(style || ""), tip: String(tip || "") });
       if (!msg) throw fail("Write a message first.");
       if (mod) modAnnounceAt.set(admin._id.toString(), Date.now());
-      audit(admin, "announce", null, `${center === true ? "[window] " : ""}${msg}${mod ? " · by a moderator" : ""}`);
+      audit(admin, "announce", null, `${center === true ? "[window] " : ""}${mod ? "" : `[${tip ? "tip" : style || "admin"}] `}${msg}${mod ? " · by a moderator" : ""}`);
       return { message: "Announcement sent to everyone in the Plaza." };
     }, { mods: true });
   });

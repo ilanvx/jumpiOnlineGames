@@ -887,13 +887,32 @@ body.is-mod .adm-admin-only{display:none!important}
   box-shadow:0 6px 0 #9c2a10,0 14px 26px rgb(0 0 0 / .3);color:#fff;font-family:"HeeboHe","Fredoka",var(--font);
   opacity:0;transform:translateY(-20px) scale(.9);pointer-events:none;transition:opacity .25s,transform .4s cubic-bezier(.2,1.5,.4,1)}
 .announce.show{opacity:1;transform:none}
-.announce.mod{background:linear-gradient(180deg,#4f9bff,#1f6bff);border-color:#0b3a99;box-shadow:0 6px 0 #0b3a99,0 14px 26px rgb(0 0 0 / .3)}
+/* the kinds of announcement (public/shared/announce.js): admin orange, moderator blue, system grey, critical red, game a party, tip green */
+.announce,.ann-card{--a:#ff6a3d;--b:#e8421f;--e:#9c2a10}
+:is(.announce,.ann-card,.adm-st)[data-st="mod"]{--a:#4f9bff;--b:#1f6bff;--e:#0b3a99}
+:is(.announce,.ann-card,.adm-st)[data-st="system"]{--a:#9aa6b8;--b:#6b7a90;--e:#3f4a5c}
+:is(.announce,.ann-card,.adm-st)[data-st="critical"]{--a:#ff4d4d;--b:#c41c1c;--e:#6e0a0a}
+:is(.announce,.ann-card,.adm-st)[data-st="game"]{--a:#ff5fb4;--b:#9b5cff;--e:#4a1d9e}
+:is(.announce,.ann-card,.adm-st)[data-st="tip"]{--a:#3fdc82;--b:#1fa85a;--e:#0d6e33}
+.announce{background:linear-gradient(180deg,var(--a),var(--b));border-color:var(--e);box-shadow:0 6px 0 var(--e),0 14px 26px rgb(0 0 0 / .3)}
+.announce[data-st="game"]{background:radial-gradient(circle at 12% 30%,#ffe27a 0 3px,transparent 4px),radial-gradient(circle at 78% 22%,#5fe0ff 0 3px,transparent 4px),radial-gradient(circle at 92% 75%,#ffe27a 0 2.5px,transparent 3.5px),radial-gradient(circle at 40% 85%,#7dffb0 0 2.5px,transparent 3.5px),linear-gradient(100deg,#ff5fb4,#ff8a1c 35%,#9b5cff 75%,#1f9bff)}
+.announce[data-st="game"] b{font:400 1.25rem/1.25 var(--font);letter-spacing:.02em;text-shadow:0 2px 0 rgb(0 0 0 / .2)}
+.announce[data-st="critical"].show{animation:annAlarm 1s ease-in-out 3}
+@keyframes annAlarm{50%{box-shadow:0 6px 0 var(--e),0 0 0 6px rgb(255 77 77 / .45),0 14px 26px rgb(0 0 0 / .3)}}
+.announce[data-st="system"] small,.ann-card[data-st="system"] small{letter-spacing:.06em}
 /* an announcement in the middle of the screen: stays until OK */
 .ann-ov{position:fixed;inset:0;z-index:62;display:grid;place-items:center;padding:16px;background:rgb(10 20 50 / .55);backdrop-filter:blur(3px)}
 .ann-ov[hidden]{display:none}
 .ann-card{--a:#ff6a3d;--b:#e8421f;--e:#9c2a10;position:relative;width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:10px;padding:46px 22px 22px;border-radius:26px;background:#fff;
   box-shadow:0 8px 0 var(--e),0 24px 50px rgb(0 0 0 / .35);text-align:center;font-family:"HeeboHe","Fredoka",var(--font);color:#1d2b4f;animation:annPop .45s cubic-bezier(.2,1.5,.4,1)}
-.ann-card.mod{--a:#4f9bff;--b:#1f6bff;--e:#0b3a99}
+.ann-card[data-st="game"]{background:radial-gradient(circle at 10% 18%,#ffe27a 0 5px,transparent 6px),radial-gradient(circle at 88% 14%,#5fe0ff 0 4px,transparent 5px),radial-gradient(circle at 92% 80%,#ff9ccc 0 5px,transparent 6px),radial-gradient(circle at 6% 86%,#7dffb0 0 4px,transparent 5px),radial-gradient(circle at 50% 0,#fff4fb,#fff 60%)}
+.ann-card[data-st="game"] p{font:400 1.45rem/1.3 var(--font);letter-spacing:.02em;color:#6b2fd6}
+.ann-card[data-st="game"] .mega{animation:annBounce 1.2s ease-in-out infinite}
+@keyframes annBounce{50%{transform:translateY(-6px) rotate(-6deg)}}
+.ann-card[data-st="critical"]{box-shadow:0 8px 0 var(--e),0 0 0 6px rgb(255 77 77 / .35),0 24px 50px rgb(0 0 0 / .35)}
+.ann-card[data-st="critical"] p{color:#8a0f0f}
+.ann-card[data-st="system"]{background:#f3f5f8}
+.ann-card[data-st="tip"] p{color:#0d5a2b}
 @keyframes annPop{from{transform:scale(.7);opacity:0}}
 .ann-card .mega{position:absolute;top:-34px;width:68px;height:68px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(180deg,var(--a),var(--b));box-shadow:0 5px 0 var(--e)}
 .ann-card .mega svg{width:44px;height:44px}
@@ -913,7 +932,8 @@ body.is-mod .adm-admin-only{display:none!important}
 .adm-kind small{font-weight:500;font-size:.88rem;opacity:.9}
 .adm-pv{position:relative;height:150px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,#8fdcff 0%,#bfeaff 55%,#e9d3a3 56%,#d9bf86 100%);pointer-events:none}
 .adm-pv .announce{position:absolute;top:10px;width:calc(100% - 20px);padding:7px 9px;gap:8px;border-radius:12px;opacity:1;transform:none;translate:-50% 0;box-shadow:0 4px 0 #9c2a10}
-.adm-pv .announce.mod{box-shadow:0 4px 0 #0b3a99}
+.adm-pv .announce{box-shadow:0 4px 0 var(--e)}
+.adm-pv .announce[data-st="game"] b{font-size:.85rem}.adm-pv .ann-card[data-st="game"] p{font-size:.9rem}
 .adm-pv .announce .mega{width:28px;height:28px;border-radius:8px}.adm-pv .announce .mega svg{width:20px;height:20px}
 .adm-pv .announce small{font-size:.62rem}.adm-pv .announce b{font-size:.8rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .adm-pv .ann-ov{position:absolute;padding:8px}
@@ -922,6 +942,22 @@ body.is-mod .adm-admin-only{display:none!important}
 .adm-pv .ann-card small{font-size:.6rem}.adm-pv .ann-card p{font-size:.78rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .adm-pv .ann-ok{display:grid;place-items:center;line-height:1;min-width:60px;height:22px;border-radius:7px;font-size:.7rem;margin-top:2px;box-shadow:0 2px 0 var(--e)}
 .adm-note{margin:0;font-size:.9rem;opacity:.9}
+.adm-note:empty{display:none}
+.adm-styles{display:flex;flex-wrap:wrap;gap:8px}
+.adm-st{--a:#ff6a3d;--b:#e8421f;--e:#9c2a10;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 6px;border:0;border-radius:14px;cursor:pointer;color:#fff;font:600 1rem "HeeboHe","Fredoka",system-ui,sans-serif;background:rgb(255 255 255 / .16);box-shadow:inset 0 0 0 3px transparent}
+body.rtl .adm-st{padding:0 6px 0 14px}
+.adm-st i{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(180deg,var(--a),var(--b));box-shadow:0 3px 0 var(--e)}
+.adm-st i svg{width:22px;height:22px}
+.adm-st[aria-checked="true"]{background:#fff;color:#0b5cb8;box-shadow:0 4px 0 #06488a}
+.adm-st:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.adm-tips{display:grid;gap:8px}
+.adm-tips[hidden]{display:none}
+.adm-tip{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:0;border-radius:14px;cursor:pointer;text-align:start;color:#fff;font:500 .98rem/1.4 "HeeboHe","Fredoka",system-ui,sans-serif;background:rgb(255 255 255 / .14)}
+.adm-tip::before{content:"";flex:none;width:16px;height:16px;margin-top:3px;border-radius:50%;box-shadow:inset 0 0 0 3px rgb(255 255 255 / .7)}
+.adm-tip[aria-checked="true"]{background:#fff;color:#0d5a2b;box-shadow:0 4px 0 #0d6e33}
+.adm-tip[aria-checked="true"]::before{background:#1fa85a;box-shadow:inset 0 0 0 3px #b8f5cf}
+.adm-tip:focus-visible{outline:3px solid #ffb547;outline-offset:2px}
+.adm-lbl{margin:2px 0 0;font-weight:700;font-size:.95rem;opacity:.95}
 .announce .mega{width:44px;height:44px;border-radius:12px;background:rgb(0 0 0 / .18);display:grid;place-items:center;flex:none}
 .announce .mega svg{width:30px;height:30px}
 .announce .atext{display:flex;flex-direction:column;min-width:0}
@@ -4475,6 +4511,9 @@ body.land .npc-card .idle-face{display:none}
       <section class="sx-pane" id="admPane-announce" role="tabpanel" aria-labelledby="admTab-announce" hidden>
         <h3>ANNOUNCEMENT</h3>
         <div class="sx-box"><h4><i aria-hidden="true" style="background:#1f9bff"><svg viewBox="0 0 32 32"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/></svg></i>A message to everyone</h4>
+          <p class="adm-lbl adm-admin-only">Kind of message</p>
+          <div class="adm-styles adm-admin-only" role="radiogroup" aria-label="Kind of message" id="admStyles"></div>
+          <div class="adm-tips" id="admTips" role="radiogroup" aria-label="Ready-made tips" hidden></div>
           <textarea class="adm-input adm-text" id="admAnnounce" maxlength="160" rows="2" placeholder="A message everyone in the Plaza will see"></textarea>
           <div class="adm-kinds" role="radiogroup" aria-label="Kind of announcement">
             <button class="adm-kind" type="button" role="radio" aria-checked="true" data-kind="top"><span class="k-h">At the top</span><small>A strip at the top of the screen that goes away by itself after a few seconds.</small>
@@ -4678,6 +4717,7 @@ import {OUTFITS} from "/shared/outfits.js";
 import {EVENTS,isEvent} from "/shared/events.js";
 import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
 import {QUICK_CHAT} from "/shared/parental.js";
+import {TIPS as ANN_TIPS,TIP_BY_ID as ANN_TIP} from "/shared/announce.js";
 import {PET_KINDS,PET_BY_ID,MAX_PETS,MAX_PETS_MEMBER,memberColor,petNameProblem,cleanPetName} from "/shared/pets.js";
 import {BAR_MENU} from "/shared/bar.js";
 import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} from "/shared/food.js";
@@ -8145,7 +8185,7 @@ function netJoin(){
     socket.on("kicked:logout",()=>{exitGame();toast("You logged out.");});   // made admin / no longer admin in the admin panel
     socket.on("kicked:admin",()=>{exitGame();toast("You were kicked from the Plaza by an admin.");sfx.error();});
     socket.on("banned",d=>{exitGame();setAccount(null);socket.disconnect();socket=null;toast(d.message||"This account was banned.");sfx.error();});
-    socket.on("announce",d=>showAnnouncement(d.text,d.by,d.role,d.center));
+    socket.on("announce",d=>showAnnouncement(d.text,d.by,d.role,d.center,d.style,d.tip));
   }else if(!socket.connected)socket.connect();
   else socket.emit("join",netState());
   updateOnline();
@@ -8169,18 +8209,34 @@ function paintCoins(bump){const el=document.getElementById("coins");document.get
   if(bump){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");}}
 let announceT;
 // an announcement from the team: a strip at the top (goes away by itself) or a window in the middle (until OK). Moderators' ones are blue.
-const annFrom=(by,role)=>I18N.lang==="he"?`הודעה מ${role==="mod"?"המשגיח":"המנהל"} ${by||""}`.trim():`Announcement from ${by||(role==="mod"?"a moderator":"an admin")}`;
+// how each kind of announcement looks (public/shared/announce.js): its colours come from CSS ([data-st]), its picture and title from here
+const ANN_ICON={
+  admin:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 13 H9 L22 6 V26 L9 19 H4 Z" fill="#fff"/><path d="M9 19 L11 27 H15 L13.5 20.6" fill="#fff"/><path d="M25 12 Q28 16 25 20" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  system:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13.6 3h4.8l.7 3.4c.9.3 1.7.8 2.5 1.4l3.3-1.1 2.4 4.2-2.6 2.3c.1.9.1 1.8 0 2.7l2.6 2.3-2.4 4.2-3.3-1.1c-.8.6-1.6 1.1-2.5 1.4l-.7 3.4h-4.8l-.7-3.4c-.9-.3-1.7-.8-2.5-1.4l-3.3 1.1-2.4-4.2 2.6-2.3c-.1-.9-.1-1.8 0-2.7L4.7 11l2.4-4.2 3.3 1.1c.8-.6 1.6-1.1 2.5-1.4Z" fill="#fff"/><circle cx="16" cy="15" r="4.2" fill="#6b7a90"/></svg>',
+  critical:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.5 L30 27.5 H2 Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M16 11 V19" stroke="#d61f1f" stroke-width="3.4" stroke-linecap="round"/><circle cx="16" cy="23.4" r="2" fill="#d61f1f"/></svg>',
+  game:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 L19.8 11 L29 11.9 L22 18 L24.2 27.2 L16 22.3 L7.8 27.2 L10 18 L3 11.9 L12.2 11 Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><circle cx="12.8" cy="15.5" r="1.4" fill="#9b5cff"/><circle cx="19.2" cy="15.5" r="1.4" fill="#9b5cff"/><path d="M13 19 Q16 21.4 19 19" fill="none" stroke="#9b5cff" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  tip:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 a9 9 0 0 0 -5.4 16.2 C11.8 20.1 12 21.3 12 22.4 h8 c0-1.1.2-2.3 1.4-3.2 A9 9 0 0 0 16 3 Z" fill="#fff"/><rect x="12" y="24" width="8" height="2.6" rx="1.2" fill="#fff"/><rect x="13.2" y="27.6" width="5.6" height="2.4" rx="1.2" fill="#fff"/><path d="M16 9 V15 M13 12 H19" stroke="#22a95a" stroke-width="2.2" stroke-linecap="round"/></svg>'};
+ANN_ICON.mod=ANN_ICON.admin;
+function annFrom(by,role,style){const he=I18N.lang==="he";
+  if(style==="system")return he?"הודעת מערכת":"System message";
+  if(style==="critical")return he?"התראה חשובה מאוד":"Important alert";
+  if(style==="game")return he?"הודעה מג'אמפי":"News from Jumpi";
+  if(style==="tip")return he?"טיפ בטיחות":"Safety tip";
+  return he?`הודעה מ${role==="mod"?"המשגיח":"המנהל"} ${by||""}`.trim():`Announcement from ${by||(role==="mod"?"a moderator":"an admin")}`;}
+const annText=(text,tip)=>{const T=tip&&ANN_TIP[tip];return T?(I18N.lang==="he"?T.he:T.en):text;};
 const annOv=document.getElementById("annOv");
 function closeAnnWindow(){if(annOv.hidden)return;annOv.hidden=true;sfx.close();}
 document.getElementById("annOvOk").onclick=closeAnnWindow;
 annOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"||e.key==="Enter"){e.preventDefault();closeAnnWindow();}});
-function showAnnouncement(text,by,role,center){
-  if(center){const c=annOv.querySelector(".ann-card");c.classList.toggle("mod",role==="mod");document.getElementById("annOvBy").textContent=annFrom(by,role);
-    document.getElementById("annOvText").textContent=text;annOv.hidden=false;G.keys={};sfx.open();setTimeout(()=>document.getElementById("annOvOk").focus(),60);return;}
-  document.getElementById("announce").classList.toggle("mod",role==="mod");
-  document.getElementById("announceText").textContent=text;document.getElementById("announceBy").textContent=annFrom(by,role);
-  const a=document.getElementById("announce");a.classList.remove("show");void a.offsetWidth;a.classList.add("show");sfx.open();
-  clearTimeout(announceT);announceT=setTimeout(()=>a.classList.remove("show"),Math.min(14000,6000+text.length*60));
+const annStyle=(role,style)=>role==="mod"?"mod":ANN_ICON[style]?style:"admin";
+function showAnnouncement(text,by,role,center,style,tip){
+  const st=annStyle(role,style),t=annText(text,tip);
+  if(center){const c=annOv.querySelector(".ann-card");c.dataset.st=st;c.querySelector(".mega").innerHTML=ANN_ICON[st];document.getElementById("annOvBy").textContent=annFrom(by,role,st);
+    document.getElementById("annOvText").textContent=t;annOv.hidden=false;G.keys={};(st==="critical"?sfx.error:sfx.open)();setTimeout(()=>document.getElementById("annOvOk").focus(),60);return;}
+  const a=document.getElementById("announce");a.dataset.st=st;a.querySelector(".mega").innerHTML=ANN_ICON[st];
+  document.getElementById("announceText").textContent=t;document.getElementById("announceBy").textContent=annFrom(by,role,st);
+  a.classList.remove("show");void a.offsetWidth;a.classList.add("show");(st==="critical"?sfx.error:sfx.open)();
+  clearTimeout(announceT);announceT=setTimeout(()=>a.classList.remove("show"),Math.min(st==="critical"?20000:14000,6000+t.length*60));
 }
 function applyRoleUI(){const admin=!!(me&&me.role==="admin"),mod=!!(me&&me.role==="mod");document.body.classList.toggle("is-admin",admin);document.body.classList.toggle("is-mod",mod);document.body.classList.toggle("is-staff",admin||mod);
   const b=document.getElementById("adminBtn");b.hidden=!(admin||mod);b.setAttribute("aria-label",mod?"Moderator panel":"Admin panel");{const t=b.querySelector(".rail-tip");if(t)t.textContent=I18N.T(mod?"Moderator panel":"Admin panel");}
@@ -8247,17 +8303,30 @@ document.getElementById("admCodeGo").onclick=e=>{const btn=e.currentTarget,out=d
     if(res.code==="password"){admMsg.className="adm-msg err";admMsg.textContent=res.error;askAdminPw(()=>btn.click());return;}
     admMsg.className="adm-msg "+(res.ok?"ok":"err");admMsg.textContent=res.ok?res.message:res.error;(res.ok?sfx.success:sfx.error)();
     if(res.ok){out.hidden=false;out.textContent=res.code;document.getElementById("admCode").value="";try{navigator.clipboard.writeText(res.code);}catch(x){}}});};
-let admAnnKind="top";
+let admAnnKind="top",admAnnStyle="admin",admAnnTip="";
 const admKinds=[...document.querySelectorAll(".adm-kind")];
-function paintAnnPreview(){const mod=!!(me&&me.role==="mod"),t=val("admAnnounce").trim()||(I18N.lang==="he"?"כאן תופיע ההודעה שלך…":"Your message shows here…");
-  document.querySelectorAll(".adm-pv .pv-text").forEach(x=>x.textContent=t);document.querySelectorAll(".adm-pv .pv-by").forEach(x=>x.textContent=annFrom(me&&me.username,mod?"mod":"admin"));
-  document.querySelectorAll(".adm-pv .announce,.adm-pv .ann-card").forEach(x=>x.classList.toggle("mod",mod));
+const ADM_STYLES=[["game","Game news"],["system","System message"],["admin","From the team"],["critical","Important alert"],["tip","Safety tip"]];
+// the kinds of message (admins) and the ready-made tips, built the first time the panel paints them
+let admPickerBuilt=false;
+function buildAnnPicker(){if(admPickerBuilt)return;admPickerBuilt=true;const box=document.getElementById("admStyles");box.innerHTML=ADM_STYLES.map(([k,n])=>`<button class="adm-st" type="button" role="radio" data-st="${k}" aria-checked="false"><i>${ANN_ICON[k]}</i><span>${esc(n)}</span></button>`).join("");
+  box.querySelectorAll(".adm-st").forEach(b=>b.onclick=()=>{admAnnStyle=b.dataset.st;if(admAnnStyle!=="tip")admAnnTip="";else if(!admAnnTip)admAnnTip=ANN_TIPS[0].id;sfx.tick(true);paintAnnPreview();});
+  const tb=document.getElementById("admTips");tb.innerHTML=ANN_TIPS.map(t=>`<button class="adm-tip" type="button" role="radio" data-tip="${t.id}" aria-checked="false" data-noi18n></button>`).join("");
+  tb.querySelectorAll(".adm-tip").forEach(b=>b.onclick=()=>{admAnnTip=b.dataset.tip;sfx.tick(true);paintAnnPreview();});}
+function paintAnnPreview(){buildAnnPicker();const mod=!!(me&&me.role==="mod"),he=I18N.lang==="he";if(mod){admAnnStyle="admin";admAnnTip="";}
+  const st=mod?"mod":admAnnStyle,tipOn=st==="tip",ta=document.getElementById("admAnnounce");
+  ta.hidden=tipOn;document.getElementById("admTips").hidden=!tipOn;
+  const t=tipOn?annText("",admAnnTip):(ta.value.trim()||(he?"כאן תופיע ההודעה שלך…":"Your message shows here…"));
+  document.querySelectorAll(".adm-pv .pv-text").forEach(x=>x.textContent=t);document.querySelectorAll(".adm-pv .pv-by").forEach(x=>x.textContent=annFrom(me&&me.username,mod?"mod":"admin",st));
+  document.querySelectorAll(".adm-pv .announce,.adm-pv .ann-card").forEach(x=>{x.dataset.st=st;x.querySelector(".mega").innerHTML=ANN_ICON[st];});
   admKinds.forEach(b=>b.setAttribute("aria-checked",String(b.dataset.kind===admAnnKind)));
-  document.getElementById("admAnnNote").textContent=mod?I18N.T("Moderators' announcements are blue and go through the chat filter. One every 2 minutes."):"";}
+  document.querySelectorAll("#admStyles .adm-st").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.st===admAnnStyle)));
+  document.querySelectorAll("#admTips .adm-tip").forEach(b=>{const T=ANN_TIP[b.dataset.tip];b.textContent=he?T.he:T.en;b.setAttribute("aria-checked",String(b.dataset.tip===admAnnTip));});
+  document.getElementById("admAnnNote").textContent=mod?I18N.T("Moderators' announcements are blue and go through the chat filter. One every 2 minutes."):tipOn?I18N.T("Every player sees the tip in their own language (Hebrew or English)."):"";}
 admKinds.forEach(b=>{b.onclick=()=>{admAnnKind=b.dataset.kind;sfx.tick(true);paintAnnPreview();};});
 document.getElementById("admAnnounce").addEventListener("input",paintAnnPreview);
-document.getElementById("admSend").onclick=e=>{const t=val("admAnnounce").trim();if(!t){admMsg.className="adm-msg err";admMsg.textContent=I18N.T("Write a message first.");return;}
-  adminSend("admin:announce",{text:t,center:admAnnKind==="center"},e.currentTarget,()=>{document.getElementById("admAnnounce").value="";paintAnnPreview();});};
+document.getElementById("admSend").onclick=e=>{const mod=!!(me&&me.role==="mod"),tip=!mod&&admAnnStyle==="tip"?admAnnTip:"",t=val("admAnnounce").trim();
+  if(!t&&!tip){admMsg.className="adm-msg err";admMsg.textContent=I18N.T("Write a message first.");return;}
+  adminSend("admin:announce",{text:tip?"":t,center:admAnnKind==="center",style:mod?"":admAnnStyle,tip},e.currentTarget,()=>{if(!tip)document.getElementById("admAnnounce").value="";paintAnnPreview();});};
 document.getElementById("adminBtn").onclick=e=>{press(e.currentTarget);openAdmin();};
 document.getElementById("adminClose").onclick=closeAdmin;
 adminOverlay.addEventListener("pointerdown",e=>{if(e.target===adminOverlay)closeAdmin();});
