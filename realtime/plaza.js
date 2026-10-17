@@ -9,6 +9,7 @@ import { attachShow, showJoined, showLeft, showIsOpen, showBanner, showTick, ini
 import { attachVehicles, sendVehicles, vehiclePlayerLeft, vehiclePlayerBack, vehiclesGhost } from "./vehicles.js";
 import { EMOTE_LIST, hasEmote } from "../catalog.js";
 import { checkText, FRIENDLY_MESSAGE, splitPhone, PRIVATE_MESSAGE, riskText } from "../public/shared/profanity.js";
+const MOD_ANNOUNCE_GAP = 2 * 60 * 1000, modAnnounceAt = new Map();   // moderators: one announcement every 2 minutes
 import { ChatLog, AdminLog, logQuietly } from "../models/Logs.js";
 import { Report } from "../models/Report.js";
 import { socketIp } from "../routes/ip.js";
@@ -296,10 +297,11 @@ export const moderation = {
     for (const s of socketsOfUser(user._id.toString())) s.emit("coins", { coins: result.coins, delta });
     return result.coins;
   },
-  announce(text, by) {
+  // role: "admin" (orange) or "mod" (blue); center: a window in the middle of the screen with an OK button (otherwise a strip at the top)
+  announce(text, by, { role = "admin", center = false } = {}) {
     const msg = cleanText(text, MAX_ANNOUNCE);
     if (!msg) return null;
-    ioRef?.emit("announce", { text: msg, by }); // the Plaza and every home
+    ioRef?.emit("announce", { text: msg, by, role: role === "mod" ? "mod" : "admin", center: center === true }); // the Plaza and every home
     return msg;
   },
   // the player's look, coins or inventory were changed by an admin: refresh open windows
@@ -794,8 +796,8 @@ export function attachPlaza(io) {
     }, { mods: true, heavy: (d) => !(num(d.minutes) > 0) });
 
     adminAction("admin:unban", async ({ username }, admin) => {
+      if (admin.role === "mod") throw fail("Only an admin can lift a ban.");
       const user = await findTarget(username, admin);
-      if (admin.role === "mod" && user.bannedUntil && user.bannedUntil.getFullYear() >= 9000) throw fail("Only an admin can lift a permanent ban.");
       await moderation.unban(user);
       audit(admin, "unban", user);
       return { message: `${user.username} is no longer banned.` };
@@ -854,12 +856,21 @@ export function attachPlaza(io) {
       return { code: c.code, message: `Code ${c.code} is ready: ${c.coins.toLocaleString("en-US")} coins${c.maxUses ? ` for ${c.maxUses} player(s)` : ""}.` };
     }, { heavy: () => true });
 
-    adminAction("admin:announce", async ({ text }, admin) => {
-      const msg = moderation.announce(text, admin.username);
+    // moderators may announce too (blue), through the chat filter and at most once every 2 minutes
+    adminAction("admin:announce", async ({ text, center }, admin) => {
+      const mod = admin.role === "mod";
+      if (mod) {
+        const chk = checkText(cleanText(text, MAX_ANNOUNCE) || "");
+        if (!chk.ok) throw fail("That message can't be sent: it has a word or private details the chat filter stops.");
+        const last = modAnnounceAt.get(admin._id.toString()) || 0;
+        if (Date.now() - last < MOD_ANNOUNCE_GAP) throw fail(`Wait ${Math.ceil((MOD_ANNOUNCE_GAP - (Date.now() - last)) / 1000)} seconds before the next announcement.`);
+      }
+      const msg = moderation.announce(text, admin.username, { role: admin.role, center: center === true });
       if (!msg) throw fail("Write a message first.");
-      audit(admin, "announce", null, msg);
+      if (mod) modAnnounceAt.set(admin._id.toString(), Date.now());
+      audit(admin, "announce", null, `${center === true ? "[window] " : ""}${msg}${mod ? " · by a moderator" : ""}`);
       return { message: "Announcement sent to everyone in the Plaza." };
-    });
+    }, { mods: true });
   });
 }
 
