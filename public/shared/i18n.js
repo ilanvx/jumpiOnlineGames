@@ -334,7 +334,7 @@
     [/^You need ([\d,]+) more coins\.?$/, "חסרים לכם $1 מטבעות"], [/^You need (\d+) coins to play\.$/, "צריך $1 מטבעות כדי לשחק."],
     [/^🎉 You unlocked (.+)!$/, (m, a) => "🎉 פתחתם את " + T1(a) + "!"], [/^You unlocked (.+)! Find it in the chat bar\.$/, (m, a) => "פתחתם את " + T1(a) + "! הוא מחכה בסרגל הצ'אט."],
     [/^Buy ([\d,]+)$/, "קנייה $1"], [/^Buy another ([\d,]+)$/, "עוד אחד $1"],
-    [/^Now wearing (.+)\.$/, "עכשיו לובשים: $1."], [/^You bought (.+)! Tap Wear to put it on\.$/, "קניתם את $1! לחצו על 'ללבוש'."], [/^You bought (.+)! Place it in My Home\.$/, "קניתם את $1! הציבו אותו בבית שלי."],
+    [/^Now wearing (.+)\.$/, (m, a) => "עכשיו לובשים: " + T1(a) + "."], [/^You bought (.+)! Tap Wear to put it on\.$/, (m, a) => "קניתם את " + T1(a) + "! לחצו על 'ללבוש'."], [/^You bought (.+)! Place it in My Home\.$/, (m, a) => "קניתם את " + T1(a) + "! הציבו אותו בבית שלי."],
     [/^Your home is full! You can have up to (\d+) pieces of furniture\.$/, "הבית מלא! אפשר עד $1 רהיטים."],
     [/^(.+) challenges you to (.+)! 100 coins each, winner takes 200\.$/, (m, a, g) => a + " מזמין/ה אותך ל" + T1(g) + "! 100 מטבעות לכל אחד, המנצח לוקח 200."],
     [/^Challenge sent to (.+)\. Waiting for an answer…$/, "ההזמנה נשלחה ל־$1. מחכים לתשובה…"], [/^(.+) doesn't want to play right now\.$/, "$1 לא רוצה לשחק עכשיו."],

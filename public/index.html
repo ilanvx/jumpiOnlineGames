@@ -445,6 +445,7 @@ body.rtl .btn span,body.rtl .tut-body h2,body.rtl .tl-say,body.rtl .idle-card h2
    so a Hebrew sentence reads right to left (with its "!" and "?" at the end) and English names / numbers inside it stay whole */
 body.rtl :is(p,h1,h2,h3,h4,h5,h6,li,label,dd,dt,td,th,figcaption,blockquote,small,b,strong,em,span,a,button,div,summary,legend,option,output){unicode-bidi:plaintext}
 body.rtl :is(input,textarea){unicode-bidi:plaintext;text-align:start}
+body.rtl h2.mgx-title,body.rtl #hbTitle,body.rtl #tyTitle{unicode-bidi:normal}body.rtl h2.mgx-title>span,body.rtl #hbTitle>span,body.rtl #tyTitle>span{unicode-bidi:normal}
 body.rtl :is(h1,h2,h3,h4,h5,h6,b,strong,small,button,label,.btn){letter-spacing:0}
 .sound{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 18px);right:18px;width:58px;height:58px;border-radius:16px;padding:0}
 .sound svg{width:32px;height:32px}
@@ -2390,7 +2391,7 @@ button.ph-row:focus-visible{outline:3px solid #1f9bff;outline-offset:-3px}
 .ph-bars{position:absolute;left:12%;right:12%;bottom:12px;height:34px;display:flex;align-items:flex-end;gap:4px}
 .ph-bars i{flex:1;height:8%;border-radius:3px;background:rgb(255 255 255 / .8);transition:height .08s}
 .ph-song{text-align:center;padding:0 16px}
-.ph-song b{display:block;font:400 1.45rem var(--font);color:#22324a}
+.ph-song b{display:block;font:400 1.45rem var(--font);line-height:1.15;text-wrap:balance;color:#22324a}
 .ph-song span{color:#6a7c94;font-weight:500}
 .ph-player{display:flex;justify-content:center;align-items:center;gap:18px;margin:14px 0 6px}
 .ph-player button{width:52px;height:52px;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:#e3ebf6;box-shadow:0 4px 0 #b9c7da}
@@ -6365,11 +6366,20 @@ function mat(c,o={}){return new THREE.MeshStandardMaterial({color:c,roughness:.8
 function box(w,h,d,m,x,y,z,ry=0){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.position.set(x,y,z);b.rotation.y=ry;b.castShadow=b.receiveShadow=true;return b;}
 function cyl(rt,rb,h,m,x,y,z,seg=24){const c=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);c.position.set(x,y,z);c.castShadow=c.receiveShadow=true;return c;}
 function texCanvas(w,h,draw,repeat){const t=canvasTex(w,h,draw);if(repeat){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(...repeat);}return t;}
+/* 3D signs follow the game language: the text is translated (Hebrew uses Heebo) and redrawn when the language changes */
+const SIGN_TEX=[];
 function textTex(text,{bg="#fff",fg="#333",w=512,h=160,font="Lilita One",size=96,radius=40,stroke=null}={}){
-  return canvasTex(w,h,(x)=>{x.fillStyle=bg;x.beginPath();x.roundRect(4,4,w-8,h-8,radius);x.fill();
-    x.font=`${size}px "${font}", "Arial Rounded MT Bold", sans-serif`;x.textAlign="center";x.textBaseline="middle";
-    if(stroke){x.lineWidth=12;x.strokeStyle=stroke;x.strokeText(text,w/2,h/2+4);}x.fillStyle=fg;x.fillText(text,w/2,h/2+4);});
+  const draw=(x)=>{x.clearRect(0,0,w,h);x.fillStyle=bg;x.beginPath();x.roundRect(4,4,w-8,h-8,radius);x.fill();
+    const he=window.I18N&&I18N.lang==="he"&&/[A-Za-z]{2}/.test(text),t=he?I18N.T(text):text,heb=/[\u0590-\u05FF]/.test(t);let sz=size;
+    const f=()=>`${sz}px ${heb?'"HeeboDisplay",':""}"${font}", "Arial Rounded MT Bold", sans-serif`;x.font=f();
+    if(heb){while(sz>30&&x.measureText(t).width>w-44){sz-=4;x.font=f();}x.direction="rtl";}else x.direction="ltr";
+    x.textAlign="center";x.textBaseline="middle";const y=h/2+(heb?6:4);
+    if(stroke){x.lineWidth=12;x.strokeStyle=stroke;x.strokeText(t,w/2,y);}x.fillStyle=fg;x.fillText(t,w/2,y);};
+  const tex=canvasTex(w,h,draw);if(/[A-Za-z]{2}/.test(text))SIGN_TEX.push({tex,draw,text});return tex;
 }
+function redrawSigns(){for(const s of SIGN_TEX){s.draw(s.tex.image.getContext("2d"));s.tex.needsUpdate=true;}}
+window.addEventListener("langchange",()=>{if(I18N.lang==="he"&&document.fonts)document.fonts.load('80px "HeeboDisplay"',"אב").then(redrawSigns,redrawSigns);else redrawSigns();});
+if(window.I18N&&I18N.lang==="he"&&document.fonts)document.fonts.load('80px "HeeboDisplay"',"אב").then(()=>setTimeout(redrawSigns,0));
 /* name-tag icons sold in the Tags shop: each draws itself centred on (0,0) in a 100×100 box */
 const TAGS=[
   ["Star",x=>{starPath(x,0,4,46,20);x.fillStyle="#ffd23a";x.fill();x.stroke();starPath(x,-6,-2,16,7);x.fillStyle="#fff6b0";x.fill();}],
@@ -7662,7 +7672,7 @@ function makeCharacter(look,label,tagColor,lv=0){
   return n;
 }
 function makeResident(){
-  const n=makeCharacter({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},"Pip · Resident");
+  const n=makeCharacter({color:2,eyes:1,hair:1,shirt:2,pants:0,glasses:0},I18N.T("Pip · Resident"));
   n.root.position.set(5.6,0,0.4);n.root.rotation.set(0,-1.2,0);Object.assign(n,{face:-1.2,waveT:-9});
   return n;
 }
@@ -7746,9 +7756,14 @@ function markerMat(k){if(_mk[k])return _mk[k];
     x.beginPath();x.moveTo(50,108);x.lineTo(64,140);x.lineTo(78,108);x.fillStyle=col;x.fill();x.stroke();
     x.font='400 84px "HeeboDisplay","Lilita One","HeeboHe","Fredoka",sans-serif';x.textAlign="center";x.textBaseline="middle";x.lineWidth=12;x.strokeText(k,64,66);x.fillStyle="#fff";x.fillText(k,64,66);});
   return _mk[k]=new THREE.SpriteMaterial({map:tex,depthTest:true,depthWrite:false,transparent:true});}
+// the residents' name tags follow the game language
+function refreshNpcTags(){const swap=(tag,text,fill)=>{if(!tag)return;const nt=nameTag(text,fill,-1,0);tag.material.map&&tag.material.map.dispose();tag.material.map=nt.material.map;tag.material.needsUpdate=true;};
+  QS.res.forEach(r=>swap(r.n.tag,I18N.T(r.R.name),RES_TAG));if(G.npc)swap(G.npc.tag,I18N.T("Pip · Resident"));}
+window.addEventListener("langchange",()=>{if(document.fonts)document.fonts.load('600 70px "HeeboHe"',"אב").then(refreshNpcTags,refreshNpcTags);else refreshNpcTags();});
+if(I18N.lang==="he"&&document.fonts)document.fonts.load('600 70px "HeeboHe"',"אב").then(()=>setTimeout(refreshNpcTags,0));
 function buildResidents(){
   QS.res.forEach(r=>{r.n.root.removeFromParent();r.n.tag.removeFromParent();r.mk.removeFromParent();});QS.res=[];
-  for(const R of RESIDENTS){const n=makeCharacter({neck:-1,hat:-1,glasses:-1,...R.look},R.name,RES_TAG,0);
+  for(const R of RESIDENTS){const n=makeCharacter({neck:-1,hat:-1,glasses:-1,...R.look},I18N.T(R.name),RES_TAG,0);
     n.root.position.set(R.at[0],groundY(R.at[0],R.at[1]),R.at[1]);n.root.rotation.y=R.face;Object.assign(n,{face:R.face,waveT:-9,greetT:-99});
     const mk=new THREE.Sprite(markerMat("?"));mk.scale.set(.85,1.06,1);mk.visible=false;mk.renderOrder=11;
     world.add(n.root,n.tag,mk);G.colliders.push({c:[R.at[0],R.at[1]],r:.55});QS.res.push({R,n,mk,kind:""});}
@@ -8129,7 +8144,7 @@ document.getElementById("admUnmute").onclick=e=>adminSend("admin:unmute",{userna
 document.getElementById("admCoins").onclick=e=>adminSend("admin:coins",{username:admUser.value,amount:+val("admAmount")},e.currentTarget,r=>{if(r.budget)paintBudget(r.budget);});
 // moderators: how many coins they can still give this month
 function paintBudget(b){const el=document.getElementById("admBudget");if(!b){el.hidden=true;return;}el.hidden=false;
-  const d=new Date(b.resets+"T00:00:00");el.innerHTML=`Your budget this month: <b>${b.left.toLocaleString("en-US")}</b> of ${b.limit.toLocaleString("en-US")} coins. It starts again on ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long"})}.`;}
+  const d=new Date(b.resets+"T00:00:00");el.innerHTML=I18N.lang==="he"?`התקציב שלך החודש: <b>${b.left.toLocaleString("en-US")}</b> מתוך ${b.limit.toLocaleString("en-US")} מטבעות. הוא מתחדש ב־${d.toLocaleDateString("he-IL",{day:"numeric",month:"long"})}.`:`Your budget this month: <b>${b.left.toLocaleString("en-US")}</b> of ${b.limit.toLocaleString("en-US")} coins. It starts again on ${d.toLocaleDateString("en-GB",{day:"numeric",month:"long"})}.`;}
 function modBudget(){if(!socket||!socket.connected||!socket.timeout)return;socket.timeout(6000).emit("mod:budget",{},(err,r)=>{if(!err&&r&&r.ok)paintBudget(r.budget);});}
 document.getElementById("admCodeGo").onclick=e=>{const btn=e.currentTarget,out=document.getElementById("admCodeOut");
   if(!socket||!socket.connected){adminSend("admin:code",{},btn);return;}
@@ -8381,12 +8396,12 @@ function paintMapArt(){
   g.fillStyle="#ff4545";g.beginPath();g.moveTo(0,-34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();g.fillStyle="#1f3355";g.beginPath();g.moveTo(0,34);g.lineTo(9,0);g.lineTo(-9,0);g.fill();
   g.font="22px 'Lilita One',sans-serif";g.textAlign="center";g.textBaseline="middle";g.fillStyle="#1f3355";g.fillText("N",0,-52+70*0);g.restore();
   // ---- zone names ----
-  const label=(text,x,z,col)=>{g.save();g.translate(mpX(x),mpZ(z));g.font="44px 'Lilita One',sans-serif";const w=g.measureText(text).width+56;
+  const label=(text,x,z,col)=>{text=I18N.T(text);g.save();g.translate(mpX(x),mpZ(z));g.font="44px 'HeeboDisplay','Lilita One',sans-serif";const w=g.measureText(text).width+56;
     g.fillStyle="rgba(0,0,0,.25)";g.beginPath();g.roundRect(-w/2,-26+6,w,56,28);g.fill();
     g.fillStyle=col;g.beginPath();g.roundRect(-w/2,-26,w,56,28);g.fill();g.lineWidth=5;g.strokeStyle="#fff";g.stroke();
     g.textAlign="center";g.textBaseline="middle";g.lineWidth=7;g.strokeStyle="rgba(0,0,0,.3)";g.strokeText(text,0,3);g.fillStyle="#fff";g.fillText(text,0,3);g.restore();};
   label("THE PLAZA",0,-17.2,ZONE_COL.plaza);label("THE BEACH",24,-29,ZONE_COL.beach);label("THE PARK",-8,30,ZONE_COL.park);label("WATER PARK",64,14,ZONE_COL.waterpark);
-  CITY_L.DISTRICTS.forEach(d=>{const [x0,z0,x1,z1]=d.rect,at=MAP_LABEL_AT[d.id]||[(x0+x1)/2,(z0+z1)/2];label(d.short.toUpperCase(),at[0],at[1],d.col);});
+  CITY_L.DISTRICTS.forEach(d=>{const [x0,z0,x1,z1]=d.rect,at=MAP_LABEL_AT[d.id]||[(x0+x1)/2,(z0+z1)/2];label(I18N.lang==="he"?d.short:d.short.toUpperCase(),at[0],at[1],d.col);});
   return c;
 }
 // the city around the old heart, painted from the real layout (public/shared/city-layout.js) and the city's own walls
@@ -8469,6 +8484,7 @@ function initMap(){
   if(mapArt)return;
   mapArt=paintMapArt();
   if(document.fonts)document.fonts.ready.then(()=>{mapArt=paintMapArt();});   // repaint once the game font is ready
+  window.addEventListener("langchange",()=>{const go=()=>{mapArt=paintMapArt();};if(document.fonts)document.fonts.load("44px HeeboDisplay","אב").then(go,go);else go();});
   ["mapHost","mmHost"].forEach(id=>{const h=document.getElementById(id);h.innerHTML="";const cv=document.createElement("canvas");h.appendChild(cv);});
   const travel=document.getElementById("mapTravel");travel.innerHTML="";
   const ICON={plaza:'<circle cx="12" cy="13" r="7" fill="none" stroke="#fff" stroke-width="2.6"/><circle cx="12" cy="13" r="2.6" fill="#fff"/><path d="M12 3 V6" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>',
@@ -9181,7 +9197,7 @@ function paintAccount(){
   document.getElementById("setName").textContent=me.username;
   document.getElementById("sxAv").src=emoteImage("happy",skinOf({color:lk("color")}));
   const R={admin:["Admin","admin"],mod:["Moderator","mod"]}[me.role]||["Player","player"],role=document.getElementById("sxRole");
-  role.textContent=R[0];role.className="sx-role "+R[1];
+  role.textContent=I18N.T(R[0]);role.className="sx-role "+R[1];
   document.getElementById("sxEmail").textContent=maskMail(me.email);
   document.getElementById("sxPwUser").value=me.username;
   // age and birthday (the date of birth given when signing up)
@@ -9639,10 +9655,11 @@ api("me").then(async r=>{
 let hbShown=false;
 async function birthdayParty(){if(hbShown||!me||!me.birthdayToday)return;hbShown=true;
   const r=await api("/api/birthday/claim",{});if(!r.ok||!inGame)return;
-  if(r.data.already){setTimeout(()=>toast(`Happy birthday, ${me.username}! Have an awesome day!`),2600);return;}
+  if(r.data.already){setTimeout(()=>toast(I18N.lang==="he"?`יום הולדת שמח, ${me.username}! שיהיה לך יום מדהים!`:`Happy birthday, ${me.username}! Have an awesome day!`),2600);return;}
   if(r.data.user)setAccount(r.data.user,true);paintCoins(true);
   const hat=r.data.hat?r.data.hat.split(":"):null;
-  document.getElementById("hbText").innerHTML=`Have the best day ever, <b>${esc(me.username)}</b>! Everyone in Jumpi wishes you a happy birthday. Here's a present from us:`;
+  if(I18N.lang==="he"){const hc=["#ff5fa8","#ff8a1c","#ffd23a","#2fd36b","#1fb6ff","#9b5cff"],ht=document.getElementById("hbTitle");ht.dir="rtl";ht.setAttribute("aria-label","יום הולדת שמח!");ht.innerHTML=[..."יום הולדת שמח!"].map((ch,i)=>ch===" "?" ":`<span style="--i:${i};--c:${hc[i%6]}">${ch}</span>`).join("");}
+  document.getElementById("hbText").innerHTML=I18N.lang==="he"?`שיהיה לך את היום הכי טוב שיש, <b>${esc(me.username)}</b>! כל ג'אמפי מאחלים לך יום הולדת שמח. הנה מתנה מאיתנו:`:`Have the best day ever, <b>${esc(me.username)}</b>! Everyone in Jumpi wishes you a happy birthday. Here's a present from us:`;
   const items=r.data.coins?[`<div class="hb-present" style="--k:0"><span class="pic">${COIN_SVG}</span><b>+${r.data.coins.toLocaleString("en-US")}</b><small>coins</small></div>`]:[];
   if(r.data.item&&hat)items.push(`<div class="hb-present" style="--k:1"><span class="pic">${itemPic(hat[0],+hat[1])}</span><b>Birthday hat</b><small>only on birthdays</small></div>`);
   document.getElementById("hbPresents").innerHTML=items.join("");
@@ -14184,7 +14201,7 @@ function paintOffers(){
         <div class="of-buy">${has?`<span class="of-own">You have this one!</span>`:`<button type="button" class="of-go" data-p="${P.id}">Get it for ₪${P.price.toFixed(2)}</button>`}<span class="of-time" data-ends="${endsAt}">${endsText(endsAt)}</span></div></div></div>`;};
   const small=P=>`<div class="of-small" style="--oc:${P.color}"><img alt="" src="${bundleShot(P)}"><div><b>${esc(P.name.en)}</b><div class="of-its mini">${giveChips(P)}</div></div>
       ${P.once&&owned.has(P.id)?`<span class="of-own">Owned</span>`:`<button type="button" class="of-go small" data-p="${P.id}">₪${P.price.toFixed(2)}</button>`}</div>`;
-  const member=OFFERS.me&&OFFERS.me.memberUntil?`<p class="of-member-on">${GSTAR} You're a member until <b>${new Date(OFFERS.me.memberUntil).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</b></p>`:"";
+  const member=OFFERS.me&&OFFERS.me.memberUntil?`<p class="of-member-on">${GSTAR} ${I18N.T("You're a member until")} <b>${new Date(OFFERS.me.memberUntil).toLocaleDateString(I18N.lang==="he"?"he-IL":"en-GB",{day:"numeric",month:"short"})}</b></p>`:"";
   box.innerHTML=big(W)+others.map(small).join("")+`<div class="of-row">
       <button type="button" class="of-tile cn" data-p="coins"><span class="of-coinpile">${COIN_SVG}${COIN_SVG}${COIN_SVG}</span><b>Coin packs</b><small>from ₪${Math.min(...PRODUCTS.filter(p=>p.kind==="coins").map(p=>p.price)).toFixed(2)}</small></button>
       <button type="button" class="of-tile mb" data-p="member"><span class="of-coinpile">${GSTAR}</span><b>Membership</b><small>from ₪${Math.min(...PRODUCTS.filter(p=>p.kind==="member").map(p=>p.price)).toFixed(2)} · never renews by itself</small></button></div>${member}`;
@@ -14221,7 +14238,7 @@ function showBuyNote(wait=1800){
     tyAt=Date.parse(n.at)||Date.now();
     const kinds=n.kinds||[],only=k=>kinds.length===1&&kinds[0]===k,many=n.n>1;
     const word=tyT("ENJOY!","תתחדש!"),cols=["#ff9a1f","#ff5fa8","#9b5cff","#1fb6ff","#2fd36b","#ffd23a","#ff9a1f"];
-    const title=document.getElementById("tyTitle");title.setAttribute("aria-label",word);
+    const title=document.getElementById("tyTitle");title.dir=/[\u0590-\u05FF]/.test(word)?"rtl":"ltr";title.setAttribute("aria-label",word);
     title.innerHTML=[...word].map((ch,i)=>ch===" "?" ":`<span aria-hidden="true" style="--i:${i};--c:${cols[i%cols.length]}">${esc(ch)}</span>`).join("");
     const what=only("member")?tyT(many?"You bought memberships":"You bought a membership",many?"רכשת מנויים":"רכשת מנוי")
       :only("coins")?tyT(many?"You bought coin packs":"You bought a coin pack",many?"רכשת חבילות מטבעות":"רכשת חבילת מטבעות")
@@ -15322,9 +15339,9 @@ function whereText(w,name){if(!w)return "Offline";if(w==="online")return "Online
   if(w.startsWith("place:")){const V=VENUES[w.slice(6)];return V?"At the "+V.title.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):"In the Plaza";}const owner=w.slice(5);
   if(me&&owner===lower(me.username))return lower(name)===owner?"At home":"At your home";return lower(name)===owner?"At home":`At ${owner}'s home`;}
 const timeFmt=ms=>new Date(ms).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
-function dayFmt(ms){const d=new Date(ms),t=new Date();const same=(a,b)=>a.toDateString()===b.toDateString();if(same(d,t))return "Today";
-  const y=new Date(t);y.setDate(t.getDate()-1);if(same(d,y))return "Yesterday";return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}
-const whenFmt=ms=>dayFmt(ms)==="Today"?timeFmt(ms):dayFmt(ms);
+function dayFmt(ms){const d=new Date(ms),t=new Date();const same=(a,b)=>a.toDateString()===b.toDateString();if(same(d,t))return I18N.lang==="he"?"היום":"Today";
+  const y=new Date(t);y.setDate(t.getDate()-1);if(same(d,y))return I18N.lang==="he"?"אתמול":"Yesterday";return d.toLocaleDateString(I18N.lang==="he"?"he-IL":"en-US",{weekday:"short",month:"short",day:"numeric"});}
+const whenFmt=ms=>dayFmt(ms)===dayFmt(Date.now())?timeFmt(ms):dayFmt(ms);
 
 /* ---------- icons ---------- */
 const I={
@@ -15495,9 +15512,9 @@ function appMusic(tok){
   const st=Sound.music(),T=st.tracks[st.track],playing=st.on;
   phBody.innerHTML=`${!Sound.musicVol?`<div class="ph-note">Music is off in Settings.<button type="button" data-a="unmute">Turn on</button></div>`:""}
     <div class="ph-album ${playing?"playing":""}" style="--c:${T.col}">${I.music}<div class="ph-bars" aria-hidden="true">${"<i></i>".repeat(14)}</div></div>
-    <div class="ph-song"><b>${esc(T.name)}</b><span>${esc(T.by)}</span></div>
+    <div class="ph-song"><b>${esc(I18N.T(T.name))}</b><span>${esc(I18N.T(T.by))}</span></div>
     <div class="ph-player"><button type="button" data-a="prev" aria-label="Previous song">${I.prev}</button><button type="button" class="big" data-a="toggle" aria-label="${playing?"Pause":"Play"}">${playing?I.pause:I.play}</button><button type="button" data-a="next" aria-label="Next song">${I.next}</button></div>
-    <h4 class="ph-sec">Songs</h4>${st.tracks.map((t,i)=>`<button type="button" class="ph-row ph-track" data-a="track" data-i="${i}" aria-current="${i===st.track}" style="--c:${t.col}"><span class="dot"></span><span class="ph-who"><b>${esc(t.name)}</b><small>${esc(t.by)}</small></span>${i===st.track&&playing?'<span class="ph-extra" style="color:#9b5cff">Playing</span>':""}</button>`).join("")}`;
+    <h4 class="ph-sec">Songs</h4>${st.tracks.map((t,i)=>`<button type="button" class="ph-row ph-track" data-a="track" data-i="${i}" aria-current="${i===st.track}" style="--c:${t.col}"><span class="dot"></span><span class="ph-who"><b>${esc(I18N.T(t.name))}</b><small>${esc(I18N.T(t.by))}</small></span>${i===st.track&&playing?'<span class="ph-extra" style="color:#9b5cff">Playing</span>':""}</button>`).join("")}`;
   if(playing)startBars();
 }
 function startBars(){stopBars();const bars=[...phBody.querySelectorAll(".ph-bars i")];
@@ -15734,7 +15751,7 @@ const TUT=[
    p:"Press <b>P</b> or the phone button. Add <b>friends</b>, chat on <b>JumpiChat</b>, see who's online, play <b>music</b>, change your <b>look</b> and visit the <b>shop</b>, all without leaving the game."},
   {t:"EARN COINS",th:"מרוויחים מטבעות",ph:"שחקו ב<b>משחקונים</b> בדוכנים בחוף, בפארק ובמדבר, פתחו את ה<b>מתנה היומית</b> כל יום, ונצחו ב<b>משחקי 1 על 1</b> נגד שחקנים אחרים.",c:"#ffb21f",hi:"#ffe27a",edge:"#a86d00",art:()=>`<svg class="big" viewBox="0 0 64 64"><circle cx="32" cy="34" r="26" fill="#c98a00"/><circle cx="32" cy="30" r="26" fill="#ffd23a"/><circle cx="32" cy="30" r="18" fill="none" stroke="#e8a300" stroke-width="4"/><text x="32" y="38" text-anchor="middle" font-size="22" font-weight="800" fill="#c98a00" font-family="sans-serif">J</text></svg><div class="col"><span class="pill">🎁 Daily gift</span><span class="pill">🎮 Mini-game stands</span><span class="pill">🏆 Win 1-on-1 games</span></div>`,
    p:"Play the <b>mini-games</b> at the stands on the Beach and in the Park, open your <b>daily gift</b> every day, and win <b>1-on-1 games</b> against other players."},
-  {t:"SHOP & HOME",th:"חנות ובית",ph:"קונים ב<b>חנות</b> עם המטבעות. נכנסים ל<b>בית שלי</b> ולוחצים <b>Decorate</b> כדי לסדר רהיטים. בבית אפשר <b>לשבת</b>, <b>לישון</b> ואפילו <b>לנגן בפסנתר</b>!",c:"#c27a3a",hi:"#f0b98a",edge:"#7a4210",art:()=>`<div class="col"><span class="pill">👕 Clothes & hair</span><span class="pill">😎 Emotes</span><span class="pill">🛋️ Furniture</span></div><svg class="big" viewBox="0 0 64 64"><path d="M32 6 L6 28 H13 V58 H51 V28 H58 Z" fill="#fff"/><path d="M32 6 L6 28 H13 L32 13 L51 28 H58 Z" fill="#ff5a5a"/><rect x="26" y="38" width="12" height="20" rx="2" fill="#c27a3a"/><rect x="16" y="34" width="8" height="8" rx="1.5" fill="#7fd0ff"/><rect x="40" y="34" width="8" height="8" rx="1.5" fill="#7fd0ff"/></svg>`,
+  {t:"SHOP & HOME",th:"חנות ובית",ph:"קונים ב<b>חנות</b> עם המטבעות. נכנסים ל<b>בית שלי</b> ולוחצים <b>עיצוב</b> כדי לסדר רהיטים. בבית אפשר <b>לשבת</b>, <b>לישון</b> ואפילו <b>לנגן בפסנתר</b>!",c:"#c27a3a",hi:"#f0b98a",edge:"#7a4210",art:()=>`<div class="col"><span class="pill">👕 Clothes & hair</span><span class="pill">😎 Emotes</span><span class="pill">🛋️ Furniture</span></div><svg class="big" viewBox="0 0 64 64"><path d="M32 6 L6 28 H13 V58 H51 V28 H58 Z" fill="#fff"/><path d="M32 6 L6 28 H13 L32 13 L51 28 H58 Z" fill="#ff5a5a"/><rect x="26" y="38" width="12" height="20" rx="2" fill="#c27a3a"/><rect x="16" y="34" width="8" height="8" rx="1.5" fill="#7fd0ff"/><rect x="40" y="34" width="8" height="8" rx="1.5" fill="#7fd0ff"/></svg>`,
    p:"Spend coins in the <b>shop</b>. Go to <b>My Home</b> and press <b>Decorate</b> to place your furniture. At home you can <b>sit</b>, <b>sleep</b> and even <b>play the piano</b>!"},
   {t:"FRIENDS & TRADES",th:"חברים והחלפות",ph:"<b>לחצו על שחקן אחר</b> כדי להוסיף אותו כחבר, <b>להחליף פריטים</b>, לבקר בבית שלו או לשחק <b>איקס עיגול</b> ו<b>4 בשורה</b> על מטבעות.",c:"#25c36a",hi:"#8ff0b0",edge:"#13813f",art:()=>`<img class="face" style="width:100px;height:100px" alt="" src="${emoteImage("happy",COLORS[3][1])}">${MOUSE("L")}<img class="face" style="width:100px;height:100px;animation-delay:.5s" alt="" src="${emoteImage("wink",COLORS[5][1])}">`,
    p:"<b>Click another player</b> to add them as a friend, <b>trade items</b>, visit their home or play <b>Tic-Tac-Toe</b> and <b>4 in a Row</b> for coins."},
@@ -16428,7 +16445,7 @@ function openMinigame(id){
   MG={game:id,state:"menu",score:0,keys:{},demo:mgDemoInit(id),parts:[],fx:[],shake:0,flash:0};
   mgOverlay.style.setProperty("--mg",info.color);mgOverlay.style.setProperty("--mgd",info.dark);mgOverlay.style.setProperty("--mgbg",info.bg);
   // big bouncy title, one letter at a time
-  $mg("mgTitle").innerHTML=[...info.title].map((ch,i)=>ch===" "?'<span class="sp"> </span>':`<span style="--i:${i}">${ch}</span>`).join("");
+  $mg("mgTitle").dir=/[\u0590-\u05FF]/.test(I18N.T(info.title))?"rtl":"ltr";$mg("mgTitle").innerHTML=[...I18N.T(info.title)].map((ch,i)=>ch===" "?'<span class="sp"> </span>':`<span style="--i:${i}">${ch}</span>`).join("");
   $mg("mgSub").textContent=info.sub;$mg("mgHudTime").hidden=id==="flap";$mg("mgTimeLabel").textContent=id==="dig"?"SHOVELS":"TIME";
   $mg("mgScore").textContent="0";$mg("mgTime").textContent=id==="dig"?"10":"30";
   paintMgStatus();api("/api/minigame/status").then(r=>{if(r.ok){mgStatus=r.data;paintMgStatus();}});
