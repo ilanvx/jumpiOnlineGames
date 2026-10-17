@@ -461,6 +461,7 @@ body.rtl :is(h1,h2,h3,h4,h5,h6,b,strong,small,button,label,.btn){letter-spacing:
 .settings-card h2{margin:0 0 4px;font:400 1.7rem/1 var(--font);letter-spacing:.04em;text-shadow:0 3px 0 #1f3355}
 .settings-card h3{margin:6px 0 0;font:400 1.05rem/1 var(--font);letter-spacing:.06em;color:#bcd0ea}
 .set-close{position:absolute;top:12px;right:12px;width:40px;height:40px;border:0;border-radius:12px;background:#ff5a5a;box-shadow:0 4px 0 #8a1c1c;cursor:pointer;display:grid;place-items:center}
+body.rtl .settings-card>.set-close{right:auto;left:12px}
 .set-close svg{width:18px;height:18px}
 .set-close:active{transform:translateY(3px);box-shadow:0 1px 0 #8a1c1c}
 .set-close:focus-visible,.switch:focus-visible{outline:3px solid #ffb547;outline-offset:3px}
@@ -4907,7 +4908,18 @@ function resize(){
   if(inGame&&!GS_STAGE){cam.updateProjectionMatrix();return;}
   const narrow=w<700;cam.fov=narrow?(w/h<0.7?44:36):30;
   cam.position.set(0,narrow?1.7:2.0,5.4);cam.lookAt(0,narrow?0.78:0.95,0);cam.updateProjectionMatrix();
+  fitStageTop(narrow);
 }
+// the big character on the start page and in the shop: a hat that floats over the head (a halo, a little cloud) stays in the picture
+const _stB=new THREE.Box3(),_stV=new THREE.Vector3();
+function fitStageTop(narrow){try{if(!P||!P.root||(inGame&&!GS_STAGE))return;}catch(e){return;}   // (P doesn't exist yet on the first call)
+  P.root.updateWorldMatrix(true,true);_stB.makeEmpty();
+  P.root.traverse(o=>{if(o.isMesh&&o.geometry&&o.visible){let v=o,ok=true;while(v&&v!==P.root){if(!v.visible){ok=false;break;}v=v.parent;}if(!ok)return;
+    o.geometry.boundingBox||o.geometry.computeBoundingBox();_stB.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));}});
+  if(_stB.isEmpty())return;const top=_stB.max.y-P.root.position.y+.06,ly=narrow?0.78:0.95,cy=narrow?1.7:2.0;
+  const over=()=>{cam.updateMatrixWorld();_stV.set(0,top,0).project(cam);return _stV.y;};
+  if(over()<=.9)return;
+  for(let k=1;k<=12;k++){const up=k*.06,back=1+k*.035;cam.position.set(0,cy+up,5.4*back);cam.lookAt(0,ly+up,0);if(over()<=.9)break;}}
 addEventListener("resize",resize);resize();
 
 /* ---------- pointer tracking ---------- */
@@ -6178,7 +6190,7 @@ function buildOutfit(){
   P.root.traverse(o=>{o.userData.base=true;});
   OUTFIT_READY=true;   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
 }
-function applyOutfit(){
+function applyOutfit(){if(!inGame||GS_STAGE)setTimeout(()=>{if(!inGame||GS_STAGE)resize();},0);
   if(!P||!OUTFIT_READY)return;
   // at work the job's uniform pieces are worn instead of my own clothes
   const W=wearUniform&&JOB_LOOK[wearUniform],L=k=>W&&k in W?W[k]:lk(k),noHair=hatHidesHair(L("hat"));
@@ -6309,6 +6321,17 @@ function renderThumbs(){
   else Object.keys(OUTFIT_OBJ).forEach(k=>OUTFIT_PARTS[k].slice(0,STARTER_ITEMS).forEach((o,i)=>{if(!o.starter)return;if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
   if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
+// items that float away from the body (a halo or a cloud over the head) don't fit the usual picture of their slot:
+// aim between the usual spot and the item, and step back until the whole item is in the picture
+const _thbBox=new THREE.Box3(),_thbV=new THREE.Vector3();
+function thbFit(tc,v,added){if(!added.length)return;THB.n.root.updateWorldMatrix(true,true);_thbBox.makeEmpty();
+  added.forEach(q=>q.traverse(o=>{if(o.isMesh&&o.geometry&&o.visible!==false){o.geometry.boundingBox||o.geometry.computeBoundingBox();_thbBox.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld));}}));
+  if(_thbBox.isEmpty())return;
+  const out=()=>{tc.updateMatrixWorld();let m=0;for(let k=0;k<8;k++){_thbV.set(k&1?_thbBox.max.x:_thbBox.min.x,k&2?_thbBox.max.y:_thbBox.min.y,k&4?_thbBox.max.z:_thbBox.min.z).project(tc);m=Math.max(m,Math.abs(_thbV.x),Math.abs(_thbV.y));}return m;};
+  if(out()<=.95)return;
+  const at=new THREE.Vector3(...v.at),mid=at.clone().lerp(_thbBox.getCenter(new THREE.Vector3()),.5),dir=new THREE.Vector3(...v.pos).sub(at);if(THB.headTop==null){added.forEach(q=>q.removeFromParent());THB.n.root.updateWorldMatrix(true,true);THB.headTop=new THREE.Box3().setFromObject(THB.n.head).max.y;added.forEach(q=>q.userData.par.add(q));}
+  if(_thbBox.min.y>THB.headTop-.02)dir.y+=dir.length()*.55;   // floating over the head: from a little higher, so a ring shows as a ring
+  for(let k=1;k<=3;k+=.15){tc.position.copy(mid).addScaledVector(dir,k);tc.lookAt(mid);if(out()<=.9)break;}}
 function thbPump(){
   THB.raf=0;
   // never while the character is walking or hopping (that's when a skipped frame shows): wait until it stands still
@@ -6317,7 +6340,8 @@ function thbPump(){
   while(THB.queue.length&&performance.now()-t0<6){
     const [kind,i]=THB.queue.shift(),v=THUMB_VIEW[kind];tc.position.set(...v.pos);tc.lookAt(...v.at);
     // a copy of just this item, hung on the same part of the copy character
-    const added=[].concat(outfitGet(kind,i)||[]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);return q;});
+    const added=[].concat(outfitGet(kind,i)||[]).map(p=>{const q=p.clone(true);q.visible=true;const par=(p.parent&&p.parent.name&&n.root.getObjectByName(p.parent.name))||n.body;par.add(q);q.userData.par=par;return q;});
+    thbFit(tc,v,added);
     {const R=iconR(120,120,true);R.render(thbScene(),tc);THUMBS[kind][i]=R.domElement.toDataURL("image/png");}added.forEach(q=>q.removeFromParent());
     THB.done.add(kind+":"+i);changed=true;if(kind===storeSlot&&!THB.queue.some(q=>q[0]===storeSlot))slotDone=true;}
   if(changed&&(slotDone||!THB.queue.length)){refreshChipImages();if((document.body.classList.contains("login-mode")&&panel==="store")||document.body.classList.contains("game-store"))renderStoreGrid();}
