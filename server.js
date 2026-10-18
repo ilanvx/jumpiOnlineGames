@@ -208,6 +208,7 @@ app.get(["/about", "/about-us", "/company", "/odot"], page("site/about.html")); 
 app.get(["/partners", "/partnerships", "/shutafim"], page("site/partners.html"));   // the businesses and projects we work with (footer)   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
+app.get(["/links", "/link", "/bio"], page("site/links.html"));   // all our links in one place (the link in our TikTok / YouTube bios)
 app.get("/trailer", page("site/trailer.html"));
 // the Windows app: the newest installer from GitHub Releases (built by the "Windows app" workflow, branch android-app)
 app.get(["/download/windows", "/download/pc"], (req, res) => { res.set("Cache-Control", "no-store"); res.redirect(302, "https://github.com/ilanvx/jumpiOnlineGames/releases/latest/download/Jumpi-Games-Setup.exe"); });
