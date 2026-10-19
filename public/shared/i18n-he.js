@@ -795,6 +795,7 @@ window.JUMPI_HE_EXTRA = {
 "HOVER MOTORS": "רכבים מרחפים",
 "FUTURE STYLE": "סטייל עתידי",
 "SMART HOME": "בית חכם",
+"HAT HUB": "עולם הכובעים",
 "DRONE RACE": "מרוץ רחפנים",
 "ROBO FIX": "תיקון רובוטים",
 "ROOF HOP": "קפיצות גגות",

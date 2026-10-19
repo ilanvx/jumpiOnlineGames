@@ -47,7 +47,13 @@ export const FW_SHOPS = [
   { id: "f-hover", kind: "vehicle", x: -40, z: -6, title: "HOVER MOTORS" },
   { id: "f-style", kind: "hair", x: -80, z: 26, title: "FUTURE STYLE" },
   { id: "f-home", kind: "furniture", x: -48, z: 28, title: "SMART HOME" },
+  { id: "f-hats", kind: "hat", x: -64, z: 26, title: "HAT HUB" },
 ];
+// every shop is a real little room against the mall wall that you walk into through a sliding glass door:
+// back wall zb, glass front zf (the door in the middle of it), and the spot in front of the counter where you shop
+export const SHOP_W = 12, SHOP_D = 12, SHOP_DOOR = 3.4;
+export function shopRoom(s) { const back = s.z < 10 ? -1 : 1, zb = back < 0 ? MALL.inside[1] : MALL.inside[3], zf = zb - back * SHOP_D;
+  return { back, zb, zf, x0: s.x - SHOP_W / 2, x1: s.x + SHOP_W / 2, spot: [s.x, zb - back * 4.8] }; }
 
 const inR = (x, z, r, pad = 0) => x >= r[0] - pad && x <= r[2] + pad && z >= r[1] - pad && z <= r[3] + pad;
 export const toLocal = (x, z) => [x - OX, z - OZ];

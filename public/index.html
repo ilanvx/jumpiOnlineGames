@@ -4970,6 +4970,10 @@ const Sound=(()=>{
     click(){if(!ok())return;tone({f:520,f2:1100,dur:.11,vol:.45,glide:.05});tone({f:1560,dur:.05,type:"triangle",vol:.08});noise({dur:.02,vol:.12,type:"highpass",f:3000});},
     hover(){if(!ok())return;tone({f:1300,dur:.035,vol:.05});},
     open(){if(!ok())return;[72,76,79,84].forEach((n,i)=>tone({f:midi(n),t:i*.055,dur:.18,type:"triangle",vol:.22}));},
+    // the Future City: a flying car passing close (v: how close, 0..1), a shop's glass door sliding, the hover bus arriving
+    whoosh(v=1){if(!ok())return;noise({dur:.75,vol:.16*v,type:"bandpass",f:320,f2:1500,q:.8});noise({t:.32,dur:.65,vol:.12*v,type:"bandpass",f:1500,f2:240,q:.8});tone({f:190,f2:95,dur:.9,vol:.045*v});},
+    doorSlide(){if(!ok())return;noise({dur:.32,vol:.07,type:"bandpass",f:2600,f2:900,q:1.1});tone({f:880,f2:1320,t:.03,dur:.12,type:"triangle",vol:.04});},
+    busChime(){if(!ok())return;[76,81,84].forEach((n,i)=>tone({f:midi(n),t:i*.17,dur:.45,vol:.12}));},
     close(){if(!ok())return;[79,76,72].forEach((n,i)=>tone({f:midi(n),t:i*.05,dur:.14,type:"triangle",vol:.16}));},
     whoosh(){if(!ok())return;noise({dur:.35,vol:.18,type:"bandpass",f:350,f2:2600,q:1.2});},
     hop(){if(!ok())return;tone({f:180,f2:620,dur:.28,vol:.4,glide:.14,type:"sine",vib:18});},
@@ -7660,7 +7664,7 @@ function worldSit(i){const S=worldSeats()[i];if(!S||G.seat||VEH.ride)return;
   G.seat={k:S.k,y:S.y,f:S.f,x:S.x,z:S.z,back:{x:G.pos.x,z:G.pos.z}};G.pos.set(S.x,0,S.z);G.face=S.f;G.target=null;G.keys={};G.marker.visible=false;
   nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");sfx.tick(true);toast(S.k==="lie"?"Time to relax! Move to get up.":"Ahh, comfy! Move to get up.");}
 function useSpot(id){if(!id)return;if(id.startsWith("fw:lift:")){fwLift(id.slice(8));return;}if(id==="fw:port"){openWorlds();return;}if(id==="fw:hotel"){openPhone();setTimeout(()=>openApp("jobs","hotel"),350);return;}
-  if(id.startsWith("fw:shop:")){const S=FUT.FW_SHOPS.find(q=>q.id===id.slice(8));if(S)openGameStore("future",{shirt:"shirt",glasses:"glasses",vehicle:"vehicle",hair:"hair",furniture:"furniture"}[S.kind]||"shirt",false,S.title);return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
+  if(id.startsWith("fw:shop:")){const S=FUT.FW_SHOPS.find(q=>q.id===id.slice(8));if(S)openGameStore("future",{shirt:"shirt",glasses:"glasses",vehicle:"vehicle",hair:"hair",furniture:"furniture",hat:"hat"}[S.kind]||"shirt",false,S.title);return;}if(id.startsWith("seat:")){worldSit(+id.slice(5));return;}if(id==="veh:ride"){vehMount();return;}if(id==="veh:off"){vehDismount();return;}if(VENUES[id]){enterPlace(id);return;}if(id.startsWith("city:")){cityAct(id.slice(5));return;}const [k,v]=id.split(":");
   if(k==="evshop"){if(EV.cur)openGameStore("spooky");return;}
   if(k==="stand")openMenu("park",v);else if(k==="slide"){const S=PARK_SLIDES.find(q=>q.id===v);if(S)startSlide(S);}}
 
@@ -9163,9 +9167,34 @@ const FWX={fw:null,loading:null,busy:false,prev:null,lastLift:0};
 G.world="town";
 const worldsOf=()=>(me&&Array.isArray(me.worlds)?me.worlds:[]);
 const futureOpen=()=>worldsOf().includes("future");
+// the Sky Mall shops show the real things they sell (the Future City collection), each made the way the store makes it.
+// fwShopItems(slot) gives one maker per item; a maker takes a mode: "alone" (just the item, where it sits on a Jumpi),
+// "dummy" (a white Jumpi wearing it) or "bust" (only the head, wearing it). Sizes are character sizes.
+const FW_DUMMY={color:7,eyes:0,hair:-1,shirt:-1,pants:-1,glasses:-1,hat:-1,neck:-1,beard:-1,tag:-1,aura:-1};
+const FW_WORN=new Map();
+function fwWorn(slot,i,mode,extra){const key=slot+":"+i+":"+mode+":"+JSON.stringify(extra||{});
+  if(!FW_WORN.has(key))FW_WORN.set(key,fwWornMake(slot,i,mode,extra));return FW_WORN.get(key).clone(true);}
+function fwWornMake(slot,i,mode,extra){
+  const look={...FW_DUMMY,...(extra||{})};look[slot]=i;const c=makeCharacter(look,"");const root=c.root;
+  root.traverse(o=>{if(o.isSprite)o.visible=false;});
+  if(mode==="dummy"){root.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return root;}
+  root.updateMatrixWorld(true);const g=new THREE.Group(),headObj=root.getObjectByName("Head");
+  root.traverse(o=>{if(!o.isMesh)return;for(let p=o;p&&p!==root;p=p.parent)if(!p.visible)return;
+    let tag="",inHead=false;for(let q=o;q&&q!==root;q=q.parent){if(!tag&&q.userData.outfit)tag=q.userData.outfit;if(q===headObj)inHead=true;}
+    if(mode==="bust"?!inHead:!tag.startsWith(slot+":"))return;
+    const m=new THREE.Mesh(o.geometry,o.material);m.matrixAutoUpdate=false;m.matrix.copy(o.matrixWorld);m.castShadow=true;g.add(m);});
+  return g;}
+function fwShopItems(slot){
+  try{if(slot==="vehicle")return VEHICLES.map((v,i)=>v.world==="future"?i:-1).filter(i=>i>=0).map(i=>()=>vehModel(i));
+    if(slot==="furniture"){const L=[];for(let i=41;i<51;i++)L.push(()=>buildFurniture(i));return L;}
+    if(!OUTFIT_READY)return [];const P_=OUTFIT_PARTS[slot]||[];
+    const fut=(k)=>(OUTFIT_PARTS[k]||[]).map((it,i)=>it&&it.world==="future"?i:-1).filter(i=>i>=0);
+    const pants=fut("pants");
+    return P_.map((it,i)=>it&&it.world==="future"?i:-1).filter(i=>i>=0).map((i,k)=>(mode)=>fwWorn(slot,i,mode,slot==="shirt"?{pants:pants[k%Math.max(1,pants.length)]??-1}:null));
+  }catch(e){return [];}}
 async function loadFuture(){
   if(FWX.fw)return FWX.fw;if(FWX.loading)return FWX.loading;
-  FWX.loading=import("/world/future.js").then(m=>{const fw=m.buildFuture({me:()=>G.pos});world.add(fw.root);
+  FWX.loading=import("/world/future.js").then(m=>{const fw=m.buildFuture({me:()=>G.pos,shopItems:fwShopItems,sfx:(k,v)=>{const f=Sound.sfx[k];if(f)f(v);}});world.add(fw.root);
     // the colliders live in the same list as the old world's (they're 3,000 steps away, so they never meet)
     const C=worldSaved&&G.home?worldSaved.colliders:G.colliders;C.push(...fw.colliders);
     if(fw.setView)fw.setView((({short:96,medium:128,far:175})[gfxEff().view]||175)+40);
@@ -9214,7 +9243,7 @@ function fwSpots(){if(!FWX.fw||!inFutureNow())return null;const x=G.pos.x,z=G.po
   const [px,pz]=FUT.at(...FUT.LANDING.pad);if(Math.hypot(x-px,z-pz)<3.2)return {id:"fw:port",label:"TIME MACHINE",icon:"portal"};
   {const [hx,hz]=FUT.at(...FUT.HOTEL.spot);if(Math.hypot(x-hx,z-hz)<2.6)return {id:"fw:hotel",label:"WORK AT THE HOTEL",icon:"shop"};}
   // the shops in the Sky Mall: stand at the counter
-  for(const S of FUT.FW_SHOPS){const [sx,sz]=FUT.at(S.x,S.z+(S.z<10?3:-3));if(Math.abs(x-sx)<4.2&&Math.abs(z-sz)<1.6)return {id:"fw:shop:"+S.id,label:S.title,icon:"shop"};}
+  for(const S of FUT.FW_SHOPS){const [sx,sz]=FUT.at(...FUT.shopRoom(S).spot);if(Math.abs(x-sx)<4.2&&Math.abs(z-sz)<1.6)return {id:"fw:shop:"+S.id,label:S.title,icon:"shop"};}
   return null;}
 
 /* ---------- the world select screen ---------- */
@@ -12826,12 +12855,17 @@ function weatherTick(t,dt){
   top.multiplyScalar(1-k.dark*.32);bot.multiplyScalar(1-k.dark*.25);
   if(EV.cur==="halloween"){top.lerp(_ca.set("#4a2a8a"),.22+n*.35);bot.lerp(_ca.set(n>.5?"#5a2a6e":"#ffb27a"),.18+n*.25);}   // Halloween: a purple sky, orange at the horizon
   if(k.heat>0){bot.lerp(_ca.set("#ffe0a8"),k.heat*.45*day);top.lerp(_ca.set("#56b4ff"),k.heat*.3*day);}
+  // the Future City: always bright and blue: a clear blue day, and at night a deep blue sky (never black) over a city full of lights
+  const FUTW=typeof G!=="undefined"&&G.world==="future"&&outside;
+  if(FUTW){const ft=_ca.set("#2f9bff").lerp(_cb.set("#0a2470"),n).clone(),fb=_ca.set("#d2efff").lerp(_cb.set("#2a5fc4"),n).clone();
+    const golden=Math.max(0,1-Math.abs(h-6.6)/1.4)+Math.max(0,1-Math.abs(h-18.4)/1.4);if(golden>0){fb.lerp(_ca.set("#ffc9a8"),golden*.4);ft.lerp(_ca.set("#5a7dff"),golden*.25);}
+    ft.lerp(_ca.set(n>.5?"#1c3170":"#7fa4cf"),k.cloud*.55);fb.lerp(_ca.set(n>.5?"#2b4a8f":"#b7cde4"),k.cloud*.5);top.copy(ft);bot.copy(fb);}
   WX.top=top;WX.bot=bot;WX.night=n;
   // flash from lightning fades quickly
   WX.flash=Math.max(0,WX.flash-dt*5);
   if(outside&&G.sky&&scene.background===G.sky&&t-WX.skyT>.2){WX.skyT=t;const c=G.sky.image.getContext("2d"),gr=c.createLinearGradient(0,0,0,256);
     gr.addColorStop(0,"#"+top.getHexString());gr.addColorStop(.42,"#"+top.clone().lerp(bot,.55).getHexString());gr.addColorStop(1,"#"+bot.getHexString());c.fillStyle=gr;c.fillRect(0,0,16,256);G.sky.needsUpdate=true;}
-  if(outside&&scene.fog){scene.fog.color.copy(bot);if(typeof FWX!=="undefined"&&FWX.prev){scene.fog.near=200;scene.fog.far=560;}else{scene.fog.near=FOG_NEAR-k.rain*38;scene.fog.far=FOG_FAR-k.rain*70;}}
+  if(outside&&scene.fog){scene.fog.color.copy(bot);if(typeof FWX!=="undefined"&&FWX.prev){scene.fog.near=200;scene.fog.far=560;}else if(FUTW){scene.fog.near=Math.max(40,cam.far*.5-k.rain*30);scene.fog.far=cam.far*1.02-k.rain*40;}else{scene.fog.near=FOG_NEAR-k.rain*38;scene.fog.far=FOG_FAR-k.rain*70;}}
   // the sun (or the moon at night) lights the world from where it is in the sky
   const sa=(h-6)/12*Math.PI,ma=((h+6)%24)/12*Math.PI,sunDir=new THREE.Vector3(Math.cos(sa)*.85,Math.sin(sa)*.8,-.55).normalize(),moonDir=new THREE.Vector3(Math.cos(ma)*.85,Math.sin(ma)*.45,-.7).normalize();
   const useMoon=sunDir.y<.06,dir=useMoon?moonDir:sunDir;
@@ -12841,7 +12875,8 @@ function weatherTick(t,dt){
     // and the shadow map only has to be drawn again when the box moved or something moves (shadowTick)
     const yy=Math.max(.35,dir.y),sx=Math.round(G.pos.x),sz=Math.round(G.pos.z);G.sun.position.set(sx+dir.x*35,yy*35,sz+dir.z*35);G.sun.target.position.set(sx,0,sz);G.sun.target.updateMatrixWorld();}
   if(G.hemi){const golden=Math.max(0,1-Math.abs(h-6.6)/1.5)+Math.max(0,1-Math.abs(h-18.3)/1.5);
-    G.hemi.intensity=D.hemiI*(1-k.dark*.42)+WX.flash*1.6;G.hemi.color.set("#cfeeff").lerp(_ca.set("#6f7fc8"),n*.8).lerp(_ca.set("#ffae7a"),golden*.55*(1-k.cloud*.7)).lerp(_ca.set("#ffd9a0"),k.heat*day*.45).lerp(_ca.set("#a3adbd"),k.cloud*.45);G.hemi.groundColor.set("#6aa35a").lerp(_ca.set("#26324a"),n*.7);}
+    G.hemi.intensity=D.hemiI*(1-k.dark*.42)+WX.flash*1.6;G.hemi.color.set("#cfeeff").lerp(_ca.set("#6f7fc8"),n*.8).lerp(_ca.set("#ffae7a"),golden*.55*(1-k.cloud*.7)).lerp(_ca.set("#ffd9a0"),k.heat*day*.45).lerp(_ca.set("#a3adbd"),k.cloud*.45);G.hemi.groundColor.set("#6aa35a").lerp(_ca.set("#26324a"),n*.7);
+    if(FUTW){G.hemi.intensity=D.hemiI*1.32*(1-k.dark*.3)+n*.42+WX.flash*1.6;G.hemi.color.set("#e2f5ff").lerp(_ca.set("#6f97ff"),n*.85).lerp(_ca.set("#c3d3e6"),k.cloud*.35);G.hemi.groundColor.set("#cfe6ff").lerp(_ca.set("#2d56b3"),n*.8);}}
   // sky objects
   const sk=P.sky;sk.position.copy(cam.position);sk.visible=outside;
   P.sun.position.copy(sunDir).multiplyScalar(40);P.glare.position.copy(P.sun.position);
@@ -13806,7 +13841,7 @@ function buildPet(kind,colorIdx){
   P.body=sph(rig,isHam?.42:.36,body,0,bodyY,-.05,isHam?1.05:1,isHam?.95:.85,isHam?1.1:1.25);
   sph(rig,isHam?.32:.26,belly,0,bodyY-.06,isHam?.16:.14,1,.8,.7);
   // head
-  const head=new THREE.Group();head.position.set(0,isHam?.72:.86,isHam?.22:.32);rig.add(head);P.head=head;
+  const head=new THREE.Group();head.name="Head";head.position.set(0,isHam?.72:.86,isHam?.22:.32);rig.add(head);P.head=head;
   sph(head,isHam?.3:.36,kind==="panda"&&colorIdx!==1?body:body,0,0,0,1.05,.95,1);
   // face
   const eyeW=isHam?.12:.14,eyeY=isHam?.05:.06,eyeZ=isHam?.26:.3;

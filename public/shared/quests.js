@@ -332,7 +332,7 @@ function futureQuests() {
     Q({ id: "f-batteries", giver: "bolt", needs: ["f-family"], title: "Power for the Mall",
       intro: "The mall's glass lifts need fresh batteries! I left 6 of them around the ground floor of the Sky Mall.",
       done: "Up and down, up and down. The lifts are running again!",
-      steps: [C("battery", [[-87, 0], [-58, -2], [-36, 0], [-36, 28], [-62, 30], [-76, 14]])], reward: { coins: 400, xp: 380 } }),
+      steps: [C("battery", [[-87, 0], [-58, 1], [-36, 0], [-36, 28], [-63, 14.5], [-76, 14]])], reward: { coins: 400, xp: 380 } }),
     Q({ id: "f-energy", giver: "bolt", needs: ["f-batteries"], title: "Energy Cells",
       intro: "The whole city runs on energy cells, and 8 of them fell off a delivery drone, all over the island. That's a long walk!",
       done: "All eight! The city has power for another hundred years.",
