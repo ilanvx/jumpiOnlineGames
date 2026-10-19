@@ -75,6 +75,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   res.set({ "X-Content-Type-Options": "nosniff", "Referrer-Policy": "strict-origin-when-cross-origin", "X-Frame-Options": "SAMEORIGIN" });
   if (isHttps(req) && isPublic(req)) res.set("Strict-Transport-Security", "max-age=15552000");
+  if (process.env.STAGING === "1") res.set("X-Robots-Tag", "noindex, nofollow");   // the private test copy (hetzner/staging.sh): never in search results
   next();
 });
 // Discord buttons (the ✅ in #rules): signed by Discord, so this needs the raw body, before express.json
@@ -137,7 +138,11 @@ function sendPage(req, res, file, status = 200) {
   res.status(status).type("html").send(c.html);
 }
 const page = (file) => (req, res, next) => { try { sendPage(req, res, file); } catch (err) { next(err); } };
-app.get("/", page("site/index.html"));
+// Jumpi Club (club.jumpigames.com, the same server through Cloudflare): its home is the Club's page; /club shows it anywhere
+const CLUB_HOSTS = ["club.jumpigames.com"];
+const isClub = (req) => CLUB_HOSTS.includes(String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase());
+app.get("/", (req, res, next) => (isClub(req) ? page("club/index.html") : page("site/index.html"))(req, res, next));
+app.get(["/club", "/club/"], page("club/index.html"));
 // /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
 // middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps
 // ("JumpiApp/" = Android/iPhone, "JumpiDesktop/" = the computer program) and /studio always get the game itself.
@@ -259,7 +264,7 @@ app.use((req, res, next) => {
   let p;
   try { p = decodeURIComponent(req.path).replace(/\\/g, "/").replace(/\/{2,}/g, "/").toLowerCase(); } catch { return notFound(req, res); }
   if (moved[p]) return res.redirect(301, moved[p] + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : ""));
-  if (/\.html?$/.test(p) && (p === "/index.html" || p.startsWith("/admin/") || p.startsWith("/site/"))) return notFound(req, res);
+  if (/\.html?$/.test(p) && (p === "/index.html" || p.startsWith("/admin/") || p.startsWith("/site/") || p.startsWith("/club/"))) return notFound(req, res);
   next();
 });
 // scripts, styles and pages: the browser may keep them but must check for a newer one each time (cheap: 304 when unchanged)
@@ -316,7 +321,7 @@ try {
 // one server for the website and the real-time Plaza.
 // The game's live connection only takes pages from this site (another website can't open it with a player's login).
 const server = http.createServer(app);
-const okOrigins = new Set([...LAUNCH_HOSTS, "localhost", "127.0.0.1"]);
+const okOrigins = new Set([...LAUNCH_HOSTS, ...CLUB_HOSTS, "localhost", "127.0.0.1"]);
 attachPlaza(new Server(server, {
   maxHttpBufferSize: 16 * 1024,   // the biggest message a game window may send (they are all small)
   allowRequest: (req, cb) => {

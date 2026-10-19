@@ -1,0 +1,97 @@
+/* Jumpi Club (club.jumpigames.com): the log-in page. The purple → blue sky with soft wavy lines (img/club-bg.jpg),
+   the logo on top, one white card with chunky fields and a big orange button, the orange Jumpi peeking over it. */
+@font-face{font-family:"HeeboHe";src:url(/fonts/heebo-he.woff) format("woff");font-weight:100 900;font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F,U+20AA}
+@font-face{font-family:"HeeboDisplay";src:url(/fonts/heebo-he-800.woff) format("woff");font-weight:100 900;font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F,U+20AA}
+:root{--display:"HeeboDisplay","Lilita One","Arial Rounded MT Bold",system-ui,sans-serif;--body:"HeeboHe","Fredoka",system-ui,sans-serif;
+  --navy:#0c2a55;--ink:#1d2147;--muted:#5d6390;--purple:#6a35f0;--purple2:#4a1fb8;--orange:#ffa62b;--orange2:#ff8a00;--line:#dcd6f7}
+*{box-sizing:border-box}
+html{background:#3a2ad9}
+body.cl{margin:0;min-height:100vh;min-height:100dvh;overflow-x:clip;color:var(--ink);font:500 1rem/1.5 var(--body);
+  background:#4b2fe0}
+body.cl::before{content:"";position:fixed;inset:0;z-index:0;background:#4b2fe0 url(/club/img/club-bg.jpg) center/cover no-repeat;pointer-events:none}
+html[lang="en"] [data-l="he"],html[lang="he"] [data-l="en"]{display:none!important}
+
+/* soft bubbles drifting up */
+.cl-bubbles{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.cl-bubbles i{position:absolute;bottom:-120px;border-radius:50%;background:radial-gradient(circle at 32% 30%,rgb(255 255 255 / .55),rgb(255 255 255 / .08) 60%,rgb(255 255 255 / 0) 72%);
+  border:2px solid rgb(255 255 255 / .28);animation:clUp linear infinite}
+.cl-bubbles i:nth-child(1){left:6%;width:70px;height:70px;animation-duration:19s}
+.cl-bubbles i:nth-child(2){left:18%;width:34px;height:34px;animation-duration:14s;animation-delay:-6s}
+.cl-bubbles i:nth-child(3){left:78%;width:90px;height:90px;animation-duration:24s;animation-delay:-11s}
+.cl-bubbles i:nth-child(4){left:90%;width:40px;height:40px;animation-duration:16s;animation-delay:-3s}
+.cl-bubbles i:nth-child(5){left:64%;width:26px;height:26px;animation-duration:12s;animation-delay:-8s}
+.cl-bubbles i:nth-child(6){left:34%;width:52px;height:52px;animation-duration:21s;animation-delay:-15s}
+@keyframes clUp{to{transform:translateY(calc(-100vh - 240px)) translateX(30px)}}
+
+.cl-main{position:relative;z-index:1;width:min(460px,100%);margin:0 auto;padding:16px 16px calc(26px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:stretch}
+
+/* language */
+.lang-sw{display:flex;gap:3px;padding:3px;border-radius:999px;background:rgb(12 42 85 / .45);backdrop-filter:blur(8px)}
+.cl-lang{align-self:flex-end}
+.lang-sw button{border:0;border-radius:999px;padding:6px 12px;background:none;font:600 .9rem var(--body);color:#e4dcff;cursor:pointer}
+.lang-sw button[aria-pressed="true"]{background:#fff;color:var(--purple);box-shadow:0 3px 0 rgb(12 42 85 / .5)}
+
+/* logo + line */
+.cl-head{text-align:center;margin:4px 0 6px}
+.cl-logo{display:block;width:min(340px,80vw);height:auto;margin:0 auto;filter:drop-shadow(0 14px 22px rgb(10 8 60 / .45));animation:clFloat 5s ease-in-out infinite}
+@keyframes clFloat{50%{transform:translateY(-6px) rotate(-.6deg)}}
+.cl-head p{margin:10px auto 0;max-width:360px;color:#fff;font-weight:500;font-size:1.02rem;text-shadow:0 2px 8px rgb(10 8 60 / .45)}
+
+/* the card */
+.cl-card{position:relative;margin-top:64px;padding:30px 24px 22px;border-radius:30px;background:#fff;
+  box-shadow:0 9px 0 var(--navy),0 26px 50px rgb(10 8 60 / .45);border:4px solid #fff}
+.cl-peek{position:absolute;top:-70px;inset-inline-end:18px;width:104px;height:auto;filter:drop-shadow(0 6px 8px rgb(10 8 60 / .3));transform:rotate(8deg);animation:clPeek 3.6s ease-in-out infinite;pointer-events:none}
+html[dir="rtl"] .cl-peek{transform:rotate(-8deg) scaleX(-1)}
+@keyframes clPeek{50%{translate:0 -5px}}
+.cl-card h1{margin:0 0 16px;font:400 2.1rem/1 var(--display);color:var(--purple);letter-spacing:.01em}
+html[lang="he"] .cl-card h1{font-weight:800}
+
+.cl-field{display:block;margin:0 0 14px}
+.cl-field>span{display:block;margin:0 0 6px;font-weight:600;font-size:.95rem;color:var(--muted)}
+.cl-field input{width:100%;height:54px;padding:0 16px;border-radius:16px;border:3px solid var(--line);background:#f7f5ff;font:500 1.08rem var(--body);color:var(--ink);outline:none;transition:border-color .15s,background .15s,box-shadow .15s}
+.cl-field input:focus{border-color:var(--purple);background:#fff;box-shadow:0 0 0 4px rgb(106 53 240 / .18)}
+.cl-pass{position:relative;display:block}
+.cl-pass input{padding-inline-end:54px}
+.cl-eye{position:absolute;top:50%;inset-inline-end:8px;translate:0 -50%;width:40px;height:40px;border:0;border-radius:12px;background:none;cursor:pointer;display:grid;place-items:center}
+.cl-eye svg{width:24px;height:24px;fill:none;stroke:var(--muted);stroke-width:2}
+.cl-eye[aria-pressed="true"] svg{stroke:var(--purple)}
+.cl-eye:focus-visible{outline:3px solid var(--purple)}
+
+.cl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:2px 0 14px}
+.cl-check{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--ink);cursor:pointer}
+.cl-check input{width:22px;height:22px;accent-color:var(--purple);margin:0}
+.cl-link{color:var(--purple);font-weight:600;text-decoration:none}
+.cl-link:hover{text-decoration:underline}
+.cl-link.strong{font-weight:700}
+
+.cl-msg{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:#fff0f2;color:#c41d3a;font-weight:600;border:2px solid #ffd0d8}
+.cl-msg.ok{background:#eefbf1;color:#17803a;border-color:#c8efd3}
+
+.cl-btn{display:block;width:100%;height:60px;border:0;border-radius:20px;cursor:pointer;color:#fff;font:400 1.5rem var(--display);letter-spacing:.02em;
+  background:linear-gradient(180deg,#ffc04d,var(--orange2));box-shadow:0 6px 0 #b04a00,0 12px 22px rgb(176 74 0 / .3),inset 0 2px 0 rgb(255 255 255 / .4);
+  text-shadow:0 2px 0 rgb(0 0 0 / .18);transition:transform .1s,box-shadow .1s,filter .1s;-webkit-tap-highlight-color:transparent}
+html[lang="he"] .cl-btn{font-weight:800}
+.cl-btn:hover{filter:brightness(1.05);transform:translateY(-2px);box-shadow:0 8px 0 #b04a00,0 16px 26px rgb(176 74 0 / .32),inset 0 2px 0 rgb(255 255 255 / .4)}
+.cl-btn:active{transform:translateY(5px);box-shadow:0 1px 0 #b04a00,0 4px 10px rgb(176 74 0 / .25),inset 0 2px 0 rgb(255 255 255 / .4)}
+.cl-btn:focus-visible{outline:4px solid var(--purple);outline-offset:3px}
+.cl-btn[disabled]{filter:grayscale(.3) brightness(.95);cursor:wait}
+.cl-btn.ghost{margin-top:18px;height:52px;font-size:1.2rem;color:var(--purple);background:#f1ecff;box-shadow:0 5px 0 #c9bdf5;text-shadow:none}
+
+.cl-new{margin:18px -24px -22px;padding:16px 24px;border-radius:0 0 26px 26px;background:#f4f0ff;text-align:center;font-weight:600;color:var(--muted);display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+
+/* signed in */
+.cl-hi p{margin:0 0 16px;color:var(--muted);font-weight:500}
+.cl-hi h1 b{color:var(--ink)}
+.cl-soon{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.cl-soon span{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:16px;background:#f4f0ff;text-align:center}
+.cl-soon svg{width:30px;height:30px;fill:none;stroke:var(--purple);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cl-soon b{font-size:.78rem;font-weight:600;color:var(--ink);line-height:1.2}
+
+.cl-foot{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:28px 0 0}
+.cl-foot a{padding:8px 15px;border-radius:999px;background:rgb(255 255 255 / .16);color:#fff;text-decoration:none;font-weight:600;font-size:.92rem;border:2px solid rgb(255 255 255 / .22);backdrop-filter:blur(6px)}
+.cl-foot a:hover{background:rgb(255 255 255 / .26)}
+.cl-copy{margin:16px 0 0;text-align:center;color:#e4dcff;font-size:.85rem}
+
+@media (prefers-reduced-motion: reduce){.cl-bubbles i,.cl-logo,.cl-peek{animation:none}}
+@media (max-width:380px){.cl-soon{grid-template-columns:repeat(3,1fr)}.cl-card{padding:28px 18px 20px}.cl-new{margin:18px -18px -20px}}
+@media (min-width:700px){.cl-main{padding-top:30px}.cl-logo{width:380px}}

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jumpi Club · Log in | ג'אמפי קלאב</title>
+<meta name="description" content="Jumpi Club: games, coins, blogs, a gallery and friends. Log in with your Jumpi account.">
+<link rel="canonical" href="https://club.jumpigames.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Jumpi Club">
+<meta property="og:title" content="Jumpi Club">
+<meta property="og:description" content="Games, coins, blogs, a gallery and friends. Log in with your Jumpi account.">
+<meta property="og:image" content="https://club.jumpigames.com/club/img/jumpi-club-logo.png">
+<meta name="theme-color" content="#5a2ee0">
+<link rel="icon" type="image/png" href="/club/img/jumpi-club-logo-300.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="/club/club.css">
+</head>
+<body class="cl">
+
+<div class="cl-bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+<main class="cl-main">
+  <div class="lang-sw cl-lang" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">EN</button><button type="button" data-set="he" aria-pressed="false">עב</button></div>
+
+  <header class="cl-head">
+    <img class="cl-logo" src="/club/img/jumpi-club-logo.webp" alt="Jumpi Club" width="900" height="589">
+    <p data-l="en">Games, coins, blogs, a gallery and all your friends. One Jumpi account for everything.</p>
+    <p data-l="he">משחקים, מטבעות, בלוגים, גלריה וכל החברים. חשבון ג'אמפי אחד לכל דבר.</p>
+  </header>
+
+  <!-- log in -->
+  <section class="cl-card" id="clLogin" aria-labelledby="clLoginT">
+    <img class="cl-peek" src="/club/img/jumpi-head.webp" alt="" width="420" height="380" aria-hidden="true">
+    <h1 id="clLoginT"><span data-l="en">Log in</span><span data-l="he">התחברות</span></h1>
+    <form id="clForm" novalidate>
+      <label class="cl-field">
+        <span data-l="en">Username or email</span><span data-l="he">שם משתמש או אימייל</span>
+        <input id="clUser" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="80" required>
+      </label>
+      <label class="cl-field">
+        <span data-l="en">Password</span><span data-l="he">סיסמה</span>
+        <span class="cl-pass">
+          <input id="clPass" name="password" type="password" autocomplete="current-password" maxlength="200" required>
+          <button type="button" class="cl-eye" id="clEye" aria-label="Show password" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+          </button>
+        </span>
+      </label>
+      <div class="cl-row">
+        <label class="cl-check"><input id="clRemember" type="checkbox" checked><span data-l="en">Remember me</span><span data-l="he">זכור אותי</span></label>
+        <a class="cl-link" href="https://jumpigames.com/forgot-password"><span data-l="en">Forgot password?</span><span data-l="he">שכחת סיסמה?</span></a>
+      </div>
+      <p class="cl-msg" id="clMsg" role="alert" hidden></p>
+      <button class="cl-btn" id="clGo" type="submit"><span data-l="en">Log in</span><span data-l="he">התחברות</span></button>
+    </form>
+    <div class="cl-new">
+      <span data-l="en">New to Jumpi?</span><span data-l="he">חדשים בג'אמפי?</span>
+      <a class="cl-link strong" href="https://jumpigames.com/play"><span data-l="en">Make a free account</span><span data-l="he">פתחו חשבון חינם</span></a>
+    </div>
+  </section>
+
+  <!-- signed in (the next pages of the Club come here) -->
+  <section class="cl-card cl-hi" id="clHi" hidden aria-live="polite">
+    <img class="cl-peek" src="/club/img/jumpi-head.webp" alt="" width="420" height="380" aria-hidden="true">
+    <h1><span data-l="en">Hi, </span><span data-l="he">היי, </span><b id="clName" dir="auto"></b>!</h1>
+    <p data-l="en">You're in! The Club is opening soon: games, coins, blogs, the gallery and birthdays are on the way.</p>
+    <p data-l="he">נכנסת! הקלאב נפתח בקרוב: משחקים, מטבעות, בלוגים, גלריה וימי הולדת בדרך.</p>
+    <div class="cl-soon">
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="5"/><circle cx="8.5" cy="12.5" r="1.6"/><path d="M15 11v3m-1.5-1.5h3"/></svg><b data-l="en">Games</b><b data-l="he">משחקים</b></span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 10h4a1.8 1.8 0 0 1 0 3.6h-3"/></svg><b data-l="en">Coins</b><b data-l="he">מטבעות</b></span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 12.5h8M8 16h5"/></svg><b data-l="en">Blogs</b><b data-l="he">בלוגים</b></span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M5 17l4.5-4.5 3 3 2.5-2.5L19 17"/></svg><b data-l="en">Gallery</b><b data-l="he">גלריה</b></span>
+      <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11h14v9H5z"/><path d="M3.5 8h17v3h-17zM12 8v12"/><path d="M12 8c-1.5-3-5-3-5-1s3.5 1 5 1c1.5 0 5 1 5-1s-3.5-2-5 1z"/></svg><b data-l="en">Birthdays</b><b data-l="he">ימי הולדת</b></span>
+    </div>
+    <button class="cl-btn ghost" id="clOut" type="button"><span data-l="en">Log out</span><span data-l="he">התנתקות</span></button>
+  </section>
+
+  <nav class="cl-foot" aria-label="More">
+    <a href="https://jumpigames.com/play"><span data-l="en">Play Jumpi</span><span data-l="he">לשחק בג'אמפי</span></a>
+    <a href="https://jumpigames.com/safety"><span data-l="en">Online safety</span><span data-l="he">בטיחות ברשת</span></a>
+    <a href="https://jumpigames.com/for-parents"><span data-l="en">For parents</span><span data-l="he">להורים</span></a>
+    <a href="https://jumpigames.com/help"><span data-l="en">Help</span><span data-l="he">עזרה</span></a>
+  </nav>
+  <p class="cl-copy">© 2026 Jumpi Games™</p>
+</main>
+
+<script type="module" src="/club/club.js"></script>
+</body>
+</html>

@@ -6485,7 +6485,7 @@ function applyOutfit(){if(!inGame||GS_STAGE)setTimeout(()=>{if(!inGame||GS_STAGE
   for(const k in OUTFIT_OBJ)outfitGet(k,L(k));
   for(const k in OUTFIT_OBJ)OUTFIT_OBJ[k].forEach((o,i)=>[].concat(o).forEach(p=>p.visible=i===(L(k)??-1)&&!(k==="hair"&&noHair)));
   const h=L("hair");OUTFIT_OBJ.hair.forEach((o,i)=>[].concat(o).forEach(p=>hatHair(p,i===h&&hatPresses(L("hat"))?L("hat"):-1)));
-  {const ht=L("hat"),up=noHair?0:hatLift(ht,h);OUTFIT_OBJ.hat.forEach((o,i)=>[].concat(o).forEach(p=>{p.position.y=i===ht?up:0;}));}
+  {const ht=L("hat"),up=noHair?0:hatLift(ht,h);OUTFIT_OBJ.hat.forEach((o,i)=>[].concat(o).forEach(p=>{if(p.userData.baseY===undefined)p.userData.baseY=p.position.y;p.position.y=p.userData.baseY+(i===ht?up:0);}));}
   setAura(P,lk("aura"));
 }
 /* ----- hair under a hat: everything above the hat's band is pressed down and pulled in, so it stays under the
@@ -6514,6 +6514,8 @@ function hbFill(meshes,H,bins){const a=new THREE.Vector3(),b=new THREE.Vector3()
   const out=bins.slice();for(let t=0;t<HB_T;t++)for(let p=0;p<HB_P;p++){const j=t*HB_P+p;if(bins[j]<Infinity)continue;let cnt=0,m=Infinity;
     for(let dt=-1;dt<=1;dt++)for(let dp=-1;dp<=1;dp++){if(!dt&&!dp)continue;const tt=t+dt;if(tt<0||tt>=HB_T)continue;const v=bins[tt*HB_P+((p+dp+HB_P)%HB_P)];if(v<Infinity){cnt++;m=Math.min(m,v);}}
     if(cnt>=4)out[j]=m;}
+  // right at the top all directions meet: if the hat covers some of the top rows, it covers all of them
+  for(let t=0;t<3;t++){let m=Infinity;for(let p=0;p<HB_P;p++)m=Math.min(m,out[t*HB_P+p]);if(m<Infinity)for(let p=0;p<HB_P;p++){const j=t*HB_P+p;if(out[j]===Infinity)out[j]=m;}}
   return out;}
 function headBins(){if(headBins.v)return headBins.v;const H=headShape(),ms=[];P.head.traverse(o=>{if(o.isMesh&&!o.userData.outfit&&o.material&&o.material.name==="Skin")ms.push(o);});
   return headBins.v=hbFill(ms,H,new Float32Array(HB_T*HB_P).fill(Infinity));}
@@ -8004,7 +8006,7 @@ function makeCharacter(look,label,tagColor,lv=0){
   const root=P.root.clone(true);P.root.position.copy(keep.pos);P.root.rotation.copy(keep.rot);
   if(myFx){installEyeFx(P,myFx,THREE);P.eyeFx.kind=myFx;}
   root.traverse(o=>{const tag=o.userData.outfit;if(tag&&tag.startsWith("hair:"))hatHair(o,hatPresses(look.hat)&&+tag.slice(5)===look.hair?look.hat:-1);});
-  {const up=noHair?0:hatLift(look.hat,look.hair);root.traverse(o=>{if(o.userData.outfit==="hat:"+look.hat)o.position.y=up;});}
+  {const up=noHair?0:hatLift(look.hat,look.hair);root.traverse(o=>{if(o.userData.outfit!=="hat:"+look.hat)return;if(o.userData.baseY===undefined)o.userData.baseY=o.position.y-(o.userData.lift||0);o.position.y=o.userData.baseY+up;o.userData.lift=up;});}
   off.forEach(([p,par])=>par.add(p));if(ghosted)applyMyGhost();
   root.children.filter(o=>o.userData.isAura).forEach(o=>o.removeFromParent());
   root.userData.kick=0;{const B=root.getObjectByName("Body");if(B)B.traverse(o=>{if(o.isMesh)o.onBeforeRender=kickBR;});}   // swim kicks (shared materials: each body sets its own)
@@ -9264,7 +9266,7 @@ async function goWorld(id,{film=true,spawn}={}){
   if(socket&&socket.connected)socket.emit("join",netState());NET.last=0;
   if(fw)await warmScene(fw.root,2500);
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),650);
-  body.classList.toggle("in-future",G.world==="future");try{localStorage.setItem("jumpi-world",G.world);}catch(e){}
+  body.classList.toggle("in-future",G.world==="future");
   setTimeout(()=>showZone(G.zone),500);
   FWX.busy=false;
   if(id==="future"&&!me.worldTrip){me.worldTrip=true;api("/api/worlds/trip",{}).catch(()=>{});setTimeout(()=>toast("Welcome to the Future City! Take the lift up the Sky Tower for the best view."),1400);}
@@ -9740,7 +9742,8 @@ function enterGame(){
   if(!gameBuilt){buildPlaza();trimShadows(world);setTimeout(batchPrepare,1500);}
   inGame=true;world.visible=true;body.classList.add("in-game");setMenu(false);loadPets();loadQuests();seasonWheelInit();maybeAskBirthday();birthdayParty();showBuyNote(me&&me.birthdayToday?6500:1800);setTimeout(()=>loadFoodBag(),800);setTimeout(()=>{try{memberTick();}catch(e){}},4000);
   // back to the world you were in last time (the Future City, if it's open on this account)
-  try{if(localStorage.getItem("jumpi-world")==="future"&&futureOpen())setTimeout(()=>{if(inGame&&!G.home&&G.world!=="future")goWorld("future",{film:false});},1200);}catch(e){}
+  // every time you come into the game you start in Jumpi Town (the plaza), even if you left from the Future City
+  try{localStorage.removeItem("jumpi-world");}catch(e){}
   ACC.sides.forEach(s=>{s.n.root.visible=false;s.sh.visible=false;});accAddMenu.hidden=true;   // the other saved accounts stay on the start screen
   spot.visible=shadow.visible=false;
   scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);cam.far=VIEW_FAR;cam.updateProjectionMatrix();
