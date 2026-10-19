@@ -4,9 +4,9 @@ const $ = (id) => document.getElementById(id);
 const btns = [...document.querySelectorAll(".lang-sw [data-set]")];
 const T = {
   en: { empty: "Type your username and password.", fail: "Something went wrong. Please try again.", net: "No connection. Check your internet and try again.",
-    verify: "Please check your email first: open the Jumpi game to finish making your account.", show: "Show password", hide: "Hide password", wait: "Logging in…" },
+    verify: "Please check your email first: open the Jumpi game to finish making your account.", show: "Show password", hide: "Hide password", wait: "Logging in…", soon: "Opening soon!" },
   he: { empty: "צריך למלא שם משתמש וסיסמה.", fail: "משהו השתבש. נסו שוב.", net: "אין חיבור. בדקו את האינטרנט ונסו שוב.",
-    verify: "צריך לאשר קודם את האימייל: פתחו את המשחק של ג'אמפי כדי לסיים לפתוח את החשבון.", show: "הצגת הסיסמה", hide: "הסתרת הסיסמה", wait: "מתחברים…" },
+    verify: "צריך לאשר קודם את האימייל: פתחו את המשחק של ג'אמפי כדי לסיים לפתוח את החשבון.", show: "הצגת הסיסמה", hide: "הסתרת הסיסמה", wait: "מתחברים…", soon: "נפתח בקרוב!" },
 };
 let lang = "en";
 const t = (k) => T[lang][k];
@@ -42,9 +42,9 @@ const say = (text) => { if (lang !== "he" || !text) return text; for (const [re,
 function msg(text, ok = false) { text = say(text); const m = $("clMsg"); m.textContent = text || ""; m.hidden = !text; m.classList.toggle("ok", ok); }
 function signedIn(user) {
   $("clName").textContent = user.username || "";
-  $("clLogin").hidden = true; $("clHi").hidden = false;
+  $("clLogin").hidden = true; $("clHi").hidden = false; $("clTopGo").hidden = true;
 }
-function signedOut() { $("clHi").hidden = true; $("clLogin").hidden = false; $("clPass").value = ""; }
+function signedOut() { $("clHi").hidden = true; $("clLogin").hidden = false; $("clTopGo").hidden = false; $("clPass").value = ""; }
 
 // already logged in on this site?
 api("me").then((r) => { if (r.ok && r.data.user) signedIn(r.data.user); else if (r.data && r.data.error) msg(r.data.error); }).catch(() => {});
@@ -71,3 +71,19 @@ $("clForm").addEventListener("submit", async (e) => {
 });
 
 $("clOut").onclick = async () => { try { await api("logout", {}); } catch (e) {} signedOut(); $("clUser").focus(); };
+
+/* ---------- the toolbar: the menu on phones, "opening soon" for the pages that aren't ready, the log-in button ---------- */
+const nav = $("clNav"), menu = $("clMenu");
+const setMenu = (open) => { nav.classList.toggle("open", open); menu.setAttribute("aria-expanded", String(open)); };
+menu.onclick = () => setMenu(!nav.classList.contains("open"));
+addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+let toastT = 0;
+function toast(text) { const el = $("clToast"); el.textContent = text; el.hidden = false; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2200); }
+document.querySelectorAll("[data-soon]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); setMenu(false); toast(t("soon")); }));
+$("clTopGo").addEventListener("click", (e) => { e.preventDefault(); setMenu(false); $("clLogin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => $("clUser").focus({ preventScroll: true }), 350); });
+
+/* ---------- the banner (3D): loaded on its own, so the log-in works even if 3D can't run on this device ---------- */
+{ const box = $("clCoins"), pill = box.parentElement;
+  const go = () => import("/club/runner.js").then((m) => m.startRunner($("clStage"), { onCoin: (n) => { box.textContent = n; pill.classList.remove("pop"); void pill.offsetWidth; pill.classList.add("pop"); } }))
+    .catch(() => document.querySelector(".cl-show").classList.add("flat"));
+  "requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 600 }) : setTimeout(go, 50); }
