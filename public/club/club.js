@@ -6,6 +6,7 @@
    The language is the same choice as the rest of the site (localStorage "jumpi-lang"). */
 import { levelBadgeURL } from "/club/badge.js";
 import { EMOJI, FONTS, SIZES, isEmoji, EMOJI_CODE } from "/shared/blogdoc.js";
+import { EMOJI_GROUPS } from "/club/emoji-list.js";
 
 const $ = (id) => document.getElementById(id);
 const btns = [...document.querySelectorAll(".lang-sw [data-set]")];
@@ -599,7 +600,6 @@ function withEmoji(box, text) {
 }
 
 /* ---------- the editor's buttons ---------- */
-const STD_EMOJI = "😀 😃 😄 😁 😆 😅 🤣 😂 🙂 😉 😊 😇 🥰 😍 🤩 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤗 🤔 🤭 😮 😲 🥺 😢 😭 😱 😴 🙌 👏 👍 👋 🤝 💪 🙏 ✌️ 🤞 ❤️ 🧡 💛 💚 💙 💜 💖 ✨ ⭐ 🌟 🔥 💥 🎉 🎊 🎁 🎈 🏆 🥇 🎮 🕹️ 🎯 🎨 🎵 🎶 📣 📢 🗓️ ⏰ 🚀 🌈 ☀️ 🌙 ⚡ 🌊 🌴 🍕 🍔 🍦 🍩 🧁 🐶 🐱 🐰 🐼 🦄 🐉".split(" ");
 const COLORS = ["#6a35f0", "#9b5cff", "#1fb6ff", "#0d63c9", "#2fd36b", "#17803a", "#ffd23a", "#ff8a1c", "#ff4f8f", "#e0284a", "#1d2147", "#5d6390"];
 const MARKS = ["#fff1a8", "#ffe0b8", "#ffd6e8", "#e9e1ff", "#d4f5ff", "#dcfbe4"];
 const ed = $("mpBody");
@@ -626,7 +626,7 @@ $("edFont").onchange = () => { exec("fontName", $("edFont").value); };
 $("edSize").onchange = () => { const z = $("edSize").value; exec("fontSize", z === "m" ? "3" : SIZE_CODE[z]); };
 function pops(btnId, popId, fill) {
   const b = $(btnId), p = $(popId); b.onmousedown = (e) => e.preventDefault();
-  b.onclick = (e) => { e.stopPropagation(); const open = p.hidden; document.querySelectorAll(".ed-pop").forEach((x) => (x.hidden = true)); if (open) { fill(p); p.hidden = false; } };
+  b.onclick = (e) => { e.stopPropagation(); const open = p.hidden; document.querySelectorAll(".ed-pop").forEach((x) => (x.hidden = true)); if (open) { fill(p); p.hidden = false; const g = p.querySelector(".ed-emo-grid"); if (g && g.onscroll) g.onscroll(); } };
 }
 document.addEventListener("click", (e) => { if (!e.target.closest(".ed-pop-w")) document.querySelectorAll(".ed-pop").forEach((x) => (x.hidden = true)); });
 const swatches = (p, list, onPick, none) => {
@@ -638,18 +638,35 @@ const swatches = (p, list, onPick, none) => {
 };
 pops("edColorB", "edColorP", (p) => swatches(p, COLORS, (c) => { exec("foreColor", c || "#1d2147"); $("edColorI").style.background = c || ""; }, true));
 pops("edMarkB", "edMarkP", (p) => swatches(p, MARKS, (c) => { exec("hiliteColor", c || "transparent"); $("edMarkI").style.background = c || ""; }, true));
-let emoTab = "jumpi";
-function emoGrid(g, tab, onPick) {
-  g.textContent = "";
-  if (tab === "jumpi") EMOJI.forEach((n) => { const b = el("button", "emo-b"); b.type = "button"; b.title = ":" + n + ":"; b.append(emoImg(n)); b.onmousedown = (e) => e.preventDefault(); b.onclick = () => onPick(n, true); g.append(b); });
-  else STD_EMOJI.forEach((u) => { const b = el("button", "emo-b std", u); b.type = "button"; b.onmousedown = (e) => e.preventDefault(); b.onclick = () => onPick(u, false); g.append(b); });
+/* the emoji window: Jumpi's own first, then every emoji in the usual groups (tabs jump to a group) */
+const EMO_CATS = [["jumpi", "Jumpi", "ג'אמפי", null], ["smileys", "Smileys", "סמיילים", "😀"], ["people", "People", "אנשים", "👋"], ["nature", "Animals & nature", "חיות וטבע", "🐶"],
+  ["food", "Food", "אוכל", "🍕"], ["activity", "Activities", "פעילויות", "⚽"], ["travel", "Travel & places", "טיולים ומקומות", "✈️"], ["objects", "Objects", "חפצים", "💡"],
+  ["symbols", "Symbols", "סמלים", "❤️"], ["flags", "Flags", "דגלים", "🏁"]];
+function emoPicker(catsBox, grid, onPick) {
+  if (grid.dataset.built === lang) return; grid.dataset.built = lang;
+  catsBox.textContent = ""; grid.textContent = "";
+  EMO_CATS.forEach(([k, en, he, ic]) => {
+    const tab = el("button", "emo-cat"); tab.type = "button"; tab.title = lang === "he" ? he : en;
+    if (ic) tab.textContent = ic; else tab.append(emoImg("jumpi_hi"));
+    const head = el("span", "emo-h", lang === "he" ? he : en), sec = el("span", "emo-sec");
+    tab.onmousedown = (e) => e.preventDefault(); tab.onclick = (e) => { e.stopPropagation(); grid.scrollTo({ top: head.offsetTop, behavior: "smooth" }); };
+    catsBox.append(tab);
+    const list = k === "jumpi" ? EMOJI : EMOJI_GROUPS[k] || [];
+    list.forEach((v) => { const b = el("button", "emo-b" + (k === "jumpi" ? "" : " std")); b.type = "button";
+      if (k === "jumpi") { b.title = ":" + v + ":"; b.append(emoImg(v)); } else b.textContent = v;
+      b.onmousedown = (e) => e.preventDefault(); b.onclick = (e) => { e.stopPropagation(); onPick(v, k === "jumpi"); }; sec.append(b); });
+    grid.append(head, sec);
+  });
+  // which group is showing: its tab lights up
+  const tabs = [...catsBox.children], heads = [...grid.querySelectorAll(".emo-h")];
+  grid.onscroll = () => { let i = 0; heads.forEach((h, j) => { if (h.offsetTop <= grid.scrollTop + 8) i = j; }); tabs.forEach((x, j) => x.classList.toggle("on", j === i)); };
+  grid.onscroll();
 }
 const putEmoji = (v, jumpi) => { if (jumpi) { backSel(); const img = emoImg(v); const sel = getSelection(); if (!sel.rangeCount) ed.append(img); else { const r = sel.getRangeAt(0); r.deleteContents(); r.insertNode(img); r.setStartAfter(img); r.collapse(true); sel.removeAllRanges(); sel.addRange(r); } keepSel(); }
   else exec("insertText", v); };
-pops("edEmoB", "edEmoP", () => emoGrid($("edEmoG"), emoTab, putEmoji));
-document.querySelectorAll("#edEmoP [data-tab]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = (e) => { e.stopPropagation(); emoTab = b.dataset.tab; document.querySelectorAll("#edEmoP [data-tab]").forEach((x) => x.setAttribute("aria-pressed", x === b)); emoGrid($("edEmoG"), emoTab, putEmoji); }; });
-// the comment box: Jumpi emojis go in as :name:
-pops("bcEmoB", "bcEmoP", () => emoGrid($("bcEmoG"), "jumpi", (n) => { const ta = $("bcText"), a2 = ta.selectionStart ?? ta.value.length, b2 = ta.selectionEnd ?? a2, code = ":" + n + ":";
+pops("edEmoB", "edEmoP", () => emoPicker($("edEmoC"), $("edEmoG"), putEmoji));
+// the comment box: Jumpi emojis go in as :name:, the others as they are
+pops("bcEmoB", "bcEmoP", () => emoPicker($("bcEmoC"), $("bcEmoG"), (n, jumpi) => { const ta = $("bcText"), a2 = ta.selectionStart ?? ta.value.length, b2 = ta.selectionEnd ?? a2, code = jumpi ? ":" + n + ":" : n;
   if (ta.value.length + code.length > 400) return; ta.value = ta.value.slice(0, a2) + code + ta.value.slice(b2); ta.focus(); ta.selectionStart = ta.selectionEnd = a2 + code.length; }));
 
 // the start: the same language as the rest of the site, then: am I logged in already?

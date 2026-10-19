@@ -568,3 +568,14 @@ img.emo{display:inline-block;width:2.1em;height:2.1em;vertical-align:-.7em;margi
 .bc-emo{position:absolute;top:8px;inset-inline-end:8px}
 .bc-emo>button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:12px;background:#f1ecff;cursor:pointer}
 .bc-emo .ed-pop{inset-inline-start:auto;inset-inline-end:0}
+/* the emoji window: group tabs on top, all the groups below (one scroll) */
+.ed-emo-pop{width:min(400px,86vw);padding:8px}
+.emo-cats{display:flex;gap:2px;padding:0 0 6px;border-bottom:2px solid #f1ecff;margin-bottom:4px;overflow-x:auto}
+.emo-cat{flex:1 0 auto;display:grid;place-items:center;min-width:34px;height:34px;border:0;border-radius:10px;background:none;cursor:pointer;font-size:1.25rem;line-height:1;padding:0 4px;filter:grayscale(.5);opacity:.7}
+.emo-cat img.emo{width:26px;height:26px;margin:0;vertical-align:0}
+.emo-cat:hover,.emo-cat.on{background:#f1ecff;filter:none;opacity:1}
+.emo-cat.on{box-shadow:inset 0 -3px 0 #6a35f0}
+.ed-emo-grid{display:block;max-height:300px;overflow:auto;position:relative}
+.emo-h{display:block;position:sticky;top:0;z-index:1;padding:6px 4px 4px;background:#fff;font:700 .8rem var(--body);color:var(--muted)}
+.emo-sec{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:2px;margin-bottom:6px}
+.emo-b.std{height:38px;font-size:1.45rem;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
