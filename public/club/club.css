@@ -349,3 +349,45 @@ html[lang="he"] .cl-dlg h2{font-weight:800}
   body.in .cl-menu{width:38px;height:38px;border-radius:12px}
 }
 @media (max-width:360px){body.in .cl-coins img{display:none}body.in .cl-coins{padding:0 8px}}
+
+/* ---------- signed in: the Club fills the page (no floating boxes): the people down one side, the categories down the
+   other, the Games Center in between, all from the toolbar to the bottom of the screen ---------- */
+body.in .cl-main{width:100%;max-width:none;padding:0;margin:0}
+body.in .hub{gap:0;grid-template-columns:330px minmax(0,1fr) 270px;min-height:calc(100dvh - 78px);align-items:stretch}
+body.in .hub-card{border:0;border-radius:0;box-shadow:none;overflow:visible}
+body.in .hub-people,body.in .hub-cats{position:sticky;top:78px;height:calc(100dvh - 78px);max-height:none;min-height:0;background:#fff;overflow:hidden}
+body.in .hub-people{border-inline-end:3px solid #e4dcff;box-shadow:6px 0 24px rgb(20 8 80 / .12)}
+body.in .hub-cats{border-inline-start:3px solid #e4dcff;box-shadow:-6px 0 24px rgb(20 8 80 / .12);display:flex;flex-direction:column}
+html[dir="rtl"] body.in .hub-people{box-shadow:-6px 0 24px rgb(20 8 80 / .12)}
+html[dir="rtl"] body.in .hub-cats{box-shadow:6px 0 24px rgb(20 8 80 / .12)}
+body.in .hub-cats .cats{overflow:auto;flex:1;padding:6px 14px 20px;gap:8px}
+body.in .cats button{padding:12px 14px}
+body.in .cats button img{width:52px;height:52px}
+/* the middle: straight on the page (the purple sky), the Games Center in white type */
+body.in .hub-games{background:none;min-height:0}
+body.in .hub-games .hub-h{padding:26px 34px 6px}
+body.in .hub-games .hub-h h2{color:#fff;font-size:1.9rem;text-shadow:0 3px 0 rgb(20 8 80 / .35)}
+body.in .hub-games .hub-h img{width:52px;height:52px;filter:drop-shadow(0 4px 6px rgb(20 8 80 / .35))}
+body.in .hub-empty{background:none;padding:40px 24px 80px}
+body.in .hub-empty img{width:220px;height:220px;filter:drop-shadow(0 22px 26px rgb(10 4 50 / .45))}
+body.in .hub-empty h3{color:#fff;font-size:2.4rem;text-shadow:0 4px 0 rgb(20 8 80 / .35)}
+body.in .hub-empty p{color:#e4dcff;font-size:1.15rem}
+body.in .cl-foot{margin-top:80px}
+@media (max-width:1180px){
+  body.in .hub{grid-template-columns:310px minmax(0,1fr)}
+  body.in .hub-cats{grid-column:1 / -1;grid-row:1;position:sticky;top:78px;z-index:5;height:auto;border:0;border-bottom:3px solid #e4dcff;box-shadow:0 6px 18px rgb(20 8 80 / .12)}
+  body.in .hub-cats .hub-h{display:none}
+  body.in .hub-cats .cats{flex-direction:row;overflow-x:auto;padding:10px 14px}
+  body.in .hub-people{top:calc(78px + 92px);height:calc(100dvh - 78px - 92px)}
+}
+@media (max-width:900px){
+  body.in .hub{grid-template-columns:1fr;min-height:0}
+  body.in .hub-cats{top:62px}
+  body.in .hub-people{position:static;height:auto;border:0;border-bottom:3px solid #e4dcff;box-shadow:none}
+  body.in .hub-games{grid-row:2}
+  body.in .hub-empty{padding:20px 20px 40px}
+  body.in .hub-empty img{width:150px;height:150px}
+  body.in .hub-empty h3{font-size:1.9rem}
+  body.in.chatting .hub-people{position:fixed;inset:0;z-index:45;height:auto}
+}
+body.in .hub-people .hub-h,body.in .hub-cats .hub-h{padding-top:26px}
