@@ -80,4 +80,6 @@ addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
 let toastT = 0;
 function toast(text) { const el = $("clToast"); el.textContent = text; el.hidden = false; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2200); }
 document.querySelectorAll("[data-soon]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); setMenu(false); toast(t("soon")); }));
-$("clTopGo").addEventListener("click", (e) => { e.preventDefault(); setMenu(false); $("clLogin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => $("clUser").focus({ preventScroll: true }), 350); });
+const goLogin = (e) => { e.preventDefault(); setMenu(false); if ($("clLogin").hidden) { $("clHi").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  $("clLogin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => $("clUser").focus({ preventScroll: true }), 350); };
+[$("clTopGo"), ...document.querySelectorAll("[data-go]")].forEach((a) => a.addEventListener("click", goLogin));
