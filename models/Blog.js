@@ -5,7 +5,8 @@ const Id = mongoose.Schema.Types.ObjectId;
 // Jumpi Club blog (routes/blog.js): posts are written by admins only, each with a picture.
 const blogPostSchema = new mongoose.Schema({
   title: { type: String, required: true, maxlength: 120 },
-  body: { type: String, required: true, maxlength: 20000 },   // plain text; an empty line starts a new paragraph
+  body: { type: String, required: true, maxlength: 25000 },   // the post as plain text (the preview); the post itself is doc
+  doc: { type: mongoose.Schema.Types.Mixed, default: null },   // bold, colours, fonts, sizes, Jumpi emojis: public/shared/blogdoc.js (checked by cleanDoc)
   image: { type: Id, ref: "BlogImage", default: null },
   author: { type: Id, ref: "User" },
   authorName: { type: String, default: "" },

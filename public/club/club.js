@@ -5,6 +5,7 @@
    Friends, chat, block and report are the game's own routes (routes/social.js), so a block here works in the game too.
    The language is the same choice as the rest of the site (localStorage "jumpi-lang"). */
 import { levelBadgeURL } from "/club/badge.js";
+import { EMOJI, FONTS, SIZES, isEmoji, EMOJI_CODE } from "/shared/blogdoc.js";
 
 const $ = (id) => document.getElementById(id);
 const btns = [...document.querySelectorAll(".lang-sw [data-set]")];
@@ -90,7 +91,7 @@ function setLang(l) {
   btns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === lang));
   $("clEye").setAttribute("aria-label", $("clEye").getAttribute("aria-pressed") === "true" ? t("hide") : t("show"));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
-  paintGate(); if (typeof route === "function" && !$("blog").hidden) route();
+  paintGate(); if (typeof fillSelects === "function") fillSelects(); if (typeof route === "function" && !$("blog").hidden) route();
   if (ME) { paintMe(); paintOnline(); paintNotes(); paintCat(); $("hubFind").placeholder = t("find"); $("chatIn").placeholder = t("typeMsg"); }
 }
 btns.forEach((b) => (b.onclick = () => setLang(b.dataset.set)));
@@ -433,7 +434,7 @@ async function loadPost(id) {
   $("bpTitle").textContent = p.title;
   $("bpMeta").textContent = fmtDay(p.at) + " · " + t("by", iso(p.author)) + (p.updatedAt ? " · " + t("edited") : "");
   $("bpTools").hidden = !isAdm();
-  const body = $("bpBody"); body.textContent = ""; p.body.split(/\n\s*\n/).forEach((para) => { const q = el("p", "", para); q.dir = "auto"; body.append(q); });
+  renderDoc(p.doc, $("bpBody"));
   paintComments(r.data.comments || []);
 }
 function paintComments(list) {
@@ -444,7 +445,7 @@ function paintComments(list) {
     const li = el("li", "bc" + (c.status === "pending" ? " pending" : "")); li.append(face({ color: 0 }, 40, ME ? c.username : ""));
     const w = el("div", "bc-w"), hd = el("div", "bc-h"); hd.append(el("b", "", iso(c.username)), el("time", "", fmtDay(c.at)));
     if (c.status === "pending") hd.append(el("i", "bc-wait", t("waiting")));
-    const tx = el("p", "", c.text); tx.dir = "auto"; w.append(hd, tx); li.append(w); ul.append(li);
+    const tx = el("p"); tx.dir = "auto"; withEmoji(tx, c.text); w.append(hd, tx); li.append(w); ul.append(li);
   });
   // who can write: logged in, 13+ (the Club's age)
   const f = $("bcForm"), note = $("bcNote");
@@ -471,7 +472,7 @@ async function loadPending() {
     const li = el("li", "bc pend"); li.append(face({ color: 0 }, 40, c.username));
     const w = el("div", "bc-w"), hd = el("div", "bc-h"); hd.append(el("b", "", iso(c.username)), el("time", "", fmtDay(c.at)));
     const on = el("a", "bc-on", t("onPost", c.postTitle)); on.href = "#blog/" + c.post; hd.append(on);
-    const tx = el("p", "", c.text); tx.dir = "auto";
+    const tx = el("p"); tx.dir = "auto"; withEmoji(tx, c.text);
     const acts = el("div", "bc-acts"), y = el("button", "ppl-btn yes", t("approve")), n = el("button", "ppl-btn no", t("reject")); y.type = n.type = "button";
     const act = async (what) => { y.disabled = n.disabled = true; const x = await call(`/api/blog/comment/${c.id}/${what}`, {}); toast(x.ok ? t(what === "approve" ? "approved" : "rejected") : say(x.data.error) || t("fail")); loadPending(); };
     y.onclick = () => act("approve"); n.onclick = () => act("reject"); acts.append(y, n);
@@ -483,7 +484,7 @@ let editing = null, picId = "";
 function openEditor(post) {
   editing = post ? post.id : null; picId = "";
   $("mPostT").textContent = post ? t("editPost") : t("newPost");
-  $("mpTitle").value = post ? post.title : ""; $("mpBody").value = post ? post.body : ""; $("mpMsg").hidden = true; $("mpFile").value = "";
+  $("mpTitle").value = post ? post.title : ""; renderDoc(post ? post.doc : { blocks: [{ t: "p", runs: [] }] }, $("mpBody")); $("mpMsg").hidden = true; $("mpFile").value = "";
   if (post && post.image) { picId = post.image.split("/").pop(); $("mpPrev").src = post.image; $("mpPrev").hidden = false; } else { $("mpPrev").hidden = true; $("mpPrev").removeAttribute("src"); }
   openModal("mPost"); $("mpTitle").focus();
 }
@@ -509,16 +510,147 @@ $("mpFile").addEventListener("change", async () => {
   finally { $("mpGo").disabled = false; }
 });
 $("mpGo").onclick = async () => {
-  const m = $("mpMsg"), title = $("mpTitle").value.trim(), body = $("mpBody").value.trim();
-  const bad = !title ? t("needTitle") : !picId ? t("needPic") : !body ? t("needBody") : "";
+  const m = $("mpMsg"), title = $("mpTitle").value.trim(), doc = domToDoc($("mpBody"));
+  const bad = !title ? t("needTitle") : !picId ? t("needPic") : !doc.blocks.length ? t("needBody") : "";
   if (bad) { m.textContent = bad; m.classList.remove("ok"); m.hidden = false; return; }
   $("mpGo").disabled = true;
-  const r = await call(editing ? `/api/blog/post/${editing}` : "/api/blog", { title, body, image: picId });
+  const r = await call(editing ? `/api/blog/post/${editing}` : "/api/blog", { title, doc, image: picId });
   $("mpGo").disabled = false;
   if (!r.ok) { m.textContent = say(r.data.error) || t("fail"); m.classList.remove("ok"); m.hidden = false; return; }
   closeModal($("mPost")); toast(t("published"));
   if (location.hash === "#blog/" + r.data.post.id) loadPost(r.data.post.id); else location.hash = "#blog/" + r.data.post.id;
 };
+
+/* ---------- a post's text: drawn from its data (public/shared/blogdoc.js), and turned back into data from the editor ----------
+   The same drawing is used to read a post and to edit it: <b> <i> <u> <s>, <font face/size/color> (the editor's own
+   commands make those), a highlight <span>, and the Jumpi emojis as pictures. Every style comes from a short list. */
+const SIZE_CODE = { s: "2", l: "5", xl: "7" }, CODE_SIZE = { 1: "s", 2: "s", 5: "l", 6: "l", 7: "xl" };
+const emoImg = (name) => { const i = el("img", "emo"); i.src = `/club/emoji/${name}.png`; i.alt = ":" + name + ":"; i.dataset.e = name; i.draggable = false; return i; };
+function runNode(r) {
+  if (r.e) return isEmoji(r.e) ? emoImg(r.e) : document.createTextNode("");
+  let n = document.createTextNode(r.x);
+  const wrap = (tag) => { const w = document.createElement(tag); w.append(n); n = w; };
+  if (r.h) { const w = el("span", "hl"); w.style.backgroundColor = r.h; w.append(n); n = w; }
+  if (r.c || r.z || r.f) { const f = document.createElement("font"); if (r.c) f.setAttribute("color", r.c); if (r.z) f.setAttribute("size", SIZE_CODE[r.z]); if (r.f) f.setAttribute("face", r.f); f.append(n); n = f; }
+  if (r.s) wrap("s"); if (r.u) wrap("u"); if (r.i) wrap("i"); if (r.b) wrap("b");
+  return n;
+}
+function renderDoc(doc, box) {
+  box.textContent = "";
+  (doc && doc.blocks || []).forEach((b) => {
+    const tag = b.t === "quote" ? "blockquote" : b.t, e = document.createElement(tag);
+    if (b.a) e.style.textAlign = b.a;
+    if (b.items) b.items.forEach((it) => { const li = document.createElement("li"); it.forEach((r) => li.append(runNode(r))); e.append(li); });
+    else { b.runs.forEach((r) => e.append(runNode(r))); if (!b.runs.length) e.append(document.createElement("br")); }
+    if (tag !== "ul" && tag !== "ol") e.dir = "auto";
+    box.append(e);
+  });
+}
+const toHex = (c) => { if (!c) return ""; if (/^#[0-9a-f]{6}$/i.test(c)) return c.toLowerCase(); if (/^#[0-9a-f]{3}$/i.test(c)) return ("#" + c.slice(1).split("").map((x) => x + x).join("")).toLowerCase();
+  const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(c); if (!m || m[4] === "0") return ""; return "#" + [m[1], m[2], m[3]].map((v) => (+v).toString(16).padStart(2, "0")).join(""); };
+const fontKey = (face) => { const f = String(face || "").toLowerCase().replace(/["']/g, "").split(",")[0].trim(); return Object.keys(FONTS).find((k) => k === f || FONTS[k][0].toLowerCase() === f) || ""; };
+function domToDoc(root) {
+  const blocks = []; let cur = null;
+  const block = (t, a) => { cur = { t, runs: [] }; if (a) cur.a = a; blocks.push(cur); return cur; };
+  const alignOf = (n) => { const v = (n.style && n.style.textAlign) || (n.getAttribute && n.getAttribute("align")) || ""; const rtl = document.documentElement.dir === "rtl";
+    return v === "center" ? "center" : v === "end" || (v === "right" && !rtl) || (v === "left" && rtl) ? "end" : ""; };
+  const BLK = /^(P|DIV|H[1-6]|BLOCKQUOTE|UL|OL|LI|SECTION|ARTICLE)$/;
+  function inline(n, runs, st) {
+    if (n.nodeType === 3) { if (n.data) runs.push({ x: n.data, ...st }); return; }
+    if (n.nodeType !== 1) return;
+    if (n.tagName === "BR") { runs.push({ x: "\n" }); return; }
+    if (n.tagName === "IMG") { if (isEmoji(n.dataset.e)) runs.push({ e: n.dataset.e }); return; }
+    const o = { ...st }, T = n.tagName, cs = n.style || {};
+    if (T === "B" || T === "STRONG" || /^(bold|[6-9]00)$/.test(cs.fontWeight)) o.b = true;
+    if (T === "I" || T === "EM" || cs.fontStyle === "italic") o.i = true;
+    if (T === "U" || /underline/.test(cs.textDecoration || cs.textDecorationLine || "")) o.u = true;
+    if (T === "S" || T === "STRIKE" || T === "DEL" || /line-through/.test(cs.textDecoration || cs.textDecorationLine || "")) o.s = true;
+    if (T === "FONT") { const c = toHex(n.getAttribute("color")); if (c) o.c = c; const z = CODE_SIZE[n.getAttribute("size")]; if (z) o.z = z; else if (n.getAttribute("size")) delete o.z; const f = fontKey(n.getAttribute("face")); if (f) o.f = f; }
+    if (cs.color) { const c = toHex(cs.color); if (c) o.c = c; }
+    if (cs.backgroundColor) { const h = toHex(cs.backgroundColor); if (h && h !== "#ffffff") o.h = h; }
+    if (cs.fontFamily) { const f = fontKey(cs.fontFamily); if (f) o.f = f; }
+    for (const ch of n.childNodes) { if (ch.nodeType === 1 && BLK.test(ch.tagName)) { walk(ch); cur = null; } else inline(ch, cur ? cur.runs : runs, o); }
+  }
+  function walk(n) {
+    const T = n.tagName;
+    if (T === "UL" || T === "OL") { const b = { t: T.toLowerCase(), items: [] }; blocks.push(b); cur = null;
+      for (const li of n.children) { if (li.tagName !== "LI") continue; const runs = []; for (const ch of li.childNodes) inline(ch, runs, {}); b.items.push(runs); } return; }
+    const t = /^H[12]$/.test(T) ? "h2" : /^H[3-6]$/.test(T) ? "h3" : T === "BLOCKQUOTE" ? "quote" : "p";
+    if ([...n.children].some((c) => BLK.test(c.tagName))) {   // a box with blocks in it: its own lines before/after them are paragraphs
+      cur = null; for (const ch of n.childNodes) { if (ch.nodeType === 1 && BLK.test(ch.tagName)) { walk(ch); cur = null; } else { if (!cur) block(t, alignOf(n)); inline(ch, cur.runs, {}); } } cur = null; return; }
+    block(t, alignOf(n)); for (const ch of n.childNodes) inline(ch, cur.runs, {}); cur = null;
+  }
+  for (const n of root.childNodes) {
+    if (n.nodeType === 1 && BLK.test(n.tagName)) { walk(n); continue; }
+    if (n.nodeType === 1 && n.tagName === "BR") { cur = null; continue; }
+    if (!cur) block("p"); inline(n, cur.runs, {});
+  }
+  // tidy: join neighbours with the same style, drop empty lines at the ends of a block, drop empty blocks
+  const same = (a, b) => !a.e && !b.e && ["b", "i", "u", "s", "c", "h", "z", "f"].every((k) => a[k] === b[k]);
+  const tidy = (runs) => { const out = []; runs.forEach((r) => { if (!r.e && !r.x) return; const last = out[out.length - 1]; if (last && same(last, r)) last.x += r.x; else out.push({ ...r }); });
+    while (out.length && !out[0].e && !out[0].x.trim()) out.shift(); while (out.length && !out[out.length - 1].e && !out[out.length - 1].x.trim()) out.pop();
+    if (out.length && !out[out.length - 1].e) out[out.length - 1].x = out[out.length - 1].x.replace(/\s+$/, ""); if (out.length && !out[0].e) out[0].x = out[0].x.replace(/^\s+/, ""); return out; };
+  return { v: 1, blocks: blocks.map((b) => (b.items ? { ...b, items: b.items.map(tidy).filter((x) => x.length) } : { ...b, runs: tidy(b.runs) })).filter((b) => (b.items ? b.items.length : b.runs.length)) };
+}
+// a comment's text with its Jumpi emojis (written :jumpi_hi:) as pictures
+function withEmoji(box, text) {
+  let at = 0; String(text).replace(EMOJI_CODE, (m, name, i) => { if (!isEmoji(name)) return m; box.append(document.createTextNode(text.slice(at, i)), emoImg(name)); at = i + m.length; return m; });
+  box.append(document.createTextNode(text.slice(at)));
+}
+
+/* ---------- the editor's buttons ---------- */
+const STD_EMOJI = "😀 😃 😄 😁 😆 😅 🤣 😂 🙂 😉 😊 😇 🥰 😍 🤩 😘 😋 😛 😜 🤪 😎 🤓 🥳 🤗 🤔 🤭 😮 😲 🥺 😢 😭 😱 😴 🙌 👏 👍 👋 🤝 💪 🙏 ✌️ 🤞 ❤️ 🧡 💛 💚 💙 💜 💖 ✨ ⭐ 🌟 🔥 💥 🎉 🎊 🎁 🎈 🏆 🥇 🎮 🕹️ 🎯 🎨 🎵 🎶 📣 📢 🗓️ ⏰ 🚀 🌈 ☀️ 🌙 ⚡ 🌊 🌴 🍕 🍔 🍦 🍩 🧁 🐶 🐱 🐰 🐼 🦄 🐉".split(" ");
+const COLORS = ["#6a35f0", "#9b5cff", "#1fb6ff", "#0d63c9", "#2fd36b", "#17803a", "#ffd23a", "#ff8a1c", "#ff4f8f", "#e0284a", "#1d2147", "#5d6390"];
+const MARKS = ["#fff1a8", "#ffe0b8", "#ffd6e8", "#e9e1ff", "#d4f5ff", "#dcfbe4"];
+const ed = $("mpBody");
+let edRange = null;
+const keepSel = () => { const s2 = getSelection(); if (s2.rangeCount && ed.contains(s2.anchorNode)) edRange = s2.getRangeAt(0).cloneRange(); };
+const backSel = () => { ed.focus({ preventScroll: true }); if (edRange) { const s2 = getSelection(); s2.removeAllRanges(); s2.addRange(edRange); } };
+document.addEventListener("selectionchange", keepSel);
+const exec = (cmd, val) => { backSel(); try { document.execCommand("styleWithCSS", false, false); } catch (e) {} document.execCommand(cmd, false, val); keepSel(); paintBar(); };
+document.querySelectorAll(".ed-bar [data-cmd]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => exec(b.dataset.cmd); });
+document.querySelectorAll(".ed-bar [data-block]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = () => exec("formatBlock", "<" + b.dataset.block + ">"); });
+document.querySelectorAll(".ed-bar [data-align]").forEach((b) => { b.onmousedown = (e) => e.preventDefault();
+  b.onclick = () => { const rtl = document.documentElement.dir === "rtl", a = b.dataset.align; exec(a === "center" ? "justifyCenter" : (a === "start") !== rtl ? "justifyLeft" : "justifyRight"); }; });
+function paintBar() { ["bold", "italic", "underline", "strikeThrough", "insertUnorderedList", "insertOrderedList"].forEach((c) => { const b = document.querySelector(`.ed-bar [data-cmd="${c}"]`); try { b.classList.toggle("on", document.queryCommandState(c)); } catch (e) {} }); }
+ed.addEventListener("keyup", paintBar); ed.addEventListener("mouseup", paintBar);
+// paste: only the text (pasted pages bring their own styles and tags)
+ed.addEventListener("paste", (e) => { e.preventDefault(); const txt = (e.clipboardData || window.clipboardData).getData("text/plain"); document.execCommand("insertText", false, txt); });
+ed.addEventListener("drop", (e) => e.preventDefault());
+function fillSelects() {
+  const he = lang === "he";
+  $("edFont").textContent = ""; Object.entries(FONTS).forEach(([k, v]) => { const o = el("option", "", he ? v[1] : v[0]); o.value = k; o.style.fontFamily = v[2]; $("edFont").append(o); });
+  $("edSize").textContent = ""; [["m", he ? "רגיל" : "Normal"], ...Object.entries(SIZES).map(([k, v]) => [k, he ? v[1] : v[0]])].forEach(([k, n]) => { const o = el("option", "", n); o.value = k; $("edSize").append(o); });
+}
+$("edFont").onchange = () => { exec("fontName", $("edFont").value); };
+$("edSize").onchange = () => { const z = $("edSize").value; exec("fontSize", z === "m" ? "3" : SIZE_CODE[z]); };
+function pops(btnId, popId, fill) {
+  const b = $(btnId), p = $(popId); b.onmousedown = (e) => e.preventDefault();
+  b.onclick = (e) => { e.stopPropagation(); const open = p.hidden; document.querySelectorAll(".ed-pop").forEach((x) => (x.hidden = true)); if (open) { fill(p); p.hidden = false; } };
+}
+document.addEventListener("click", (e) => { if (!e.target.closest(".ed-pop-w")) document.querySelectorAll(".ed-pop").forEach((x) => (x.hidden = true)); });
+const swatches = (p, list, onPick, none) => {
+  p.textContent = ""; const g = el("span", "ed-sw");
+  if (none) { const b = el("button", "sw none"); b.type = "button"; b.title = "×"; b.onmousedown = (e) => e.preventDefault(); b.onclick = () => { onPick(""); p.hidden = true; }; g.append(b); }
+  list.forEach((c) => { const b = el("button", "sw"); b.type = "button"; b.style.background = c; b.title = c; b.onmousedown = (e) => e.preventDefault(); b.onclick = () => { onPick(c); p.hidden = true; }; g.append(b); });
+  const own = el("label", "sw own"); own.title = lang === "he" ? "צבע אחר" : "Another colour"; const inp = el("input"); inp.type = "color"; inp.oninput = () => onPick(inp.value); own.append(inp); g.append(own);
+  p.append(g);
+};
+pops("edColorB", "edColorP", (p) => swatches(p, COLORS, (c) => { exec("foreColor", c || "#1d2147"); $("edColorI").style.background = c || ""; }, true));
+pops("edMarkB", "edMarkP", (p) => swatches(p, MARKS, (c) => { exec("hiliteColor", c || "transparent"); $("edMarkI").style.background = c || ""; }, true));
+let emoTab = "jumpi";
+function emoGrid(g, tab, onPick) {
+  g.textContent = "";
+  if (tab === "jumpi") EMOJI.forEach((n) => { const b = el("button", "emo-b"); b.type = "button"; b.title = ":" + n + ":"; b.append(emoImg(n)); b.onmousedown = (e) => e.preventDefault(); b.onclick = () => onPick(n, true); g.append(b); });
+  else STD_EMOJI.forEach((u) => { const b = el("button", "emo-b std", u); b.type = "button"; b.onmousedown = (e) => e.preventDefault(); b.onclick = () => onPick(u, false); g.append(b); });
+}
+const putEmoji = (v, jumpi) => { if (jumpi) { backSel(); const img = emoImg(v); const sel = getSelection(); if (!sel.rangeCount) ed.append(img); else { const r = sel.getRangeAt(0); r.deleteContents(); r.insertNode(img); r.setStartAfter(img); r.collapse(true); sel.removeAllRanges(); sel.addRange(r); } keepSel(); }
+  else exec("insertText", v); };
+pops("edEmoB", "edEmoP", () => emoGrid($("edEmoG"), emoTab, putEmoji));
+document.querySelectorAll("#edEmoP [data-tab]").forEach((b) => { b.onmousedown = (e) => e.preventDefault(); b.onclick = (e) => { e.stopPropagation(); emoTab = b.dataset.tab; document.querySelectorAll("#edEmoP [data-tab]").forEach((x) => x.setAttribute("aria-pressed", x === b)); emoGrid($("edEmoG"), emoTab, putEmoji); }; });
+// the comment box: Jumpi emojis go in as :name:
+pops("bcEmoB", "bcEmoP", () => emoGrid($("bcEmoG"), "jumpi", (n) => { const ta = $("bcText"), a2 = ta.selectionStart ?? ta.value.length, b2 = ta.selectionEnd ?? a2, code = ":" + n + ":";
+  if (ta.value.length + code.length > 400) return; ta.value = ta.value.slice(0, a2) + code + ta.value.slice(b2); ta.focus(); ta.selectionStart = ta.selectionEnd = a2 + code.length; }));
 
 // the start: the same language as the rest of the site, then: am I logged in already?
 { let start = null; try { start = new URLSearchParams(location.search).get("lang") || localStorage.getItem("jumpi-lang"); } catch (e) {}

@@ -6,6 +6,7 @@ import { requireUser } from "./shop.js";
 import { clubAge } from "./club.js";
 import { emitToAdmins, strike } from "../realtime/plaza.js";
 import { checkText, FRIENDLY_MESSAGE, PRIVATE_MESSAGE } from "../public/shared/profanity.js";
+import { cleanDoc, docText, textDoc } from "../public/shared/blogdoc.js";
 
 /*
   Jumpi Club blog.
@@ -25,7 +26,7 @@ async function requireAdmin(req, res, next) {
   try { const u = await currentUser(req); if (!isAdmin(u)) return res.status(403).json({ error: "Only admins can do that." }); req.user = u; next(); }
   catch (err) { next(err); }
 }
-const postView = (p, n = {}) => ({ id: S(p._id), title: p.title, body: p.body, excerpt: p.body.replace(/\s+/g, " ").slice(0, 180), image: p.image ? `/api/blog/img/${S(p.image)}` : null,
+const postView = (p, n = {}) => ({ id: S(p._id), title: p.title, body: p.body, doc: p.doc || textDoc(p.body), excerpt: p.body.replace(/\s+/g, " ").slice(0, 180), image: p.image ? `/api/blog/img/${S(p.image)}` : null,
   author: p.authorName || "Jumpi", at: p.at.getTime(), updatedAt: p.updatedAt ? p.updatedAt.getTime() : null, comments: n[S(p._id)] || 0 });
 const commentView = (c, mine = false) => ({ id: S(c._id), username: c.username, text: c.text, at: c.at.getTime(), status: c.status, mine });
 
@@ -73,11 +74,13 @@ router.post("/blog/img", express.raw({ type: ["image/png", "image/jpeg", "image/
   } catch (err) { next(err); }
 });
 async function readPost(req, res) {
-  const title = one(req.body.title, 120), body = clean(req.body.body, 20000), image = String(req.body.image || "");
+  // the post: its formatted text (doc, checked piece by piece) or plain text
+  const doc = req.body.doc ? cleanDoc(req.body.doc) : textDoc(clean(req.body.body, 20000));
+  const title = one(req.body.title, 120), body = doc ? docText(doc).slice(0, 25000) : "", image = String(req.body.image || "");
   if (!title) { res.status(400).json({ error: "Give the post a title." }); return null; }
-  if (!body) { res.status(400).json({ error: "Write something in the post." }); return null; }
+  if (!doc || !doc.blocks.length) { res.status(400).json({ error: "Write something in the post." }); return null; }
   if (!okId(image) || !(await BlogImage.exists({ _id: image }))) { res.status(400).json({ error: "Every post needs a picture." }); return null; }
-  return { title, body, image };
+  return { title, body: body || "…", doc, image };
 }
 router.post("/blog", requireJson, requireAdmin, async (req, res, next) => {
   try {

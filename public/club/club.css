@@ -504,3 +504,67 @@ html[lang="he"] .blog-pending h2{font-weight:800}
   .bl-card.first{flex-direction:column}.bl-card.first img{width:100%;min-height:0;aspect-ratio:16/9}
   .blog-top h1{font-size:2rem}.blog-top img{width:64px;height:64px}
 }
+
+/* ---------- a post's styles (the editor makes them; posts and the editor look the same) ---------- */
+.blog-body h2{margin:22px 0 10px;font:400 1.9rem/1.15 var(--display);color:var(--purple)}
+.blog-body h3{margin:18px 0 8px;font:400 1.45rem/1.2 var(--display);color:var(--ink)}
+html[lang="he"] .blog-body h2,html[lang="he"] .blog-body h3{font-weight:800}
+.blog-body blockquote{margin:16px 0;padding:14px 20px;border-inline-start:6px solid #9b5cff;background:#f4f0ff;border-radius:14px;font-size:1.15rem;font-weight:600;color:#3a2a80;white-space:pre-line}
+.blog-body ul,.blog-body ol{margin:0 0 16px;padding-inline-start:26px;font-size:1.12rem;line-height:1.7}
+.blog-body li{margin:3px 0}
+.blog-body p:empty{min-height:1em}
+.blog-body font[size="1"],.blog-body font[size="2"]{font-size:.85em}
+.blog-body font[size="5"],.blog-body font[size="6"]{font-size:1.35em}
+.blog-body font[size="7"]{font-size:1.85em;line-height:1.2}
+.blog-body font[face="display"]{font-family:"HeeboDisplay","Lilita One",sans-serif}
+.blog-body font[face="fredoka"]{font-family:"Fredoka",sans-serif}
+.blog-body font[face="rubik"]{font-family:"Rubik",sans-serif}
+.blog-body font[face="secular"]{font-family:"Secular One",sans-serif}
+.blog-body font[face="varela"]{font-family:"Varela Round",sans-serif}
+.blog-body font[face="lilita"]{font-family:"Lilita One",sans-serif}
+.blog-body font[face="body"]{font-family:var(--body)}
+.blog-body .hl{border-radius:.3em;padding:0 .15em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+img.emo{display:inline-block;width:2.1em;height:2.1em;vertical-align:-.7em;margin:0 .06em;object-fit:contain}
+.bc-w p img.emo{width:2.3em;height:2.3em}
+/* the editor */
+.ed{border:3px solid var(--line);border-radius:18px;background:#fff;overflow:visible}
+.ed:focus-within{border-color:var(--purple)}
+.ed-bar{position:sticky;top:-26px;z-index:3;display:flex;flex-wrap:wrap;align-items:center;gap:3px;padding:6px;background:#f4f0ff;border-radius:15px 15px 0 0;border-bottom:2px solid var(--line)}
+.ed-bar>button,.ed-pop-w>button{display:grid;place-items:center;min-width:34px;height:34px;padding:0 7px;border:0;border-radius:10px;background:none;cursor:pointer;color:var(--ink);font:700 1rem var(--body)}
+.ed-bar>button:hover,.ed-pop-w>button:hover{background:#e6ddff}
+.ed-bar>button.on{background:#6a35f0;color:#fff}
+.ed-bar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ed-bar svg circle{fill:currentColor;stroke:none}
+.ed-bar select{height:34px;border:0;border-radius:10px;background:#fff;padding:0 8px;font:600 .92rem var(--body);color:var(--ink);cursor:pointer;max-width:130px}
+.ed-sep{width:2px;height:22px;background:#dcd6f7;margin:0 3px}
+.ed-pop-w{position:relative;display:inline-block}
+.ed-color span{font:800 1.05rem var(--body);line-height:1}
+.ed-color,.ed-mark{position:relative}
+.ed-color i,.ed-mark i{position:absolute;left:7px;right:7px;bottom:4px;height:4px;border-radius:2px;background:#6a35f0}
+.ed-mark i{background:#ffe27a}
+.ed-emo img{width:26px;height:26px}
+.ed-pop{position:absolute;top:calc(100% + 6px);inset-inline-start:0;z-index:20;background:#fff;border-radius:16px;padding:10px;box-shadow:0 6px 0 #d6cbf7,0 18px 40px rgb(20 8 80 / .3)}
+.ed-pop[hidden]{display:none}
+.ed-sw{display:grid;grid-template-columns:repeat(7,28px);gap:6px}
+.sw{width:28px;height:28px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #dcd6f7;cursor:pointer;padding:0}
+.sw:hover{transform:scale(1.12)}
+.sw.none{background:linear-gradient(135deg,#fff 45%,#e0284a 45% 55%,#fff 55%)}
+.sw.own{position:relative;background:conic-gradient(#ff4f8f,#ffd23a,#2fd36b,#1fb6ff,#9b5cff,#ff4f8f);overflow:hidden}
+.sw.own input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ed-emo-pop{width:min(380px,80vw)}
+.ed-tabs{display:flex;gap:4px;margin-bottom:8px;padding:3px;background:#f1ecff;border-radius:12px}
+.ed-tabs button{flex:1;height:32px;border:0;border-radius:9px;background:none;font:600 .9rem var(--body);color:var(--muted);cursor:pointer}
+.ed-tabs button[aria-pressed="true"]{background:#fff;color:var(--purple);box-shadow:0 2px 0 #d6cbf7}
+.ed-emo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px;max-height:250px;overflow:auto}
+.emo-b{display:grid;place-items:center;height:42px;border:0;border-radius:10px;background:none;cursor:pointer;padding:2px}
+.emo-b:hover{background:#f1ecff;transform:scale(1.1)}
+.emo-b img.emo{width:36px;height:36px;margin:0;vertical-align:0}
+.emo-b.std{font-size:1.5rem}
+.ed-area{min-height:260px;max-height:52vh;overflow:auto;padding:14px 18px;outline:none;cursor:text}
+.ed-area p{margin:0 0 12px}
+/* the comment box with its emoji button */
+.bc-in{position:relative}
+.bc-in textarea{padding-inline-end:56px}
+.bc-emo{position:absolute;top:8px;inset-inline-end:8px}
+.bc-emo>button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:12px;background:#f1ecff;cursor:pointer}
+.bc-emo .ed-pop{inset-inline-start:auto;inset-inline-end:0}

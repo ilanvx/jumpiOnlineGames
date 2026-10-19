@@ -15,7 +15,7 @@
 <link rel="icon" type="image/png" href="/club/img/controller-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&family=Rubik:wght@400;600;800&family=Secular+One&family=Varela+Round&display=swap">
 <link rel="stylesheet" href="/club/club.css">
 </head>
 <body class="cl">
@@ -171,7 +171,8 @@
           <h2 id="bcT"><span data-l="en">Comments</span><span data-l="he">תגובות</span> <b id="bcN"></b></h2>
           <ol class="bc-list" id="bcList"></ol>
           <form class="bc-form" id="bcForm" hidden>
-            <textarea id="bcText" maxlength="400" rows="3"></textarea>
+            <div class="bc-in"><textarea id="bcText" maxlength="400" rows="3"></textarea>
+              <span class="ed-pop-w bc-emo"><button type="button" id="bcEmoB" class="ed-emo" title="Jumpi emoji"><img src="/club/emoji/jumpi_wink.png" alt="" width="28" height="28"></button><span class="ed-pop ed-emo-pop" id="bcEmoP" hidden><span class="ed-emo-grid" id="bcEmoG"></span></span></span></div>
             <div class="bc-row"><small><span data-l="en">An admin checks every comment before it shows.</span><span data-l="he">מנהל בודק כל תגובה לפני שהיא מופיעה.</span></small><button class="cl-btn sm" type="submit"><span data-l="en">Send</span><span data-l="he">שליחה</span></button></div>
           </form>
           <p class="bc-note" id="bcNote" hidden></p>
@@ -192,7 +193,43 @@
   <label class="cl-field"><span data-l="en">Title</span><span data-l="he">כותרת</span><input id="mpTitle" maxlength="120"></label>
   <div class="cl-field"><span data-l="en">Picture</span><span data-l="he">תמונה</span>
     <label class="mp-pic" id="mpPic"><img id="mpPrev" alt="" hidden><span class="mp-pick" id="mpPick"><span data-l="en">Choose a picture</span><span data-l="he">בחירת תמונה</span></span><input id="mpFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
-  <label class="cl-field"><span data-l="en">The post (an empty line starts a new paragraph)</span><span data-l="he">הפוסט (שורה ריקה מתחילה פסקה חדשה)</span><textarea id="mpBody" rows="10" maxlength="20000"></textarea></label>
+  <div class="cl-field"><span data-l="en">The post</span><span data-l="he">הפוסט</span>
+    <div class="ed" id="ed">
+      <div class="ed-bar" role="toolbar" aria-label="Text">
+        <button type="button" data-cmd="bold" class="ed-b" title="Bold / מודגש"><b>B</b></button>
+        <button type="button" data-cmd="italic" title="Italic / נטוי"><i>I</i></button>
+        <button type="button" data-cmd="underline" title="Underline / קו תחתון"><u>U</u></button>
+        <button type="button" data-cmd="strikeThrough" title="Strike / קו חוצה"><s>S</s></button>
+        <span class="ed-sep"></span>
+        <select id="edFont" title="Font / גופן"></select>
+        <select id="edSize" title="Size / גודל"></select>
+        <span class="ed-sep"></span>
+        <span class="ed-pop-w"><button type="button" id="edColorB" class="ed-color" title="Text colour / צבע טקסט"><span>A</span><i id="edColorI"></i></button>
+          <span class="ed-pop" id="edColorP" hidden></span></span>
+        <span class="ed-pop-w"><button type="button" id="edMarkB" class="ed-mark" title="Highlight / מרקר"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19h14M8 15l7.5-9.5 3 3L11 18H8z"/></svg><i id="edMarkI"></i></button>
+          <span class="ed-pop" id="edMarkP" hidden></span></span>
+        <span class="ed-sep"></span>
+        <button type="button" data-block="h2" title="Heading / כותרת">H1</button>
+        <button type="button" data-block="h3" title="Small heading / כותרת קטנה">H2</button>
+        <button type="button" data-block="p" title="Text / טקסט רגיל">¶</button>
+        <button type="button" data-block="blockquote" title="Quote / ציטוט"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17c0-4 1.5-7 5-9M14 17c0-4 1.5-7 5-9"/></svg></button>
+        <button type="button" data-cmd="insertUnorderedList" title="List / רשימה"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="7" r="1.4"/><circle cx="5" cy="12" r="1.4"/><circle cx="5" cy="17" r="1.4"/><path d="M9.5 7H20M9.5 12H20M9.5 17H20"/></svg></button>
+        <button type="button" data-cmd="insertOrderedList" title="Numbered list / רשימה ממוספרת"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h1.5V10M4 10h3M4 14.5c.5-1 2.8-1 2.8.6 0 1.2-2.8 2-2.8 3.4h3M9.5 7H20M9.5 12H20M9.5 17H20"/></svg></button>
+        <span class="ed-sep"></span>
+        <button type="button" data-align="start" title="Align start / יישור להתחלה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 10h10M4 14h16M4 18h10"/></svg></button>
+        <button type="button" data-align="center" title="Center / מרכוז"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 10h10M4 14h16M7 18h10"/></svg></button>
+        <button type="button" data-align="end" title="Align end / יישור לסוף"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M10 10h10M4 14h16M10 18h10"/></svg></button>
+        <span class="ed-sep"></span>
+        <span class="ed-pop-w"><button type="button" id="edEmoB" class="ed-emo" title="Emoji / אימוג'י"><img src="/club/emoji/jumpi_hi.png" alt="" width="26" height="26"></button>
+          <span class="ed-pop ed-emo-pop" id="edEmoP" hidden>
+            <span class="ed-tabs"><button type="button" data-tab="jumpi" aria-pressed="true"><span data-l="en">Jumpi</span><span data-l="he">של ג'אמפי</span></button><button type="button" data-tab="std" aria-pressed="false"><span data-l="en">Emoji</span><span data-l="he">רגילים</span></button></span>
+            <span class="ed-emo-grid" id="edEmoG"></span>
+          </span></span>
+        <button type="button" data-cmd="removeFormat" title="Clear style / ניקוי עיצוב"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h12M12 5l-3 14M5 19l14-14" /></svg></button>
+      </div>
+      <div class="ed-area blog-body" id="mpBody" contenteditable="true" spellcheck="true"></div>
+    </div>
+  </div>
   <p class="cl-msg" id="mpMsg" hidden></p>
   <div class="dlg-btns"><button type="button" class="cl-btn" id="mpGo"><span data-l="en">Publish</span><span data-l="he">פרסום</span></button><button type="button" class="cl-btn ghost" data-close><span data-l="en">Cancel</span><span data-l="he">ביטול</span></button></div>
 </div></div>
