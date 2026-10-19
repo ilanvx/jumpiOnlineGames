@@ -16707,6 +16707,7 @@ function bindPhoneSocket(s){
   s.on("friends:accepted",d=>{sfx.success();toast(`🎉 ${d.username} is your friend now!`);if(PH.open&&["friends","online","chat"].includes(PH.stack.at(-1)?.id))renderApp();});
   s.on("friends:changed",()=>{if(PH.open&&["friends","online","chat","home","convo"].includes(PH.stack.at(-1)?.id))renderApp();refreshPhoneBadges();});
 s.on("blocks:changed",()=>{if(PH.open&&["friends","online","chat"].includes(PH.stack.at(-1)?.id))renderApp();});
+s.on("admin:blogComment",d=>{if(me&&me.role==="admin"){toast(`New blog comment from ${d.username}, waiting for approval (Jumpi Club → Blog)`);sfx.wave();}});
 s.on("admin:report",d=>{if(me&&me.role==="admin"){toast(`${d.urgent?"🚨 ":""}${d.filter?"The chat filter flagged":"New report about"} ${d.target} (admin panel → Player reports)`);sfx.wave();}});
 }
 

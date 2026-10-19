@@ -26,8 +26,8 @@
     <a class="cl-brand" href="/club" aria-label="Jumpi Club"><img src="/club/img/jumpi-club-logo-300.png" alt="Jumpi Club" width="300" height="196"></a>
     <span class="cl-age" tabindex="0" aria-describedby="clAgeTip"><b dir="ltr">13+</b><span class="cl-age-tip" id="clAgeTip" role="tooltip"><span data-l="en">Jumpi Club is for ages 13 and up</span><span data-l="he">ג'אמפי קלאב מגיל 13 ומעלה</span></span></span>
     <nav class="cl-nav" id="clNav" aria-label="Jumpi Club">
-      <a href="/club" aria-current="page"><img src="/club/img/nav/club.png" alt="" width="30" height="30"><span data-l="en">The Club</span><span data-l="he">הקלאב</span></a>
-      <a href="#blog" data-soon><img src="/club/img/nav/blog.png" alt="" width="30" height="30"><span data-l="en">Blog</span><span data-l="he">בלוג</span></a>
+      <a href="#club" data-nav="club" aria-current="page"><img src="/club/img/nav/club.png" alt="" width="30" height="30"><span data-l="en">The Club</span><span data-l="he">הקלאב</span></a>
+      <a href="#blog" data-nav="blog"><img src="/club/img/nav/blog.png" alt="" width="30" height="30"><span data-l="en">Blog</span><span data-l="he">בלוג</span></a>
       <a href="#gallery" data-soon><img src="/club/img/nav/gallery.png" alt="" width="30" height="30"><span data-l="en">Gallery</span><span data-l="he">גלריה</span></a>
       <a href="https://jumpigames.com/"><img src="/club/img/nav/site.png" alt="" width="30" height="30"><span data-l="en">Jumpi site</span><span data-l="he">האתר</span></a>
     </nav>
@@ -146,7 +146,56 @@
       </nav>
     </aside>
   </div>
+
+  <!-- the blog: posts by the Jumpi team (admins), comments that an admin approves -->
+  <section class="blog" id="blog" hidden aria-labelledby="blogT">
+    <header class="blog-top">
+      <img src="/club/img/nav/blog.png" alt="" width="84" height="84">
+      <div><h1 id="blogT"><span data-l="en">The Jumpi Blog</span><span data-l="he">הבלוג של ג'אמפי</span></h1>
+      <p><span data-l="en">News, updates and fun from the Jumpi team.</span><span data-l="he">חדשות, עדכונים וכיף מצוות ג'אמפי.</span></p></div>
+      <div class="blog-admin" id="blogAdmin" hidden>
+        <button class="cl-btn sm" id="blogNew" type="button"><span data-l="en">+ New post</span><span data-l="he">+ פוסט חדש</span></button>
+        <a class="cl-btn sm ghost" id="blogPendBtn" href="#blog/pending"><span data-l="en">Comments to approve</span><span data-l="he">תגובות לאישור</span> <b id="blogPendN">0</b></a>
+      </div>
+    </header>
+    <div class="blog-list" id="blogList"></div>
+    <article class="blog-post" id="blogPost" hidden>
+      <a class="blog-back" href="#blog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span data-l="en">All posts</span><span data-l="he">כל הפוסטים</span></a>
+      <img class="blog-hero" id="bpImg" alt="">
+      <div class="blog-in">
+        <h1 id="bpTitle"></h1>
+        <p class="blog-meta" id="bpMeta"></p>
+        <div class="blog-tools" id="bpTools" hidden><button type="button" class="cl-btn sm ghost" id="bpEdit"><span data-l="en">Edit</span><span data-l="he">עריכה</span></button><button type="button" class="cl-btn sm danger" id="bpDel"><span data-l="en">Delete</span><span data-l="he">מחיקה</span></button></div>
+        <div class="blog-body" id="bpBody"></div>
+        <section class="blog-comments" aria-labelledby="bcT">
+          <h2 id="bcT"><span data-l="en">Comments</span><span data-l="he">תגובות</span> <b id="bcN"></b></h2>
+          <ol class="bc-list" id="bcList"></ol>
+          <form class="bc-form" id="bcForm" hidden>
+            <textarea id="bcText" maxlength="400" rows="3"></textarea>
+            <div class="bc-row"><small><span data-l="en">An admin checks every comment before it shows.</span><span data-l="he">מנהל בודק כל תגובה לפני שהיא מופיעה.</span></small><button class="cl-btn sm" type="submit"><span data-l="en">Send</span><span data-l="he">שליחה</span></button></div>
+          </form>
+          <p class="bc-note" id="bcNote" hidden></p>
+        </section>
+      </div>
+    </article>
+    <section class="blog-pending" id="blogPending" hidden aria-labelledby="bpendT">
+      <a class="blog-back" href="#blog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span data-l="en">All posts</span><span data-l="he">כל הפוסטים</span></a>
+      <h2 id="bpendT"><span data-l="en">Comments waiting for approval</span><span data-l="he">תגובות שמחכות לאישור</span></h2>
+      <ol class="bc-list" id="pendList"></ol>
+    </section>
+  </section>
 </main>
+
+<!-- writing a post (admins) -->
+<div class="cl-modal" id="mPost" hidden><div class="cl-dlg wide" role="dialog" aria-modal="true" aria-labelledby="mPostT">
+  <h2 id="mPostT"></h2>
+  <label class="cl-field"><span data-l="en">Title</span><span data-l="he">כותרת</span><input id="mpTitle" maxlength="120"></label>
+  <div class="cl-field"><span data-l="en">Picture</span><span data-l="he">תמונה</span>
+    <label class="mp-pic" id="mpPic"><img id="mpPrev" alt="" hidden><span class="mp-pick" id="mpPick"><span data-l="en">Choose a picture</span><span data-l="he">בחירת תמונה</span></span><input id="mpFile" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
+  <label class="cl-field"><span data-l="en">The post (an empty line starts a new paragraph)</span><span data-l="he">הפוסט (שורה ריקה מתחילה פסקה חדשה)</span><textarea id="mpBody" rows="10" maxlength="20000"></textarea></label>
+  <p class="cl-msg" id="mpMsg" hidden></p>
+  <div class="dlg-btns"><button type="button" class="cl-btn" id="mpGo"><span data-l="en">Publish</span><span data-l="he">פרסום</span></button><button type="button" class="cl-btn ghost" data-close><span data-l="en">Cancel</span><span data-l="he">ביטול</span></button></div>
+</div></div>
 
 <!-- a player's menu (report / block), and the windows for block, report and the blocked list -->
 <div class="ppl-menu" id="pplMenu" hidden role="menu">
@@ -194,7 +243,7 @@
     <nav class="cl-foot-col" aria-label="The Club">
       <h3><span data-l="en">The Club</span><span data-l="he">הקלאב</span></h3>
       <a href="/club"><span data-l="en">Club home</span><span data-l="he">הקלאב</span></a>
-      <a href="#blog" data-soon><span data-l="en">Blog</span><span data-l="he">בלוג</span></a>
+      <a href="#blog"><span data-l="en">Blog</span><span data-l="he">בלוג</span></a>
       <a href="#gallery" data-soon><span data-l="en">Gallery</span><span data-l="he">גלריה</span></a>
       <a href="#clLogin" data-go><span data-l="en">Log in</span><span data-l="he">התחברות</span></a>
     </nav>

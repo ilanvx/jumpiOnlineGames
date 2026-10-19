@@ -30,6 +30,7 @@ import parentRoutes from "./routes/parents.js";
 import pollRoutes from "./routes/poll.js";
 import perfRoutes from "./routes/perf.js";
 import clubRoutes from "./routes/club.js";
+import blogRoutes from "./routes/blog.js";
 import memberRoutes from "./routes/member.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
@@ -81,6 +82,7 @@ app.use((req, res, next) => {
 });
 // Discord buttons (the ✅ in #rules): signed by Discord, so this needs the raw body, before express.json
 app.post("/api/discord/interactions", express.raw({ type: "*/*", limit: "100kb" }), (req, res, next) => discordInteractions(req, res).catch(next));
+app.use("/api/blog", express.json({ limit: "64kb" }));   // a blog post can be longer than everything else (admins only write them)
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 
@@ -105,6 +107,7 @@ app.use("/api", pollRoutes);   // the weekly poll on the home page
 app.use("/api", memberRoutes);   // members: the monthly gift, a membership that ran out
 app.use("/api", perfRoutes);   // anonymous frames-a-second reports from the game (admin panel → Performance)
 app.use("/api", clubRoutes);   // Jumpi Club: my level and coins, who is online, my Jumpi picture
+app.use("/api", blogRoutes);   // Jumpi Club blog: posts by admins, comments approved by admins
 app.use("/api/parents", parentRoutes);   // parental controls (the /parents page)
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });

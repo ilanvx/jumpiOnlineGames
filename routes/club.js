@@ -24,7 +24,7 @@ function ageYears(bd, now = new Date()) {
   if (now.getUTCMonth() < d.getUTCMonth() || (now.getUTCMonth() === d.getUTCMonth() && now.getUTCDate() < d.getUTCDate())) a--;
   return a;
 }
-function clubAge(req, res, next) {
+export function clubAge(req, res, next) {
   const u = req.user;
   if (u.role === "admin" || u.role === "mod") return next();
   if (!u.birthDate) return res.status(403).json({ code: "birthday", error: "Open the Jumpi game once: it will ask for your birthday, then you can come into Jumpi Club." });
