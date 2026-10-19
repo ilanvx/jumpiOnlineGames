@@ -130,7 +130,13 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 // a little Jumpi face in the player's body colour (the list doesn't show other players' pictures: kids' safety)
 const faceSVG = (c) => `<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="20" cy="21" r="17" fill="${c}"/><ellipse cx="14" cy="12.5" rx="6" ry="3.2" fill="#fff" opacity=".35"/><circle cx="14.5" cy="20" r="4.6" fill="#fff"/><circle cx="25.5" cy="20" r="4.6" fill="#fff"/><circle cx="15.3" cy="20.6" r="2.6" fill="#24202e"/><circle cx="26.3" cy="20.6" r="2.6" fill="#24202e"/><circle cx="16.2" cy="19.4" r=".9" fill="#fff"/><circle cx="27.2" cy="19.4" r=".9" fill="#fff"/><path d="M16 27.5q4 3 8 0" fill="none" stroke="#24202e" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 const skinOf = (look) => SKIN[(look && look.color) | 0] || SKIN[0];
-function face(look, size = 40) { const s = el("span", "ppl-av"); s.style.width = s.style.height = size + "px"; s.innerHTML = faceSVG(skinOf(look)); return s; }
+// a Jumpi in the clothes they wear (a picture the server draws from their saved look); a face in their colour until it's there
+const picURL = (username, pic) => "/api/club/pic/" + encodeURIComponent(username) + "?v=" + encodeURIComponent(pic || "");
+function face(look, size = 40, username = "", pic = "") {
+  const s = el("span", "ppl-av"); s.style.width = s.style.height = size + "px"; s.innerHTML = faceSVG(skinOf(look));
+  if (username) { const i = new Image(); i.alt = ""; i.decoding = "async"; i.onload = () => { s.textContent = ""; s.append(i); s.classList.add("pic"); }; i.src = picURL(username, pic); }
+  return s;
+}
 
 function signedIn(user) {
   ME = { username: user.username, look: user.look, coins: user.coins || 0, levelXp: user.levelXp || 0, level: 1, into: 0, need: 0, pct: 0 };
@@ -140,7 +146,7 @@ function signedIn(user) {
   $("hubFind").placeholder = t("find"); $("chatIn").placeholder = t("typeMsg");
   // my Jumpi: the picture my game window made; until there is one, a face in my colour
   const img = $("clAvImg"); img.onerror = () => { img.onerror = null; img.src = "data:image/svg+xml," + encodeURIComponent(faceSVG(skinOf(ME && ME.look))); img.classList.add("face"); };
-  img.classList.remove("face"); img.src = "/api/club/portrait?" + Date.now();
+  img.classList.remove("face"); img.src = picURL(ME.username, "");
   paintMe(); paintCat(); refresh(); clearInterval(pollT); pollT = setInterval(() => { if (!document.hidden) refresh(); }, 8000);
 }
 function signedOut() {
@@ -154,9 +160,8 @@ $("clOut").onclick = async () => { closePops(); try { await api("logout", {}); }
 async function refresh() {
   const [me, on, fr, dm] = await Promise.all([call("/api/club/me"), call("/api/club/online"), call("/api/friends"), call("/api/dm")]);
   if (!ME) return;
-  if (me.ok) { const was = JSON.stringify(ME.look || {}); Object.assign(ME, me.data); paintMe();
-    // I changed clothes in the game: my picture is new too (the game sends it a few seconds after the change)
-    if (JSON.stringify(ME.look || {}) !== was) setTimeout(() => { const img = $("clAvImg"); img.classList.remove("face"); img.onerror = () => { img.onerror = null; }; img.src = "/api/club/portrait?" + Date.now(); }, 7000); }
+  if (me.ok) { const was = ME.pic; Object.assign(ME, me.data); paintMe();
+    if (ME.pic && ME.pic !== was) { const img = $("clAvImg"), n = new Image(); n.onload = () => { img.classList.remove("face"); img.src = n.src; }; n.src = picURL(ME.username, ME.pic); } }
   if (on.ok) { ONLINE = on.data.players || []; paintOnline(); }
   if (fr.ok) NOTES.requests = fr.data.requests || [];
   NOTES.chats = dm.ok ? (dm.data.chats || []).filter((c) => c.unread > 0 && !(CHAT && CHAT.username === c.username)) : [];
@@ -189,7 +194,7 @@ function paintOnline() {
 const svgBtn = (cls, title, svg) => { const b = el("button", "ppl-btn " + cls); b.type = "button"; b.title = title; b.innerHTML = svg; b.append(el("span", "sr", title)); return b; };
 function row(p) {
   const li = el("li", "ppl" + (p.me ? " me" : "") + (p.friend ? " fr" : ""));
-  li.append(face(p.look, 42));
+  li.append(face(p.look, 42, p.username, p.pic));
   const who = el("span", "ppl-who"); who.append(el("b", "", iso(p.username)));
   const tags = el("small"); tags.append(el("i", "ppl-at " + (p.at || "game"), p.me ? t("you") : p.at === "club" ? t("inClub") : t("inGame")));
   if (p.friend) tags.append(el("i", "ppl-tag fr", t("friend")));
@@ -228,12 +233,12 @@ function paintNotes() {
   const box = $("clNotes"); box.textContent = "";
   if (!n) { box.append(el("p", "note-none", t("noNotes"))); return; }
   NOTES.requests.forEach((q) => {
-    const d = el("div", "note"); d.append(face(q.look, 38)); d.append(el("span", "note-t", t("wantsFriend", iso(q.username))));
+    const d = el("div", "note"); d.append(face(q.look, 38, q.username)); d.append(el("span", "note-t", t("wantsFriend", iso(q.username))));
     const a = el("span", "note-acts"); const y = el("button", "ppl-btn yes", t("accept")); y.type = "button"; y.onclick = (e) => { e.stopPropagation(); respond(q.username, true); };
     const no = el("button", "ppl-btn no", t("decline")); no.type = "button"; no.onclick = (e) => { e.stopPropagation(); respond(q.username, false); }; a.append(y, no); d.append(a); box.append(d);
   });
   NOTES.chats.forEach((c) => {
-    const d = el("button", "note msg"); d.type = "button"; d.append(face(c.look, 38)); d.append(el("span", "note-t", t("newMsgs", c.unread, iso(c.username))));
+    const d = el("button", "note msg"); d.type = "button"; d.append(face(c.look, 38, c.username)); d.append(el("span", "note-t", t("newMsgs", c.unread, iso(c.username))));
     d.onclick = () => { closePops(); openChat(c.username, c.look); }; box.append(d);
   });
 }
@@ -291,7 +296,7 @@ $("clBlockedBtn").onclick = () => { closePops(); openModal("mBlocked"); paintBlo
 async function paintBlocked() {
   const ul = $("mBlockedList"); ul.textContent = ""; const r = await call("/api/blocked"); const list = (r.ok && r.data.blocked) || [];
   if (!list.length) { ul.append(el("li", "ppl-none", t("noBlocked"))); return; }
-  list.forEach((p) => { const li = el("li", "ppl"); li.append(face(p.look, 38)); const w = el("span", "ppl-who"); w.append(el("b", "", iso(p.username))); li.append(w);
+  list.forEach((p) => { const li = el("li", "ppl"); li.append(face(p.look, 38, p.username)); const w = el("span", "ppl-who"); w.append(el("b", "", iso(p.username))); li.append(w);
     const u = el("button", "ppl-btn no", t("unblock")); u.type = "button"; u.onclick = async () => { const x = await call("/api/unblock", { username: p.username }); toast(x.ok ? t("unblocked", iso(p.username)) : say(x.data.error) || t("fail")); paintBlocked(); refresh(); };
     const a = el("span", "ppl-acts"); a.append(u); li.append(a); ul.append(li); });
 }
@@ -300,7 +305,7 @@ async function paintBlocked() {
 function openChat(username, look) {
   CHAT = { username, look, last: "" };
   $("hubList").hidden = true; $("hubChat").hidden = false; document.body.classList.add("chatting");
-  const av = face(look, 40); av.id = "chatAv"; $("chatAv").replaceWith(av);
+  const av = face(look, 40, username, (ONLINE.find((p) => p.username === username) || {}).pic); av.id = "chatAv"; $("chatAv").replaceWith(av);
   $("chatName").textContent = username; $("chatWhere").textContent = "";
   $("chatLog").textContent = ""; $("chatIn").value = ""; $("chatIn").focus({ preventScroll: true });
   if (matchMedia("(max-width: 900px)").matches) $("hubChat").scrollIntoView({ behavior: "smooth", block: "start" });
