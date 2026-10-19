@@ -31,6 +31,7 @@ import pollRoutes from "./routes/poll.js";
 import perfRoutes from "./routes/perf.js";
 import clubRoutes from "./routes/club.js";
 import blogRoutes from "./routes/blog.js";
+import drawingRoutes from "./routes/drawings.js";
 import memberRoutes from "./routes/member.js";
 import { STORE_OPEN } from "./public/shared/store.js";
 import { LAUNCH_AT, LAUNCH_HOSTS } from "./public/shared/launch.js";
@@ -107,6 +108,7 @@ app.use("/api", pollRoutes);   // the weekly poll on the home page
 app.use("/api", memberRoutes);   // members: the monthly gift, a membership that ran out
 app.use("/api", perfRoutes);   // anonymous frames-a-second reports from the game (admin panel → Performance)
 app.use("/api", clubRoutes);   // Jumpi Club: my level and coins, who is online, my Jumpi picture
+app.use("/api", drawingRoutes);   // Jumpi Club colouring book: my own pictures
 app.use("/api", blogRoutes);   // Jumpi Club blog: posts by admins, comments approved by admins
 app.use("/api/parents", parentRoutes);   // parental controls (the /parents page)
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
@@ -175,6 +177,7 @@ function clubPage(req, res, next) {
 app.get("/", (req, res, next) => (isClub(req) ? clubPage(req, res, next) : page("site/index.html")(req, res, next)));
 app.get(["/club", "/club/"], clubPage);
 // the Club's arcade window: the game's own mini-games on a page of their own (tools/club/build-arcade.mjs makes it), opened in a frame
+app.get("/club/draw", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/draw/draw.html")(req, res, next); });
 app.get("/club/arcade", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/arcade/play.html")(req, res, next); });
 // /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
 // middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps

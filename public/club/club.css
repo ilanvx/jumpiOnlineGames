@@ -609,3 +609,4 @@ body.gaming{overflow:hidden}
 @media (max-width:900px){.games{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:10px 16px 30px}}
 @media (max-width:520px){.games{grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px 24px}.gm{border-radius:18px}.gm-tx{padding:12px 12px 14px}.gm-tx b{font-size:1.1rem}.gm-tx small{font-size:.8rem}
   .gm-play{width:40px;height:40px;bottom:-17px;font-size:1rem;border-width:3px}}
+.gm-fun{align-self:flex-start;margin-top:4px;padding:3px 10px;border-radius:999px;background:#ffe3f0;color:#b0306f;font-style:normal;font-size:.78rem;font-weight:700}

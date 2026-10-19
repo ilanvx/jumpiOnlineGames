@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Jumpi Club · Colouring book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="/club/draw/draw.css">
+</head>
+<body>
+<!-- the Jumpi Club colouring book: colour a page or draw freely; pictures are saved to my account (routes/drawings.js) -->
+<header class="dw-top">
+  <button class="dw-back" id="dwBack" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span data-t="back">Back</span></button>
+  <h1 id="dwTitle"></h1>
+  <div class="dw-acts">
+    <button class="dw-b" id="dwPages" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span data-t="new">New page</span></button>
+    <button class="dw-b" id="dwMine" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M4.5 17.5l5-5 3 3 2.5-2.5 4.5 4.5"/></svg><span data-t="mine">My pictures</span></button>
+    <button class="dw-b save" id="dwSave" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg><span data-t="save">Save</span></button>
+  </div>
+</header>
+<main class="dw-main">
+  <nav class="dw-tools" aria-label="Tools">
+    <button class="dw-tool" data-tool="brush" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5l5 5L10 19l-5 1 1-5z"/><path d="M12.5 6.5l5 5"/></svg><span data-t="brush">Brush</span></button>
+    <button class="dw-tool" data-tool="fill" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12l7-7 8 8-7 7z"/><path d="M19 14c1.5 2 2 3.2 2 4a2 2 0 0 1-4 0c0-.8.5-2 2-4z"/></svg><span data-t="fill">Fill</span></button>
+    <button class="dw-tool" data-tool="eraser" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 20h12M5 15l9-9 5 5-8 8H8z"/><path d="M10 10l5 5"/></svg><span data-t="eraser">Eraser</span></button>
+    <button class="dw-tool" data-tool="stamp" aria-pressed="false"><img src="/club/emoji/jumpi_hi.png" alt="" width="30" height="30"><span data-t="stamp">Stickers</span></button>
+    <span class="dw-sep"></span>
+    <div class="dw-sizes" id="dwSizes" role="group" aria-label="Size"></div>
+    <span class="dw-sep"></span>
+    <button class="dw-tool sm" id="dwUndo" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg><span data-t="undo">Undo</span></button>
+    <button class="dw-tool sm" id="dwRedo" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 0 0 0 12h3"/></svg><span data-t="redo">Redo</span></button>
+    <button class="dw-tool sm" id="dwClear" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg><span data-t="clear">Clear</span></button>
+  </nav>
+  <div class="dw-stage" id="dwStage">
+    <div class="dw-paper" id="dwPaper"><canvas id="dwPaint"></canvas><canvas id="dwLines"></canvas><canvas id="dwTouch"></canvas></div>
+  </div>
+</main>
+<footer class="dw-colors" id="dwColors" aria-label="Colours"></footer>
+<div class="dw-stamps" id="dwStamps" hidden></div>
+
+<!-- choose a page / my pictures -->
+<div class="dw-modal" id="mPages" hidden><div class="dw-dlg"><h2 data-t="pick">Choose a page</h2><div class="dw-grid" id="pageGrid"></div><button class="dw-x" data-close type="button" data-t="close">Close</button></div></div>
+<div class="dw-modal" id="mMine" hidden><div class="dw-dlg"><h2 data-t="mine">My pictures</h2><div class="dw-grid" id="mineGrid"></div><button class="dw-x" data-close type="button" data-t="close">Close</button></div></div>
+<div class="dw-modal" id="mAsk" hidden><div class="dw-dlg small"><h2 id="askT"></h2><div class="dw-btns" id="askBtns"></div></div></div>
+<div class="dw-toast" id="dwToast" role="status" hidden></div>
+<script type="module" src="/club/draw/draw.js"></script>
+</body>
+</html>
