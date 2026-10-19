@@ -85,7 +85,7 @@ html[lang="en"] .hm-top [data-l="he"],html[lang="he"] .hm-top [data-l="en"],html
 @media (max-width:1080px){
   .hm-foot-in{grid-template-columns:1fr 1fr}
 }
-@media (max-width:1180px){
+@media (max-width:1280px){
   .hm-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#0d63c9;padding:8px 14px 16px;box-shadow:0 14px 26px rgb(4 34 80 / .3);display:none;border-top:2px solid #0a4c9c}
   .hm-nav.open{display:flex}
   .hm-nav a{padding:13px 14px;font-size:1.1rem}
