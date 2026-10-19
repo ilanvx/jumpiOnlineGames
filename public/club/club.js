@@ -154,7 +154,9 @@ $("clOut").onclick = async () => { closePops(); try { await api("logout", {}); }
 async function refresh() {
   const [me, on, fr, dm] = await Promise.all([call("/api/club/me"), call("/api/club/online"), call("/api/friends"), call("/api/dm")]);
   if (!ME) return;
-  if (me.ok) { Object.assign(ME, me.data); paintMe(); }
+  if (me.ok) { const was = JSON.stringify(ME.look || {}); Object.assign(ME, me.data); paintMe();
+    // I changed clothes in the game: my picture is new too (the game sends it a few seconds after the change)
+    if (JSON.stringify(ME.look || {}) !== was) setTimeout(() => { const img = $("clAvImg"); img.classList.remove("face"); img.onerror = () => { img.onerror = null; }; img.src = "/api/club/portrait?" + Date.now(); }, 7000); }
   if (on.ok) { ONLINE = on.data.players || []; paintOnline(); }
   if (fr.ok) NOTES.requests = fr.data.requests || [];
   NOTES.chats = dm.ok ? (dm.data.chats || []).filter((c) => c.unread > 0 && !(CHAT && CHAT.username === c.username)) : [];
