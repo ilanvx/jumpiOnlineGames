@@ -128,7 +128,7 @@ $("clForm").addEventListener("submit", async (e) => {
     if (r.data && r.data.needVerify) { msg(t("verify")); return; }
     msg((r.data && r.data.error) || t("fail"));
     $("clPass").select();
-  } catch (err) { msg(t("net")); }
+  } catch (err) { console.error(err); msg(t("fail")); }   // (no connection is caught in call(): this is anything else)
   finally { go.disabled = false; go.innerHTML = label; }
 });
 

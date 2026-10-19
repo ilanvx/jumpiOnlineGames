@@ -146,8 +146,34 @@ const page = (file) => (req, res, next) => { try { sendPage(req, res, file); } c
 // Jumpi Club (club.jumpigames.com, the same server through Cloudflare): its home is the Club's page; /club shows it anywhere
 const CLUB_HOSTS = ["club.jumpigames.com"];
 const isClub = (req) => CLUB_HOSTS.includes(String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase());
-app.get("/", (req, res, next) => (isClub(req) ? page("club/index.html") : page("site/index.html"))(req, res, next));
-app.get(["/club", "/club/"], page("club/index.html"));
+// the Club's page with a version on its own files (?v=…, the newest file time), so a browser or Cloudflare never mixes
+// a new page with an old script or style (that broke the log-in once); the import map gives its modules the same version
+let clubHtml = { at: 0, v: "", html: "" }, clubT = { t: 0, at: 0 };
+const CLUB_MODULES = ["/club/badge.js", "/club/emoji-list.js", "/shared/blogdoc.js", "/shared/levels.js"];
+function clubFilesTime() {
+  if (Date.now() - clubT.t < 5000) return clubT.at;
+  let at = 0;
+  for (const f of readdirSync(path.join(PUBLIC_DIR, "club"))) if (/\.(js|css|html)$/.test(f)) at = Math.max(at, statSync(path.join(PUBLIC_DIR, "club", f)).mtimeMs);
+  for (const f of ["blogdoc.js", "levels.js"]) try { at = Math.max(at, statSync(path.join(PUBLIC_DIR, "shared", f)).mtimeMs); } catch {}
+  clubT = { t: Date.now(), at };
+  return at;
+}
+function clubPage(req, res, next) {
+  try {
+    const at = clubFilesTime();
+    if (at !== clubHtml.at) {
+      const v = Math.round(at).toString(36), map = JSON.stringify({ imports: Object.fromEntries(CLUB_MODULES.map((m) => [m, `${m}?v=${v}`])) });
+      const html = readFileSync(path.join(PUBLIC_DIR, "club/index.html"), "utf8")
+        .replace('href="/club/club.css"', `href="/club/club.css?v=${v}"`)
+        .replace('<script type="module" src="/club/club.js"></script>', `<script type="importmap">${map}</script>\n<script type="module" src="/club/club.js?v=${v}"></script>`);
+      clubHtml = { at, v, html };
+    }
+    res.set({ "Content-Security-Policy": cspFor(clubHtml.html, req), "Cache-Control": "no-cache" });
+    res.type("html").send(clubHtml.html);
+  } catch (err) { next(err); }
+}
+app.get("/", (req, res, next) => (isClub(req) ? clubPage(req, res, next) : page("site/index.html")(req, res, next)));
+app.get(["/club", "/club/"], clubPage);
 // /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
 // middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps
 // ("JumpiApp/" = Android/iPhone, "JumpiDesktop/" = the computer program) and /studio always get the game itself.
