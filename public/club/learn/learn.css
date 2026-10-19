@@ -68,3 +68,7 @@ html[lang="he"] .ln-end h2{font-weight:800}
 .ln-stars i.on{background:linear-gradient(180deg,#ffe27a,#ffb01f)}
 .ln-btns{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
 @media (max-width:620px){.ln-choices{grid-template-columns:1fr 1fr}.ln-c{min-height:72px;font-size:1.7rem}.ln-hero h2{font-size:1.9rem}.ln-emo{width:72px;height:72px}.ln-top h1{font-size:1.25rem}}
+.ln-snd{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:14px;background:#4a1fc0;color:#fff}
+.ln-snd svg{width:24px;height:24px}
+.ln-snd[aria-pressed="false"]{background:#ff3d6e}
+.ln-snd:hover{background:#ffd23a;color:#3a2a00}

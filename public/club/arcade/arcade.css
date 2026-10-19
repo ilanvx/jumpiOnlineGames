@@ -8,3 +8,6 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1d1a40;color:#fff;fon
 .pressed{animation:arcPress .18s ease}
 @keyframes arcPress{50%{transform:scale(.94)}}
 @keyframes coinFall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(var(--spin,360deg))}}
+.arc-snd{padding:0 12px!important;margin-inline-start:8px}
+.arc-snd svg{width:30px!important;height:30px!important}
+.arc-snd.off{background:#ff3d6e!important}

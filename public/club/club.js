@@ -93,7 +93,7 @@ function setLang(l) {
   btns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === lang));
   $("clEye").setAttribute("aria-label", $("clEye").getAttribute("aria-pressed") === "true" ? t("hide") : t("show"));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
-  paintGate(); if (typeof fillSelects === "function") fillSelects(); if (typeof route === "function" && !$("blog").hidden) route();
+  paintGate(); paintSnd(); if (typeof fillSelects === "function") fillSelects(); if (typeof route === "function" && !$("blog").hidden) route();
   if (ME) { paintMe(); paintOnline(); paintNotes(); paintCat(); $("hubFind").placeholder = t("find"); $("chatIn").placeholder = t("typeMsg"); }
 }
 btns.forEach((b) => (b.onclick = () => setLang(b.dataset.set)));
@@ -282,6 +282,14 @@ function paintNotes() {
     d.onclick = () => { closePops(); openChat(c.username, c.look); }; box.append(d);
   });
 }
+
+/* ---------- sound on / off for every game in the Club (the arcade, the learning games): one switch, kept in this browser ---------- */
+const soundOn = () => { try { return localStorage.getItem("jumpi-club-sound") !== "off"; } catch (e) { return true; } };
+function paintSnd() { const on = soundOn(), b = $("clSnd"); b.innerHTML = on ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
+  : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+  b.setAttribute("aria-pressed", on); b.classList.toggle("off", !on); b.title = on ? (lang === "he" ? "צלילים פועלים" : "Sound on") : (lang === "he" ? "צלילים כבויים" : "Sound off"); b.setAttribute("aria-label", b.title); }
+$("clSnd").onclick = () => { try { localStorage.setItem("jumpi-club-sound", soundOn() ? "off" : "on"); } catch (e) {} paintSnd(); };
+addEventListener("storage", (e) => { if (e.key === "jumpi-club-sound") paintSnd(); });
 
 /* ---------- pop-ups at the top (notifications, settings) ---------- */
 const POPS = [["clBell", "clBellPop"], ["clGear", "clGearPop"]];

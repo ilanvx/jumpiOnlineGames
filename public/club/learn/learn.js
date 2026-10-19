@@ -21,8 +21,9 @@ const WORDS = [
   ["⭐", "star", "כוכב"], ["🌳", "tree", "עץ"], ["🌸", "flower", "פרח"], ["🌧️", "rain", "גשם"], ["🔥", "fire", "אש"], ["💧", "water", "מים"], ["👟", "shoe", "נעל"], ["👕", "shirt", "חולצה"],
   ["🎩", "hat", "כובע"], ["👁️", "eye", "עין"], ["👂", "ear", "אוזן"], ["👃", "nose", "אף"], ["✋", "hand", "יד"], ["❤️", "heart", "לב"], ["🎂", "cake", "עוגה"], ["🎁", "gift", "מתנה"],
 ];
-const HE_LETTERS = [["א", "אלף"], ["ב", "בית"], ["ג", "גימל"], ["ד", "דלת"], ["ה", "הא"], ["ו", "וו"], ["ז", "זין"], ["ח", "חית"], ["ט", "טית"], ["י", "יוד"], ["כ", "כף"], ["ל", "למד"], ["מ", "מם"], ["נ", "נון"],
-  ["ס", "סמך"], ["ע", "עין"], ["פ", "פא"], ["צ", "צדי"], ["ק", "קוף"], ["ר", "ריש"], ["ש", "שין"], ["ת", "תיו"]];
+// the letters' names as kids say them in Israel (with nikud, so they're read out right too)
+const HE_LETTERS = [["א", "אָלֶף"], ["ב", "בֵּית"], ["ג", "גִּימֶל"], ["ד", "דָּלֶת"], ["ה", "הֵי"], ["ו", "וָו"], ["ז", "זַיִן"], ["ח", "חֵית"], ["ט", "טֵית"], ["י", "יוּד"], ["כ", "כַּף"], ["ל", "לָמֶד"], ["מ", "מֵם"], ["נ", "נוּן"],
+  ["ס", "סָמֶךְ"], ["ע", "עַיִן"], ["פ", "פֵּא"], ["צ", "צָדִיק"], ["ק", "קוּף"], ["ר", "רֵישׁ"], ["ש", "שִׁין"], ["ת", "תָּו"]];
 const ABC = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const COLORS_EN = [["red", "אדום", "#ff3b3b"], ["blue", "כחול", "#1f7fff"], ["green", "ירוק", "#2fd36b"], ["yellow", "צהוב", "#ffd23a"], ["orange", "כתום", "#ff8a1c"], ["purple", "סגול", "#9b5cff"], ["pink", "ורוד", "#ff6fb4"],
   ["black", "שחור", "#1d1a24"], ["white", "לבן", "#ffffff"], ["brown", "חום", "#8a5a2c"], ["gray", "אפור", "#8a8fa8"]];
@@ -30,12 +31,13 @@ const NUM_EN = ["zero", "one", "two", "three", "four", "five", "six", "seven", "
 const firstHe = (w) => w[0];   // a Hebrew word's first letter (as written)
 
 /* ---------- reading out loud ---------- */
-function say(text, l) { try { if (!("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = l === "he" ? "he-IL" : "en-US"; u.rate = .85; speechSynthesis.speak(u); } catch (e) {} }
+const soundOn = () => { try { return localStorage.getItem("jumpi-club-sound") !== "off"; } catch (e) { return true; } };
+function say(text, l) { if (!soundOn()) return; try { if (!("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = l === "he" ? "he-IL" : "en-US"; u.rate = .85; speechSynthesis.speak(u); } catch (e) {} }
 const canSay = "speechSynthesis" in window;
 
 /* ---------- sounds ---------- */
 let ac = null;
-function tone(f, d = .12, type = "triangle", v = .07) { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime; o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02); } catch (e) {} }
+function tone(f, d = .12, type = "triangle", v = .07) { if (!soundOn()) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime; o.type = type; o.frequency.setValueAtTime(f, t); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02); } catch (e) {} }
 const yay = () => { tone(660); setTimeout(() => tone(880), 90); setTimeout(() => tone(1175, .18), 180); }, nope = () => tone(200, .25, "sawtooth", .05);
 
 /* ---------- the games and their kinds ---------- */
@@ -50,6 +52,13 @@ const GAMES = {
 const G = GAMES[MODE];
 $("lnTitle").textContent = T(...G.title);
 $("lnBackT").textContent = T("Back", "חזרה");
+// the sound switch (also in the Club's toolbar: the same setting)
+const SND_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const SND_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+function paintSnd() { const on = soundOn(), b = $("lnSnd"); b.innerHTML = on ? SND_ON : SND_OFF; b.setAttribute("aria-pressed", on); b.title = on ? T("Sound on", "צלילים פועלים") : T("Sound off", "צלילים כבויים"); b.setAttribute("aria-label", b.title); }
+$("lnSnd").onclick = () => { try { localStorage.setItem("jumpi-club-sound", soundOn() ? "off" : "on"); } catch (e) {} if (!soundOn()) try { speechSynthesis.cancel(); } catch (e) {} paintSnd(); };
+addEventListener("storage", (e) => { if (e.key === "jumpi-club-sound") paintSnd(); });
+paintSnd();
 $("lnBack").onclick = () => (R && R.i < R.n && R.i > 0 ? menu() : parent.postMessage({ jumpiArcade: "close" }, location.origin));
 
 /* one question: { ask: node or text, big?: true, choices: [{label, ok}], speak?: [text, lang] } */

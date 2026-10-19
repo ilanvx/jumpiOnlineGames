@@ -15,7 +15,8 @@ const COLORS=[["Orange","#ff8a1c"],["Sky","#1fb6ff"],["Mint","#2fd36b"],["Bubble
 const COIN_SVG=`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12.8" r="9" fill="#c98a00"/><circle cx="12" cy="11.4" r="9" fill="#ffd23a"/><circle cx="12" cy="11.4" r="6" fill="none" stroke="#e8a300" stroke-width="2"/><path d="M10 8.6 L13 8.6 L13 14.4" fill="none" stroke="#c98a00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const press = (el) => { if (!el || !el.classList) return; el.classList.remove("pressed"); void el.offsetWidth; el.classList.add("pressed"); };
 // sounds: short tones (the game's own sound engine stays in the game)
-const sfx0 = (() => { let ctx = null; const tone = (f, d = .12, type = "sine", v = .08, f2) => { try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume();
+const soundOn = () => { try { return localStorage.getItem("jumpi-club-sound") !== "off"; } catch (e) { return true; } };
+const sfx0 = (() => { let ctx = null; const tone = (f, d = .12, type = "sine", v = .08, f2) => { if (!soundOn()) return; try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); if (ctx.state === "suspended") ctx.resume();
     const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime; o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
     g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + d + .02); } catch (e) {} };
   return { open: () => tone(520, .12, "triangle", .07, 780), close: () => tone(600, .1, "triangle", .06, 380), tick: () => tone(880, .06, "square", .03), success: () => { tone(660, .12, "triangle", .08); setTimeout(() => tone(990, .18, "triangle", .08), 90); },
@@ -651,6 +652,13 @@ closeMinigame = function () { _close(); setTimeout(() => parent.postMessage({ ju
 $mg("mgClose").onclick = () => { press($mg("mgClose")); closeMinigame(); };
 $mg("mgQuit").onclick = closeMinigame;
 $mg("mgClose").querySelector("span").textContent = I18N.T("BACK");
+// sound on / off (the same switch as the Club's toolbar), in the game's top bar
+{ const b = document.createElement("button"); b.type = "button"; b.className = "mgx-exit arc-snd";
+  const paint = () => { const on = soundOn(); b.innerHTML = on ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>'
+    : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="#fff"/><path d="M17 9.5l5 5M22 9.5l-5 5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>';
+    b.classList.toggle("off", !on); b.setAttribute("aria-label", I18N.T(on ? "Sound on" : "Sound off")); };
+  b.onclick = () => { try { localStorage.setItem("jumpi-club-sound", soundOn() ? "off" : "on"); } catch (e) {} paint(); };
+  paint(); $mg("mgClose").after(b); }
 (async () => {
   const g = new URLSearchParams(location.search).get("g");
   const r = await api("/api/auth/me");
