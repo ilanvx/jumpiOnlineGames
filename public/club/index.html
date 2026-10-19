@@ -194,6 +194,14 @@
 <!-- a game from the game, full screen (the Club's arcade page in a frame) -->
 <div class="arc-frame" id="arcFrame" hidden><iframe id="arcIf" title="Jumpi game"></iframe></div>
 
+<!-- a game's leaderboard: the 10 best rounds -->
+<div class="cl-modal lb-modal" id="mLeaders" hidden><div class="cl-dlg lb-dlg" role="dialog" aria-modal="true" aria-labelledby="lbT">
+  <div class="lb-head"><span class="lb-trophy" aria-hidden="true">🏆</span><div><h2 id="lbT"></h2><p id="lbSub"></p></div></div>
+  <ol class="lb-list" id="lbList"></ol>
+  <p class="lb-mine" id="lbMine"></p>
+  <div class="dlg-btns"><button type="button" class="cl-btn" id="lbPlay"><span data-l="en">Play</span><span data-l="he">לשחק</span></button><button type="button" class="cl-btn ghost" data-close><span data-l="en">Close</span><span data-l="he">סגירה</span></button></div>
+</div></div>
+
 <!-- writing a post (admins) -->
 <div class="cl-modal" id="mPost" hidden><div class="cl-dlg wide" role="dialog" aria-modal="true" aria-labelledby="mPostT">
   <h2 id="mPostT"></h2>

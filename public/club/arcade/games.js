@@ -659,6 +659,9 @@ $mg("mgClose").querySelector("span").textContent = I18N.T("BACK");
     b.classList.toggle("off", !on); b.setAttribute("aria-label", I18N.T(on ? "Sound on" : "Sound off")); };
   b.onclick = () => { try { localStorage.setItem("jumpi-club-sound", soundOn() ? "off" : "on"); } catch (e) {} paint(); };
   paint(); $mg("mgClose").after(b); }
+{ const b = document.createElement("button"); b.type = "button"; b.className = "mgx-exit arc-lb"; b.textContent = "🏆"; b.setAttribute("aria-label", I18N.T("Leaderboard"));
+  b.onclick = () => { const g = new URLSearchParams(location.search).get("g"); parent.postMessage({ jumpiArcade: "leaders", game: g }, location.origin); };
+  document.querySelector(".arc-snd").after(b); }
 (async () => {
   const g = new URLSearchParams(location.search).get("g");
   const r = await api("/api/auth/me");

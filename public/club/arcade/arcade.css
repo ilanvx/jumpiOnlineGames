@@ -11,3 +11,4 @@ html,body{margin:0;height:100%;overflow:hidden;background:#1d1a40;color:#fff;fon
 .arc-snd{padding:0 12px!important;margin-inline-start:8px}
 .arc-snd svg{width:30px!important;height:30px!important}
 .arc-snd.off{background:#ff3d6e!important}
+.arc-lb{padding:0 14px!important;margin-inline-start:8px;font-size:1.5rem}

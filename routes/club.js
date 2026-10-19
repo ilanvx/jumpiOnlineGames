@@ -91,4 +91,28 @@ router.get("/club/pic/:username", requireUser, clubAge, async (req, res, next) =
   } catch (err) { next(err); }
 });
 
+/* ---------- leaderboards: for each coin game, the 10 best single rounds (each player's best round: gameBest) ---------- */
+const BOARD_GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops"];   // routes/rewards.js GAMES (the "just for fun" games have none)
+const boards = new Map();   // game -> { at, top }
+async function topOf(game) {
+  const c = boards.get(game);
+  if (c && Date.now() - c.at < 30_000) return c.top;
+  const key = "gameBest." + game;
+  const list = await User.find({ [key]: { $gt: 0 }, $or: [{ bannedUntil: null }, { bannedUntil: { $lt: new Date() } }] }).sort({ [key]: -1, _id: 1 }).limit(10).select("username look gameBest role").lean();
+  const top = list.map((u, i) => ({ rank: i + 1, username: u.username, score: (u.gameBest && u.gameBest[game]) || 0, color: (u.look && u.look.color) || 0, staff: u.role === "admin" || u.role === "mod" }));
+  boards.set(game, { at: Date.now(), top });
+  return top;
+}
+router.get("/club/leaders", requireUser, clubAge, async (req, res, next) => {
+  try {
+    const game = String(req.query.game || "");
+    if (!BOARD_GAMES.includes(game)) return res.status(400).json({ error: "Unknown game." });
+    const me = req.user, top = await topOf(game);
+    const mine = (me.gameBest && typeof me.gameBest.get === "function" ? me.gameBest.get(game) : me.gameBest?.[game]) || 0;
+    const rank = mine > 0 ? (await User.countDocuments({ ["gameBest." + game]: { $gt: mine } })) + 1 : null;
+    res.set("Cache-Control", "no-store");
+    res.json({ game, top: top.map((p) => ({ ...p, me: p.username === me.username })), mine, rank });
+  } catch (err) { next(err); }
+});
+
 export default router;

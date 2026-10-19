@@ -22,7 +22,8 @@ const T = {
     blockT: (u) => `Block ${u}?`, blocked: (u) => `${u} is blocked. You won't see each other any more, here and in the game.`, unblock: "Unblock", unblocked: (u) => `${u} is unblocked.`, noBlocked: "You haven't blocked anyone.",
     reportT: (u) => `Report ${u}`, pick: "Choose what happened.", reported: "Thanks! The Jumpi team will check it.", typeMsg: "Type a message…", chatHello: (u) => `Say hi to ${u}!`,
     catEmpty: "Pick a game and play!", catEmptyOne: (c) => `There are no ${c} games yet. They're coming soon!`,
-    online: "online", offline: "not online", gmLocked: "Open the Future City in the game to play this one.", noCoins: "Just for fun · no coins",
+    online: "online", offline: "not online", gmLocked: "Open the Future City in the game to play this one.", noCoins: "Just for fun · no coins", leaders: "Leaderboard", lbSub: "The 10 best rounds ever (one round, not added up)", lbEmpty: "No rounds yet. Be the first!",
+    lbMine: (n, r) => `Your best round: ${n} · you're #${r}`, lbNone: "Play a round to get on the board!",
     gateT: (u) => `Sorry, ${u}!`, gateAge: "Jumpi Club is for ages 13 and up. Until then, the whole Jumpi world is waiting for you in the game!", gateBd: "To come into Jumpi Club we need to know your birthday. Open the Jumpi game once: it will ask you, and then come back here.", gateBdT: "One more thing",
     noPosts: "No posts yet. The Jumpi team will write here soon!", nComments: (n) => n === 1 ? "1 comment" : `${n} comments`, by: (a) => `by ${a}`, edited: "edited",
     noComments: "No comments yet. Be the first!", waiting: "Waiting for approval", logToComment: "Log in to write a comment.", ageComment: "Comments on the blog are for ages 13 and up.",
@@ -40,7 +41,8 @@ const T = {
     blockT: (u) => `לחסום את ${u}?`, blocked: (u) => `${u} חסום/ה. לא תראו יותר אחד את השני, גם כאן וגם במשחק.`, unblock: "ביטול חסימה", unblocked: (u) => `החסימה של ${u} בוטלה.`, noBlocked: "לא חסמת אף אחד.",
     reportT: (u) => `דיווח על ${u}`, pick: "צריך לבחור מה קרה.", reported: "תודה! צוות ג'אמפי יבדוק את זה.", typeMsg: "כתבו הודעה…", chatHello: (u) => `תגידו היי ל-${u}!`,
     catEmpty: "בחרו משחק ושחקו!", catEmptyOne: (c) => `עדיין אין משחקי ${c}. הם בדרך!`,
-    online: "מחובר/ת", offline: "לא מחובר/ת", gmLocked: "פתחו את העיר העתידית במשחק כדי לשחק במשחק הזה.", noCoins: "לכיף · בלי מטבעות",
+    online: "מחובר/ת", offline: "לא מחובר/ת", gmLocked: "פתחו את העיר העתידית במשחק כדי לשחק במשחק הזה.", noCoins: "לכיף · בלי מטבעות", leaders: "טבלת מובילים", lbSub: "10 הסיבובים הכי טובים (בסיבוב אחד, לא מצטבר)", lbEmpty: "עוד אין סיבובים. תהיו הראשונים!",
+    lbMine: (n, r) => `השיא שלך בסיבוב אחד: ${n} · מקום ${r}`, lbNone: "שחקו סיבוב כדי להיכנס לטבלה!",
     gateT: (u) => `מצטערים, ${u}!`, gateAge: "הכניסה לג'אמפי קלאב היא מגיל 13 ומעלה. עד אז, כל העולם של ג'אמפי מחכה לך במשחק!", gateBd: "כדי להיכנס לג'אמפי קלאב צריך לדעת מתי יום ההולדת שלך. פתחו פעם אחת את המשחק של ג'אמפי, הוא ישאל, ואז חזרו לכאן.", gateBdT: "עוד דבר קטן",
     noPosts: "עוד אין פוסטים. צוות ג'אמפי יכתוב כאן בקרוב!", nComments: (n) => n === 1 ? "תגובה אחת" : `${n} תגובות`, by: (a) => `מאת ${a}`, edited: "נערך",
     noComments: "עוד אין תגובות. תהיו הראשונים!", waiting: "ממתינה לאישור", logToComment: "צריך להתחבר כדי לכתוב תגובה.", ageComment: "תגובות בבלוג הן מגיל 13 ומעלה.",
@@ -419,7 +421,10 @@ function paintCat() {
     const tx = el("span", "gm-tx"); tx.append(el("b", "", lang === "he" ? G.titleHe : G.title), el("small", "", locked ? t("gmLocked") : lang === "he" ? G.subHe : G.sub));
     if (FUN[g]) tx.append(el("i", "gm-fun", t("noCoins"))); b.append(tx);
     b.onclick = () => (locked ? toast(t("gmLocked")) : openGame(g));
-    box.append(b);
+    const w = el("div", "gm-w"); w.append(b);
+    // the coin games have a leaderboard (the "just for fun" ones don't)
+    if (!FUN[g]) { const lb = el("button", "gm-lb"); lb.type = "button"; lb.title = t("leaders"); lb.append(el("span", "", "🏆"), el("b", "", t("leaders"))); lb.onclick = (e) => { e.stopPropagation(); openLeaders(g); }; w.append(lb); }
+    box.append(w);
   });
 }
 // playing: the arcade page full screen in a frame; it tells us when it's closed and when my coins change
@@ -429,12 +434,32 @@ function openGame(g) {
   f.hidden = false; document.body.classList.add("gaming"); setTimeout(() => ifr.focus(), 300);
 }
 function closeGame() { const f = $("arcFrame"); if (f.hidden) return; f.hidden = true; $("arcIf").src = "about:blank"; document.body.classList.remove("gaming"); if (ME) refresh(); }
+// a game's leaderboard: the 10 best single rounds (not added up: one round), 1st / 2nd / 3rd in gold, silver, bronze
+let lbGame = null;
+async function openLeaders(g) {
+  lbGame = g; const G = ALL_GAMES[g]; $("lbT").textContent = (lang === "he" ? G.titleHe : G.title) + " · " + t("leaders");
+  $("lbSub").textContent = t("lbSub"); $("lbList").textContent = ""; $("lbMine").textContent = "";
+  $("lbPlay").hidden = !$("arcFrame").hidden;
+  openModal("mLeaders");
+  const r = await call("/api/club/leaders?game=" + encodeURIComponent(g));
+  if (lbGame !== g) return;
+  const ul = $("lbList");
+  if (!r.ok) { ul.append(el("li", "lb-none", say(r.data.error) || t("fail"))); return; }
+  if (!r.data.top.length) ul.append(el("li", "lb-none", t("lbEmpty")));
+  r.data.top.forEach((p) => { const li = el("li", "lb-row r" + Math.min(p.rank, 4) + (p.me ? " me" : ""));
+    li.append(el("span", "lb-rank", String(p.rank)), face({ color: p.color }, 40, p.username)); const nm = el("b", "lb-name", iso(p.username)); li.append(nm);
+    li.append(el("span", "lb-score", p.score.toLocaleString(lang === "he" ? "he-IL" : "en-US"))); ul.append(li); });
+  $("lbMine").textContent = r.data.mine > 0 ? t("lbMine", r.data.mine.toLocaleString(lang === "he" ? "he-IL" : "en-US"), r.data.rank) : t("lbNone");
+}
+$("lbPlay").onclick = () => { closeModal($("mLeaders")); if (lbGame) openGame(lbGame); };
+
 addEventListener("message", (e) => {
   if (e.origin !== location.origin || !e.data || !e.data.jumpiArcade) return;
   const m = e.data;
   if (m.jumpiArcade === "close") closeGame();
   else if (m.jumpiArcade === "coins" && ME && Number.isFinite(m.coins)) { ME.coins = m.coins; paintMe(); }
   else if (m.jumpiArcade === "login") { closeGame(); signedOut(); }
+  else if (m.jumpiArcade === "leaders" && ARCADE[m.game]) openLeaders(m.game);
 });
 
 /* =====================================================================
