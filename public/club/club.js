@@ -19,7 +19,8 @@ const T = {
     blockT: (u) => `Block ${u}?`, blocked: (u) => `${u} is blocked. You won't see each other any more, here and in the game.`, unblock: "Unblock", unblocked: (u) => `${u} is unblocked.`, noBlocked: "You haven't blocked anyone.",
     reportT: (u) => `Report ${u}`, pick: "Choose what happened.", reported: "Thanks! The Jumpi team will check it.", typeMsg: "Type a message…", chatHello: (u) => `Say hi to ${u}!`,
     catEmpty: "There are no games here yet. 1v1 games, battles, quizzes and more are coming soon!", catEmptyOne: (c) => `There are no ${c} games yet. They're coming soon!`,
-    online: "online", offline: "not online" },
+    online: "online", offline: "not online",
+    gateT: (u) => `Sorry, ${u}!`, gateAge: "Jumpi Club is for ages 13 and up. Until then, the whole Jumpi world is waiting for you in the game!", gateBd: "To come into Jumpi Club we need to know your birthday. Open the Jumpi game once: it will ask you, and then come back here.", gateBdT: "One more thing" },
   he: { empty: "צריך למלא שם משתמש וסיסמה.", fail: "משהו השתבש. נסו שוב.", net: "אין חיבור. בדקו את האינטרנט ונסו שוב.",
     verify: "צריך לאשר קודם את האימייל: פתחו את המשחק של ג'אמפי כדי לסיים לפתוח את החשבון.", show: "הצגת הסיסמה", hide: "הסתרת הסיסמה", wait: "מתחברים…", soon: "נפתח בקרוב!",
     find: "חיפוש שחקן", you: "את/ה", inGame: "במשחק", inClub: "בקלאב", add: "הוספת חבר", sent: "נשלחה", accept: "אישור", decline: "ביטול", chat: "צ'אט", more: "עוד",
@@ -30,7 +31,8 @@ const T = {
     blockT: (u) => `לחסום את ${u}?`, blocked: (u) => `${u} חסום/ה. לא תראו יותר אחד את השני, גם כאן וגם במשחק.`, unblock: "ביטול חסימה", unblocked: (u) => `החסימה של ${u} בוטלה.`, noBlocked: "לא חסמת אף אחד.",
     reportT: (u) => `דיווח על ${u}`, pick: "צריך לבחור מה קרה.", reported: "תודה! צוות ג'אמפי יבדוק את זה.", typeMsg: "כתבו הודעה…", chatHello: (u) => `תגידו היי ל-${u}!`,
     catEmpty: "כרגע אין כאן משחקים. בקרוב יגיעו משחקי 1 על 1, קרבות, חידונים ועוד!", catEmptyOne: (c) => `עדיין אין משחקי ${c}. הם בדרך!`,
-    online: "מחובר/ת", offline: "לא מחובר/ת" },
+    online: "מחובר/ת", offline: "לא מחובר/ת",
+    gateT: (u) => `מצטערים, ${u}!`, gateAge: "הכניסה לג'אמפי קלאב היא מגיל 13 ומעלה. עד אז, כל העולם של ג'אמפי מחכה לך במשחק!", gateBd: "כדי להיכנס לג'אמפי קלאב צריך לדעת מתי יום ההולדת שלך. פתחו פעם אחת את המשחק של ג'אמפי, הוא ישאל, ואז חזרו לכאן.", gateBdT: "עוד דבר קטן" },
 };
 const REASONS = [
   ["grooming", "Asked for personal details, photos, or to meet", "ביקש פרטים אישיים, תמונות או להיפגש"],
@@ -71,6 +73,7 @@ function setLang(l) {
   btns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === lang));
   $("clEye").setAttribute("aria-label", $("clEye").getAttribute("aria-pressed") === "true" ? t("hide") : t("show"));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
+  paintGate();
   if (ME) { paintMe(); paintOnline(); paintNotes(); paintCat(); $("hubFind").placeholder = t("find"); $("chatIn").placeholder = t("typeMsg"); }
 }
 btns.forEach((b) => (b.onclick = () => setLang(b.dataset.set)));
@@ -138,7 +141,9 @@ function face(look, size = 40, username = "", pic = "") {
   return s;
 }
 
-function signedIn(user) {
+async function signedIn(user) {
+  const r = await call("/api/club/me");
+  if (r.status === 403 && (r.data.code === "age" || r.data.code === "birthday")) { showGate(user.username, r.data.code); return; }
   ME = { username: user.username, look: user.look, coins: user.coins || 0, levelXp: user.levelXp || 0, level: 1, into: 0, need: 0, pct: 0 };
   document.body.classList.add("in");
   document.querySelector(".cl-win").hidden = true; $("hub").hidden = false; $("clTopGo").hidden = true; $("clMe").hidden = false;
@@ -147,8 +152,21 @@ function signedIn(user) {
   // my Jumpi: the picture my game window made; until there is one, a face in my colour
   const img = $("clAvImg"); img.onerror = () => { img.onerror = null; img.src = "data:image/svg+xml," + encodeURIComponent(faceSVG(skinOf(ME && ME.look))); img.classList.add("face"); };
   img.classList.remove("face"); img.src = picURL(ME.username, "");
+  if (r.ok) Object.assign(ME, r.data);
+  $("clGate").hidden = true; $("clLogin").hidden = false;
   paintMe(); paintCat(); refresh(); clearInterval(pollT); pollT = setInterval(() => { if (!document.hidden) refresh(); }, 8000);
 }
+let gate = null;
+function showGate(username, code) {
+  gate = { username, code };
+  document.querySelector(".cl-win").hidden = false; $("hub").hidden = true; $("clLogin").hidden = true; $("clGate").hidden = false; $("clTopGo").hidden = true;
+  paintGate(); $("clGateGo").focus();
+}
+// "back to the game": the game on this same site (the test copy has its own); on club.jumpigames.com, the real game
+if (!/^club\./.test(location.hostname)) $("clGateGo").href = "/play";
+function paintGate() { if (!gate) return; $("clGateT").textContent = gate.code === "age" ? t("gateT", iso(gate.username)) : t("gateBdT"); $("clGateP").textContent = gate.code === "age" ? t("gateAge") : t("gateBd"); }
+// another account: log this one out here (the login cookie is the same as the game's on this computer)
+$("clGateOther").onclick = async () => { try { await api("logout", {}); } catch (e) {} gate = null; $("clGate").hidden = true; $("clLogin").hidden = false; $("clTopGo").hidden = false; $("clUser").value = ""; $("clUser").focus(); };
 function signedOut() {
   ME = null; clearInterval(pollT); closeChat(); closePops();
   document.body.classList.remove("in");

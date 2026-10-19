@@ -24,6 +24,7 @@
 <header class="cl-top">
   <div class="cl-top-in">
     <a class="cl-brand" href="/club" aria-label="Jumpi Club"><img src="/club/img/jumpi-club-logo-300.png" alt="Jumpi Club" width="300" height="196"></a>
+    <span class="cl-age" tabindex="0" aria-describedby="clAgeTip"><b dir="ltr">13+</b><span class="cl-age-tip" id="clAgeTip" role="tooltip"><span data-l="en">Jumpi Club is for ages 13 and up</span><span data-l="he">ג'אמפי קלאב מגיל 13 ומעלה</span></span></span>
     <nav class="cl-nav" id="clNav" aria-label="Jumpi Club">
       <a href="/club" aria-current="page"><img src="/club/img/nav/club.png" alt="" width="30" height="30"><span data-l="en">The Club</span><span data-l="he">הקלאב</span></a>
       <a href="#blog" data-soon><img src="/club/img/nav/blog.png" alt="" width="30" height="30"><span data-l="en">Blog</span><span data-l="he">בלוג</span></a>
@@ -61,6 +62,14 @@
     <img src="/club/img/club-hero-800.webp" srcset="/club/img/club-hero-800.webp 800w, /club/img/club-hero.webp 1200w" sizes="(max-width: 900px) 100vw, 520px"
       alt="Two Jumpis in a laser-blaster race on a checkered sky track above the Future City" width="1200" height="1500">
   </figure>
+  <!-- logged in, but under 13 (or we don't know the birthday yet): not the Club -->
+  <section class="cl-card cl-gate" id="clGate" hidden aria-live="polite">
+    <div class="gate-badge" aria-hidden="true" dir="ltr">13+</div>
+    <h1 id="clGateT"></h1>
+    <p class="cl-sub" id="clGateP"></p>
+    <a class="cl-btn" id="clGateGo" href="https://jumpigames.com/play"><span data-l="en">Back to the game</span><span data-l="he">חזרה למשחק</span></a>
+    <button class="cl-btn ghost" id="clGateOther" type="button"><span data-l="en">Log in with another account</span><span data-l="he">להתחבר עם חשבון אחר</span></button>
+  </section>
   <!-- log in -->
   <section class="cl-card" id="clLogin" aria-labelledby="clLoginT">
     <h1 id="clLoginT"><span data-l="en">Log in</span><span data-l="he">התחברות</span></h1>

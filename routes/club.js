@@ -15,13 +15,30 @@ import { levelProgress } from "../public/shared/levels.js";
 const router = express.Router();
 const S = (v) => String(v);
 
+/* Jumpi Club is for ages 13 and up (the birthday from sign-up). The Jumpi team can always come in.
+   Accounts made before we asked for the birthday: the game asks once, then the Club knows. */
+export const CLUB_AGE = 13;
+function ageYears(bd, now = new Date()) {
+  if (!bd) return NaN;
+  const d = new Date(bd); let a = now.getUTCFullYear() - d.getUTCFullYear();
+  if (now.getUTCMonth() < d.getUTCMonth() || (now.getUTCMonth() === d.getUTCMonth() && now.getUTCDate() < d.getUTCDate())) a--;
+  return a;
+}
+function clubAge(req, res, next) {
+  const u = req.user;
+  if (u.role === "admin" || u.role === "mod") return next();
+  if (!u.birthDate) return res.status(403).json({ code: "birthday", error: "Open the Jumpi game once: it will ask for your birthday, then you can come into Jumpi Club." });
+  if (ageYears(u.birthDate) < CLUB_AGE) return res.status(403).json({ code: "age", error: `Jumpi Club is for ages ${CLUB_AGE} and up.` });
+  next();
+}
+
 // who has the Club page open (it asks /api/club/me every few seconds); gone after 45 seconds without a call
 const HERE_MS = 45_000;
 const here = new Map();   // userId -> { t, username, look, role, blocked:Set }
 const mark = (u) => here.set(S(u._id), { t: Date.now(), username: u.username, look: u.publicLook(), role: u.role, blocked: new Set((u.blocked || []).map(S)) });
 setInterval(() => { const old = Date.now() - HERE_MS; for (const [k, v] of here) if (v.t < old) here.delete(k); }, 30_000).unref?.();
 
-router.get("/club/me", requireUser, (req, res) => {
+router.get("/club/me", requireUser, clubAge, (req, res) => {
   const u = req.user;
   mark(u);
   const p = levelProgress(u.levelXp || 0);
@@ -30,7 +47,7 @@ router.get("/club/me", requireUser, (req, res) => {
     member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), chatLock: u.parental?.chatLock === true });
 });
 
-router.get("/club/online", requireUser, async (req, res, next) => {
+router.get("/club/online", requireUser, clubAge, async (req, res, next) => {
   try {
     const me = req.user, myId = S(me._id), admin = me.role === "admin";
     mark(me);
@@ -58,7 +75,7 @@ router.get("/club/online", requireUser, async (req, res, next) => {
 // a Jumpi in the clothes they wear now. Only real players (and not someone who blocked me, or I blocked); ?v= is the look's
 // key from the list, so the browser can keep the picture until the clothes change
 const canDraw = new Map();
-router.get("/club/pic/:username", requireUser, async (req, res, next) => {
+router.get("/club/pic/:username", requireUser, clubAge, async (req, res, next) => {
   try {
     const me = req.user, name = String(req.params.username || "").trim().toLowerCase().slice(0, 32);
     const u = name === me.usernameLower ? me : await User.findOne({ usernameLower: name });
