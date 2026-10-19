@@ -14330,6 +14330,15 @@ function bundleShot(P){const key=P.id+":"+JSON.stringify(me&&me.look||{});if(OFF
   const cm=new THREE.PerspectiveCamera(30,1,.1,50);cm.position.set(0,1.75,7.2);cm.lookAt(0,1.15,0);const R=iconR(300,300,true);R.render(sc,cm);
   dropAura(C);return OFFERS.shots[key]=R.domElement.toDataURL("image/png");}
 const P_READY=()=>!!P;
+// the Club website (club.jumpigames.com) shows MY Jumpi in a circle at the top: this window sends a small picture of me in my
+// clothes whenever my look changes (routes/club.js keeps it, and only I am ever shown it)
+function clubPortraitURL(look){const C=makeCharacter({...look,tag:-1,aura:-1},"");const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0xa0b4d6,1.55));
+  const dl=new THREE.DirectionalLight(0xffffff,1.9);dl.position.set(2.5,5,5);sc.add(dl);const fl=new THREE.DirectionalLight(0xffe6f4,.6);fl.position.set(-4,2,3);sc.add(fl);
+  sc.add(C.root);C.root.rotation.y=.28;C.root.updateMatrixWorld(true);
+  const cm=new THREE.PerspectiveCamera(30,1,.1,50);cm.position.set(0,1.58,4.4);cm.lookAt(0,1.2,0);const R=iconR(192,192,true);R.render(sc,cm);const u=R.domElement.toDataURL("image/png");dropAura(C);return u;}
+{let sentLook="";setInterval(()=>{try{if(!P_READY()||!me||!me.id||!me.look||document.hidden)return;const key=me.id+":"+JSON.stringify(me.look);if(key===sentLook)return;sentLook=key;
+  const b64=atob(clubPortraitURL(me.look).split(",")[1]),blob=new Uint8Array(b64.length);for(let i=0;i<b64.length;i++)blob[i]=b64.charCodeAt(i);const headers={"Content-Type":"image/png","x-jumpi-as":me.id},tab=TAB.get();if(tab)headers["x-jumpi-tab"]=tab;
+  fetch("/api/club/portrait",{method:"POST",credentials:"same-origin",headers,body:blob}).catch(()=>{});}catch(e){}},5000);}
 
 // tool for making the store pictures (open /play?bundleshots): renders a Jumpi in any look, with its aura, on a clear background
 if(testKey("bundleshots"))window.__bundleShot=(look,size=640,turn=.35,view=null)=>{
