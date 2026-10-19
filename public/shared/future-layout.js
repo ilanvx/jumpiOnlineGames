@@ -24,7 +24,10 @@ export const BLOCKS = [   // more tall buildings around the square (solid)
   [-110, 48, -84, 74], [84, 48, 110, 74], [-62, 50, -38, 74], [38, 50, 62, 74],
 ];
 export const LANDING = { pad: [0, 82], spawn: [0, 74], r: 9 };           // where the time machine lands (and leaves from)
-export const SQUARE = { c: [0, 16], r: 22 };                             // Neon Square in the middle
+export const SQUARE = { c: [0, 16], r: 22 };
+// the Game Zone (the arcade) south of the square, by the path to the Time Port: you walk in through the sliding door
+// on its north side; the three game machines stand along the back wall
+export const ARCADE = { rect: [12, 44, 34, 60], inside: [12.7, 44.7, 33.3, 59.3], door: [21.2, 42.5, 24.8, 45.5], H: 10 };                             // Neon Square in the middle
 
 export const FW_ZONES = [
   { id: "f-landing", col: "#ffd65a", name: "TIME PORT", rect: [-22, 66, 22, 100] },
@@ -33,13 +36,14 @@ export const FW_ZONES = [
   { id: "f-hotel", col: "#ff9a4a", name: "GRAND HOTEL", rect: [28, -22, 96, 40] },
   { id: "f-tower", col: "#7fa8ff", name: "SKY TOWER", rect: [-30, -62, 30, -26] },
   { id: "f-bridge", col: "#c58bff", name: "SKY BRIDGE", rect: [-50, -96, 50, -62] },
+  { id: "f-arcade", col: "#ffd65a", name: "GAME ZONE", rect: [12, 44, 34, 60] },
   { id: "f-park", col: "#7dff9b", name: "GLOW PARK", rect: [-118, 40, 118, 100] },
 ];
-export const FW_SPAWNS = { "f-landing": [0, 74], "f-square": [0, 34], "f-mall": [-24, 10], "f-hotel": [24, 10], "f-tower": [0, -22], "f-bridge": [-42, -58], "f-park": [-60, 84] };
+export const FW_SPAWNS = { "f-landing": [0, 74], "f-square": [0, 34], "f-mall": [-24, 10], "f-hotel": [24, 10], "f-tower": [0, -22], "f-bridge": [-42, -58], "f-park": [-60, 84], "f-arcade": [23, 40] };
 
 // the mini-game stands (the three tech games) and the shops in the mall (local)
 export const FW_STATIONS = [
-  { id: "drone", x: -14, z: 46 }, { id: "robot", x: 0, z: 50 }, { id: "rooftops", x: 14, z: 46 },
+  { id: "drone", x: 17, z: 58.9, sz: -2 }, { id: "robot", x: 23, z: 58.9, sz: -2 }, { id: "rooftops", x: 29, z: 58.9, sz: -2 },   // sz: where you stand to play
 ];
 export const FW_SHOPS = [
   { id: "f-fashion", kind: "shirt", x: -80, z: -6, title: "NEO FASHION" },
@@ -74,6 +78,8 @@ export function futureWalk(x, z) {
   if (inR(lx, lz, TOWER.rect, 1.2) || inR(lx, lz, CANYON.rect, 1.2)) return false;
   for (const t of BRIDGE.towers) if (Math.abs(lx - t[0]) < 7 && Math.abs(lz - t[1]) < 7) return false;
   if (inR(lx, lz, MALL.inside) || inR(lx, lz, MALL.door)) return true;
+  if (inR(lx, lz, ARCADE.inside) || inR(lx, lz, ARCADE.door)) return true;
+  if (inR(lx, lz, ARCADE.rect, 0.6)) return false;
   if (inR(lx, lz, MALL.rect, 0.8) || inR(lx, lz, HOTEL.rect, 0.8)) return false;
   for (const b of BLOCKS) if (inR(lx, lz, b, 0.8)) return false;
   return true;
@@ -85,6 +91,7 @@ export function futureSolid(x, z, standY = 0) {
   for (const t of BRIDGE.towers) if (Math.abs(lx - t[0]) < 7 && Math.abs(lz - t[1]) < 7) return true;
   if (inR(lx, lz, HOTEL.rect)) return true;
   if (inR(lx, lz, MALL.rect) && !inR(lx, lz, MALL.inside)) return standY < 20;
+  if (inR(lx, lz, ARCADE.rect) && !inR(lx, lz, ARCADE.inside)) return standY < ARCADE.H + 1;
   for (const b of BLOCKS) if (inR(lx, lz, b)) return true;
   return false;
 }

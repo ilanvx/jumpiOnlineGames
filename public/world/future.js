@@ -729,7 +729,7 @@ export function buildFuture(host = {}) {
     const grass = M("#ffffff", { map: grassT, roughness: 0.95, metalness: 0 }), path = M("#f6f9ff", { roughness: 0.45, metalness: 0.05 }), pathLine = neon("#4fd2ff", 0.7, 2.2);
     const LAKE = { c: [-62, 86], rx: 9, rz: 6 };   // clear of every quest spot and path
     const inLake = (lx, lz, pad = 0) => ((lx - LAKE.c[0]) / (LAKE.rx + pad)) ** 2 + ((lz - LAKE.c[1]) / (LAKE.rz + pad)) ** 2 < 1;
-    [[-113, 44, -27, 95], [27, 44, 113, 95]].forEach(([ax, az, bx, bz]) => { const [x0, z0] = W(ax, az), [x1, z1] = W(bx, bz); p.geo(plateGeo(x0, z0, x1, z1, 0.03, 10), grass);
+    [[-113, 44, -27, 95], [FL.ARCADE.rect[2] + 1.5, 44, 113, 95]].forEach(([ax, az, bx, bz]) => { const [x0, z0] = W(ax, az), [x1, z1] = W(bx, bz); p.geo(plateGeo(x0, z0, x1, z1, 0.03, 10), grass);
       for (let k = 0; k < 3; k++) { const [px] = W(ax + (bx - ax) * (k + 0.5) / 3, 0); p.box(2.6, 0.06, z1 - z0, path, px, 0.05, (z0 + z1) / 2, 0, false).box(0.1, 0.07, z1 - z0, pathLine, px - 1.35, 0.06, (z0 + z1) / 2, 0, false).box(0.1, 0.07, z1 - z0, pathLine, px + 1.35, 0.06, (z0 + z1) / 2, 0, false); }
       const [, pz] = W(0, 72); p.box(x1 - x0, 0.06, 2.6, path, (x0 + x1) / 2, 0.05, pz, 0, false).box(x1 - x0, 0.07, 0.1, pathLine, (x0 + x1) / 2, 0.06, pz - 1.35, 0, false).box(x1 - x0, 0.07, 0.1, pathLine, (x0 + x1) / 2, 0.06, pz + 1.35, 0, false);
       // white low edges round the lawns
@@ -744,7 +744,7 @@ export function buildFuture(host = {}) {
       anim.push({ a, fn: (t) => stones.forEach((st, k) => { st.position.y = 0.7 + Math.sin(t * 1.4 + k) * 0.12; }) });
       colliders.push({ box: [lx - LAKE.rx - 0.8, lz - LAKE.rz * 0.72, lx + LAKE.rx + 0.8, lz + LAKE.rz * 0.72] }); }
     // three kinds of tree, all instanced: round green crowns with light-blue tips, pink blossom trees, tall spiral trees
-    const spots = []; for (let i = 0; i < 90; i++) { const lx = -110 + R() * 220, lz = 46 + R() * 46; if (Math.abs(lx) < 26 && lz > 62) continue; if (FL.BLOCKS.some((b) => lx > b[0] - 3 && lx < b[2] + 3 && lz > b[1] - 3 && lz < b[3] + 3)) continue; if (Math.abs(lx) < 30 && lz < 56) continue;
+    const spots = []; for (let i = 0; i < 90; i++) { const lx = -110 + R() * 220, lz = 46 + R() * 46; if (Math.abs(lx) < 26 && lz > 62) continue; if (lx > FL.ARCADE.rect[0] - 3 && lx < FL.ARCADE.rect[2] + 3 && lz > FL.ARCADE.rect[1] - 3 && lz < FL.ARCADE.rect[3] + 3) continue; if (FL.BLOCKS.some((b) => lx > b[0] - 3 && lx < b[2] + 3 && lz > b[1] - 3 && lz < b[3] + 3)) continue; if (Math.abs(lx) < 30 && lz < 56) continue;
       if (inLake(lx, lz, 3)) continue; if ([-73.3, -36.7, 36.7, 73.3].some((px) => Math.abs(lx - px) < 2.5) || Math.abs(lz - 72) < 2.5) continue; spots.push([lx, lz]); }
     const trunkG = new THREE.CylinderGeometry(0.16, 0.3, 2.6, 7); trunkG.translate(0, 1.3, 0);
     const ballG = mergeGeometries([new THREE.IcosahedronGeometry(1.5, 2).translate(0, 3.5, 0), new THREE.IcosahedronGeometry(1.05, 2).translate(0.9, 3.0, 0.4), new THREE.IcosahedronGeometry(1.0, 2).translate(-0.8, 3.1, -0.5)].map((g) => g.toNonIndexed()), false);
@@ -774,12 +774,103 @@ export function buildFuture(host = {}) {
   /* ---------- the mini-game stands and the lift pads ---------- */
   const STATION_COL = { drone: "#59e0ff", robot: "#ffd65a", rooftops: "#ff7af0" };
   const STATION_TITLE = { drone: "DRONE RACE", robot: "ROBO FIX", rooftops: "ROOF HOP" };
+  /* ---------- the GAME ZONE: the arcade south of the square. Outside: white walls with stripes of light, a glass
+     front with a sliding door, the big sign with running bulbs, a giant joystick on the roof. Inside: a dark carpet
+     with glowing shapes, pixel art on the walls, the three game machines (normal size) along the back wall, an air
+     hockey table, a claw machine and the prize counter. ---------- */
   {
-    const a = area(0, 48), p = new P(a.acc);
-    FL.FW_STATIONS.forEach((s) => { const [x, z] = W(s.x, s.z), col = STATION_COL[s.id];
-      p.cyl(2.2, 0.3, DARK(), x, 0.15, z, 24).cyl(1.9, 0.06, neon(col, 1, 2.6), x, 0.32, z, 24, false).box(1.6, 2.4, 1, WHITE(), x, 1.5, z - 0.8).box(1.4, 1, 0.1, neon(col, 0.9, 2.2), x, 2, z - 0.28, 0, false);
-      const t = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.1), new THREE.MeshBasicMaterial({ map: textTex("st" + s.id, STATION_TITLE[s.id], { fg: col, w: 512, h: 128, size: 70 }), transparent: true })); t.position.set(x, 3.4, z - 0.8); a.far.add(t);
-      colliders.push({ c: [x, z - 0.8], r: 1.1 }); });
+    const A = FL.ARCADE, a = area((A.rect[0] + A.rect[2]) / 2, (A.rect[1] + A.rect[3]) / 2), p = new P(a.acc);
+    const [x0, z0] = W(A.rect[0], A.rect[1]), [x1, z1] = W(A.rect[2], A.rect[3]), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, H = A.H, T = 0.5;
+    const [dx0] = W(A.door[0], 0), [dx1] = W(A.door[2], 0), dcx = (dx0 + dx1) / 2, dw = dx1 - dx0;
+    const outW = M("#f6f2ff", { roughness: 0.4, metalness: 0.1, emissive: new THREE.Color("#efe6ff"), emissiveIntensity: 0.15 }), inW = M("#2a1f5c", { roughness: 0.6, metalness: 0.1, emissive: new THREE.Color("#2a1f5c"), emissiveIntensity: 0.35 });
+    const NC = ["#ff4fd8", "#59e0ff", "#ffd65a", "#7dff9b", "#b18cff"];
+    // the carpet inside: dark blue with little glowing stars, squares and zig-zags
+    const carpet = canvasTex("fw-arcade-carpet", 256, 256, (x, cw, ch) => { const Rr = rng(5); x.fillStyle = "#141a3a"; x.fillRect(0, 0, cw, ch);
+      for (let i = 0; i < 26; i++) { const px = Rr() * cw, py = Rr() * ch, c = NC[i % 5]; x.strokeStyle = c; x.fillStyle = c; x.lineWidth = 3;
+        if (i % 3 === 0) { x.beginPath(); for (let k = 0; k < 10; k++) { const an = k / 10 * TAU, r = k % 2 ? 4 : 10; x.lineTo(px + Math.cos(an) * r, py + Math.sin(an) * r); } x.closePath(); x.fill(); }
+        else if (i % 3 === 1) x.strokeRect(px - 6, py - 6, 12, 12); else { x.beginPath(); x.moveTo(px - 10, py); x.lineTo(px - 4, py - 6); x.lineTo(px + 2, py); x.lineTo(px + 8, py - 6); x.stroke(); } } });
+    p.geo(plateGeo(x0 + T, z0 + T, x1 - T, z1 - T, 0.06, 4), M("#ffffff", { map: carpet, roughness: 0.9, metalness: 0, emissive: new THREE.Color("#ffffff"), emissiveMap: carpet, emissiveIntensity: 0.35 }));
+    // walls: white outside, deep purple inside; the front is glass with the door in the middle
+    const wallBox = (lx0, lz0, lx1, lz1, mOut, mIn, inward) => { const ww = Math.abs(lx1 - lx0) || T, dd = Math.abs(lz1 - lz0) || T, mx = (lx0 + lx1) / 2, mz = (lz0 + lz1) / 2;
+      p.box(ww, H, dd, mOut, mx, H / 2, mz); const [ix, iz] = inward; p.box(ww === T ? 0.04 : ww - 2 * T, H - 0.4, dd === T ? 0.04 : dd - 2 * T, mIn, mx + ix * (T / 2 + 0.03), (H - 0.4) / 2, mz + iz * (T / 2 + 0.03), 0, false);
+      colliders.push({ box: [Math.min(lx0, lx1) - T / 2, Math.min(lz0, lz1) - T / 2, Math.max(lx0, lx1) + T / 2, Math.max(lz0, lz1) + T / 2] }); };
+    wallBox(x0, z0, x0, z1, outW, inW, [1, 0]); wallBox(x1, z0, x1, z1, outW, inW, [-1, 0]); wallBox(x0, z1, x1, z1, outW, inW, [0, -1]);
+    // stripes of light running round the outside, in five colours
+    NC.forEach((c, k) => { const y = 1.4 + k * 0.5, m = neon(c, 0.9, 2.6); p.box(0.08, 0.14, d, m, x0 - T / 2 - 0.04, y, cz, 0, false).box(0.08, 0.14, d, m, x1 + T / 2 + 0.04, y, cz, 0, false).box(w, 0.14, 0.08, m, cx, y, z1 + T / 2 + 0.04, 0, false); });
+    // the glass front, posts in colours, the band over the door
+    const gl = GLASS(), postM = (k) => M(NC[k % 5], { metalness: 0.3, roughness: 0.3, emissive: new THREE.Color(NC[k % 5]), emissiveIntensity: 0.3 });
+    p.box(dx0 - x0, 6, 0.12, gl, (x0 + dx0) / 2, 3, z0, 0, false).box(x1 - dx1, 6, 0.12, gl, (dx1 + x1) / 2, 3, z0, 0, false).box(w, H - 6, T, outW, cx, 6 + (H - 6) / 2, z0);
+    colliders.push({ box: [x0, z0 - 0.3, dx0, z0 + 0.3] }, { box: [dx1, z0 - 0.3, x1, z0 + 0.3] });
+    for (let k = 0; k <= 6; k++) { const px = x0 + k * w / 6; if (Math.abs(px - dcx) < dw / 2 + 0.2) continue; p.box(0.3, 6, 0.4, postM(k), px, 3, z0); }
+    [dx0, dx1].forEach((px, k) => p.box(0.35, 4.8, 0.45, postM(k + 2), px, 2.4, z0)); p.box(dw + 0.4, 0.35, 0.45, postM(4), dcx, 4.8, z0).box(dw - 0.2, 1.2, 0.12, gl, dcx, 5.4, z0, 0, false);
+    // the door: two glass halves that slide open
+    const dm = M("#d9f6ff", { transparent: true, opacity: 0.4, roughness: 0.05, metalness: 0.5, depthWrite: false }), dl = new THREE.Mesh(new THREE.BoxGeometry(dw / 2, 4.6, 0.08), dm), dr = dl.clone(); a.g.add(dl, dr);
+    doors.push({ x: dcx, z: z0, open: 0, fn: (k) => { dl.position.set(dcx - dw / 4 - k * (dw / 2 - 0.1), 2.3, z0 + 0.15); dr.position.set(dcx + dw / 4 + k * (dw / 2 - 0.1), 2.3, z0 + 0.15); } });
+    // the big sign with running bulbs round it
+    { const sg = new THREE.Mesh(new THREE.PlaneGeometry(13, 2.6), new THREE.MeshBasicMaterial({ map: textTex("arcsign", "GAME ZONE", { bg: "#1a0b30", fg: "#ffd65a", w: 1024, h: 205, size: 150, border: "#ff4fd8" }), transparent: true }));
+      sg.position.set(cx, 7.9, z0 - T / 2 - 0.05); sg.rotation.y = Math.PI; a.far.add(sg);
+      const bA = neon("#ffffff", 1.4, 3), bB = neon("#ffd65a", 0.3, 0.8), bulbs = [[], []];
+      for (let k = 0; k < 44; k++) { const u = k / 44, per = 2 * (13.6 + 3.2); let t2 = u * per, bx2, by2; if (t2 < 13.6) { bx2 = -6.8 + t2; by2 = 1.6; } else if ((t2 -= 13.6) < 3.2) { bx2 = 6.8; by2 = 1.6 - t2; } else if ((t2 -= 3.2) < 13.6) { bx2 = 6.8 - t2; by2 = -1.6; } else { t2 -= 13.6; bx2 = -6.8; by2 = -1.6 + t2; }
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), k % 2 ? bA : bB); m.position.set(cx - bx2, 7.9 + by2, z0 - T / 2 - 0.12); a.far.add(m); bulbs[k % 2].push(m); }
+      anim.push({ a, fn: (t) => { const on = Math.floor(t * 4) % 2; bulbs[0].forEach((m) => { m.material = on ? bA : bB; }); bulbs[1].forEach((m) => { m.material = on ? bB : bA; }); } }); }
+    // the roof with a glowing edge, and the giant joystick on it
+    p.box(w + 0.6, 0.5, d + 0.6, ROOF(), cx, H + 0.25, cz).box(w + 0.7, 0.14, 0.2, neon("#ff4fd8", 0.8, 2.4), cx, H + 0.55, z0 - 0.3, 0, false).box(w + 0.7, 0.14, 0.2, neon("#59e0ff", 0.8, 2.4), cx, H + 0.55, z1 + 0.3, 0, false);
+    { const jx = cx, jz = cz + 2, y = H + 0.5; p.box(6, 1.4, 4, M("#2a1f5c", { metalness: 0.3, roughness: 0.3 }), jx, y + 0.7, jz).box(6.1, 0.12, 4.1, neon("#59e0ff", 1, 2.6), jx, y + 1.42, jz, 0, false)
+        .cyl(0.25, 3.0, STEEL(), jx - 1.2, y + 2.9, jz, 12).sphere(0.9, M("#ff4f6d", { metalness: 0.3, roughness: 0.25, emissive: new THREE.Color("#ff4f6d"), emissiveIntensity: 0.35 }), jx - 1.2, y + 4.6, jz)
+        .cyl(0.5, 0.35, M("#ffd65a", { emissive: new THREE.Color("#ffd65a"), emissiveIntensity: 0.4 }), jx + 1.2, y + 1.6, jz - 0.8, 20).cyl(0.5, 0.35, M("#59e0ff", { emissive: new THREE.Color("#59e0ff"), emissiveIntensity: 0.4 }), jx + 2.4, y + 1.6, jz + 0.4, 20); }
+    // inside: pixel art on the walls in glowing frames
+    { const PIX = [["X..X..X", "XX.X.XX", "XXXXXXX", "XXXXXXX", "X.X.X.X", "XXXXXXX"], ["..X..", ".XXX.", "XXXXX", ".XXX.", ".X.X."], [".XX.XX.", "XXXXXXX", "XXXXXXX", ".XXXXX.", "..XXX..", "...X..."], ["...XX", "..XX.", ".XXXX", "XXXX.", "..XX.", ".XX.."]];
+      const art = (k) => canvasTex("fw-pix" + k, 128, 128, (x, cw, ch) => { x.fillStyle = "#120a2e"; x.fillRect(0, 0, cw, ch); const P0 = PIX[k % 4], cs = Math.floor(96 / Math.max(P0.length, P0[0].length));
+        const ox = (cw - P0[0].length * cs) / 2, oy = (ch - P0.length * cs) / 2; x.fillStyle = NC[k % 5]; P0.forEach((row, r) => [...row].forEach((ch2, c) => { if (ch2 === "X") x.fillRect(ox + c * cs + 1, oy + r * cs + 1, cs - 2, cs - 2); })); }, { repeat: false });
+      const hang = (px, pz, ry, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ map: art(k) })); m.position.set(px, 5.6, pz); m.rotation.y = ry; a.far.add(m);
+        const f = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 2.7), new THREE.MeshBasicMaterial({ color: NC[(k + 2) % 5] })); f.position.set(px - Math.sin(ry) * 0.01, 5.6, pz - Math.cos(ry) * 0.01); f.rotation.y = ry; a.far.add(f); };
+      [z0 + 4, z0 + 9.5].forEach((z, k) => { hang(x0 + T + 0.06, z, Math.PI / 2, k); hang(x1 - T - 0.06, z, -Math.PI / 2, k + 2); });
+      [-7.5, 7.5].forEach((o, k) => hang(cx + o, z1 - T - 0.06, Math.PI, k + 1)); }
+    // the ceiling inside: dark, with lines of coloured light
+    p.box(w - 2 * T, 0.1, d - 2 * T, M("#1a1438", { roughness: 0.8, metalness: 0 }), cx, H - 0.1, cz, 0, false);
+    for (let k = 0; k < 5; k++) p.box(w - 3, 0.08, 0.25, neon(NC[k], 0.9, 2.4), cx, H - 0.2, z0 + 2.2 + k * (d - 4.4) / 4, 0, false);
+    // the three game machines: a cabinet in the game's colour, the title lit up on top, the screen, the controls
+    const GAMEART = { drone: (x, cw, ch) => { const g2 = x.createRadialGradient(cw / 2, ch / 2, 10, cw / 2, ch / 2, cw / 2); g2.addColorStop(0, "#1a4a9a"); g2.addColorStop(1, "#060c24"); x.fillStyle = g2; x.fillRect(0, 0, cw, ch);
+        for (let k = 0; k < 6; k++) { x.strokeStyle = k % 2 ? "#59e0ff" : "#ff4fd8"; x.lineWidth = 4; x.beginPath(); x.ellipse(cw / 2, ch / 2, 20 + k * 22, 14 + k * 16, 0, 0, TAU); x.stroke(); }
+        x.fillStyle = "#ffffff"; x.fillRect(cw / 2 - 16, ch / 2 - 4, 32, 8); x.fillRect(cw / 2 - 4, ch / 2 - 12, 8, 24); },
+      robot: (x, cw, ch) => { x.fillStyle = "#1a1408"; x.fillRect(0, 0, cw, ch); x.fillStyle = "#ffd65a"; x.fillRect(cw / 2 - 40, ch / 2 - 46, 80, 70); x.fillStyle = "#1a1408"; x.fillRect(cw / 2 - 26, ch / 2 - 26, 16, 16); x.fillRect(cw / 2 + 10, ch / 2 - 26, 16, 16);
+        x.fillStyle = "#59e0ff"; x.fillRect(cw / 2 - 20, ch / 2 + 2, 40, 8); x.fillStyle = "#ffd65a"; x.fillRect(cw / 2 - 4, ch / 2 - 66, 8, 20); x.beginPath(); x.arc(cw / 2, ch / 2 - 70, 8, 0, TAU); x.fill();
+        x.strokeStyle = "#ff4fd8"; x.lineWidth = 8; x.beginPath(); x.moveTo(cw / 2 + 50, ch / 2 + 50); x.lineTo(cw / 2 + 80, ch / 2 + 20); x.stroke(); },
+      rooftops: (x, cw, ch) => { const g2 = x.createLinearGradient(0, 0, 0, ch); g2.addColorStop(0, "#ff9ad9"); g2.addColorStop(1, "#5a2a8a"); x.fillStyle = g2; x.fillRect(0, 0, cw, ch);
+        [[10, 150, 50], [70, 120, 60], [140, 160, 50], [196, 130, 60]].forEach(([bx2, by2, bw2]) => { x.fillStyle = "#2a1f5c"; x.fillRect(bx2, by2, bw2, ch - by2); x.fillStyle = "#ffd65a"; for (let y = by2 + 10; y < ch; y += 18) for (let xx = bx2 + 6; xx < bx2 + bw2 - 6; xx += 14) x.fillRect(xx, y, 6, 8); });
+        x.fillStyle = "#ffffff"; x.beginPath(); x.arc(118, 80, 14, 0, TAU); x.fill(); x.strokeStyle = "#ffffff"; x.lineWidth = 3; x.setLineDash([6, 6]); x.beginPath(); x.moveTo(60, 115); x.quadraticCurveTo(90, 50, 118, 80); x.stroke(); } };
+    FL.FW_STATIONS.forEach((s2, k) => { const [mx, mz] = W(s2.x, s2.z), col = STATION_COL[s2.id], body = M("#1d1840", { metalness: 0.4, roughness: 0.3 }), side = M(col, { metalness: 0.2, roughness: 0.35, emissive: new THREE.Color(col), emissiveIntensity: 0.35 });
+      // the cabinet: two coloured sides, a dark middle, a slanted control desk; screen and title face the door (-z)
+      p.box(1.5, 2.3, 1.15, body, mx, 1.15, mz).box(0.08, 2.4, 1.2, side, mx - 0.78, 1.2, mz).box(0.08, 2.4, 1.2, side, mx + 0.78, 1.2, mz);
+      p.box(1.5, 0.5, 0.7, body, mx, 1.0, mz - 0.85).box(1.52, 0.06, 0.74, side, mx, 1.27, mz - 0.85).box(1.6, 0.1, 0.14, neon(col, 1, 2.6), mx, 0.06, mz - 0.6, 0, false);
+      const scr = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 0.95), new THREE.MeshBasicMaterial({ map: canvasTex("fw-game-" + s2.id, 256, 200, GAMEART[s2.id] || GAMEART.drone, { repeat: false }) }));
+      scr.position.set(mx, 1.85, mz - 0.6); scr.rotation.set(-0.18, Math.PI, 0, "YXZ"); a.far.add(scr);
+      const mq = new THREE.Mesh(new THREE.PlaneGeometry(1.45, 0.42), new THREE.MeshBasicMaterial({ map: textTex("st" + s2.id, STATION_TITLE[s2.id], { fg: col, w: 512, h: 150, size: 70 }) }));
+      mq.position.set(mx, 2.55, mz - 0.6); mq.rotation.y = Math.PI; a.far.add(mq); p.box(1.5, 0.5, 0.2, body, mx, 2.55, mz - 0.48);
+      // the joystick and three buttons, a coin slot that glows
+      p.cyl(0.1, 0.06, STEEL(), mx - 0.35, 1.32, mz - 0.95, 10).cyl(0.04, 0.3, STEEL(), mx - 0.35, 1.45, mz - 0.95, 8).sphere(0.1, M("#ff4f6d", { roughness: 0.3, metalness: 0.2 }), mx - 0.35, 1.62, mz - 0.95);
+      ["#59e0ff", "#ffd65a", "#7dff9b"].forEach((bc, q) => p.cyl(0.07, 0.05, neon(bc, 1, 2.6), mx + 0.05 + q * 0.2, 1.32, mz - 0.92 + (q % 2) * 0.08, 12, false));
+      p.box(0.25, 0.12, 0.04, neon("#ff4f6d", 1, 2.6), mx, 0.55, mz - 0.59, 0, false);
+      // a ring of light on the floor where you stand to play
+      p.ring(0.75, neon(col, 1, 2.8), mx, 0.1, mz + (s2.sz ?? 2), Math.PI / 2, 0, 0.6);
+      colliders.push({ box: [mx - 0.85, mz - 1.25, mx + 0.85, mz + 0.6] }); });
+    // the air hockey table, the claw machine, the prize counter with prizes on shelves, some round stools
+    { const [hx, hz] = W(17.5, 50.5); p.box(2.2, 0.8, 3.6, M("#2a1f5c", { metalness: 0.3, roughness: 0.3 }), hx, 0.4, hz).box(2.0, 0.05, 3.4, M("#bff1ff", { roughness: 0.1, metalness: 0.2, emissive: new THREE.Color("#59e0ff"), emissiveIntensity: 0.4 }), hx, 0.83, hz, 0, false)
+        .box(2.2, 0.12, 0.1, neon("#ff4fd8", 1, 2.6), hx, 0.9, hz - 1.8, 0, false).box(2.2, 0.12, 0.1, neon("#ff4fd8", 1, 2.6), hx, 0.9, hz + 1.8, 0, false).box(0.1, 0.12, 3.6, neon("#59e0ff", 1, 2.6), hx - 1.1, 0.9, hz, 0, false).box(0.1, 0.12, 3.6, neon("#59e0ff", 1, 2.6), hx + 1.1, 0.9, hz, 0, false)
+        .cyl(0.12, 0.03, M("#111111"), hx + 0.3, 0.87, hz + 0.4, 14, false).cyl(0.16, 0.08, M("#ffd65a"), hx, 0.92, hz - 1.2, 14).cyl(0.16, 0.08, M("#7dff9b"), hx, 0.92, hz + 1.2, 14); colliders.push({ box: [hx - 1.2, hz - 1.9, hx + 1.2, hz + 1.9] }); }
+    { const [cx2, cz2] = W(31.4, 47.6), cm = M("#ff4fd8", { metalness: 0.3, roughness: 0.3, emissive: new THREE.Color("#ff4fd8"), emissiveIntensity: 0.3 });
+      p.box(1.8, 1.1, 1.8, cm, cx2, 0.55, cz2).box(1.7, 1.6, 1.7, GLASS(), cx2, 1.9, cz2, 0, false).box(1.8, 0.3, 1.8, cm, cx2, 2.85, cz2).box(1.6, 0.12, 1.6, neon("#ffd65a", 1, 2.6), cx2, 3.05, cz2, 0, false);
+      for (let k = 0; k < 14; k++) p.sphere(0.2, M(NC[k % 5], { roughness: 0.6, metalness: 0 }), cx2 - 0.6 + (k % 4) * 0.4, 1.25 + Math.floor(k / 4) * 0.12, cz2 - 0.5 + ((k * 7) % 4) * 0.3);
+      p.cyl(0.02, 0.8, STEEL(), cx2 + 0.2, 2.3, cz2, 6).cyl(0.18, 0.12, STEEL(), cx2 + 0.2, 1.85, cz2, 10); colliders.push({ c: [cx2, cz2], r: 1.3 }); }
+    { const [px2, pz0] = W(13.4, 47), [, pz1] = W(0, 54.5), pc = (pz0 + pz1) / 2, pl = pz1 - pz0, top = M("#ffd65a", { metalness: 0.3, roughness: 0.3, emissive: new THREE.Color("#ffd65a"), emissiveIntensity: 0.25 });
+      p.box(0.9, 1.05, pl, M("#ffffff", { roughness: 0.4, metalness: 0.1 }), px2 + 0.6, 0.53, pc).box(1.0, 0.08, pl + 0.1, top, px2 + 0.6, 1.08, pc).box(0.06, 0.6, pl - 0.4, neon("#ff4fd8", 1, 2.6), px2 + 1.08, 0.55, pc, 0, false);
+      colliders.push({ box: [px2, pz0, px2 + 1.1, pz1] });
+      for (let r = 0; r < 3; r++) { p.box(0.5, 0.08, pl, M("#ffffff", { roughness: 0.4 }), x0 + T + 0.25, 1.6 + r * 1.0, pc);
+        for (let q = 0; q < 6; q++) { const pzq = pz0 + 0.6 + q * (pl - 1.2) / 5, c = NC[(q + r) % 5], m = M(c, { roughness: 0.7, metalness: 0 }); if ((q + r) % 2) { p.sphere(0.22, m, x0 + T + 0.3, 1.86 + r, pzq).sphere(0.1, m, x0 + T + 0.3, 2.1 + r, pzq - 0.15).sphere(0.1, m, x0 + T + 0.3, 2.1 + r, pzq + 0.15); }
+          else p.box(0.3, 0.4, 0.3, m, x0 + T + 0.3, 1.84 + r, pzq).box(0.32, 0.12, 0.2, neon("#ffffff", 0.6, 1.8), x0 + T + 0.3, 1.86 + r, pzq, 0, false); } }
+      const sg = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 0.8), new THREE.MeshBasicMaterial({ map: textTex("arcprize", "PRIZES", { bg: "#1a0b30", fg: "#ff7af0", w: 512, h: 120, size: 80 }), transparent: true })); sg.position.set(x0 + T + 0.08, 4.6, pc); sg.rotation.y = Math.PI / 2; a.far.add(sg); }
+    [[26, 49], [28.5, 51], [25, 52.5]].forEach(([lx, lz], k) => { const [sx2, sz2] = W(lx, lz); p.cyl(0.08, 0.6, STEEL(), sx2, 0.3, sz2, 8).cyl(0.38, 0.14, M(NC[k + 1], { roughness: 0.5, metalness: 0.1 }), sx2, 0.67, sz2, 18).ring(0.38, neon(NC[k + 2], 1, 2.6), sx2, 0.75, sz2, Math.PI / 2, 0, 1);
+      seats.push({ x: sx2, z: sz2, f: 0, y: 0.75, k: "sit" }); colliders.push({ c: [sx2, sz2], r: 0.45 }); });
     a.acc.build(a.g);
   }
   {
@@ -958,7 +1049,7 @@ export function buildFuture(host = {}) {
 
   /* ---------- lights along the walkways (Points: one draw call) ---------- */
   {
-    const SQ = FL.SQUARE, inSq = (lx, lz) => Math.hypot(lx - SQ.c[0], lz - SQ.c[1]) < SQ.r + 1.5;
+    const SQ = FL.SQUARE, AR = FL.ARCADE.rect, inSq = (lx, lz) => Math.hypot(lx - SQ.c[0], lz - SQ.c[1]) < SQ.r + 1.5 || (lx > AR[0] - 1.5 && lx < AR[2] + 1.5 && lz > AR[1] - 1.5 && lz < AR[3] + 1.5);
     const pts = []; for (let lz = -20; lz <= 64; lz += 6) [-4, 4].forEach((lx) => { if (!inSq(lx, lz)) pts.push(W(lx, lz)); }); for (let lx = -26; lx <= 26; lx += 6) [-14, 46].forEach((lz) => { if (!inSq(lx, lz)) pts.push(W(lx, lz)); });
     for (let i = 0; i < 12; i++) { const an = i / 12 * TAU + TAU / 24; pts.push(W(SQ.c[0] + Math.cos(an) * (SQ.r - 1.6), SQ.c[1] + Math.sin(an) * (SQ.r - 1.6))); }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pts.flatMap(([x, z]) => [x, 3.2, z]), 3));

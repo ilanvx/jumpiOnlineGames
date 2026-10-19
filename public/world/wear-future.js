@@ -151,7 +151,7 @@ export const HAT_STYLES = {
     T = H.THREE; const { g, dome, c1, S } = C; dome(0, 1.25, S, c1);
     const vm = new T.MeshStandardMaterial({ color: o.col2, emissive: o.col2, emissiveIntensity: .8, transparent: true, opacity: .7, roughness: .1, side: T.DoubleSide, depthWrite: false });
     const vis = mesh(new T.CylinderGeometry(.7, .78, .04, 40, 1, false, -1.1, 2.2), vm, 0, H.hp(1.25, 0, S).y - .01, .12); vis.scale.z = 1.05; vis.userData.keep = true; g.add(vis);
-    g.add(mesh(new T.TorusGeometry(.56, .02, 6, 48, Math.PI), glowM(H, o.col2, 1.2), 0, H.hp(1.2, 0, S).y, 0)).rotation.set(Math.PI / 2, 0, Math.PI);
+    const edge = mesh(new T.TorusGeometry(.56, .02, 6, 48, Math.PI), glowM(H, o.col2, 1.2), 0, H.hp(1.2, 0, S).y, 0); edge.rotation.set(Math.PI / 2, 0, Math.PI); g.add(edge);   // (the ring turns, not the whole cap)
     H.anim((t) => { vm.emissiveIntensity = .6 + .3 * Math.sin(t * 3); });
   },
 };

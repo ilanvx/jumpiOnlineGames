@@ -274,7 +274,7 @@ function futureQuests() {
     Q({ id: "f-chips", giver: "mia", needs: ["f-family"], title: "Data Chips",
       intro: "My robot dropped 8 data chips with all my inventions on them! They're on the streets around Neon Square.",
       done: "My inventions are safe! One of them is a flying skateboard. Shh, it's a secret.",
-      steps: [C("chip", [[-20, -4], [20, -4], [-24, 40], [24, 40], [0, -16], [-16, 58], [16, 58], [0, 62]])], reward: { coins: 450, xp: 420 } }),
+      steps: [C("chip", [[-20, -4], [20, -4], [-24, 40], [24, 40], [0, -16], [-16, 58], [16.5, 52], [0, 62]])], reward: { coins: 450, xp: 420 } }),
     Q({ id: "f-robot-quiz", giver: "mia", needs: ["f-family"], title: "Robot School",
       intro: "In the future, robots go to school too! I wrote a test for them. Let's see if a human can pass it.",
       done: "100%! You're smarter than my robots.",
