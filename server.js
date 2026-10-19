@@ -149,12 +149,12 @@ const isClub = (req) => CLUB_HOSTS.includes(String(req.headers["x-forwarded-host
 // the Club's page with a version on its own files (?v=…, the newest file time), so a browser or Cloudflare never mixes
 // a new page with an old script or style (that broke the log-in once); the import map gives its modules the same version
 let clubHtml = { at: 0, v: "", html: "" }, clubT = { t: 0, at: 0 };
-const CLUB_MODULES = ["/club/badge.js", "/club/emoji-list.js", "/shared/blogdoc.js", "/shared/levels.js"];
+const CLUB_MODULES = ["/club/badge.js", "/club/emoji-list.js", "/club/arcade/list.js", "/shared/blogdoc.js", "/shared/levels.js"];
 function clubFilesTime() {
   if (Date.now() - clubT.t < 5000) return clubT.at;
   let at = 0;
   for (const f of readdirSync(path.join(PUBLIC_DIR, "club"))) if (/\.(js|css|html)$/.test(f)) at = Math.max(at, statSync(path.join(PUBLIC_DIR, "club", f)).mtimeMs);
-  for (const f of ["blogdoc.js", "levels.js"]) try { at = Math.max(at, statSync(path.join(PUBLIC_DIR, "shared", f)).mtimeMs); } catch {}
+  for (const f of ["shared/blogdoc.js", "shared/levels.js", "club/arcade/list.js"]) try { at = Math.max(at, statSync(path.join(PUBLIC_DIR, f)).mtimeMs); } catch {}
   clubT = { t: Date.now(), at };
   return at;
 }
@@ -174,6 +174,8 @@ function clubPage(req, res, next) {
 }
 app.get("/", (req, res, next) => (isClub(req) ? clubPage(req, res, next) : page("site/index.html")(req, res, next)));
 app.get(["/club", "/club/"], clubPage);
+// the Club's arcade window: the game's own mini-games on a page of their own (tools/club/build-arcade.mjs makes it), opened in a frame
+app.get("/club/arcade", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/arcade/play.html")(req, res, next); });
 // /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
 // middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps
 // ("JumpiApp/" = Android/iPhone, "JumpiDesktop/" = the computer program) and /studio always get the game itself.

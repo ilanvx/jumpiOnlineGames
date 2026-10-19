@@ -579,3 +579,33 @@ img.emo{display:inline-block;width:2.1em;height:2.1em;vertical-align:-.7em;margi
 .emo-h{display:block;position:sticky;top:0;z-index:1;padding:6px 4px 4px;background:#fff;font:700 .8rem var(--body);color:var(--muted)}
 .emo-sec{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,1fr));gap:2px;margin-bottom:6px}
 .emo-b.std{height:38px;font-size:1.45rem;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+
+/* ---------- the Games Center: the game's own mini-games as cards ---------- */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;padding:14px 34px 40px}
+.games[hidden],.hub-empty[hidden]{display:none}
+.gm{--gc:#6a35f0;--gd:#3a1192;display:flex;flex-direction:column;padding:0;border:0;border-radius:24px;overflow:hidden;background:#fff;cursor:pointer;text-align:start;font:inherit;color:var(--ink);
+  box-shadow:0 8px 0 var(--gd),0 20px 40px rgb(10 4 50 / .35);transition:transform .18s;animation:gmIn .4s backwards;animation-delay:calc(var(--i) * 60ms)}
+@keyframes gmIn{from{opacity:0;transform:translateY(14px)}}
+.gm:hover{transform:translateY(-5px) rotate(-.6deg)}
+.gm:active{transform:translateY(3px)}
+.gm-pic{position:relative;display:block;aspect-ratio:3/2;background:var(--gc)}
+.gm-pic img{display:block;width:100%;height:100%;object-fit:cover}
+.gm-play{position:absolute;inset-inline-end:12px;bottom:-22px;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:linear-gradient(180deg,#8ff0b0,#2fd36b 60%);color:#fff;font-size:1.3rem;
+  box-shadow:0 5px 0 #17803d,0 8px 16px rgb(0 0 0 / .25);border:4px solid #fff;transition:transform .18s}
+html[dir="rtl"] .gm-play{transform:scaleX(-1)}
+.gm:hover .gm-play{transform:scale(1.12)}
+html[dir="rtl"] .gm:hover .gm-play{transform:scaleX(-1) scale(1.12)}
+.gm-tx{display:flex;flex-direction:column;gap:4px;padding:16px 18px 18px}
+.gm-tx b{font:400 1.45rem/1.1 var(--display);color:var(--gd)}
+html[lang="he"] .gm-tx b{font-weight:800}
+.gm-tx small{color:var(--muted);font-weight:500;font-size:.95rem;line-height:1.35}
+.gm.locked .gm-pic img{filter:grayscale(.85) brightness(.8)}
+.gm.locked .gm-play{background:linear-gradient(180deg,#c9c3e6,#8e86b8);box-shadow:0 5px 0 #5d5790;transform:none}
+/* the game itself: full screen over everything */
+.arc-frame{position:fixed;inset:0;z-index:100;background:#1d1a40}
+.arc-frame[hidden]{display:none}
+.arc-frame iframe{display:block;width:100%;height:100%;border:0}
+body.gaming{overflow:hidden}
+@media (max-width:900px){.games{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;padding:10px 16px 30px}}
+@media (max-width:520px){.games{grid-template-columns:1fr 1fr;gap:12px;padding:8px 12px 24px}.gm{border-radius:18px}.gm-tx{padding:12px 12px 14px}.gm-tx b{font-size:1.1rem}.gm-tx small{font-size:.8rem}
+  .gm-play{width:40px;height:40px;bottom:-17px;font-size:1rem;border-width:3px}}

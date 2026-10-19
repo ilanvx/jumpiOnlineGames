@@ -1,0 +1,10 @@
+/* The Club's arcade window (play.html): the page around the game's own mini-game styles (games.css) */
+@font-face{font-family:"HeeboHe";src:url(/fonts/heebo-he.woff) format("woff");font-weight:100 900;font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F,U+20AA}
+@font-face{font-family:"HeeboDisplay";src:url(/fonts/heebo-he-800.woff) format("woff");font-weight:100 900;font-display:swap;unicode-range:U+0590-05FF,U+FB1D-FB4F,U+20AA}
+:root{--font:"HeeboDisplay","Lilita One","Secular One","Arial Rounded MT Bold",system-ui,sans-serif;--ink:#1d2b4f}
+html,body{margin:0;height:100%;overflow:hidden;background:#1d1a40;color:#fff;font-family:"HeeboHe","Fredoka",system-ui,sans-serif}
+.arc-toast{position:fixed;z-index:60;left:50%;bottom:28px;translate:-50% 0;padding:12px 22px;border-radius:999px;background:#fff;color:#6a35f0;font-weight:700;box-shadow:0 6px 0 #2a1680}
+.arc-toast[hidden]{display:none}
+.pressed{animation:arcPress .18s ease}
+@keyframes arcPress{50%{transform:scale(.94)}}
+@keyframes coinFall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(var(--spin,360deg))}}

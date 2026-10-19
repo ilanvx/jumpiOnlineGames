@@ -127,7 +127,8 @@
 
     <section class="hub-card hub-games" aria-labelledby="hubCatT">
       <header class="hub-h"><img id="hubCatIc" src="/club/img/nav/club.png" alt="" width="40" height="40"><h2 id="hubCatT"></h2></header>
-      <div class="hub-empty">
+      <div class="games" id="hubGames"></div>
+      <div class="hub-empty" id="hubEmpty">
         <img src="/club/img/cat/games-big.png" alt="" width="200" height="200">
         <h3><span data-l="en">You're in the Games Center</span><span data-l="he">אתה במרכז המשחקים</span></h3>
         <p id="hubEmptyP"></p>
@@ -138,6 +139,7 @@
       <header class="hub-h"><h2 id="hubCatsT"><span data-l="en">Categories</span><span data-l="he">קטגוריות</span></h2></header>
       <nav class="cats" id="hubCats">
         <button type="button" data-cat="all" aria-pressed="true"><img src="/club/img/nav/club.png" alt="" width="44" height="44"><span data-l="en">All games</span><span data-l="he">כל המשחקים</span></button>
+        <button type="button" data-cat="arcade" aria-pressed="false"><img src="/club/img/cat/games-big.png" alt="" width="44" height="44"><span data-l="en">Arcade</span><span data-l="he">ארקייד</span></button>
         <button type="button" data-cat="duel" aria-pressed="false"><img src="/club/img/cat/duel.png" alt="" width="44" height="44"><span>1v1</span></button>
         <button type="button" data-cat="battle" aria-pressed="false"><img src="/club/img/cat/battle.png" alt="" width="44" height="44"><span data-l="en">Battles</span><span data-l="he">קרבות</span></button>
         <button type="button" data-cat="quiz" aria-pressed="false"><img src="/club/img/cat/quiz.png" alt="" width="44" height="44"><span data-l="en">Quizzes</span><span data-l="he">חידונים</span></button>
@@ -186,6 +188,9 @@
     </section>
   </section>
 </main>
+
+<!-- a game from the game, full screen (the Club's arcade page in a frame) -->
+<div class="arc-frame" id="arcFrame" hidden><iframe id="arcIf" title="Jumpi game"></iframe></div>
 
 <!-- writing a post (admins) -->
 <div class="cl-modal" id="mPost" hidden><div class="cl-dlg wide" role="dialog" aria-modal="true" aria-labelledby="mPostT">

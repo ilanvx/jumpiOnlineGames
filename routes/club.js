@@ -44,7 +44,7 @@ router.get("/club/me", requireUser, clubAge, (req, res) => {
   const p = levelProgress(u.levelXp || 0);
   res.set("Cache-Control", "no-store");
   res.json({ username: u.username, coins: u.coins || 0, levelXp: u.levelXp || 0, level: p.level, into: p.into, need: p.need, pct: p.pct,
-    member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), chatLock: u.parental?.chatLock === true });
+    member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), worlds: Array.isArray(u.worlds) ? u.worlds : [], chatLock: u.parental?.chatLock === true });
 });
 
 router.get("/club/online", requireUser, clubAge, async (req, res, next) => {

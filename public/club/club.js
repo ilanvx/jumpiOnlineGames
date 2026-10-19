@@ -7,6 +7,7 @@
 import { levelBadgeURL } from "/club/badge.js";
 import { EMOJI, FONTS, SIZES, isEmoji, EMOJI_CODE } from "/shared/blogdoc.js";
 import { EMOJI_GROUPS } from "/club/emoji-list.js";
+import { ARCADE } from "/club/arcade/list.js";
 
 const $ = (id) => document.getElementById(id);
 const btns = [...document.querySelectorAll(".lang-sw [data-set]")];
@@ -20,8 +21,8 @@ const T = {
     nowFriends: (u) => `You and ${u} are friends now!`, reqSent: (u) => `Friend request sent to ${u}.`, declined: "Request declined.",
     blockT: (u) => `Block ${u}?`, blocked: (u) => `${u} is blocked. You won't see each other any more, here and in the game.`, unblock: "Unblock", unblocked: (u) => `${u} is unblocked.`, noBlocked: "You haven't blocked anyone.",
     reportT: (u) => `Report ${u}`, pick: "Choose what happened.", reported: "Thanks! The Jumpi team will check it.", typeMsg: "Type a message…", chatHello: (u) => `Say hi to ${u}!`,
-    catEmpty: "There are no games here yet. 1v1 games, battles, quizzes and more are coming soon!", catEmptyOne: (c) => `There are no ${c} games yet. They're coming soon!`,
-    online: "online", offline: "not online",
+    catEmpty: "Pick a game and play!", catEmptyOne: (c) => `There are no ${c} games yet. They're coming soon!`,
+    online: "online", offline: "not online", gmLocked: "Open the Future City in the game to play this one.",
     gateT: (u) => `Sorry, ${u}!`, gateAge: "Jumpi Club is for ages 13 and up. Until then, the whole Jumpi world is waiting for you in the game!", gateBd: "To come into Jumpi Club we need to know your birthday. Open the Jumpi game once: it will ask you, and then come back here.", gateBdT: "One more thing",
     noPosts: "No posts yet. The Jumpi team will write here soon!", nComments: (n) => n === 1 ? "1 comment" : `${n} comments`, by: (a) => `by ${a}`, edited: "edited",
     noComments: "No comments yet. Be the first!", waiting: "Waiting for approval", logToComment: "Log in to write a comment.", ageComment: "Comments on the blog are for ages 13 and up.",
@@ -38,8 +39,8 @@ const T = {
     nowFriends: (u) => `את/ה ו-${u} חברים עכשיו!`, reqSent: (u) => `בקשת חברות נשלחה ל-${u}.`, declined: "הבקשה בוטלה.",
     blockT: (u) => `לחסום את ${u}?`, blocked: (u) => `${u} חסום/ה. לא תראו יותר אחד את השני, גם כאן וגם במשחק.`, unblock: "ביטול חסימה", unblocked: (u) => `החסימה של ${u} בוטלה.`, noBlocked: "לא חסמת אף אחד.",
     reportT: (u) => `דיווח על ${u}`, pick: "צריך לבחור מה קרה.", reported: "תודה! צוות ג'אמפי יבדוק את זה.", typeMsg: "כתבו הודעה…", chatHello: (u) => `תגידו היי ל-${u}!`,
-    catEmpty: "כרגע אין כאן משחקים. בקרוב יגיעו משחקי 1 על 1, קרבות, חידונים ועוד!", catEmptyOne: (c) => `עדיין אין משחקי ${c}. הם בדרך!`,
-    online: "מחובר/ת", offline: "לא מחובר/ת",
+    catEmpty: "בחרו משחק ושחקו!", catEmptyOne: (c) => `עדיין אין משחקי ${c}. הם בדרך!`,
+    online: "מחובר/ת", offline: "לא מחובר/ת", gmLocked: "פתחו את העיר העתידית במשחק כדי לשחק במשחק הזה.",
     gateT: (u) => `מצטערים, ${u}!`, gateAge: "הכניסה לג'אמפי קלאב היא מגיל 13 ומעלה. עד אז, כל העולם של ג'אמפי מחכה לך במשחק!", gateBd: "כדי להיכנס לג'אמפי קלאב צריך לדעת מתי יום ההולדת שלך. פתחו פעם אחת את המשחק של ג'אמפי, הוא ישאל, ואז חזרו לכאן.", gateBdT: "עוד דבר קטן",
     noPosts: "עוד אין פוסטים. צוות ג'אמפי יכתוב כאן בקרוב!", nComments: (n) => n === 1 ? "תגובה אחת" : `${n} תגובות`, by: (a) => `מאת ${a}`, edited: "נערך",
     noComments: "עוד אין תגובות. תהיו הראשונים!", waiting: "ממתינה לאישור", logToComment: "צריך להתחבר כדי לכתוב תגובה.", ageComment: "תגובות בבלוג הן מגיל 13 ומעלה.",
@@ -56,7 +57,7 @@ const REASONS = [
   ["scam", "A scam, or tried to take my things", "הונאה, או ניסיון לקחת לי דברים"],
   ["other", "Something else", "משהו אחר"],
 ];
-const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Battles", "קרבות", "/club/img/cat/battle.png"],
+const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], arcade: ["Arcade", "ארקייד", "/club/img/cat/games-big.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Battles", "קרבות", "/club/img/cat/battle.png"],
   quiz: ["Quizzes", "חידונים", "/club/img/cat/quiz.png"], race: ["Races", "מרוצים", "/club/img/cat/race.png"], puzzle: ["Puzzles", "פאזלים", "/club/img/cat/puzzle.png"] };
 // the Jumpis' body colours (the same list as the game's COLORS, index.html)
 const SKIN = ["#ff8a1c", "#1fb6ff", "#2fd36b", "#ff5fb4", "#9b5cff", "#ffd23a", "#ff4545", "#f2f6ff", "#5b3420", "#c27a3a", "#f6c4a0", "#8a5a3c", "#2a2f72", "#c8102e", "#39ff14", "#f2c230", "#e8a39a", "#f4f0ff", "#ff4a1c", "#9ff5dd", "#5a22b0", "#1fb6ff"];
@@ -196,7 +197,7 @@ $("clOut").onclick = async () => { closePops(); try { await api("logout", {}); }
 async function refresh() {
   const [me, on, fr, dm, bp] = await Promise.all([call("/api/club/me"), call("/api/club/online"), call("/api/friends"), call("/api/dm"), ME && ME.role === "admin" ? call("/api/blog/pending") : null]);
   if (!ME) return;
-  if (me.ok) { const was = ME.pic; Object.assign(ME, me.data); paintMe();
+  if (me.ok) { const was = ME.pic, hadW = JSON.stringify(ME.worlds || null); Object.assign(ME, me.data); paintMe(); if (JSON.stringify(ME.worlds || null) !== hadW) paintCat();
     if (ME.pic && ME.pic !== was) { const img = $("clAvImg"), n = new Image(); n.onload = () => { img.classList.remove("face"); img.src = n.src; }; n.src = picURL(ME.username, ME.pic); } }
   if (on.ok) { ONLINE = on.data.players || []; paintOnline(); }
   if (fr.ok) NOTES.requests = fr.data.requests || [];
@@ -386,11 +387,39 @@ $("chatForm").addEventListener("submit", async (e) => {
 /* ---------- the games center and its categories ---------- */
 document.querySelectorAll("#hubCats [data-cat]").forEach((b) => b.onclick = () => { CAT = b.dataset.cat; document.querySelectorAll("#hubCats [data-cat]").forEach((x) => x.setAttribute("aria-pressed", x === b)); paintCat();
   if (matchMedia("(max-width: 900px)").matches) document.querySelector(".hub-games").scrollIntoView({ behavior: "smooth", block: "start" }); });
+// the game's own mini-games (public/club/arcade: made from the game by tools/club/build-arcade.mjs), each in a category
+const GAME_CAT = { fruit: "arcade", shell: "arcade", flap: "arcade", rooftops: "arcade", drone: "race", dig: "puzzle", robot: "puzzle" };
+const FUTURE_GAMES = ["drone", "robot", "rooftops"];   // they open with the Future City (routes/rewards.js FUTURE_GAMES)
 function paintCat() {
   const c = CATS[CAT] || CATS.all, name = lang === "he" ? c[1] : c[0];
   $("hubCatT").textContent = name; $("hubCatIc").src = c[2];
+  const list = Object.keys(ARCADE).filter((g) => CAT === "all" || GAME_CAT[g] === CAT), box = $("hubGames");
+  box.textContent = ""; $("hubEmpty").hidden = !!list.length; box.hidden = !list.length;
   $("hubEmptyP").textContent = CAT === "all" ? t("catEmpty") : t("catEmptyOne", name);
+  list.forEach((g, i) => {
+    const G = ARCADE[g], locked = FUTURE_GAMES.includes(g) && ME && Array.isArray(ME.worlds) && !ME.worlds.includes("future");
+    const b = el("button", "gm" + (locked ? " locked" : "")); b.type = "button"; b.style.setProperty("--gc", G.color); b.style.setProperty("--gd", G.dark); b.style.setProperty("--i", i);
+    const pic = el("span", "gm-pic"); const im = el("img"); im.src = `/club/arcade/pics/${g}.webp`; im.alt = ""; im.loading = "lazy"; pic.append(im);
+    pic.append(el("span", "gm-play", locked ? "🔒" : "▶")); b.append(pic);
+    const tx = el("span", "gm-tx"); tx.append(el("b", "", lang === "he" ? G.titleHe : G.title), el("small", "", locked ? t("gmLocked") : lang === "he" ? G.subHe : G.sub)); b.append(tx);
+    b.onclick = () => (locked ? toast(t("gmLocked")) : openGame(g));
+    box.append(b);
+  });
 }
+// playing: the arcade page full screen in a frame; it tells us when it's closed and when my coins change
+function openGame(g) {
+  const f = $("arcFrame"), ifr = $("arcIf");
+  ifr.src = `/club/arcade?g=${encodeURIComponent(g)}${FUTURE_GAMES.includes(g) ? "&w=future" : ""}`;
+  f.hidden = false; document.body.classList.add("gaming"); setTimeout(() => ifr.focus(), 300);
+}
+function closeGame() { const f = $("arcFrame"); if (f.hidden) return; f.hidden = true; $("arcIf").src = "about:blank"; document.body.classList.remove("gaming"); if (ME) refresh(); }
+addEventListener("message", (e) => {
+  if (e.origin !== location.origin || !e.data || !e.data.jumpiArcade) return;
+  const m = e.data;
+  if (m.jumpiArcade === "close") closeGame();
+  else if (m.jumpiArcade === "coins" && ME && Number.isFinite(m.coins)) { ME.coins = m.coins; paintMe(); }
+  else if (m.jumpiArcade === "login") { closeGame(); signedOut(); }
+});
 
 /* =====================================================================
    THE BLOG (#blog, #blog/<post>, #blog/pending): everyone can read; admins write; comments wait for an admin
