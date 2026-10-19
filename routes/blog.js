@@ -12,7 +12,7 @@ import { cleanDoc, docText, textDoc } from "../public/shared/blogdoc.js";
   Jumpi Club blog.
   - Everyone can read the posts (and the approved comments), even without logging in.
   - Only admins write, change or delete posts; every post has a picture (uploaded first: POST /api/blog/img).
-  - Logged-in players aged 13+ (the Club's age) can comment. A comment waits until an admin approves it; until then only
+  - Logged-in players aged 6+ (the Club's age) can comment. A comment waits until an admin approves it; until then only
     its writer sees it ("waiting for approval"). Admins get a notice: in the Club (the bell) and in their game window.
   - Comments go through the same word filter as the chat (no bad words, no phone numbers or addresses).
 */

@@ -24,9 +24,9 @@ const T = {
     catEmpty: "Pick a game and play!", catEmptyOne: (c) => `There are no ${c} games yet. They're coming soon!`,
     online: "online", offline: "not online", gmLocked: "Open the Future City in the game to play this one.", noCoins: "Just for fun · no coins", leaders: "Leaderboard", lbSub: "The 10 best rounds ever (one round, not added up)", lbEmpty: "No rounds yet. Be the first!",
     lbMine: (n, r) => `Your best round: ${n} · you're #${r}`, lbNone: "Play a round to get on the board!",
-    gateT: (u) => `Sorry, ${u}!`, gateAge: "Jumpi Club is for ages 13 and up. Until then, the whole Jumpi world is waiting for you in the game!", gateBd: "To come into Jumpi Club we need to know your birthday. Open the Jumpi game once: it will ask you, and then come back here.", gateBdT: "One more thing",
+    gateT: (u) => `Sorry, ${u}!`, gateAge: "Jumpi Club is for ages 6 and up. Until then, the whole Jumpi world is waiting for you in the game!", gateBd: "To come into Jumpi Club we need to know your birthday. Open the Jumpi game once: it will ask you, and then come back here.", gateBdT: "One more thing",
     noPosts: "No posts yet. The Jumpi team will write here soon!", nComments: (n) => n === 1 ? "1 comment" : `${n} comments`, by: (a) => `by ${a}`, edited: "edited",
-    noComments: "No comments yet. Be the first!", waiting: "Waiting for approval", logToComment: "Log in to write a comment.", ageComment: "Comments on the blog are for ages 13 and up.",
+    noComments: "No comments yet. Be the first!", waiting: "Waiting for approval", logToComment: "Log in to write a comment.", ageComment: "Comments on the blog are for ages 6 and up.", shootAge: "The shooting games are for ages 13 and up.",
     bdComment: "To comment, open the Jumpi game once so it can ask for your birthday.", commentSent: "Thanks! Your comment will show after an admin approves it.", writeComment: "Write a comment…",
     newPost: "New post", editPost: "Edit post", needTitle: "Give the post a title.", needPic: "Every post needs a picture.", needBody: "Write something in the post.", uploading: "Uploading the picture…",
     published: "The post is up!", delAsk: "Delete this post and its comments?", deleted: "The post was deleted.", noPending: "No comments are waiting. All done!", approve: "Approve", reject: "Reject",
@@ -43,9 +43,9 @@ const T = {
     catEmpty: "בחרו משחק ושחקו!", catEmptyOne: (c) => `עדיין אין משחקי ${c}. הם בדרך!`,
     online: "מחובר/ת", offline: "לא מחובר/ת", gmLocked: "פתחו את העיר העתידית במשחק כדי לשחק במשחק הזה.", noCoins: "לכיף · בלי מטבעות", leaders: "טבלת מובילים", lbSub: "10 הסיבובים הכי טובים (בסיבוב אחד, לא מצטבר)", lbEmpty: "עוד אין סיבובים. תהיו הראשונים!",
     lbMine: (n, r) => `השיא שלך בסיבוב אחד: ${n} · מקום ${r}`, lbNone: "שחקו סיבוב כדי להיכנס לטבלה!",
-    gateT: (u) => `מצטערים, ${u}!`, gateAge: "הכניסה לג'אמפי קלאב היא מגיל 13 ומעלה. עד אז, כל העולם של ג'אמפי מחכה לך במשחק!", gateBd: "כדי להיכנס לג'אמפי קלאב צריך לדעת מתי יום ההולדת שלך. פתחו פעם אחת את המשחק של ג'אמפי, הוא ישאל, ואז חזרו לכאן.", gateBdT: "עוד דבר קטן",
+    gateT: (u) => `מצטערים, ${u}!`, gateAge: "הכניסה לג'אמפי קלאב היא מגיל 6 ומעלה. עד אז, כל העולם של ג'אמפי מחכה לך במשחק!", gateBd: "כדי להיכנס לג'אמפי קלאב צריך לדעת מתי יום ההולדת שלך. פתחו פעם אחת את המשחק של ג'אמפי, הוא ישאל, ואז חזרו לכאן.", gateBdT: "עוד דבר קטן",
     noPosts: "עוד אין פוסטים. צוות ג'אמפי יכתוב כאן בקרוב!", nComments: (n) => n === 1 ? "תגובה אחת" : `${n} תגובות`, by: (a) => `מאת ${a}`, edited: "נערך",
-    noComments: "עוד אין תגובות. תהיו הראשונים!", waiting: "ממתינה לאישור", logToComment: "צריך להתחבר כדי לכתוב תגובה.", ageComment: "תגובות בבלוג הן מגיל 13 ומעלה.",
+    noComments: "עוד אין תגובות. תהיו הראשונים!", waiting: "ממתינה לאישור", logToComment: "צריך להתחבר כדי לכתוב תגובה.", ageComment: "תגובות בבלוג הן מגיל 6 ומעלה.", shootAge: "משחקי היריות הם מגיל 13 ומעלה.",
     bdComment: "כדי להגיב, פתחו פעם אחת את המשחק של ג'אמפי כדי שישאל מתי יום ההולדת שלכם.", commentSent: "תודה! התגובה תופיע אחרי שמנהל יאשר אותה.", writeComment: "כתבו תגובה…",
     newPost: "פוסט חדש", editPost: "עריכת פוסט", needTitle: "צריך לתת לפוסט כותרת.", needPic: "לכל פוסט צריך תמונה.", needBody: "צריך לכתוב משהו בפוסט.", uploading: "מעלים את התמונה…",
     published: "הפוסט עלה!", delAsk: "למחוק את הפוסט ואת התגובות שלו?", deleted: "הפוסט נמחק.", noPending: "אין תגובות שמחכות. הכול מאושר!", approve: "אישור", reject: "דחייה",
@@ -59,7 +59,7 @@ const REASONS = [
   ["scam", "A scam, or tried to take my things", "הונאה, או ניסיון לקחת לי דברים"],
   ["other", "Something else", "משהו אחר"],
 ];
-const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], arcade: ["Arcade", "ארקייד", "/club/img/cat/games-big.png"], fun: ["Just for fun", "לכיף", "/club/img/cat/fun.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Battles", "קרבות", "/club/img/cat/battle.png"],
+const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], arcade: ["Arcade", "ארקייד", "/club/img/cat/games-big.png"], fun: ["Just for fun", "לכיף", "/club/img/cat/fun.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Shooting", "יריות", "/club/img/cat/battle.png"],
   quiz: ["Quizzes", "חידונים", "/club/img/cat/quiz.png"], race: ["Races", "מרוצים", "/club/img/cat/race.png"], puzzle: ["Puzzles", "פאזלים", "/club/img/cat/puzzle.png"] };
 // the Jumpis' body colours (the same list as the game's COLORS, index.html)
 const SKIN = ["#ff8a1c", "#1fb6ff", "#2fd36b", "#ff5fb4", "#9b5cff", "#ffd23a", "#ff4545", "#f2f6ff", "#5b3420", "#c27a3a", "#f6c4a0", "#8a5a3c", "#2a2f72", "#c8102e", "#39ff14", "#f2c230", "#e8a39a", "#f4f0ff", "#ff4a1c", "#9ff5dd", "#5a22b0", "#1fb6ff"];
@@ -199,7 +199,7 @@ $("clOut").onclick = async () => { closePops(); try { await api("logout", {}); }
 async function refresh() {
   const [me, on, fr, dm, bp] = await Promise.all([call("/api/club/me"), call("/api/club/online"), call("/api/friends"), call("/api/dm"), ME && ME.role === "admin" ? call("/api/blog/pending") : null]);
   if (!ME) return;
-  if (me.ok) { const was = ME.pic, hadW = JSON.stringify(ME.worlds || null); Object.assign(ME, me.data); paintMe(); if (JSON.stringify(ME.worlds || null) !== hadW) paintCat();
+  if (me.ok) { const was = ME.pic, hadW = JSON.stringify(ME.worlds || null), hadT = ME.teen; Object.assign(ME, me.data); paintMe(); if (JSON.stringify(ME.worlds || null) !== hadW || ME.teen !== hadT) paintCat();
     if (ME.pic && ME.pic !== was) { const img = $("clAvImg"), n = new Image(); n.onload = () => { img.classList.remove("face"); img.src = n.src; }; n.src = picURL(ME.username, ME.pic); } }
   if (on.ok) { ONLINE = on.data.players || []; paintOnline(); }
   if (fr.ok) NOTES.requests = fr.data.requests || [];
@@ -410,9 +410,10 @@ const ALL_GAMES = { ...ARCADE, ...FUN }; Object.keys(FUN).forEach((g) => (GAME_C
 function paintCat() {
   const c = CATS[CAT] || CATS.all, name = lang === "he" ? c[1] : c[0];
   $("hubCatT").textContent = name; $("hubCatIc").src = c[2];
-  const list = Object.keys(ALL_GAMES).filter((g) => CAT === "all" || GAME_CAT[g] === CAT), box = $("hubGames");
+  const tooYoung = CAT === "battle" && !(ME && ME.teen);   // the shooting games: 13 and up
+  const list = tooYoung ? [] : Object.keys(ALL_GAMES).filter((g) => (CAT === "all" ? GAME_CAT[g] !== "battle" || (ME && ME.teen) : GAME_CAT[g] === CAT)), box = $("hubGames");
   box.textContent = ""; $("hubEmpty").hidden = !!list.length; box.hidden = !list.length;
-  $("hubEmptyP").textContent = CAT === "all" ? t("catEmpty") : t("catEmptyOne", name);
+  $("hubEmptyP").textContent = tooYoung ? t("shootAge") : CAT === "all" ? t("catEmpty") : t("catEmptyOne", name);
   list.forEach((g, i) => {
     const G = ALL_GAMES[g], locked = FUTURE_GAMES.includes(g) && ME && Array.isArray(ME.worlds) && !ME.worlds.includes("future");
     const b = el("button", "gm" + (locked ? " locked" : "")); b.type = "button"; b.style.setProperty("--gc", G.color); b.style.setProperty("--gd", G.dark); b.style.setProperty("--i", i);

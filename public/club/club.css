@@ -641,3 +641,5 @@ body.gaming{overflow:hidden}
 .lb-none{list-style:none;padding:20px;text-align:center;color:var(--muted);font-weight:600}
 .lb-mine{margin:14px 0 4px;padding:10px 14px;border-radius:14px;background:#efe9ff;color:var(--purple);font-weight:700;text-align:center}
 .lb-mine:empty{display:none}
+.cats button{position:relative}
+.cat-age{position:absolute;top:6px;inset-inline-end:8px;padding:2px 7px;border-radius:999px;background:#ff3d6e;color:#fff;font:700 .7rem var(--body);font-style:normal}

@@ -15,20 +15,23 @@ import { levelProgress } from "../public/shared/levels.js";
 const router = express.Router();
 const S = (v) => String(v);
 
-/* Jumpi Club is for ages 13 and up (the birthday from sign-up). The Jumpi team can always come in.
-   Accounts made before we asked for the birthday: the game asks once, then the Club knows. */
-export const CLUB_AGE = 13;
+/* Jumpi Club is for ages 6 and up (the birthday from sign-up), like the game. The Jumpi team can always come in.
+   Accounts made before we asked for the birthday come in too (the game asks them once).
+   The shooting games (the "Shooting" category) are for ages 13 and up: there the birthday must be known. */
+export const CLUB_AGE = 6;
+export const SHOOT_AGE = 13;
 function ageYears(bd, now = new Date()) {
   if (!bd) return NaN;
   const d = new Date(bd); let a = now.getUTCFullYear() - d.getUTCFullYear();
   if (now.getUTCMonth() < d.getUTCMonth() || (now.getUTCMonth() === d.getUTCMonth() && now.getUTCDate() < d.getUTCDate())) a--;
   return a;
 }
+// old enough for the shooting games (13+): the team, or a known birthday 13 or more years ago
+export const shootAge = (u) => u.role === "admin" || u.role === "mod" || (!!u.birthDate && ageYears(u.birthDate) >= SHOOT_AGE);
 export function clubAge(req, res, next) {
   const u = req.user;
   if (u.role === "admin" || u.role === "mod") return next();
-  if (!u.birthDate) return res.status(403).json({ code: "birthday", error: "Open the Jumpi game once: it will ask for your birthday, then you can come into Jumpi Club." });
-  if (ageYears(u.birthDate) < CLUB_AGE) return res.status(403).json({ code: "age", error: `Jumpi Club is for ages ${CLUB_AGE} and up.` });
+  if (u.birthDate && ageYears(u.birthDate) < CLUB_AGE) return res.status(403).json({ code: "age", error: `Jumpi Club is for ages ${CLUB_AGE} and up.` });
   next();
 }
 
@@ -44,7 +47,7 @@ router.get("/club/me", requireUser, clubAge, (req, res) => {
   const p = levelProgress(u.levelXp || 0);
   res.set("Cache-Control", "no-store");
   res.json({ username: u.username, coins: u.coins || 0, levelXp: u.levelXp || 0, level: p.level, into: p.into, need: p.need, pct: p.pct,
-    member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), worlds: Array.isArray(u.worlds) ? u.worlds : [], chatLock: u.parental?.chatLock === true });
+    member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), teen: shootAge(u), worlds: Array.isArray(u.worlds) ? u.worlds : [], chatLock: u.parental?.chatLock === true });
 });
 
 router.get("/club/online", requireUser, clubAge, async (req, res, next) => {
