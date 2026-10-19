@@ -53,7 +53,10 @@ pm2 restart jumpi-staging --update-env >/dev/null
 echo "$(date '+%F %T') updated to $(git log -1 --format='%h %s')" >> ~/staging-update.log
 EOF
 chmod +x ~/staging-update.sh
-( crontab -l 2>/dev/null | grep -v staging-update.sh; echo "* * * * * bash ~/staging-update.sh" ) | crontab -
+command -v crontab >/dev/null || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y cron
+sudo systemctl enable --now cron >/dev/null 2>&1 || true
+{ crontab -l 2>/dev/null | grep -v staging-update.sh || true; echo "* * * * * bash $HOME/staging-update.sh"; } | crontab -
+crontab -l | grep -q staging-update.sh && echo "auto-update: on (every minute)" || echo "!! auto-update could NOT be turned on (crontab)"
 sleep 4
 curl -s -o /dev/null -w "test copy on this server: HTTP %{http_code} (http://localhost:$PORT)\n" "http://localhost:$PORT/" || true
 echo
