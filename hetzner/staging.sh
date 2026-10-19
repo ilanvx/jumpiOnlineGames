@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Jumpi Games: a private TEST copy of the site next to the real one, on the same server.   bash ~/staging.sh
 #   - the code: the "staging" branch on GitHub (Claude pushes there freely; main stays for the real site)
-#   - its own folder (~/jumpi-staging), its own port (3100), its OWN database ("jumpi_staging"): nothing touches real players
+#   - its own folder (~/jumpi-staging) and port (3100), but the SAME database as the real site (Ilan's choice: log in with the real
+#     accounts). So what you do on the test copy (coins, clothes, rooms) really happens to that account.
 #   - no payments, no emails, no Discord bot from the test copy
 #   - every minute it checks GitHub; when the staging branch has new code it updates itself and restarts
 # Safe to run again. It never shows or prints any secret: it copies the real .env and only adds lines at the end
@@ -15,14 +16,13 @@ if [ -d "$APP/.git" ]; then git -C "$APP" fetch origin staging && git -C "$APP" 
 else git clone -b staging https://github.com/ilanvx/jumpionlinegames.git "$APP"; fi
 cd "$APP"; npm ci --omit=dev
 
-say "2/4 Its settings: the real .env + test overrides (own port and database, no payments, emails or Discord)"
+say "2/4 Its settings: the real .env + test overrides (own port; the real accounts; no payments, emails or Discord)"
 [ -f "$LIVE/.env" ] || { echo "No $LIVE/.env found: the real site has to be set up first."; exit 1; }
 cp "$LIVE/.env" "$APP/.env"; chmod 600 "$APP/.env"
 cat >> "$APP/.env" <<'EOF'
 
 # ---- test copy (added by staging.sh) ----
 PORT=3100
-MONGODB_DB=jumpi_staging
 PUBLIC_URL=https://staging.jumpigames.com
 STAGING=1
 DISCORD_LIVE=0
@@ -30,7 +30,7 @@ HYP_MASOF=
 HYP_PASSP=
 HYP_KEY=
 PAYMENTS_CODE=
-STORE_TEST=1
+STORE_TEST=
 RESEND_API_KEY=
 MS_CLIENT_SECRET=
 EOF
