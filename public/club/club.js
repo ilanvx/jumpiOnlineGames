@@ -391,7 +391,11 @@ document.querySelectorAll("#hubCats [data-cat]").forEach((b) => b.onclick = () =
 const GAME_CAT = { fruit: "arcade", shell: "arcade", flap: "arcade", rooftops: "arcade", drone: "race", dig: "puzzle", robot: "puzzle" };
 const FUTURE_GAMES = ["drone", "robot", "rooftops"];
 // just for fun (no coins): the Club's own
-const FUN = { draw: { title: "Colouring Book", titleHe: "חוברת ציור", sub: "Colour the pages or draw your own. Your pictures are saved!", subHe: "צובעים דפים או מציירים חופשי. הציורים נשמרים לכם!", color: "#ff5fa8", dark: "#b0306f", page: "/club/draw", pic: "/club/draw/pic.webp" } };
+const FUN = {
+  math: { title: "Math Challenge", titleHe: "תרגילי חשבון", sub: "Plus, minus, times and divide: how many can you get right?", subHe: "חיבור, חיסור, כפל וחילוק: כמה תצליחו?", color: "#1fb6ff", dark: "#0b5fa8", page: "/club/learn?m=math", pic: "/club/learn/math.webp" },
+  hebrew: { title: "Learn Hebrew", titleHe: "לומדים עברית", sub: "Letters, words, colours and numbers in Hebrew.", subHe: "אותיות, מילים, צבעים ומספרים בעברית.", color: "#2fd36b", dark: "#17803a", page: "/club/learn?m=he", pic: "/club/learn/he.webp" },
+  english: { title: "Learn English", titleHe: "לומדים אנגלית", sub: "ABC, words, colours and numbers in English.", subHe: "ABC, מילים, צבעים ומספרים באנגלית.", color: "#ff8a1c", dark: "#b0560a", page: "/club/learn?m=en", pic: "/club/learn/en.webp" },
+  draw: { title: "Colouring Book", titleHe: "חוברת ציור", sub: "Colour the pages or draw your own. Your pictures are saved!", subHe: "צובעים דפים או מציירים חופשי. הציורים נשמרים לכם!", color: "#ff5fa8", dark: "#b0306f", page: "/club/draw", pic: "/club/draw/pic.webp" } };
 const ALL_GAMES = { ...ARCADE, ...FUN }; Object.keys(FUN).forEach((g) => (GAME_CAT[g] = "fun"));   // they open with the Future City (routes/rewards.js FUTURE_GAMES)
 function paintCat() {
   const c = CATS[CAT] || CATS.all, name = lang === "he" ? c[1] : c[0];
