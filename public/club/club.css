@@ -5,6 +5,7 @@
 :root{--display:"HeeboDisplay","Lilita One","Arial Rounded MT Bold",system-ui,sans-serif;--body:"HeeboHe","Fredoka",system-ui,sans-serif;
   --navy:#0c2a55;--ink:#1d2147;--muted:#5d6390;--purple:#6a35f0;--deep:#2a1680;--orange2:#ff8a00;--line:#dcd6f7}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{background:#3a2ad9}
 body.cl{margin:0;min-height:100vh;min-height:100dvh;overflow-x:clip;color:var(--ink);font:500 1rem/1.5 var(--body);background:#4b2fe0;display:flex;flex-direction:column}
 body.cl::before{content:"";position:fixed;inset:0;z-index:0;background:#4b2fe0 url(/club/img/club-bg.jpg) center/cover no-repeat;pointer-events:none}
@@ -39,30 +40,16 @@ html[dir="rtl"] .cl-top-go svg{transform:scaleX(-1)}
 .cl-menu[aria-expanded="true"] span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
 .cl-nav a:focus-visible,.cl-top-go:focus-visible,.cl-menu:focus-visible,.cl-brand:focus-visible{outline:3px solid #fff;outline-offset:2px}
 
-/* ---------- the page: the banner and the card side by side ---------- */
-.cl-main{position:relative;z-index:1;flex:1;width:min(1240px,100%);margin:0 auto;padding:30px 18px 26px;display:grid;grid-template-columns:1.35fr 1fr;gap:26px;align-items:stretch}
-
-.cl-show{position:relative;min-height:560px;border-radius:32px;overflow:hidden;background:#3a1fb8;border:4px solid rgb(255 255 255 / .9);
-  box-shadow:0 10px 0 var(--deep),0 30px 60px rgb(10 8 60 / .5);isolation:isolate}
-.cl-stage{position:absolute;inset:0;z-index:0}
-.cl-stage canvas{display:block}
-.cl-show::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgb(30 12 110 / .35),rgb(30 12 110 / 0) 30%,rgb(30 12 110 / 0) 62%,rgb(20 8 80 / .7))}
-.cl-show-top{position:absolute;z-index:2;top:18px;inset-inline:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
-.cl-show-logo{width:min(260px,44%);height:auto;filter:drop-shadow(0 10px 18px rgb(10 8 60 / .5));animation:clFloat 5s ease-in-out infinite}
-@keyframes clFloat{50%{transform:translateY(-6px) rotate(-.8deg)}}
-.cl-coins{display:flex;align-items:center;gap:8px;padding:6px 16px 6px 6px;border-radius:999px;background:rgb(20 8 80 / .55);border:2px solid rgb(255 255 255 / .35);backdrop-filter:blur(6px);color:#fff;font:400 1.5rem var(--display);box-shadow:0 4px 0 rgb(10 8 60 / .35)}
-html[dir="rtl"] .cl-coins{padding:6px 6px 6px 16px}
-.cl-coins i{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3a8,#ffc93a 55%,#e08a00);box-shadow:inset 0 0 0 3px #ffe27a,0 2px 0 #a86200}
-.cl-coins b{font-weight:400;min-width:1.4em;text-align:center}
-.cl-coins.pop b{animation:clPop .35s ease}
-@keyframes clPop{40%{transform:scale(1.35);color:#ffe27a}}
-.cl-show-bottom{position:absolute;z-index:2;bottom:22px;inset-inline:24px;color:#fff;pointer-events:none}
-.cl-show-bottom h2{margin:0 0 6px;font:400 clamp(1.5rem,2.6vw,2.2rem)/1.1 var(--display);letter-spacing:.01em;text-shadow:0 3px 0 rgb(10 8 60 / .5),0 8px 20px rgb(10 8 60 / .4)}
-html[lang="he"] .cl-show-bottom h2{font-weight:800}
-.cl-show-bottom p{margin:0;max-width:520px;font-weight:500;font-size:1.02rem;color:#ece6ff;text-shadow:0 2px 8px rgb(10 8 60 / .6)}
-
+/* ---------- the page: one big window, the picture in one half and the log-in in the other ---------- */
+.cl-main{position:relative;z-index:1;flex:1;width:min(1060px,100%);margin:0 auto;padding:34px 18px 26px;display:flex;align-items:center}
+.cl-win{width:100%;display:grid;grid-template-columns:1fr 1fr;border-radius:34px;overflow:hidden;background:#fff;border:5px solid #fff;
+  box-shadow:0 12px 0 var(--navy),0 34px 70px rgb(10 8 60 / .5)}
+.cl-art{position:relative;margin:0;min-height:600px;background:#5a2ee0}
+.cl-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%;display:block}
+.cl-art::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgb(255 255 255 / .2);pointer-events:none}
 /* ---------- the card ---------- */
-.cl-card{position:relative;align-self:center;padding:32px 28px 24px;border-radius:30px;background:#fff;box-shadow:0 10px 0 var(--navy),0 28px 56px rgb(10 8 60 / .45);border:4px solid #fff}
+.cl-card{position:relative;display:flex;flex-direction:column;justify-content:center;padding:44px 40px 0;background:#fff}
+.cl-card form{margin-bottom:auto}
 .cl-card h1{margin:0 0 6px;font:400 2.3rem/1 var(--display);color:var(--purple);letter-spacing:.01em}
 html[lang="he"] .cl-card h1{font-weight:800}
 .cl-sub{margin:0 0 20px;color:var(--muted);font-weight:500}
@@ -93,7 +80,7 @@ html[lang="he"] .cl-btn{font-weight:800}
 .cl-btn:focus-visible{outline:4px solid var(--purple);outline-offset:3px}
 .cl-btn[disabled]{filter:grayscale(.3) brightness(.95);cursor:wait}
 .cl-btn.ghost{margin-top:18px;height:52px;font-size:1.2rem;color:var(--purple);background:#f1ecff;box-shadow:0 5px 0 #c9bdf5;text-shadow:none}
-.cl-new{margin:20px -28px -24px;padding:16px 24px;border-radius:0 0 26px 26px;background:#f4f0ff;text-align:center;font-weight:600;color:var(--muted);display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.cl-new{margin:26px -40px 0;padding:18px 24px;background:#f4f0ff;text-align:center;font-weight:600;color:var(--muted);display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .cl-hi p{margin:0 0 16px;color:var(--muted);font-weight:500}
 .cl-hi h1 b{color:var(--ink)}
 .cl-soon{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
@@ -110,11 +97,9 @@ html[lang="he"] .cl-btn{font-weight:800}
 .cl-toast{position:fixed;z-index:40;left:50%;bottom:28px;translate:-50% 0;padding:12px 22px;border-radius:999px;background:#fff;color:var(--purple);font-weight:700;box-shadow:0 6px 0 var(--deep),0 16px 30px rgb(10 8 60 / .4);animation:clToast .25s ease}
 @keyframes clToast{from{opacity:0;translate:-50% 12px}}
 
-@media (prefers-reduced-motion: reduce){.cl-show-logo{animation:none}}
-@media (max-width:1100px){.cl-main{grid-template-columns:1.15fr 1fr}.cl-show{min-height:520px}}
+@media (max-width:1100px){.cl-card{padding:38px 30px 0}.cl-new{margin:24px -30px 0}}
 @media (max-width:900px){
   .cl-main{grid-template-columns:1fr;max-width:560px;padding-top:18px;gap:22px}
-  .cl-show{min-height:0;aspect-ratio:4/3.6}
   .cl-card{align-self:stretch}
   .cl-nav{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:2px;padding:10px 14px 16px;background:rgb(42 22 128 / .97);box-shadow:0 16px 30px rgb(10 8 60 / .4);display:none}
   .cl-nav.open{display:flex}
@@ -126,13 +111,9 @@ html[lang="he"] .cl-btn{font-weight:800}
   .cl-brand img{width:78px}
   .cl-top-go{height:42px;padding:0 13px;font-size:1rem}
   .cl-top-go svg{display:none}
-  .cl-show{aspect-ratio:auto;height:440px;border-radius:26px}
-  .cl-show-top{top:14px;inset-inline:14px}
-  .cl-coins{font-size:1.2rem}.cl-coins i{width:28px;height:28px}
-  .cl-show-bottom{bottom:16px;inset-inline:16px}
-  .cl-show-bottom p{font-size:.92rem}
   .cl-card{padding:28px 20px 20px}.cl-new{margin:18px -20px -20px}
   .cl-soon{grid-template-columns:repeat(3,1fr)}
   .lang-sw button{padding:6px 9px}
 }
-.cl-show.flat{background:linear-gradient(180deg,#5a2ee0,#3d7dff)}
+/* (after the window's own rule, so it wins) phones and small tablets: the picture on top, the log-in under it */
+@media (max-width:900px){.cl-win{grid-template-columns:1fr}.cl-art{min-height:0;aspect-ratio:1/.9}.cl-art img{object-position:50% 0%}}

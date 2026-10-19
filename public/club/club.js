@@ -81,9 +81,3 @@ let toastT = 0;
 function toast(text) { const el = $("clToast"); el.textContent = text; el.hidden = false; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; clearTimeout(toastT); toastT = setTimeout(() => (el.hidden = true), 2200); }
 document.querySelectorAll("[data-soon]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); setMenu(false); toast(t("soon")); }));
 $("clTopGo").addEventListener("click", (e) => { e.preventDefault(); setMenu(false); $("clLogin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => $("clUser").focus({ preventScroll: true }), 350); });
-
-/* ---------- the banner (3D): loaded on its own, so the log-in works even if 3D can't run on this device ---------- */
-{ const box = $("clCoins"), pill = box.parentElement;
-  const go = () => import("/club/runner.js").then((m) => m.startRunner($("clStage"), { onCoin: (n) => { box.textContent = n; pill.classList.remove("pop"); void pill.offsetWidth; pill.classList.add("pop"); } }))
-    .catch(() => document.querySelector(".cl-show").classList.add("flat"));
-  "requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 600 }) : setTimeout(go, 50); }

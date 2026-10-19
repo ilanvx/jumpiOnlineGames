@@ -17,7 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Lilita+One&display=swap">
 <link rel="stylesheet" href="/club/club.css">
-<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
 </head>
 <body class="cl">
 
@@ -38,20 +37,12 @@
 </header>
 
 <main class="cl-main">
-  <!-- the banner: a little Jumpi running in the sky, jumping blocks and collecting Jumpi Club coins (runner.js) -->
-  <section class="cl-show" aria-label="Jumpi Club">
-    <div class="cl-stage" id="clStage" aria-hidden="true"></div>
-    <div class="cl-show-top">
-      <img class="cl-show-logo" src="/club/img/jumpi-club-logo.webp" alt="Jumpi Club" width="900" height="589">
-      <div class="cl-coins" aria-hidden="true"><i></i><b id="clCoins">0</b></div>
-    </div>
-    <div class="cl-show-bottom">
-      <h2><span data-l="en">Play. Collect coins. Make friends.</span><span data-l="he">משחקים. אוספים מטבעות. מכירים חברים.</span></h2>
-      <p data-l="en">A huge arcade, blogs, a gallery and everyone's birthdays, all with your Jumpi account.</p>
-      <p data-l="he">משחקייה ענקית, בלוגים, גלריה וימי ההולדת של כולם, הכול עם חשבון ג'אמפי אחד.</p>
-    </div>
-  </section>
-
+  <!-- one window in two halves: the picture, and the log-in -->
+  <div class="cl-win">
+  <figure class="cl-art">
+    <img src="/club/img/club-hero-800.webp" srcset="/club/img/club-hero-800.webp 800w, /club/img/club-hero.webp 1200w" sizes="(max-width: 900px) 100vw, 520px"
+      alt="Two Jumpis in a laser-blaster race on a checkered sky track above the Future City" width="1200" height="1500">
+  </figure>
   <!-- log in -->
   <section class="cl-card" id="clLogin" aria-labelledby="clLoginT">
     <h1 id="clLoginT"><span data-l="en">Log in</span><span data-l="he">התחברות</span></h1>
@@ -98,6 +89,7 @@
     </div>
     <button class="cl-btn ghost" id="clOut" type="button"><span data-l="en">Log out</span><span data-l="he">התנתקות</span></button>
   </section>
+  </div>
 </main>
 
 <footer class="cl-foot">
