@@ -67,7 +67,7 @@ function paceNote(p){const he=I18N.lang==="he";if(!p||p.factor>=1)return he?"ת�
   const m=p.resetAt?Math.max(1,Math.ceil((p.resetAt-Date.now())/60000)):60,pc=Math.round(p.factor*100);
   return he?`הרווחתם הרבה בשעה האחרונה, אז עכשיו מקבלים ${pc}% מהרגיל. בעוד ${m} דקות זה חוזר למלא.`:`You've earned a lot this hour, so you now get ${pc}% of the normal coins. Full pay is back in ${m} min.`;}
 const mgScreens=["mgStart","mgTut","mgEnd"];
-function mgShow(id){mgScreens.forEach(s=>$mg(s).hidden=s!==id);mgOverlay.classList.toggle("playing",!id);}
+var mgShow=function(id){mgScreens.forEach(s=>$mg(s).hidden=s!==id);mgOverlay.classList.toggle("playing",!id);}
 function skinHex(){return (COLORS[(me&&me.look&&me.look.color)||0]||COLORS[0])[1];}
 
 function openMinigame(id){
@@ -648,7 +648,48 @@ function mgDemo(dt,T){const c=mg2d,D=MG.demo;
 
 /* ---------- the arcade page: log in check, open the game in the address (?g=fruit), tell the Club when it's closed ---------- */
 const _close = closeMinigame;
-closeMinigame = function () { _close(); setTimeout(() => parent.postMessage({ jumpiArcade: "close" }, location.origin), 50); };
+// leaving in the middle of a round: the round ends (and is paid) and the results with the leaderboard show; leaving from a menu: back to the Club
+closeMinigame = function () { if (MG && MG.state === "play") { endRound(); return; } _close(); setTimeout(() => parent.postMessage({ jumpiArcade: "close" }, location.origin), 50); };
+
+/* ---------- the leaderboard: the 10 best single rounds (routes/club.js /club/leaders); on the results screen, and from the start screen ---------- */
+const GAME = new URLSearchParams(location.search).get("g");
+const lbText = (en, he) => (I18N.lang === "he" ? he : en);
+const SKINS = COLORS.map((c) => c[1]);
+async function paintBoard(box) {
+  box.textContent = "";
+  const h = document.createElement("h4"); h.textContent = "🏆 " + lbText("Leaderboard", "טבלת מובילים"); box.append(h);
+  const sub = document.createElement("small"); sub.textContent = lbText("The best single rounds", "הסיבובים הכי טובים (בסיבוב אחד)"); box.append(sub);
+  const ol = document.createElement("ol"); box.append(ol);
+  const r = await api("/api/club/leaders?game=" + encodeURIComponent(GAME));
+  if (!r.ok) { const li = document.createElement("li"); li.className = "lb-none"; li.textContent = I18N.T(r.data.error || "Couldn't load it."); ol.append(li); return; }
+  if (!r.data.top.length) { const li = document.createElement("li"); li.className = "lb-none"; li.textContent = lbText("No rounds yet. Be the first!", "עוד אין סיבובים. תהיו הראשונים!"); ol.append(li); }
+  r.data.top.forEach((p) => {
+    const li = document.createElement("li"); li.className = "lb-row r" + Math.min(p.rank, 4) + (p.me ? " me" : "");
+    const rk = document.createElement("span"); rk.className = "lb-rank"; rk.textContent = p.rank;
+    const av = document.createElement("span"); av.className = "lb-av"; av.style.background = SKINS[p.color] || SKINS[0];
+    const im = new Image(); im.alt = ""; im.onload = () => av.append(im); im.src = "/api/club/pic/" + encodeURIComponent(p.username);
+    const nm = document.createElement("b"); nm.className = "lb-name"; nm.textContent = "⁨" + p.username + "⁩";
+    const sc = document.createElement("span"); sc.className = "lb-score"; sc.textContent = p.score.toLocaleString("en-US");
+    li.append(rk, av, nm, sc); ol.append(li);
+  });
+  const mine = document.createElement("p"); mine.className = "lb-mine";
+  const best = r.data.mine > 0 ? r.data.mine.toLocaleString("en-US") : "";
+  mine.textContent = best ? lbText("Your best round: " + best + " · #" + r.data.rank, "השיא שלך בסיבוב אחד: " + best + " · מקום " + r.data.rank) : lbText("Play a round to get on the board!", "שחקו סיבוב כדי להיכנס לטבלה!");
+  box.append(mine);
+}
+// on the results screen, next to the score card
+{ const end = $mg("mgEnd"), box = document.createElement("div"); box.className = "arc-board"; box.id = "arcEndBoard"; end.append(box); end.classList.add("with-board"); }
+// a screen of its own, from the start screen (a button next to TUTORIAL and PLAY)
+{ const sec = document.createElement("section"); sec.className = "mgx-screen arc-board-screen"; sec.id = "mgBoard"; sec.hidden = true;
+  const box = document.createElement("div"); box.className = "arc-board"; sec.append(box);
+  const back = document.createElement("button"); back.type = "button"; back.className = "mgx-btn ghost"; back.textContent = I18N.T("BACK");
+  back.onclick = () => { MG.state = "menu"; mgShow("mgStart"); sfx.close(); }; const row = document.createElement("div"); row.className = "mgx-btns"; row.append(back); sec.append(row);
+  $mg("mgOverlay").append(sec); mgScreens.push("mgBoard");
+  const b = document.createElement("button"); b.type = "button"; b.className = "mgx-btn board"; b.textContent = "🏆 " + lbText("LEADERBOARD", "טבלת מובילים");
+  b.onclick = () => { press(b); MG.state = "board"; mgShow("mgBoard"); paintBoard(box); sfx.open(); };
+  $mg("mgTutBtn").after(b); }
+const _show = mgShow;
+mgShow = function (id) { _show(id); if (id === "mgEnd") paintBoard($mg("arcEndBoard")); };
 $mg("mgClose").onclick = () => { press($mg("mgClose")); closeMinigame(); };
 $mg("mgQuit").onclick = closeMinigame;
 $mg("mgClose").querySelector("span").textContent = I18N.T("BACK");
@@ -659,9 +700,7 @@ $mg("mgClose").querySelector("span").textContent = I18N.T("BACK");
     b.classList.toggle("off", !on); b.setAttribute("aria-label", I18N.T(on ? "Sound on" : "Sound off")); };
   b.onclick = () => { try { localStorage.setItem("jumpi-club-sound", soundOn() ? "off" : "on"); } catch (e) {} paint(); };
   paint(); $mg("mgClose").after(b); }
-{ const b = document.createElement("button"); b.type = "button"; b.className = "mgx-exit arc-lb"; b.textContent = "🏆"; b.setAttribute("aria-label", I18N.T("Leaderboard"));
-  b.onclick = () => { const g = new URLSearchParams(location.search).get("g"); parent.postMessage({ jumpiArcade: "leaders", game: g }, location.origin); };
-  document.querySelector(".arc-snd").after(b); }
+
 (async () => {
   const g = new URLSearchParams(location.search).get("g");
   const r = await api("/api/auth/me");
@@ -669,5 +708,5 @@ $mg("mgClose").querySelector("span").textContent = I18N.T("BACK");
   me = r.data.user;
   if (!MG_INFO[g]) { parent.postMessage({ jumpiArcade: "close" }, location.origin); return; }
   openMinigame(g);
-  $mg("mgClose").querySelector("span").textContent = I18N.T("BACK"); $mg("mgQuit").textContent = I18N.T("Back to the Club");
+  $mg("mgClose").querySelector("span").textContent = I18N.T("BACK"); $mg("mgQuit").textContent = I18N.lang === "he" ? "חזרה לקלאב" : "Back to the Club";
 })();

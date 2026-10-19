@@ -422,8 +422,6 @@ function paintCat() {
     if (FUN[g]) tx.append(el("i", "gm-fun", t("noCoins"))); b.append(tx);
     b.onclick = () => (locked ? toast(t("gmLocked")) : openGame(g));
     const w = el("div", "gm-w"); w.append(b);
-    // the coin games have a leaderboard (the "just for fun" ones don't)
-    if (!FUN[g]) { const lb = el("button", "gm-lb"); lb.type = "button"; lb.title = t("leaders"); lb.append(el("span", "", "🏆"), el("b", "", t("leaders"))); lb.onclick = (e) => { e.stopPropagation(); openLeaders(g); }; w.append(lb); }
     box.append(w);
   });
 }
