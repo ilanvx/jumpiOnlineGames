@@ -16,7 +16,7 @@ const router = express.Router();
 const S = (v) => String(v);
 
 /* Jumpi Club is for ages 6 and up (the birthday from sign-up), like the game. The Jumpi team can always come in.
-   Accounts made before we asked for the birthday come in too (the game asks them once).
+   Accounts made before we asked for the birthday wait outside until they give it (the game asks them once).
    The shooting games (the "Shooting" category) are for ages 13 and up: there the birthday must be known. */
 export const CLUB_AGE = 6;
 export const SHOOT_AGE = 13;
@@ -31,7 +31,8 @@ export const shootAge = (u) => u.role === "admin" || u.role === "mod" || (!!u.bi
 export function clubAge(req, res, next) {
   const u = req.user;
   if (u.role === "admin" || u.role === "mod") return next();
-  if (u.birthDate && ageYears(u.birthDate) < CLUB_AGE) return res.status(403).json({ code: "age", error: `Jumpi Club is for ages ${CLUB_AGE} and up.` });
+  if (!u.birthDate) return res.status(403).json({ code: "birthday", error: "Open the Jumpi game once: it will ask for your birthday, then you can come into Jumpi Club." });
+  if (ageYears(u.birthDate) < CLUB_AGE) return res.status(403).json({ code: "age", error: `Jumpi Club is for ages ${CLUB_AGE} and up.` });
   next();
 }
 
