@@ -2,7 +2,7 @@ import "dotenv/config";
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import express from "express";
 import { APP_DOWNLOADS_OPEN } from "./public/shared/app.js";
 import cookieParser from "cookie-parser";
@@ -30,6 +30,7 @@ import parentRoutes from "./routes/parents.js";
 import pollRoutes from "./routes/poll.js";
 import perfRoutes from "./routes/perf.js";
 import clubRoutes from "./routes/club.js";
+import { makeFresh, versioned } from "./routes/fresh.js";
 import blogRoutes from "./routes/blog.js";
 import drawingRoutes from "./routes/drawings.js";
 import memberRoutes from "./routes/member.js";
@@ -117,6 +118,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
 const PUBLIC_DIR = path.join(__dirname, "public");
+const freshPage = makeFresh(PUBLIC_DIR);   // every page: its own files with a version (?v=…), so everyone always gets the newest (routes/fresh.js)
 /* Content-Security-Policy for our pages: scripts only from this site, plus the page's own inline scripts (allowed by their
    sha256, worked out from the file itself), fonts from Google Fonts, and nothing can be framed or posted elsewhere.
    A script someone manages to sneak into a page (XSS) wouldn't run. */
@@ -134,46 +136,26 @@ function cspFor(html, req) {
     `connect-src 'self' blob:${host ? ` wss://${host} ws://${host}` : ""}`, "worker-src 'self' blob:", "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
   ].join("; ");
 }
-// a page from public/ with its CSP (read again only when the file changes)
+// a page from public/ with its CSP (read again only when the file changes), its files versioned, never kept by the browser
 const pageCache = new Map();
-function sendPage(req, res, file, status = 200) {
-  const full = path.join(PUBLIC_DIR, file);
-  const t = statSync(full).mtimeMs;
+function rawPage(file) {
+  const full = path.join(PUBLIC_DIR, file), t = statSync(full).mtimeMs;
   let c = pageCache.get(full);
-  if (!c || c.t !== t) { const html = readFileSync(full, "utf8"); c = { t, html, scripts: html }; pageCache.set(full, c); }
-  res.set("Content-Security-Policy", cspFor(c.html, req));
-  res.status(status).type("html").send(c.html);
+  if (!c || c.t !== t) { c = { t, html: readFileSync(full, "utf8") }; pageCache.set(full, c); }
+  return c.html;
+}
+function sendPage(req, res, file, status = 200) {
+  const html = freshPage(file, rawPage(file));
+  res.set("Content-Security-Policy", cspFor(html, req));
+  if (!res.get("Cache-Control")) res.set("Cache-Control", "no-cache");
+  res.status(status).type("html").send(html);
 }
 const page = (file) => (req, res, next) => { try { sendPage(req, res, file); } catch (err) { next(err); } };
 // Jumpi Club (club.jumpigames.com, the same server through Cloudflare): its home is the Club's page; /club shows it anywhere
 const CLUB_HOSTS = ["club.jumpigames.com"];
 const isClub = (req) => CLUB_HOSTS.includes(String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim().split(":")[0].toLowerCase());
-// the Club's page with a version on its own files (?v=…, the newest file time), so a browser or Cloudflare never mixes
-// a new page with an old script or style (that broke the log-in once); the import map gives its modules the same version
-let clubHtml = { at: 0, v: "", html: "" }, clubT = { t: 0, at: 0 };
-const CLUB_MODULES = ["/club/badge.js", "/club/emoji-list.js", "/club/arcade/list.js", "/shared/blogdoc.js", "/shared/levels.js"];
-function clubFilesTime() {
-  if (Date.now() - clubT.t < 5000) return clubT.at;
-  let at = 0;
-  for (const f of readdirSync(path.join(PUBLIC_DIR, "club"))) if (/\.(js|css|html)$/.test(f)) at = Math.max(at, statSync(path.join(PUBLIC_DIR, "club", f)).mtimeMs);
-  for (const f of ["shared/blogdoc.js", "shared/levels.js", "club/arcade/list.js"]) try { at = Math.max(at, statSync(path.join(PUBLIC_DIR, f)).mtimeMs); } catch {}
-  clubT = { t: Date.now(), at };
-  return at;
-}
-function clubPage(req, res, next) {
-  try {
-    const at = clubFilesTime();
-    if (at !== clubHtml.at) {
-      const v = Math.round(at).toString(36), map = JSON.stringify({ imports: Object.fromEntries(CLUB_MODULES.map((m) => [m, `${m}?v=${v}`])) });
-      const html = readFileSync(path.join(PUBLIC_DIR, "club/index.html"), "utf8")
-        .replace('href="/club/club.css"', `href="/club/club.css?v=${v}"`)
-        .replace('<script type="module" src="/club/club.js"></script>', `<script type="importmap">${map}</script>\n<script type="module" src="/club/club.js?v=${v}"></script>`);
-      clubHtml = { at, v, html };
-    }
-    res.set({ "Content-Security-Policy": cspFor(clubHtml.html, req), "Cache-Control": "no-cache" });
-    res.type("html").send(clubHtml.html);
-  } catch (err) { next(err); }
-}
+// the Club's page (its files get versions like every page: routes/fresh.js)
+function clubPage(req, res, next) { try { res.set("Cache-Control", "no-cache"); sendPage(req, res, "club/index.html"); } catch (err) { next(err); } }
 app.get("/", (req, res, next) => (isClub(req) ? clubPage(req, res, next) : page("site/index.html")(req, res, next)));
 app.get(["/club", "/club/"], clubPage);
 // the Club's arcade window: the game's own mini-games on a page of their own (tools/club/build-arcade.mjs makes it), opened in a frame
@@ -210,30 +192,14 @@ const gameGate = async (req, res, next) => {
   res.set("Cache-Control", "no-cache");   // the Android app opens this page: always check for the newest version
   sendGame(res, next);
 };
-// the game page with a version on its own scripts (/shared/*.js?v=…): phones and the app (and Cloudflare's browser cache
-// time) may keep old copies of those files for hours, which made new items "not exist" after an update. A new version
-// number on every deploy (the page's file time) makes every device fetch the new files right away.
-let gameHtml = { at: 0, html: "" };
-// the newest file time among the page and its own scripts (/shared and /world), checked at most every 5 s
-let newest = { t: 0, at: 0 };
-function gameFilesTime() {
-  if (Date.now() - newest.t < 5000) return newest.at;
-  let at = statSync(path.join(PUBLIC_DIR, "index.html")).mtimeMs;
-  for (const dir of ["shared", "world"]) {
-    try { for (const f of readdirSync(path.join(PUBLIC_DIR, dir))) if (f.endsWith(".js")) at = Math.max(at, statSync(path.join(PUBLIC_DIR, dir, f)).mtimeMs); } catch {}
-  }
-  newest = { t: Date.now(), at };
-  return at;
-}
+// the game page: its scripts (/shared, /world… and everything they import) get versions like every page (routes/fresh.js):
+// phones and the app (and Cloudflare's browser cache time) may keep old copies of files for hours, which made new items
+// "not exist" after an update. A changed file gets a new address, so every device fetches it right away.
 function sendGame(res, next) {
   try {
-    const at = gameFilesTime();
-    if (at !== gameHtml.at) {
-      const v = Math.round(at).toString(36);
-      gameHtml = { at, html: readFileSync(path.join(PUBLIC_DIR, "index.html"), "utf8").replace(/(["'])\/(shared|world)\/([\w.-]+\.js)\1/g, `$1/$2/$3?v=${v}$1`) };
-    }
-    res.set("Content-Security-Policy", cspFor(gameHtml.html, res.req));
-    res.type("html").send(gameHtml.html);
+    const html = freshPage("index.html", rawPage("index.html"));
+    res.set("Content-Security-Policy", cspFor(html, res.req));
+    res.type("html").send(html);
   } catch (err) {
     next(err);
   }
@@ -322,7 +288,8 @@ app.get(/\.glb$/i, (req, res, next) => {
     res.sendFile(file + ".gz");
   } catch (err) { next(); }
 });
-app.use(express.static(PUBLIC_DIR, { index: false, setHeaders: (res, file) => { if (/\.(js|mjs|css|html|json)$/i.test(file)) res.set("Cache-Control", "no-cache"); } }));
+// a file asked for with its version (?v=…, from routes/fresh.js) never changes at that address: keep it a year. The rest: always ask
+app.use(express.static(PUBLIC_DIR, { index: false, setHeaders: (res, file) => { if (versioned(res.req)) res.set("Cache-Control", "public, max-age=31536000, immutable"); else if (/\.(js|mjs|css|html|json)$/i.test(file)) res.set("Cache-Control", "no-cache"); } }));
 
 // anything else: the "Jumpi got lost" page for people, a short text for files and scripts
 const notFound = (req, res) => {
