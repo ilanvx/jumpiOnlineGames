@@ -3,7 +3,7 @@ import { User } from "../models/User.js";
 import { portraitFor, lookKey } from "./portraits.js";
 import { requireUser } from "./shop.js";
 import { onlinePlayers } from "../realtime/plaza.js";
-import { levelProgress } from "../public/shared/levels.js";
+import { levelProgress, TOTAL, MAX_LEVEL } from "../public/shared/levels.js";
 
 /*
   Jumpi Club (club.jumpigames.com, public/club/): what the Club page needs on top of the game's own routes
@@ -45,9 +45,9 @@ setInterval(() => { const old = Date.now() - HERE_MS; for (const [k, v] of here)
 router.get("/club/me", requireUser, clubAge, (req, res) => {
   const u = req.user;
   mark(u);
-  const p = levelProgress(u.levelXp || 0);
+  const xp = u.role === "admin" ? TOTAL[MAX_LEVEL] : u.levelXp || 0, p = levelProgress(xp);   // admins: always the top level, as in the game (realtime/plaza.js)
   res.set("Cache-Control", "no-store");
-  res.json({ username: u.username, coins: u.coins || 0, levelXp: u.levelXp || 0, level: p.level, into: p.into, need: p.need, pct: p.pct,
+  res.json({ username: u.username, coins: u.coins || 0, levelXp: xp, level: p.level, into: p.into, need: p.need, pct: p.pct,
     member: typeof u.isMember === "function" ? !!u.isMember() : false, role: u.role, look: u.publicLook(), pic: lookKey(u.publicLook()), teen: shootAge(u), worlds: Array.isArray(u.worlds) ? u.worlds : [], chatLock: u.parental?.chatLock === true });
 });
 

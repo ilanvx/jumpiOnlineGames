@@ -2,19 +2,20 @@
   Player levels 1-99. Used by the game and the server (routes/levels.js keeps the XP).
 
   XP comes from playing: mini-games, jobs, board games, the daily gift (at most LEVEL_DAY_XP a day from those),
-  and from quests (not capped). Each level needs more XP than the one before, so the top is a long way up:
-  about 250,000 XP for level 99.
+  and from quests (not capped). Each level needs more XP than the one before, and the top is meant to be really hard:
+  about 770,000 XP for level 99 (years of playing every day). Roughly: level 10 in about a week, 20 in a month,
+  30 in a few months, 50 in about a year of daily play.
 
   Every 10 levels the badge next to your name changes shape and colour, and so does your chat bubble
   (RANKS). The game shows all of them in the Levels window so players can see what's coming.
 */
 export const MAX_LEVEL = 99;
-export const LEVEL_DAY_XP = 500;
+export const LEVEL_DAY_XP = 400;
 // XP for each thing you do (quests give their own amount)
 export const LEVEL_XP = { minigame: 20, jobTask: 5, daily: 30, duel: 10, duelWin: 20, tutorial: 200 };
 
 // XP to go from level L to L + 1
-export const needFor = (L) => Math.round(40 + 12 * L + 0.6 * L * L);
+export const needFor = (L) => Math.round(100 + 25 * L + 2 * L * L);
 // TOTAL[L] = XP needed to reach level L (TOTAL[1] = 0)
 export const TOTAL = [0, 0];
 for (let L = 2; L <= MAX_LEVEL; L++) TOTAL[L] = TOTAL[L - 1] + needFor(L - 1);
