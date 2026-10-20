@@ -293,21 +293,29 @@ function botPlay() {
 const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -R * U), hitP = new THREE.Vector3();
 function tablePoint(e) { const r = canvas.getBoundingClientRect(); ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera); return ray.ray.intersectPlane(plane, hitP) ? [hitP.x / U, hitP.z / U] : null; }
 const canPlace = (x, z) => Math.abs(z) < HZ - R && x > -HX + R && x < (G.inHand === "head" ? HEAD : HX - R);
-let dragging = false, placing = false;
+/* the mouse: move to aim; press and pull back (away from where you aim) for the power; let go to shoot.
+   A finger: drag on the table to aim, then the power bar. */
+let dragging = false, placing = false, pull = null;
+const PULL_MAX = 850;   // how far back (mm on the table) is full power
 canvas.addEventListener("pointerdown", (e) => {
-  if (G.state !== "aim") return; const p = tablePoint(e); if (!p) return; canvas.setPointerCapture(e.pointerId);
+  if (G.state !== "aim" || e.button > 0) return; const p = tablePoint(e); if (!p) return; canvas.setPointerCapture(e.pointerId);
   const c = cueBall();
   if (G.inHand && Math.hypot(p[0] - c.x, p[1] - c.z) < R * 3) { placing = true; return; }
-  if (G.inHand && canPlace(p[0], p[1]) && e.pointerType !== "mouse" && false) { placeWhite(p); placing = true; return; }
+  if (e.pointerType === "mouse") { pull = { x: p[0], z: p[1], p0: power }; power = 0; paintPower(); $("snPower").classList.add("pulling"); return; }
   dragging = true; aimAt(p);
 });
 canvas.addEventListener("pointermove", (e) => {
   if (G.state !== "aim") return; const p = tablePoint(e); if (!p) return;
   if (placing) { placeWhite(p); return; }
+  if (pull) { const back = (pull.x - p[0]) * Math.cos(aim) + (pull.z - p[1]) * Math.sin(aim); power = Math.max(0, Math.min(1, back / PULL_MAX)); paintPower(); return; }
   if (dragging || e.pointerType === "mouse") aimAt(p);
 });
-const endDrag = () => { dragging = false; placing = false; };
-canvas.addEventListener("pointerup", endDrag); canvas.addEventListener("pointercancel", endDrag);
+canvas.addEventListener("pointerup", () => {
+  dragging = false; placing = false; if (!pull) return; const p0 = pull.p0; pull = null; $("snPower").classList.remove("pulling");
+  if (power > .03 && G.state === "aim") shoot(aim, power); else { power = p0; paintPower(); }
+});
+canvas.addEventListener("pointercancel", () => { dragging = false; placing = false; if (pull) { power = pull.p0; pull = null; $("snPower").classList.remove("pulling"); paintPower(); } });
+canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); if (pull) { power = pull.p0; pull = null; $("snPower").classList.remove("pulling"); paintPower(); } });   // right click: never mind
 function aimAt([x, z]) { const c = cueBall(); if (Math.hypot(x - c.x, z - c.z) < R * 1.5) return; aim = Math.atan2(z - c.z, x - c.x); paintAim(); }
 function placeWhite([x, z]) {
   const c = cueBall(), px = Math.max(-HX + R, Math.min(G.inHand === "head" ? HEAD : HX - R, x)), pz = Math.max(-HZ + R, Math.min(HZ - R, z));
@@ -351,7 +359,10 @@ function paintHud() {
     else { const mine = G.balls.filter((b) => b.on && b.k !== "cue" && groupOf(b.n) === g).map((b) => b.n).sort((a, c) => a - c); if (mine.length) mine.forEach((n) => s.append(ballDot(n))); else s.append(ballDot(8)); } });
   const oe = $("snOn"); oe.textContent = ""; const g = G.groups[G.turn], tgt = !g ? null : left(g) ? g : "eight";
   oe.append(tgt ? (tgt === "eight" ? ballDot(8) : ballDot(tgt === "solid" ? 1 : 9)) : el("i", "sn-ball mix"), document.createTextNode(tgt ? T("Pot: ", "להכניס: ") + T(...GNAME[tgt]) : T("Any ball (not the 8)", "כל כדור (לא השמינייה)")));
-  $("snInfo").textContent = G.inHand && G.state === "aim" ? T("Drag the white to move it, then aim", "גררו את הלבן כדי להזיז אותו, ואז כוונו") : G.breakShot ? T("Break!", "פתיחה!") : "";
+  const mouse = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  $("snInfo").textContent = G.inHand && G.state === "aim" ? T("Drag the white to move it, then aim", "גררו את הלבן כדי להזיז אותו, ואז כוונו")
+    : G.state === "aim" && mouse ? T("Aim with the mouse · hold the button and pull back for power · let go to shoot", "מכוונים עם העכבר · לוחצים ומושכים אחורה לכוח · משחררים ויורים")
+    : G.breakShot ? T("Break!", "פתיחה!") : "";
 }
 let msgT = 0;
 function msg(t, cls = "") { const m = $("snMsg"); m.textContent = t; m.className = "sn-msg " + cls; m.hidden = false; m.style.animation = "none"; void m.offsetWidth; m.style.animation = ""; clearTimeout(msgT); msgT = setTimeout(() => (m.hidden = true), 2400); }
@@ -361,7 +372,7 @@ function startScreen() {
   G.state = "menu"; const s = $("snStart"); s.textContent = ""; s.hidden = false;
   const c = el("div", "sn-card"); c.append(emo("jumpi_cool"), el("h2", "", T("Billiards vs Jumpi Bot", "ביליארד נגד ג׳אמפי בוט")), el("span", "sn-fun", T("Just for fun · no coins", "לכיף · בלי מטבעות")));
   const how = el("ol", "sn-how");
-  [[T("Aim with the mouse or your finger on the table.", "מכוונים עם העכבר או האצבע על השולחן.")], [T("Pull the power bar down and let go to shoot.", "מושכים את פס הכוח למטה ומשחררים כדי לירות.")],
+  [[T("Aim: move the mouse (or drag your finger) on the table.", "כיוון: מזיזים את העכבר (או גוררים עם האצבע) על השולחן.")], [T("Power: hold the mouse button and pull back, then let go. On a phone: the power bar.", "כוח: לוחצים על העכבר ומושכים אחורה, ומשחררים. בטלפון: פס הכוח.")],
     [T("The first ball you pot makes you solids (1-7) or stripes (9-15).", "הכדור הראשון שתכניסו קובע: חלקים (1-7) או פסים (9-15).")], [T("Pot all yours, then the 8 to win. The 8 too early = you lose!", "מכניסים את כל שלכם ואז את השמינייה. שמינייה מוקדם מדי = הפסד!")]]
     .forEach(([t], i) => { const li = el("li"); li.append(el("i", "", String(i + 1)), el("span", "", t)); how.append(li); });
   c.append(how);

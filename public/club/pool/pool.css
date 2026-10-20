@@ -81,3 +81,4 @@ html[dir="rtl"] .sn-p{padding:6px 6px 6px 14px}
 @media (max-width:640px){.sn-top{padding:8px 10px}.sn-top h1{font-size:1.25rem}.sn-back span{display:none}.sn-hud{gap:6px;padding:8px 6px 2px}.sn-p{width:auto;flex:1;gap:6px;padding-inline-end:10px}
   .sn-av{width:36px;height:36px}.sn-pn b{font-size:.85rem}.sn-ball{width:15px;height:15px;font-size:.5rem}.sn-mid{min-width:0}.sn-on{font-size:.82rem;padding:4px 9px}.sn-mid small{font-size:.72rem}
   .sn-pw-track{width:40px}.sn-fine button{width:46px;height:46px}.sn-card h2{font-size:1.8rem}}
+.sn-power.pulling .sn-pw-track{box-shadow:inset 0 0 0 3px #ffd23a,0 0 18px rgb(255 210 58 / .6)}
