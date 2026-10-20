@@ -405,6 +405,7 @@ const FUN = {
   math: { title: "Math Challenge", titleHe: "תרגילי חשבון", sub: "Plus, minus, times and divide: how many can you get right?", subHe: "חיבור, חיסור, כפל וחילוק: כמה תצליחו?", color: "#1fb6ff", dark: "#0b5fa8", page: "/club/learn?m=math", pic: "/club/learn/math.webp" },
   hebrew: { title: "Learn Hebrew", titleHe: "לומדים עברית", sub: "Letters, words, colours and numbers in Hebrew.", subHe: "אותיות, מילים, צבעים ומספרים בעברית.", color: "#2fd36b", dark: "#17803a", page: "/club/learn?m=he", pic: "/club/learn/he.webp" },
   english: { title: "Learn English", titleHe: "לומדים אנגלית", sub: "ABC, words, colours and numbers in English.", subHe: "ABC, מילים, צבעים ומספרים באנגלית.", color: "#ff8a1c", dark: "#b0560a", page: "/club/learn?m=en", pic: "/club/learn/en.webp" },
+  pool: { title: "Billiards", titleHe: "ביליארד", sub: "8-ball pool against Jumpi Bot: solids or stripes?", subHe: "ביליארד נגד ג׳אמפי בוט: חלקים או פסים?", color: "#1f62c0", dark: "#0f3a80", page: "/club/pool", pic: "/club/pool/pic.webp" },
   draw: { title: "Colouring Book", titleHe: "חוברת ציור", sub: "Colour the pages or draw your own. Your pictures are saved!", subHe: "צובעים דפים או מציירים חופשי. הציורים נשמרים לכם!", color: "#ff5fa8", dark: "#b0306f", page: "/club/draw", pic: "/club/draw/pic.webp" } };
 // the Club's own puzzles (coin rounds with leaderboards, the server keeps the board: routes/puzzles.js)
 const PUZZ = {

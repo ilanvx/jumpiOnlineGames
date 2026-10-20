@@ -180,6 +180,7 @@ app.get(["/club", "/club/"], clubPage);
 app.get("/club/draw", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/draw/draw.html")(req, res, next); });
 app.get("/club/learn", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/learn/learn.html")(req, res, next); });   // learning games (just for fun)
 app.get("/club/puzzle", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/puzzle/puzzle.html")(req, res, next); });   // the Club's puzzles (coin rounds: routes/puzzles.js)
+app.get("/club/pool", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/pool/pool.html")(req, res, next); });   // billiards (8-ball) against Jumpi Bot (just for fun)
 app.get("/club/arcade", (req, res, next) => { res.set("Cache-Control", "no-cache"); page("club/arcade/play.html")(req, res, next); });
 // /play on the website (a browser, not one of our apps) is a page with the site's top bar and the game in a frame in the
 // middle (site/play.html + play.js); the frame opens /play?game. Phones go straight to /play?game (play.js), and the apps
