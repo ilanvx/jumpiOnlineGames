@@ -59,7 +59,7 @@ const REASONS = [
   ["scam", "A scam, or tried to take my things", "הונאה, או ניסיון לקחת לי דברים"],
   ["other", "Something else", "משהו אחר"],
 ];
-const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], arcade: ["Arcade", "ארקייד", "/club/img/cat/games-big.png"], fun: ["Just for fun", "לכיף", "/club/img/cat/fun.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Shooting", "יריות", "/club/img/cat/battle.png"],
+const CATS = { all: ["All games", "כל המשחקים", "/club/img/nav/club.png"], arcade: ["Arcade", "ארקייד", "/club/img/cat/arcade.png"], fun: ["Just for fun", "לכיף", "/club/img/cat/fun.png"], duel: ["1v1", "1 על 1", "/club/img/cat/duel.png"], battle: ["Shooting", "יריות", "/club/img/cat/battle.png"],
   quiz: ["Quizzes", "חידונים", "/club/img/cat/quiz.png"], race: ["Races", "מרוצים", "/club/img/cat/race.png"], puzzle: ["Puzzles", "פאזלים", "/club/img/cat/puzzle.png"] };
 // the Jumpis' body colours (the same list as the game's COLORS, index.html)
 const SKIN = ["#ff8a1c", "#1fb6ff", "#2fd36b", "#ff5fb4", "#9b5cff", "#ffd23a", "#ff4545", "#f2f6ff", "#5b3420", "#c27a3a", "#f6c4a0", "#8a5a3c", "#2a2f72", "#c8102e", "#39ff14", "#f2c230", "#e8a39a", "#f4f0ff", "#ff4a1c", "#9ff5dd", "#5a22b0", "#1fb6ff"];
