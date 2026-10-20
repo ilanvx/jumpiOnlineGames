@@ -55,7 +55,7 @@ img{-webkit-user-drag:none;user-select:none}
 .pz-score{display:flex;flex-direction:column;margin-bottom:10px}
 .pz-score small{color:var(--muted);font-weight:700}
 .pz-score b{font:400 3rem/1 var(--display);color:var(--ink)}
-.pz-coins{display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:6px 18px 6px 8px;border-radius:999px;background:#fff6d6;box-shadow:inset 0 0 0 2px #ffd23a}
+.pz-coins{direction:ltr;display:inline-flex;align-items:center;gap:8px;margin-bottom:18px;padding:6px 18px 6px 8px;border-radius:999px;background:#fff6d6;box-shadow:inset 0 0 0 2px #ffd23a}
 .pz-coins img{width:36px;height:36px}
 .pz-coins b{font:400 1.6rem var(--display);color:#b07800}
 .pz-result .pz-btns,.pz-side .pz-btns{justify-content:center}
