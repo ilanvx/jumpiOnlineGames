@@ -406,7 +406,12 @@ const FUN = {
   hebrew: { title: "Learn Hebrew", titleHe: "לומדים עברית", sub: "Letters, words, colours and numbers in Hebrew.", subHe: "אותיות, מילים, צבעים ומספרים בעברית.", color: "#2fd36b", dark: "#17803a", page: "/club/learn?m=he", pic: "/club/learn/he.webp" },
   english: { title: "Learn English", titleHe: "לומדים אנגלית", sub: "ABC, words, colours and numbers in English.", subHe: "ABC, מילים, צבעים ומספרים באנגלית.", color: "#ff8a1c", dark: "#b0560a", page: "/club/learn?m=en", pic: "/club/learn/en.webp" },
   draw: { title: "Colouring Book", titleHe: "חוברת ציור", sub: "Colour the pages or draw your own. Your pictures are saved!", subHe: "צובעים דפים או מציירים חופשי. הציורים נשמרים לכם!", color: "#ff5fa8", dark: "#b0306f", page: "/club/draw", pic: "/club/draw/pic.webp" } };
-const ALL_GAMES = { ...ARCADE, ...FUN }; Object.keys(FUN).forEach((g) => (GAME_CAT[g] = "fun"));   // they open with the Future City (routes/rewards.js FUTURE_GAMES)
+// the Club's own puzzles (coin rounds with leaderboards, the server keeps the board: routes/puzzles.js)
+const PUZZ = {
+  memory: { title: "Memory Match", titleHe: "משחק הזיכרון", sub: "Flip the cards and find all the pairs!", subHe: "הופכים קלפים ומוצאים את כל הזוגות!", color: "#ff5fa8", dark: "#b0306f", page: "/club/puzzle?g=memory", pic: "/club/puzzle/memory.webp" },
+  match3: { title: "Pet Match", titleHe: "שלוש בשורה", sub: "Swap the pets and make rows of three!", subHe: "מחליפים חיות ויוצרים שורות של שלוש!", color: "#1fb6ff", dark: "#0b5fa8", page: "/club/puzzle?g=match3", pic: "/club/puzzle/match3.webp" } };
+Object.keys(PUZZ).forEach((g) => (GAME_CAT[g] = "puzzle"));
+const ALL_GAMES = { ...ARCADE, ...PUZZ, ...FUN }; Object.keys(FUN).forEach((g) => (GAME_CAT[g] = "fun"));   // they open with the Future City (routes/rewards.js FUTURE_GAMES)
 function paintCat() {
   const c = CATS[CAT] || CATS.all, name = lang === "he" ? c[1] : c[0];
   $("hubCatT").textContent = name; $("hubCatIc").src = c[2];
@@ -429,7 +434,7 @@ function paintCat() {
 // playing: the arcade page full screen in a frame; it tells us when it's closed and when my coins change
 function openGame(g) {
   const f = $("arcFrame"), ifr = $("arcIf");
-  ifr.src = FUN[g] ? FUN[g].page : `/club/arcade?g=${encodeURIComponent(g)}${FUTURE_GAMES.includes(g) ? "&w=future" : ""}`;
+  ifr.src = FUN[g] ? FUN[g].page : PUZZ[g] ? PUZZ[g].page : `/club/arcade?g=${encodeURIComponent(g)}${FUTURE_GAMES.includes(g) ? "&w=future" : ""}`;
   f.hidden = false; document.body.classList.add("gaming"); setTimeout(() => ifr.focus(), 300);
 }
 function closeGame() { const f = $("arcFrame"); if (f.hidden) return; f.hidden = true; $("arcIf").src = "about:blank"; document.body.classList.remove("gaming"); if (ME) refresh(); }

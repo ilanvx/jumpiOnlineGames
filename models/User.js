@@ -246,6 +246,6 @@ userSchema.methods.isBanned = function () {
 
 // all players live in the "jumpi3D" collection
 // the Club's leaderboards (routes/club.js /club/leaders): each coin game's best rounds
-for (const g of ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops"]) userSchema.index({ ["gameBest." + g]: -1 }, { sparse: true });
+for (const g of ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops", "memory", "match3"]) userSchema.index({ ["gameBest." + g]: -1 }, { sparse: true });
 
 export const User = mongoose.model("User", userSchema, "jumpi3D");

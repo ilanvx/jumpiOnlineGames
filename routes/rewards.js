@@ -14,6 +14,7 @@ import { PACE, hourEarned, paceCoins, paceView } from "../public/shared/earn.js"
 import { giftFor, DAILY_COINS, nextMemberDay, restoreCost, RESTORE_DAYS } from "../public/shared/daily.js";
 import { notifyMember } from "../realtime/plaza.js";
 import { UNLOCK_COST, START_GIFT } from "../public/shared/future-layout.js";
+import { MEM, M3, memoryRound, memoryFlip, memoryScore, match3Round, match3Swap, coinScore } from "./puzzles.js";
 
 /*
   Ways to earn coins:
@@ -149,7 +150,7 @@ router.post("/rewards/daily/claim", requireJson, requireUser, async (req, res, n
 // no daily limit: within an hour the pay slows down (public/shared/earn.js)
 const ROUND_CAP = 40; // most coins one round can give
 const ROUND_SECS = 30; // fruit and shell rounds
-const GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops"];
+const GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops", "memory", "match3"];   // the last two: Jumpi Club puzzles (routes/puzzles.js)
 const FUTURE_GAMES = new Set(["drone", "robot", "rooftops"]);   // the last three are in the Future City
 const rnd = () => crypto.randomInt(1_000_000) / 1_000_000;
 
@@ -347,6 +348,8 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
   const id = crypto.randomUUID();
   const round = { id, userId, game, start: now, done: false };
   if (game === "dig") Object.assign(round, { board: makeDigBoard(), dug: new Set(), shovels: DIG.shovels, score: 0 });
+  else if (game === "memory") Object.assign(round, memoryRound());
+  else if (game === "match3") Object.assign(round, match3Round());
   else round.items = game === "fruit" ? fruitScript() : game === "flap" ? flapScript() : game === "drone" ? droneScript() : game === "robot" ? robotScript() : game === "rooftops" ? hopScript() : shellScript();
   sessions.set(id, round);
   activeByUser.set(userId, id);
@@ -358,6 +361,8 @@ router.post("/minigame/start", requireJson, requireUser, (req, res) => {
     roundCap: ROUND_CAP,
     best: bestOf(req.user, game),
     ...(game === "dig" ? { cols: DIG.cols, rows: DIG.rows, shovels: DIG.shovels }
+      : game === "memory" ? { cols: MEM.cols, rows: MEM.rows, secs: MEM.secs }
+      : game === "match3" ? { cols: M3.cols, rows: M3.rows, kinds: M3.kinds, moves: M3.moves, board: round.board }
       : game === "flap" ? { flap: { first: FLAP.first, gap: FLAP.gap, speed: FLAP.speed, jumpiX: FLAP.jumpiX, half: FLAP.half }, items: round.items }
       : game === "rooftops" ? { hop: { ...HOP }, items: round.items }
       : game === "drone" ? { secs: ROUND_SECS, fall: DRONE.fall, items: round.items.map(({ i, t, lane, k, v }) => ({ i, t, lane, k, v })) }
@@ -402,6 +407,24 @@ router.post("/minigame/dig", requireJson, requireUser, (req, res) => {
   });
 });
 
+// the Club's puzzles: one card / one swap at a time, the server keeps the board (routes/puzzles.js)
+router.post("/minigame/flip", requireJson, requireUser, (req, res) => {
+  const round = ownRound(req, res);
+  if (!round) return;
+  if (round.game !== "memory") return res.status(400).json({ error: "Wrong game." });
+  const r = memoryFlip(round, req.body.cell);
+  if (r.error) return res.status(r.status).json({ error: r.error });
+  res.json(r);
+});
+router.post("/minigame/swap", requireJson, requireUser, (req, res) => {
+  const round = ownRound(req, res);
+  if (!round) return;
+  if (round.game !== "match3") return res.status(400).json({ error: "Wrong game." });
+  const r = match3Swap(round, req.body.a, req.body.b);
+  if (r.error) return res.status(r.status).json({ error: r.error, noMatch: !!r.noMatch });
+  res.json(r);
+});
+
 // the score of a scripted round, worked out from the item ids the page says it caught
 function scriptedScore(round, caught) {
   const elapsed = Math.min(ROUND_SECS, (Date.now() - round.start) / 1000) + 1; // 1 s for the network
@@ -426,7 +449,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
     round.done = true; // before any await: a second finish for the same round gets nothing
     sessions.delete(round.id);
     if (activeByUser.get(round.userId) === round.id) activeByUser.delete(round.userId);
-    const score = round.game === "dig" ? round.score : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : round.game === "rooftops" ? hopScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
+    const score = round.game === "dig" || round.game === "match3" ? round.score : round.game === "memory" ? memoryScore(round) : round.game === "flap" ? flapScore(round, req.body.passed, req.body.caught) : round.game === "rooftops" ? hopScore(round, req.body.passed, req.body.caught) : scriptedScore(round, req.body.caught);
 
     // add the coins at this hour's pace (retry if two rounds finish together)
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -435,7 +458,7 @@ router.post("/minigame/finish", requireJson, requireUser, async (req, res, next)
       const today = dayKey(), now = Date.now();
       const earnedToday = todayEarned(user);
       const hourOld = hourEarned(user.gamesHour, now), hourAt = hourOld ? user.gamesHour.at : new Date(now);
-      const coins = paceCoins("games", hourOld, Math.max(0, Math.min(ROUND_CAP, score)), user.isMember());
+      const coins = paceCoins("games", hourOld, Math.max(0, Math.min(ROUND_CAP, coinScore(round.game, score))), user.isMember());
       const oldBest = bestOf(user, round.game);
       const updated = await User.findOneAndUpdate(
         { _id: user._id, gamesDay: sameAs(user.gamesDay, ""), gamesEarned: sameAs(user.gamesEarned, 0) },

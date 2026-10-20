@@ -96,7 +96,7 @@ router.get("/club/pic/:username", requireUser, clubAge, async (req, res, next) =
 });
 
 /* ---------- leaderboards: for each coin game, the 10 best single rounds (each player's best round: gameBest) ---------- */
-const BOARD_GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops"];   // routes/rewards.js GAMES (the "just for fun" games have none)
+const BOARD_GAMES = ["fruit", "shell", "dig", "flap", "drone", "robot", "rooftops", "memory", "match3"];   // routes/rewards.js GAMES (the "just for fun" games have none)
 const boards = new Map();   // game -> { at, top }
 async function topOf(game) {
   const c = boards.get(game);
