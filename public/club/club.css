@@ -590,6 +590,9 @@ img.emo{display:inline-block;width:2.1em;height:2.1em;vertical-align:-.7em;margi
 .gm:active{transform:translateY(3px)}
 .gm-pic{position:relative;display:block;aspect-ratio:3/2;background:var(--gc)}
 .gm-pic img{display:block;width:100%;height:100%;object-fit:cover}
+.gm-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s;pointer-events:none}
+.gm-pic.vid .gm-vid{opacity:1}
+.gm-pic img{transition:opacity .25s}
 .gm-play{position:absolute;inset-inline-end:12px;bottom:-22px;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:linear-gradient(180deg,#8ff0b0,#2fd36b 60%);color:#fff;font-size:1.3rem;
   box-shadow:0 5px 0 #17803d,0 8px 16px rgb(0 0 0 / .25);border:4px solid #fff;transition:transform .18s}
 html[dir="rtl"] .gm-play{transform:scaleX(-1)}

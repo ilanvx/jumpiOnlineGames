@@ -424,12 +424,31 @@ function paintCat() {
     const b = el("button", "gm" + (locked ? " locked" : "")); b.type = "button"; b.style.setProperty("--gc", G.color); b.style.setProperty("--gd", G.dark); b.style.setProperty("--i", i);
     const pic = el("span", "gm-pic"); const im = el("img"); im.src = G.pic || `/club/arcade/pics/${g}.webp`; im.alt = ""; im.loading = "lazy"; pic.append(im);
     pic.append(el("span", "gm-play", locked ? "🔒" : "▶")); b.append(pic);
+    if (!locked) preview(b, pic, g);
     const tx = el("span", "gm-tx"); tx.append(el("b", "", lang === "he" ? G.titleHe : G.title), el("small", "", locked ? t("gmLocked") : lang === "he" ? G.subHe : G.sub));
     if (FUN[g]) tx.append(el("i", "gm-fun", t("noCoins"))); b.append(tx);
     b.onclick = () => (locked ? toast(t("gmLocked")) : openGame(g));
     const w = el("div", "gm-w"); w.append(b);
     box.append(w);
   });
+}
+// the mouse over a game: a few seconds of it being played (public/club/vid, recorded from the real games); nothing is downloaded before that
+const canHover = matchMedia("(hover: hover) and (pointer: fine)").matches;
+function preview(card, pic, g) {
+  if (!canHover) return;
+  let v = null, on = false;
+  const play = () => {
+    on = true;
+    if (!v) { v = document.createElement("video"); v.className = "gm-vid"; v.muted = true; v.loop = true; v.playsInline = true; v.preload = "auto"; v.disablePictureInPicture = true; v.setAttribute("aria-hidden", "true");
+      const base = `/club/vid/${g}${lang === "he" ? ".he" : ""}`;
+      for (const [ext, type] of [["webm", "video/webm"], ["mp4", "video/mp4"]]) { const s = document.createElement("source"); s.src = `${base}.${ext}`; s.type = type; v.append(s); }
+      v.onplaying = () => on && pic.classList.add("vid"); pic.prepend(v); }
+    const r = v.play(); if (r && r.catch) r.catch(() => {});
+  };
+  const stop = () => { on = false; pic.classList.remove("vid"); if (v) { v.pause(); setTimeout(() => { if (!on && v) v.currentTime = 0; }, 250); } };
+  card.addEventListener("pointerenter", (e) => e.pointerType === "mouse" && play());
+  card.addEventListener("pointerleave", stop);
+  card.addEventListener("focus", play); card.addEventListener("blur", stop);
 }
 // playing: the arcade page full screen in a frame; it tells us when it's closed and when my coins change
 function openGame(g) {
