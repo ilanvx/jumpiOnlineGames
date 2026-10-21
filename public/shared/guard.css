@@ -1,0 +1,5 @@
+/* every page (site, Club, game; added by routes/fresh.js): no selecting text and no dragging pictures away.
+   Typing stays normal: inputs, text boxes and the blog editor can still be selected. ".sel-ok" lets a part be selected. */
+html{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable]:not([contenteditable="false"]),[contenteditable]:not([contenteditable="false"]) *,.sel-ok,.sel-ok *{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img,svg,video,canvas,a{-webkit-user-drag:none}

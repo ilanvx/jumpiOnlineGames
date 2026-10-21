@@ -36,6 +36,8 @@ export function makeFresh(PUBLIC_DIR) {
   const ASSET = /\b(src|href|poster)=(["'])(\/(?!\/)[^"'?#\s]+\.(?:m?js|css|png|webp|jpe?g|gif|svg|ico|mp4|webm|json|woff2?))\2/gi;
   const cache = new Map();   // page file -> { key, html }
   return function freshPage(file, html) {
+    // every page: no text selecting and no dragging pictures (public/shared/guard.css + guard.js)
+    if (!html.includes("/shared/guard.js")) html = html.replace(/<\/head>/i, '<link rel="stylesheet" href="/shared/guard.css"><script src="/shared/guard.js"></script></head>');
     const hit = cache.get(file); if (hit && hit.src === html && Date.now() - hit.at < 2000) return hit.html;   // (busy pages: work it out at most every 2 s)
     // the scripts the page starts from (their src, and what its inline modules import)
     const entries = [];
