@@ -92,6 +92,7 @@ function setLang(l) {
   lang = l === "he" ? "he" : "en";
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  try { setPpl(!pplShut(), false); } catch (e) {}
   btns.forEach((b) => b.setAttribute("aria-pressed", b.dataset.set === lang));
   $("clEye").setAttribute("aria-label", $("clEye").getAttribute("aria-pressed") === "true" ? t("hide") : t("show"));
   try { localStorage.setItem("jumpi-lang", lang); } catch (e) {}
@@ -270,6 +271,7 @@ async function respond(username, accept) {
 function paintNotes() {
   const n = NOTES.requests.length + NOTES.chats.length + (NOTES.blog ? 1 : 0), dot = $("clBellN");
   dot.hidden = !n; dot.textContent = n > 9 ? "9+" : String(n);
+  paintPplTog();
   const box = $("clNotes"); box.textContent = "";
   if (!n) { box.append(el("p", "note-none", t("noNotes"))); return; }
   NOTES.requests.forEach((q) => {
@@ -354,6 +356,7 @@ async function paintBlocked() {
 /* ---------- the chat with a friend (JumpiChat: the same messages as on the in-game phone) ---------- */
 function openChat(username, look) {
   CHAT = { username, look, last: "" };
+  if (pplShut()) setPpl(true);
   $("hubList").hidden = true; $("hubChat").hidden = false; document.body.classList.add("chatting");
   const av = face(look, 40, username, (ONLINE.find((p) => p.username === username) || {}).pic); av.id = "chatAv"; $("chatAv").replaceWith(av);
   $("chatName").textContent = username; $("chatWhere").textContent = "";
@@ -361,6 +364,19 @@ function openChat(username, look) {
   if (matchMedia("(max-width: 900px)").matches) $("hubChat").scrollIntoView({ behavior: "smooth", block: "start" });
   loadChat(); clearInterval(chatT); chatT = setInterval(() => { if (!document.hidden) loadChat(); }, 3500);
 }
+/* closing / opening the people + chat side (remembered on this computer) */
+const pplShut = () => document.body.classList.contains("ppl-shut");
+function setPpl(open, save = true) {
+  document.body.classList.toggle("ppl-shut", !open);
+  const b = $("pplTog"); b.setAttribute("aria-expanded", String(open));
+  b.title = lang === "he" ? (open ? "סגירת המחוברים והצ'אט" : "פתיחת המחוברים והצ'אט") : (open ? "Hide online now and chat" : "Show online now and chat");
+  if (save) try { localStorage.setItem("jumpi-club-ppl", open ? "open" : "shut"); } catch (e) {}
+  paintPplTog();
+}
+// while it is closed, the tab shows how many friends wrote to me
+function paintPplTog() { const n = pplShut() ? (NOTES.chats || []).length : 0, e = $("pplTogN"); e.hidden = !n; e.textContent = n > 9 ? "9+" : String(n); }
+$("pplTog").onclick = () => setPpl(pplShut());
+{ let shut = false; try { shut = localStorage.getItem("jumpi-club-ppl") === "shut"; } catch (e) {} setPpl(!shut, false); }
 function closeChat() { CHAT = null; clearInterval(chatT); $("hubChat").hidden = true; $("hubList").hidden = false; document.body.classList.remove("chatting"); }
 $("chatBack").onclick = () => { closeChat(); refresh(); };
 $("chatMore").onclick = (e) => { e.stopPropagation(); if (CHAT) openPplMenu($("chatMore"), CHAT.username, (ONLINE.find((p) => p.username === CHAT.username) || {}).role, "chat"); };
