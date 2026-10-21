@@ -673,3 +673,12 @@ body.gaming{overflow:hidden}
 .lb-mine:empty{display:none}
 .cats button{position:relative}
 .cat-age{position:absolute;top:6px;inset-inline-end:8px;padding:2px 7px;border-radius:999px;background:#ff3d6e;color:#fff;font:700 .7rem var(--body);font-style:normal}
+
+/* the accessibility menu (/shared/a11y.js, the same one as the website): its round button sits at the bottom of the
+   games, away from the chat's send button and the categories; it steps aside while a game is open or a phone is chatting */
+body.in .jacc-root{right:auto;inset-inline-end:calc(270px + 18px)}
+html[dir="rtl"] body.in .jacc-panel{right:auto;left:0}
+@media (max-width:1180px){body.in .jacc-root{inset-inline-end:18px}}
+@media (max-width:480px){body.in .jacc-root{inset-inline-end:12px}}
+body.gaming .jacc-root,body.in.chatting .jacc-root{display:none}
+@media (min-width:901px){body.in.chatting .jacc-root{display:block}}
