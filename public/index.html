@@ -4913,6 +4913,8 @@ import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
 import {OUTFITS} from "/shared/outfits.js";
 // the admin panel's Item studio shows items here, in a frame (/play?game&itemlab: public/world/item-lab.js)
 const ITEM_LAB=new URLSearchParams(location.search).has("itemlab");
+// and the Item designer: a small Blender for items (/play?game&itemdesign: public/world/item-design.js)
+const ITEM_DESIGN=new URLSearchParams(location.search).has("itemdesign");
 import {EVENTS,isEvent} from "/shared/events.js";
 import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
 import {QUICK_CHAT} from "/shared/parental.js";
@@ -4938,6 +4940,7 @@ import {SHIRT_PRINTS,SLEEVE_PRINTS,PANTS_PRINTS,shirt3D,pants3D} from "/world/we
 import {HAIR_STYLES} from "/world/wear-hair.js";
 import {HAT_STYLES,NECK_STYLES,GLASSES_STYLES} from "/world/wear-heads.js";
 import {buildBeard} from "/world/wear-beard.js";
+import {buildRecipe} from "/world/recipe.js";
 import * as WF from "/world/wear-future.js";
 // the Future City collection draws through the same registries (public/world/wear-future.js)
 Object.assign(SHIRT_PRINTS,WF.SHIRT_PRINTS);Object.assign(SLEEVE_PRINTS,WF.SLEEVE_PRINTS);Object.assign(PANTS_PRINTS,WF.PANTS_PRINTS);
@@ -5248,6 +5251,7 @@ new GLTFLoader().load("/blobby.glb",g=>{
   P.lookL.traverse(o=>{if(o.isMesh&&o.material.name==="Iris")P.irisL=o.material;});
   P.lookR.traverse(o=>{if(o.isMesh&&o.material.name==="Iris"){o.material=o.material.clone();P.irisR=o.material;}});
   applyColor();applyEyeColor();buildOutfit();applyOutfit();setTimeout(renderThumbs,50);
+  if(ITEM_DESIGN)import("/world/item-design.js").then(m=>m.startDesigner({THREE,P,OUTFIT_PARTS,makeCharacter})).catch(e=>console.error("[designer]",e));
   if(ITEM_LAB)import("/world/item-lab.js").then(m=>m.startLab({THREE,P,OUTFIT_PARTS,OUTFIT_OBJ,outfitGet,outfitDrop,fixApply,makeCharacter,Loader})).catch(e=>console.error("[lab]",e));
   if(!reduce) schedule(1800);
   // wait until the character has been drawn, then open the curtain
@@ -5336,7 +5340,7 @@ function perfMeterPaint(){
   PERF.el.innerHTML=`<b class="${PERF.fps>=50?"ok":PERF.fps>=30?"mid":"bad"}">${Math.round(PERF.fps)}</b> fps · slowest ${Math.round(PERF.worst)} ms<br>${i.render.calls} draws · ${(i.render.triangles/1000).toFixed(0)}k triangles · ${i.programs?i.programs.length:0} shaders<br>${PERF.long} stutters · ${GFX_TIER} · ${GFX.saver?"saver":GFX.mode} · x${GFX.pr.toFixed(2)}<br>merged ${BATCH.parts} → ${BATCH.merged} (${BATCH.state||"wait"}${BATCH.undone?", "+BATCH.undone+" undone":""})`;}
 function perfMeter(on){PERF.meter=on;try{localStorage.setItem("jumpi-meter",on?"1":"0");}catch(e){}perfMeterPaint();}
 renderer.setAnimationLoop(()=>{
-  if(document.hidden||ITEM_LAB)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
+  if(document.hidden||ITEM_LAB||ITEM_DESIGN)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
   perfFrame();
   if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
@@ -6509,6 +6513,9 @@ function buildOutfit(){
   OUTFIT_MAKE.beard=i=>{const g=buildBeard(OUTFIT_PARTS.beard[i],faceSpots(),WEAR_H());g.visible=false;P.head.add(g);return g;};
   OUTFIT_MAKE.neck=i=>{const g=buildNeck(OUTFIT_PARTS.neck[i]);g.visible=false;P.body.add(g);return g;};
   P.root.traverse(o=>{o.userData.base=true;});
+  // items designed in the admin panel's Item designer: a recipe of shapes (public/world/recipe.js), hung on the head or the body
+  for(const k of ["hair","hat","glasses","neck","beard"]){const make=OUTFIT_MAKE[k];
+    OUTFIT_MAKE[k]=i=>{const it=OUTFIT_PARTS[k][i];if(!it||!it.recipe)return make(i);const g=buildRecipe(it.recipe,it);g.visible=false;(it.recipe.anchor==="body"?P.body:P.head).add(g);return g;};}
   OUTFIT_READY=true;   // the character itself; anything added later (phone, food in hand…) is left out of clean copies (cleanChar)
 }
 function applyOutfit(){if(!inGame||GS_STAGE)setTimeout(()=>{if(!inGame||GS_STAGE)resize();},0);

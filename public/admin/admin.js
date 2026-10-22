@@ -844,6 +844,14 @@
     },
   };
   VIEWS.studio = studio;   // (the Item studio, below)
+  // the Item designer: a small Blender for items, in a frame (public/world/item-design.js); full screen, or its own tab
+  VIEWS.designer = async (arg) => {
+    page("Item designer", h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => fr.requestFullscreen && fr.requestFullscreen().catch(() => toast("Full screen isn't allowed: open it in its own tab.", true)) }, "Full screen"),
+      h("a", { class: "b b-sm", href: "/play?game&itemdesign", target: "_blank", rel: "noopener" }, "Open in its own tab"));
+    const open = /^[a-z]+:\d+$/.test(arg || "") ? "&open=" + arg : "";
+    const fr = h("iframe", { class: "dz-frame", src: "/play?game&itemdesign" + open, title: "Item designer", allow: "fullscreen" });
+    main.append(fr);
+  };
 
 
   /* ---------- answer a Contact message: the real email, with the answer typed right inside the letter ---------- */
@@ -1061,7 +1069,7 @@
     list.replaceChildren(...(rows.length ? rows.map((x) => h("li", null, h("button", { type: "button", class: "st-row" + (x.i === ST.sel && !ST.draft ? " on" : ""), onclick: () => pick(x.i) },
       h("span", { class: "st-num" }, "#" + x.i),
       h("span", { class: "st-name" }, x.name, x.he ? h("small", null, x.he) : null),
-      h("span", { class: "st-tags" }, x.custom ? h("i", { class: "st-new" }, "new") : null, x.fix ? h("i", { class: "st-moved" }, "moved") : null, SALE_TAG[x.sale] ? h("i", null, SALE_TAG[x.sale]) : null)))) : [h("li", { class: "empty" }, "Nothing here.")]));
+      h("span", { class: "st-tags" }, x.design ? h("i", { class: "st-new" }, "designed") : x.custom ? h("i", { class: "st-new" }, "new") : null, x.fix ? h("i", { class: "st-moved" }, "moved") : null, SALE_TAG[x.sale] ? h("i", null, SALE_TAG[x.sale]) : null)))) : [h("li", { class: "empty" }, "Nothing here.")]));
   }
   function pick(i) {
     if (ST.sel === i && !ST.draft) return;
@@ -1081,6 +1089,7 @@
     else kids.push(h("p", { class: "st-note" }, "Shirts and pants are painted onto the body, so they can't be moved."));
     if (ST.draft) kids.push(detailsBox(ST.draft, true));
     else if (x.custom) kids.push(detailsBox({ name: x.name, he: x.he, price: x.price, rarity: x.rarity || "rare", sale: x.sale || "shop", colors: { ...x.colors } }, false));
+    if (!ST.draft && x.design) kids.push(h("div", { class: "st-box" }, h("h3", null, "Its shape"), h("p", { class: "small muted" }, "Made in the Item designer."), h("a", { class: "b b-violet", href: `#designer/${ST.slot}:${x.i}` }, "Edit the shape in the designer")));
     else kids.push(h("div", { class: "st-box" }, h("h3", null, "A new item from this one"), h("p", { class: "small muted" }, "Same shape, your own colours, name and price."),
       h("button", { type: "button", class: "b b-violet", onclick: () => startDraft(x) }, "Make a new item from this")));
     side.replaceChildren(...kids);

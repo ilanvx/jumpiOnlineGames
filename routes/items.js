@@ -3,6 +3,7 @@ import { ItemDef } from "../models/ItemDef.js";
 import { OUTFITS, OUTFIT_SLOTS, CUSTOM_FROM, CUSTOM_MAX, applyCustom } from "../public/shared/outfits.js";
 import { syncCustomCatalog } from "../catalog.js";
 import { AdminLog, logQuietly } from "../models/Logs.js";
+import { cleanRecipe } from "../public/shared/recipe-spec.js";
 
 /*
   The Item studio (admin panel → Item studio): fix where any item sits on the character, and make new items from the
@@ -90,7 +91,7 @@ itemAdmin.get("/", (req, res) => {
     slots[slot] = OUTFITS[slot].map((o, i) => (!o || o.placeholder ? null : {
       i, id: o.id, name: o.name, he: o.he || "", price: o.price || 0, rarity: o.rarity || "", custom: !!o.custom, base: o.base || "",
       sale: o.custom ? o.sale || "shop" : o.gift ? "prize" : o.costume ? "store" : o.member ? "members" : o.world === "future" ? "future" : o.event ? "event" : "shop",
-      fix: o.fix || null, colors: colorsOf(o), starter: !!o.starter,
+      fix: o.fix || null, colors: colorsOf(o), starter: !!o.starter, design: !!o.recipe,
     })).filter(Boolean);
   res.json({ from: CUSTOM_FROM, max: CUSTOM_MAX, rarities: RARITY, slots });
 });
@@ -144,6 +145,39 @@ itemAdmin.post("/item", async (req, res, next) => {
     row.by = req.admin.username; row.markModified("item"); await row.save();
     await loadCustom();
     log(req, "item-edit", `${key} "${det.name}", ${det.price} coins, ${det.sale}`);
+    res.json({ ok: true, i });
+  } catch (err) { next(err); }
+});
+
+// the Item designer (public/world/item-design.js): save a design as a new item, or save over a design made before.
+// A new design starts as "not sold": its price and shop are set in the Item studio. The item's colours c1..c3 are the
+// design's colour slots, so "a new item from this" in the Item studio makes colour versions.
+const DESIGN_SLOTS = ["hair", "hat", "glasses", "neck", "beard"];
+itemAdmin.post("/design", async (req, res, next) => {
+  try {
+    const { slot } = req.body;
+    if (!DESIGN_SLOTS.includes(slot)) return res.status(400).json({ error: "Pick where it is worn." });
+    let recipe;
+    try { recipe = cleanRecipe(req.body.recipe); } catch (e) { return res.status(400).json({ error: e.message }); }
+    const d = req.body.data || {}, name = txt(d.name, 40), he = txt(d.he, 40);
+    if (!name) return res.status(400).json({ error: "Give it an English name." });
+    const look = { id: "recipe", recipe, ...recipe.colors, name, ...(he ? { he } : {}), ...(slot === "hat" && d.hideHair ? { hideHair: true } : {}) };
+    if (req.body.i == null) {
+      const used = await ItemDef.find({ slot, index: { $gte: CUSTOM_FROM } }, { index: 1 }).lean();
+      const index = Math.max(CUSTOM_FROM - 1, ...used.map((u) => u.index)) + 1;
+      if (index >= CUSTOM_FROM + CUSTOM_MAX) return res.status(409).json({ error: "This list is full." });
+      const key = `${slot}:${index}`;
+      await ItemDef.create({ key, slot, index, item: { ...look, price: 500, rarity: "rare", sale: "none" }, by: req.admin.username });
+      await loadCustom();
+      log(req, "item-design-new", `${key} "${name}" (${recipe.parts.length} shapes)`);
+      return res.json({ ok: true, i: index });
+    }
+    const i = Math.trunc(+req.body.i), key = `${slot}:${i}`, row = await ItemDef.findOne({ key });
+    if (!row || !row.item || !row.item.recipe) return res.status(404).json({ error: "That design isn't here any more." });
+    const keep = { price: row.item.price, rarity: row.item.rarity, sale: row.item.sale };
+    row.item = { ...look, ...keep }; row.by = req.admin.username; row.markModified("item"); await row.save();
+    await loadCustom();
+    log(req, "item-design", `${key} "${name}" (${recipe.parts.length} shapes)`);
     res.json({ ok: true, i });
   } catch (err) { next(err); }
 });

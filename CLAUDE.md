@@ -212,3 +212,8 @@
 - Stored in Mongo (models/ItemDef.js), applied by routes/items.js: `applyCustom` (public/shared/outfits.js) + `syncCustomCatalog` (catalog.js). The game gets them from `/shared/items/custom.js`, made by the server (the file on disk is an empty default; its ?v= is the data's version via makeFresh's `dynamic`).
 - Panel items are numbered from CUSTOM_FROM (600) in each list; the gap is filled with `placeholder` entries (never sold, built or pictured). Items added in code still go at the end of their list, below 600 (the server refuses to start if a list reaches 600).
 - The 3D view is the game in a frame: /play?game&itemlab (public/world/item-lab.js, three's OrbitControls + TransformControls in /vendor/three/examples/jsm/controls, r160).
+
+## Item designer (admin panel → Item designer; /play?game&itemdesign on its own)
+- A small dark "Blender" for items (public/world/item-design.js): shapes (public/shared/recipe-spec.js: box, ball, dome, cylinder, cone, capsule, ring, flat shapes), move / turn / size with handles or numbers, colour (item colours c1..c3 or its own) and finish (matte, shiny, metal, glowing, glass), mirror copy, undo / redo, Blender-like keys.
+- Saved as a "recipe" item (id "recipe", item.recipe = {anchor: head|body, parts, colors}; item c1..c3 = its colours) via POST /api/admin/itemdefs/design (cleanRecipe checks everything). New designs are "not sold"; price / shop / colour versions in the Item studio. The game builds recipes with public/world/recipe.js (OUTFIT_MAKE wrapper in index.html).
+- Hats are designed on the bare head: in the game, hats sit on top of each hair by themselves (hatLift).
