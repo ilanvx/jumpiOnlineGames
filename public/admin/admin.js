@@ -699,6 +699,7 @@
     async items() {
       const d = await api("/items");
       page("All items", h("span", { class: "muted" }, `${d.items.length} items`));
+      main.append(itemTabs("items"));
       const cats = [...new Set(d.items.map((i) => i.category))];
       const sel = h("select", { class: "inp" }, h("option", { value: "" }, "All categories"), cats.map((c) => h("option", { value: c }, c)));
       const q = h("input", { class: "inp", type: "search", placeholder: "Search items…" });
@@ -844,10 +845,13 @@
     },
   };
   VIEWS.studio = studio;   // (the Item studio, below)
+  // the three item pages share one button on the side, with tabs on top
+  const itemTabs = (on) => h("nav", { class: "pay-tabs" }, [["items", "All items"], ["studio", "Item studio"], ["designer", "Item designer"]].map(([k, t]) => h("a", { href: "#" + k, class: k === on ? "on" : null }, t)));
   // the Item designer: a small Blender for items, in a frame (public/world/item-design.js); full screen, or its own tab
   VIEWS.designer = async (arg) => {
     page("Item designer", h("button", { class: "b b-ghost b-sm", type: "button", onclick: () => fr.requestFullscreen && fr.requestFullscreen().catch(() => toast("Full screen isn't allowed: open it in its own tab.", true)) }, "Full screen"),
       h("a", { class: "b b-sm", href: "/play?game&itemdesign", target: "_blank", rel: "noopener" }, "Open in its own tab"));
+    main.append(itemTabs("designer"));
     const open = /^[a-z]+:\d+$/.test(arg || "") ? "&open=" + arg : "";
     const fr = h("iframe", { class: "dz-frame", src: "/play?game&itemdesign" + open, title: "Item designer", allow: "fullscreen" });
     main.append(fr);
@@ -1037,6 +1041,7 @@
     ST.data = await api("/itemdefs");
     ST.ready = false; ST.queue = [];
     page("Item studio", h("span", { class: "muted" }, "Where items sit on the character, and new items from the looks that already exist"));
+    main.append(itemTabs("studio"));
     const tabs = h("div", { class: "st-tabs" }, Object.keys(SLOT_NAMES).map((s) => h("button", { type: "button", class: "st-tab", "data-s": s, onclick: () => { if (leaveOk()) { ST.slot = s; ST.sel = null; ST.draft = null; paintList(); paintSide(); } } }, SLOT_NAMES[s], h("small", null, ST.data.slots[s].length))));
     const q = h("input", { class: "inp", type: "search", placeholder: "Search by name or number…", oninput: () => { ST.q = q.value.trim().toLowerCase(); paintList(); } });
     const flt = h("select", { class: "inp st-flt", onchange: () => { ST.filter = flt.value; paintList(); } }, [["all", "Everything"], ["moved", "Moved"], ["custom", "Made here"]].map(([v, t]) => h("option", { value: v }, t)));
@@ -1195,7 +1200,8 @@
   async function route() {
     const [view, arg] = (location.hash.slice(1) || "overview").split("/");
     const name = VIEWS[view] ? view : "overview";
-    document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("on", a.dataset.v === (name === "player" ? "players" : name)));
+    const navOf = { player: "players", studio: "items", designer: "items" };   // (Items: All items · Item studio · Item designer, tabs on top)
+    document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("on", a.dataset.v === (navOf[name] || name)));
     main.replaceChildren(h("p", { class: "empty" }, "Loading…"));
     try { await VIEWS[name](arg); } catch (e) { oops(e); main.replaceChildren(h("p", { class: "empty" }, e.quiet ? "" : e.message)); }
     main.scrollTo?.(0, 0); window.scrollTo(0, 0);
