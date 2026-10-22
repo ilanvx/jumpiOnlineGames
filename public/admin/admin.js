@@ -843,6 +843,8 @@
       await PAY[tab](box);
     },
   };
+  VIEWS.studio = studio;   // (the Item studio, below)
+
 
   /* ---------- answer a Contact message: the real email, with the answer typed right inside the letter ---------- */
   async function replyLetter(m, after) {
@@ -985,6 +987,169 @@
     if (!itemCache) itemCache = (await api("/items")).items;
     modal(`Give an item to ${u.username}`, [{ name: "item", label: "Item", options: itemCache.map((i) => [i.id, `${i.category} · ${i.name}${i.rarity ? " (" + i.rarity + ")" : ""}`]) }],
       "Give", (v) => act(u.id, "give", { item: v.item }));
+  }
+
+  /* ---------- Item studio: every item, where it sits on the character, and new items from existing looks ----------
+     The 3D view is the game itself in a frame (/play?game&itemlab: public/world/item-lab.js); the server side is
+     routes/items.js. Moving an item changes it for everyone (the next time they open the game). */
+  const ST = { data: null, slot: "neck", sel: null, q: "", filter: "all", fix: null, savedFix: null, draft: null, look: { color: 0, hair: 5, shirt: 3, pants: 2 }, withHair: true, withClothes: true, frame: null, ready: false, queue: [], ui: {} };
+  const SLOT_NAMES = { hair: "Hair", shirt: "Shirts", pants: "Pants", glasses: "Glasses", hat: "Hats", neck: "Neck & back", beard: "Beards" };
+  const MOVABLE = new Set(["hair", "hat", "glasses", "neck", "beard"]);
+  const SALES = [["shop", "Shop"], ["future", "Sky Mall (Future City)"], ["members", "Members Club"], ["none", "Not sold (prize only)"]];
+  const SALE_TAG = { prize: "prize", store: "Jumpi Store", members: "members", future: "Sky Mall", event: "event", none: "not sold" };
+  const deg = (r) => Math.round(r * 180 / Math.PI * 10) / 10, rad = (d) => Math.round(d * Math.PI / 180 * 10000) / 10000;
+  const sameFix = (a, b) => JSON.stringify(normFix(a)) === JSON.stringify(normFix(b));
+  function normFix(f) {
+    const p = (f && f.p) || [0, 0, 0], r = (f && f.r) || [0, 0, 0], s = (f && f.s) || 1, z = (v) => Math.round(v * 10000) / 10000;
+    const o = {}; if (p.some((v) => z(v))) o.p = p.map(z); if (r.some((v) => z(v))) o.r = r.map(z); if (z(s) !== 1) o.s = z(s);
+    return Object.keys(o).length ? o : null;
+  }
+  const lab = (m) => { if (ST.ready && ST.frame) ST.frame.contentWindow.postMessage(m, location.origin); else ST.queue.push(m); };
+  addEventListener("message", (e) => {
+    if (e.origin !== location.origin || !ST.frame || e.source !== ST.frame.contentWindow) return;
+    const m = e.data || {};
+    if (m.t === "ready") { ST.ready = true; const q = ST.queue.splice(0); q.forEach(lab); if (ST.sel != null || ST.draft) showInLab(true); }
+    else if (m.t === "fix") { ST.fix = m.fix; paintFix(); }
+  });
+  const cur = () => (ST.data && ST.sel != null ? ST.data.slots[ST.slot].find((x) => x.i === ST.sel) : null);
+  const lookFor = () => ({ color: ST.look.color, eyes: 1, hair: ST.withHair && ST.slot !== "hair" ? ST.look.hair : -1, shirt: ST.withClothes && ST.slot !== "shirt" ? ST.look.shirt : -1, pants: ST.withClothes && ST.slot !== "pants" ? ST.look.pants : -1 });
+  const draftIndex = () => Math.max(ST.data.from - 1, ...ST.data.slots[ST.slot].filter((x) => x.custom).map((x) => x.i)) + 1;
+  function showInLab(refit) {
+    if (ST.draft) lab({ t: "show", slot: ST.slot, i: draftIndex(), from: ST.draft.from, patch: { ...ST.draft.colors, name: ST.draft.name }, fix: ST.fix, look: lookFor(), refit });
+    else if (ST.sel != null) lab({ t: "show", slot: ST.slot, i: ST.sel, look: lookFor(), refit });
+  }
+
+  async function studio() {
+    ST.data = await api("/itemdefs");
+    ST.ready = false; ST.queue = [];
+    page("Item studio", h("span", { class: "muted" }, "Where items sit on the character, and new items from the looks that already exist"));
+    const tabs = h("div", { class: "st-tabs" }, Object.keys(SLOT_NAMES).map((s) => h("button", { type: "button", class: "st-tab", "data-s": s, onclick: () => { if (leaveOk()) { ST.slot = s; ST.sel = null; ST.draft = null; paintList(); paintSide(); } } }, SLOT_NAMES[s], h("small", null, ST.data.slots[s].length))));
+    const q = h("input", { class: "inp", type: "search", placeholder: "Search by name or number…", oninput: () => { ST.q = q.value.trim().toLowerCase(); paintList(); } });
+    const flt = h("select", { class: "inp st-flt", onchange: () => { ST.filter = flt.value; paintList(); } }, [["all", "Everything"], ["moved", "Moved"], ["custom", "Made here"]].map(([v, t]) => h("option", { value: v }, t)));
+    const list = h("ul", { class: "st-list" });
+    ST.frame = h("iframe", { class: "st-frame", src: "/play?game&itemlab", title: "3D view" });
+    const tool = (txt, on, cls) => h("button", { type: "button", class: "b b-ghost b-sm " + (cls || ""), onclick: on }, txt);
+    const modeBtns = [["translate", "Move"], ["rotate", "Turn"], ["scale", "Size"]].map(([m, t]) => tool(t, (e) => { lab({ t: "mode", m }); modeBtns.forEach((b) => b.classList.remove("on")); e.currentTarget.classList.add("on"); }, m === "translate" ? "on" : ""));
+    const skins = h("div", { class: "st-skins" }, SKIN.slice(0, 8).map((c, k) => h("button", { type: "button", class: "st-skin", style: `--c:${c}`, title: "Skin colour", onclick: () => { ST.look.color = k; showInLab(false); } })));
+    const tog = (label, key) => h("label", { class: "st-tog" }, h("input", { type: "checkbox", checked: ST[key], onchange: (e) => { ST[key] = e.target.checked; showInLab(false); } }), label);
+    const side = h("div", { class: "st-side" });
+    ST.ui = { tabs, list, side };
+    main.append(h("div", { class: "st" },
+      h("section", { class: "panel st-left" }, tabs, h("div", { class: "row st-find" }, q, flt), list),
+      h("section", { class: "panel st-mid" },
+        h("div", { class: "st-bar" }, modeBtns, h("span", { class: "sp" }), ["front", "side", "back", "top", "fit"].map((v) => tool(v === "fit" ? "Zoom to item" : v[0].toUpperCase() + v.slice(1), () => lab({ t: "view", v })))),
+        ST.frame,
+        h("div", { class: "st-bar" }, h("span", { class: "small muted" }, "Wearing:"), tog("hair", "withHair"), tog("clothes", "withClothes"), h("span", { class: "sp" }), skins)),
+      h("section", { class: "panel st-right" }, side)));
+    paintList(); paintSide();
+  }
+  function leaveOk() { return !dirty() || confirm("You have changes that aren't saved. Leave them?"); }
+  const dirty = () => !!ST.draft || (ST.sel != null && MOVABLE.has(ST.slot) && !sameFix(ST.fix, ST.savedFix));
+  addEventListener("beforeunload", (e) => { if (location.hash.startsWith("#studio") && ST.data && dirty()) { e.preventDefault(); e.returnValue = ""; } });
+
+  function paintList() {
+    const { tabs, list } = ST.ui;
+    tabs.querySelectorAll(".st-tab").forEach((b) => b.classList.toggle("on", b.dataset.s === ST.slot));
+    const rows = ST.data.slots[ST.slot].filter((x) => (ST.filter === "all" || (ST.filter === "moved" ? x.fix : x.custom)) &&
+      (!ST.q || x.name.toLowerCase().includes(ST.q) || (x.he || "").includes(ST.q) || String(x.i) === ST.q.replace("#", "") || x.id.toLowerCase().includes(ST.q)));
+    list.replaceChildren(...(rows.length ? rows.map((x) => h("li", null, h("button", { type: "button", class: "st-row" + (x.i === ST.sel && !ST.draft ? " on" : ""), onclick: () => pick(x.i) },
+      h("span", { class: "st-num" }, "#" + x.i),
+      h("span", { class: "st-name" }, x.name, x.he ? h("small", null, x.he) : null),
+      h("span", { class: "st-tags" }, x.custom ? h("i", { class: "st-new" }, "new") : null, x.fix ? h("i", { class: "st-moved" }, "moved") : null, SALE_TAG[x.sale] ? h("i", null, SALE_TAG[x.sale]) : null)))) : [h("li", { class: "empty" }, "Nothing here.")]));
+  }
+  function pick(i) {
+    if (ST.sel === i && !ST.draft) return;
+    if (!leaveOk()) return;
+    ST.draft = null; ST.sel = i; const x = cur(); ST.fix = x.fix ? JSON.parse(JSON.stringify(x.fix)) : null; ST.savedFix = ST.fix;
+    showInLab(true); paintList(); paintSide();
+  }
+
+  // the right side: where it sits (any item you can move), and the details (items made here, or a new one)
+  function paintSide() {
+    const { side } = ST.ui, x = cur();
+    if (!x && !ST.draft) { side.replaceChildren(h("h2", null, "Pick an item"), h("p", { class: "muted" }, "Choose an item on the left to see it on the character. You can move, turn and size it with the arrows in the 3D view or with the numbers here, or make a new item from it.")); return; }
+    const kids = [];
+    if (ST.draft) kids.push(h("h2", null, "New item"), h("p", { class: "small muted" }, `Looks like #${ST.draft.from} ${ST.data.slots[ST.slot].find((y) => y.i === ST.draft.from).name}. It gets number #${draftIndex()} when you create it.`));
+    else kids.push(h("h2", null, x.name), h("p", { class: "small muted" }, `${SLOT_NAMES[ST.slot]} · #${x.i} · look "${x.id}" · ${fmtNum(x.price)} coins${x.rarity ? " · " + x.rarity : ""}${x.base ? " · made from #" + x.base.split(":")[1] : ""}`));
+    if (MOVABLE.has(ST.slot)) kids.push(fixBox());
+    else kids.push(h("p", { class: "st-note" }, "Shirts and pants are painted onto the body, so they can't be moved."));
+    if (ST.draft) kids.push(detailsBox(ST.draft, true));
+    else if (x.custom) kids.push(detailsBox({ name: x.name, he: x.he, price: x.price, rarity: x.rarity || "rare", sale: x.sale || "shop", colors: { ...x.colors } }, false));
+    else kids.push(h("div", { class: "st-box" }, h("h3", null, "A new item from this one"), h("p", { class: "small muted" }, "Same shape, your own colours, name and price."),
+      h("button", { type: "button", class: "b b-violet", onclick: () => startDraft(x) }, "Make a new item from this")));
+    side.replaceChildren(...kids);
+    paintFix();
+  }
+  function fixBox() {
+    const row = (label, key, k, min, max, step, unit) => {
+      const range = h("input", { type: "range", min, max, step, "data-k": key + k }), numIn = h("input", { class: "inp st-n", type: "number", min, max, step, "data-k": key + k });
+      const set = (v) => { const f = normFix(ST.fix) || {}; const out = { p: f.p || [0, 0, 0], r: f.r || [0, 0, 0], s: f.s || 1 };
+        if (key === "s") out.s = Math.max(.2, Math.min(5, +v || 1)); else if (key === "r") out.r[k] = rad(+v || 0); else out.p[k] = +v || 0;
+        ST.fix = normFix(out); lab({ t: "fix", fix: ST.fix }); paintFix(); };
+      range.addEventListener("input", () => set(range.value)); numIn.addEventListener("change", () => set(numIn.value));
+      return h("label", { class: "st-axis" }, h("b", null, label), range, numIn, h("small", null, unit));
+    };
+    ST.ui.save = h("button", { type: "button", class: "b b-green", onclick: saveFix }, "Save position");
+    ST.ui.state = h("span", { class: "small" });
+    return h("div", { class: "st-box" }, h("h3", null, "Where it sits"),
+      h("p", { class: "small muted" }, "Left / right, up / down, back / front: compared with where it was made."),
+      row("X", "p", 0, -1, 1, .005, ""), row("Y", "p", 1, -1, 1, .005, ""), row("Z", "p", 2, -1, 1, .005, ""),
+      h("h4", null, "Turn"), row("X", "r", 0, -180, 180, 1, "°"), row("Y", "r", 1, -180, 180, 1, "°"), row("Z", "r", 2, -180, 180, 1, "°"),
+      h("h4", null, "Size"), row("×", "s", 0, .2, 3, .01, ""),
+      h("div", { class: "row st-acts" }, ST.draft ? null : ST.ui.save, h("button", { type: "button", class: "b b-ghost", onclick: () => { ST.fix = null; lab({ t: "fix", fix: null }); paintFix(); } }, "Back to how it was made"), ST.ui.state));
+  }
+  function paintFix() {
+    const f = normFix(ST.fix) || {}, p = f.p || [0, 0, 0], r = f.r || [0, 0, 0], s = f.s || 1;
+    const vals = { p0: p[0], p1: p[1], p2: p[2], r0: deg(r[0]), r1: deg(r[1]), r2: deg(r[2]), s0: s };
+    ST.ui.side && ST.ui.side.querySelectorAll("[data-k]").forEach((el) => { if (el !== document.activeElement) el.value = vals[el.dataset.k]; });
+    if (ST.ui.save) { const d = !ST.draft && !sameFix(ST.fix, ST.savedFix); ST.ui.save.disabled = !d; ST.ui.state.textContent = ST.draft ? "" : d ? "Not saved yet" : ST.savedFix ? "Saved (moved)" : "As it was made"; ST.ui.state.className = "small " + (d ? "st-warn" : "muted"); }
+  }
+  async function saveFix() {
+    const x = cur(); if (!x) return;
+    try {
+      const r = await api("/itemdefs/fix", { slot: ST.slot, i: x.i, fix: normFix(ST.fix) });
+      x.fix = r.fix; ST.savedFix = r.fix ? JSON.parse(JSON.stringify(r.fix)) : null; ST.fix = ST.savedFix;
+      toast(r.fix ? `Saved: ${x.name} is in its new place.` : `${x.name} is back where it was made.`); paintList(); paintFix();
+    } catch (e) { oops(e); }
+  }
+  function startDraft(x) {
+    if (!leaveOk()) return;
+    ST.draft = { from: x.i, name: x.name + " (new)", he: "", price: x.price || 500, rarity: x.rarity || "rare", sale: "none", colors: JSON.parse(JSON.stringify(x.colors)) };
+    ST.fix = x.fix ? JSON.parse(JSON.stringify(x.fix)) : null;
+    showInLab(true); paintList(); paintSide();
+  }
+  function detailsBox(d, isNew) {
+    const f = {};
+    const fld = (label, el) => h("label", { class: "fld st-fld" }, h("span", null, label), el);
+    f.name = h("input", { maxlength: 40, value: d.name || "" }); f.he = h("input", { maxlength: 40, dir: "rtl", value: d.he || "" });
+    f.price = h("input", { type: "number", min: 0, max: 100000, step: 50, value: d.price });
+    f.rarity = h("select", null, ST.data.rarities.map((r) => h("option", { value: r, selected: r === d.rarity }, r)));
+    f.sale = h("select", null, SALES.map(([v, t]) => h("option", { value: v, selected: v === d.sale }, t)));
+    const colors = JSON.parse(JSON.stringify(d.colors || {}));
+    const preview = () => { if (isNew) { ST.draft.colors = colors; ST.draft.name = f.name.value; } lab(isNew ? { t: "show", slot: ST.slot, i: draftIndex(), from: ST.draft.from, patch: { ...colors }, fix: ST.fix, look: lookFor() } : { t: "show", slot: ST.slot, i: ST.sel, patch: { ...colors }, look: lookFor() }); };
+    const colorRows = Object.entries(colors).map(([k, v]) => h("div", { class: "st-col" }, h("b", null, k),
+      [].concat(v).map((c, n) => h("input", { type: "color", value: c, oninput: (e) => { if (Array.isArray(colors[k])) colors[k][n] = e.target.value; else colors[k] = e.target.value; preview(); } }))));
+    const go = async () => {
+      const data = { name: f.name.value, he: f.he.value, price: +f.price.value, rarity: f.rarity.value, sale: f.sale.value, colors };
+      try {
+        if (isNew) {
+          const r = await api("/itemdefs/item", { slot: ST.slot, from: ST.draft.from, data, fix: normFix(ST.fix) });
+          ST.draft = null; ST.data = await api("/itemdefs"); ST.sel = null; toast(`Made #${r.i} ${data.name}.${data.sale === "none" ? " It isn't sold yet: choose a shop when it's ready." : ""}`);
+          ST.ready = false; ST.frame.contentWindow.location.reload();   // (the 3D view loads the new item list)
+          pick(r.i);
+        } else {
+          await api("/itemdefs/item", { slot: ST.slot, i: ST.sel, data });
+          const keep = ST.sel; ST.data = await api("/itemdefs"); ST.sel = null; ST.sel = keep; const x = cur(); ST.savedFix = x.fix; toast(`Saved ${data.name}.`); paintList(); paintSide();
+        }
+      } catch (e) { oops(e); }
+    };
+    return h("div", { class: "st-box" }, h("h3", null, isNew ? "Details" : "Details (made here)"),
+      fld("Name (English)", f.name), fld("Name (Hebrew)", f.he),
+      h("div", { class: "row st-2" }, fld("Price (coins)", f.price), fld("Rarity", f.rarity)), fld("Where it's sold", f.sale),
+      colorRows.length ? h("div", { class: "st-cols" }, h("h4", null, "Colours"), colorRows) : h("p", { class: "small muted" }, "This look has no colours to change."),
+      h("div", { class: "row st-acts" }, h("button", { type: "button", class: "b b-green", onclick: go }, isNew ? "Create the item" : "Save details"),
+        isNew ? h("button", { type: "button", class: "b b-ghost", onclick: () => { ST.draft = null; ST.fix = ST.savedFix; showInLab(true); paintList(); paintSide(); } }, "Cancel") : null),
+      isNew ? h("p", { class: "small muted" }, "Its position is saved with it. Players see it the next time they open the game.") : null);
   }
 
   /* ---------- navigation ---------- */

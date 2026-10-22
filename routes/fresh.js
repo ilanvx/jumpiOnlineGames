@@ -9,9 +9,11 @@ import { readFileSync, statSync } from "node:fs";
   import ("./a.js", "/shared/b.js"…, followed all the way down). A changed file = a new address = fetched again at once;
   an unchanged one keeps its address and stays in the browser (served with a long, "immutable" cache: see versioned()).
 */
-export function makeFresh(PUBLIC_DIR) {
+// dynamic: files the server makes itself ({ "/shared/items/custom.js": () => version }): versioned by what they hold, not their time
+export function makeFresh(PUBLIC_DIR, dynamic = {}) {
   const files = new Map();   // "/club/x.js" -> { t, mtime, v, text? }
   const info = (p) => {
+    if (dynamic[p]) return { t: Date.now(), mtime: 0, v: String(dynamic[p]()), text: "" };
     const now = Date.now(), c = files.get(p);
     if (c && now - c.t < 3000) return c;
     const full = path.join(PUBLIC_DIR, p);

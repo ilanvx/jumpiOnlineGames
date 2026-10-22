@@ -4911,6 +4911,8 @@ import * as THREE from "three";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 import {mergeGeometries} from "three/addons/utils/BufferGeometryUtils.js";
 import {OUTFITS} from "/shared/outfits.js";
+// the admin panel's Item studio shows items here, in a frame (/play?game&itemlab: public/world/item-lab.js)
+const ITEM_LAB=new URLSearchParams(location.search).has("itemlab");
 import {EVENTS,isEvent} from "/shared/events.js";
 import {checkText,checkName,FRIENDLY_MESSAGE,privateInfo,PRIVATE_MESSAGE} from "/shared/profanity.js";
 import {QUICK_CHAT} from "/shared/parental.js";
@@ -5246,6 +5248,7 @@ new GLTFLoader().load("/blobby.glb",g=>{
   P.lookL.traverse(o=>{if(o.isMesh&&o.material.name==="Iris")P.irisL=o.material;});
   P.lookR.traverse(o=>{if(o.isMesh&&o.material.name==="Iris"){o.material=o.material.clone();P.irisR=o.material;}});
   applyColor();applyEyeColor();buildOutfit();applyOutfit();setTimeout(renderThumbs,50);
+  if(ITEM_LAB)import("/world/item-lab.js").then(m=>m.startLab({THREE,P,OUTFIT_PARTS,OUTFIT_OBJ,outfitGet,outfitDrop,fixApply,makeCharacter,Loader})).catch(e=>console.error("[lab]",e));
   if(!reduce) schedule(1800);
   // wait until the character has been drawn, then open the curtain
   Promise.all([document.fonts.ready,new Promise(r=>setTimeout(r,250))]).then(()=>{Loader.set(96);requestAnimationFrame(()=>requestAnimationFrame(()=>Loader.finish()));});
@@ -5333,7 +5336,7 @@ function perfMeterPaint(){
   PERF.el.innerHTML=`<b class="${PERF.fps>=50?"ok":PERF.fps>=30?"mid":"bad"}">${Math.round(PERF.fps)}</b> fps · slowest ${Math.round(PERF.worst)} ms<br>${i.render.calls} draws · ${(i.render.triangles/1000).toFixed(0)}k triangles · ${i.programs?i.programs.length:0} shaders<br>${PERF.long} stutters · ${GFX_TIER} · ${GFX.saver?"saver":GFX.mode} · x${GFX.pr.toFixed(2)}<br>merged ${BATCH.parts} → ${BATCH.merged} (${BATCH.state||"wait"}${BATCH.undone?", "+BATCH.undone+" undone":""})`;}
 function perfMeter(on){PERF.meter=on;try{localStorage.setItem("jumpi-meter",on?"1":"0");}catch(e){}perfMeterPaint();}
 renderer.setAnimationLoop(()=>{
-  if(document.hidden)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
+  if(document.hidden||ITEM_LAB)return;   // a hidden tab / the app in the background: draw nothing (saves battery and heat)
   perfFrame();
   if(gfxSkip())return;
   const t=clock.getElapsedTime(),dt=Math.min(.05,t-lastT);lastT=t;
@@ -6378,9 +6381,19 @@ function faceSpots(){if(faceSpots.v)return faceSpots.v;const b=new THREE.Box3(),
   const ang=p=>{const d=p.clone().sub(HC);const x=d.x/HR[0],y=d.y/HR[1],z=d.z/HR[2],r=Math.hypot(x,y,z)||1;return {th:Math.acos(Math.max(-1,Math.min(1,y/r))),ph:Math.atan2(x,z)};};
   const m=b.isEmpty()?{th:2.0,ph:0}:ang(b.getCenter(new THREE.Vector3())),e=ang(new THREE.Vector3(0,P.eyeL.position.y,.6));
   return faceSpots.v={th:m.th,ph:m.ph,eyeTh:e.th};}
-function outfitGet(k,i){const L=OUTFIT_OBJ[k];if(!L||!OUTFIT_READY||!Number.isInteger(i)||i<0||!OUTFIT_PARTS[k]||!OUTFIT_PARTS[k][i])return null;
-  if(!L[i]){const o=OUTFIT_MAKE[k](i);L[i]=o;[].concat(o).forEach(p=>p.traverse(q=>{q.userData.base=true;}));}
+function outfitGet(k,i){const L=OUTFIT_OBJ[k];if(!L||!OUTFIT_READY||!Number.isInteger(i)||i<0||!OUTFIT_PARTS[k]||!OUTFIT_PARTS[k][i]||OUTFIT_PARTS[k][i].placeholder)return null;
+  if(!L[i]){const o=OUTFIT_MAKE[k](i);L[i]=o;[].concat(o).forEach(p=>p.traverse(q=>{q.userData.base=true;}));fixApply(k,i,o);}
   return L[i];}
+// the Item studio's fix for an item (admin panel → Item studio; public/shared/outfits.js "fix"): moved p[x,y,z], turned r[x,y,z]
+// and sized s, on top of where its builder put it. Shirts and pants are painted on, so they have none.
+function fixApply(k,i,g){if(!g||Array.isArray(g))return;const it=OUTFIT_PARTS[k]&&OUTFIT_PARTS[k][i],u=g.userData;
+  if(!u.fix0)u.fix0={p:g.position.clone(),r:g.rotation.clone(),s:g.scale.clone()};
+  g.position.copy(u.fix0.p);g.rotation.copy(u.fix0.r);g.scale.copy(u.fix0.s);const f=it&&it.fix;if(!f)return;
+  if(f.p){g.position.x+=f.p[0];g.position.y+=f.p[1];g.position.z+=f.p[2];}
+  if(f.r){g.rotation.x+=f.r[0];g.rotation.y+=f.r[1];g.rotation.z+=f.r[2];}
+  if(f.s)g.scale.multiplyScalar(f.s);}
+// throw an item's 3D away so it is built again (the Item studio, after its colours change)
+function outfitDrop(k,i){const L=OUTFIT_OBJ[k];if(!L||!L[i])return;[].concat(L[i]).forEach(p=>{if(p.parent)p.parent.remove(p);});L[i]=undefined;}
 function outfitEnsure(look){if(!look)return;for(const k in OUTFIT_OBJ)outfitGet(k,look[k]);}
 function buildOutfit(){
   measureHead(P.head);
@@ -6663,7 +6676,7 @@ function renderThumbs(){
   // pictured, so picturing everything at the start would build the whole wardrobe)
   const storeOpen=document.body.classList.contains("game-store")||(document.body.classList.contains("login-mode")&&panel==="store");
   THB.queue=[];
-  if(storeOpen&&OUTFIT_OBJ[storeSlot])OUTFIT_PARTS[storeSlot].forEach((o,i)=>{if(!THB.done.has(storeSlot+":"+i))THB.queue.push([storeSlot,i]);});
+  if(storeOpen&&OUTFIT_OBJ[storeSlot])OUTFIT_PARTS[storeSlot].forEach((o,i)=>{if(!o.placeholder&&!THB.done.has(storeSlot+":"+i))THB.queue.push([storeSlot,i]);});
   else Object.keys(OUTFIT_OBJ).forEach(k=>OUTFIT_PARTS[k].slice(0,STARTER_ITEMS).forEach((o,i)=>{if(!o.starter)return;if(!THB.done.has(k+":"+i))THB.queue.push([k,i]);}));
   if(!THB.raf&&THB.queue.length)THB.raf=requestAnimationFrame(thbPump);
 }
@@ -10588,7 +10601,7 @@ function renderStoreTabs(){
   if(on&&storeTabs.scrollWidth>storeTabs.clientWidth+2){const a=on.offsetLeft-storeTabs.scrollLeft,w=storeTabs.clientWidth;if(a<16||a+on.offsetWidth>w-16)storeTabs.scrollTo({left:on.offsetLeft-(w-on.offsetWidth)/2,behavior:"smooth"});}
 }
 function renderStoreGrid(){
-  if(OUTFIT_OBJ[storeSlot]&&OUTFIT_PARTS[storeSlot].some((o,i)=>!THB.done.has(storeSlot+":"+i))&&!THB.queue.some(q=>q[0]===storeSlot))queueThumbs();
+  if(OUTFIT_OBJ[storeSlot]&&OUTFIT_PARTS[storeSlot].some((o,i)=>!o.placeholder&&!THB.done.has(storeSlot+":"+i))&&!THB.queue.some(q=>q[0]===storeSlot))queueThumbs();
   const slot=storeSlot,inv=storeMode==="inventory";storeGrid.innerHTML="";
   const list=[];for(let i=0;i<itemCount(slot);i++){const id=slot+":"+i;if(inv&&!owns(id))continue;if(!inv&&OUTFIT_PARTS[slot]&&OUTFIT_PARTS[slot][i].gift)continue;
     if(storeMode==="spooky"){if(evItem(slot,i)!==EV.cur)continue;}   // the event shop: only that event's items

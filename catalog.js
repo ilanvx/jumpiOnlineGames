@@ -4,7 +4,7 @@
   (COLORS, EYE_COLORS, OUTFIT_PARTS, TAGS), so keep both in the same order.
   "starter" items are the ones offered for free at sign-up; they're cheaper in the shop.
 */
-import { OUTFITS, OUTFIT_SLOTS } from "./public/shared/outfits.js";
+import { OUTFITS, OUTFIT_SLOTS, CUSTOM_FROM, CUSTOM_MAX } from "./public/shared/outfits.js";
 import { spotProblem } from "./public/shared/houses.js";
 import { VEHICLES } from "./public/shared/vehicles.js";
 
@@ -43,6 +43,7 @@ add("eyes", 13, "Galaxy", 700);
 // (shared with the game, so the item numbers always match)
 for (const slot of OUTFIT_SLOTS)
   OUTFITS[slot].forEach((o, i) => {
+    if (o.placeholder || o.custom) return;   // panel items: syncCustomCatalog() below
     add(slot, i, o.name.replace(/ \((boy|girl)\)/, ""), o.price, !!o.starter);
     if (o.gift) Object.assign(items[items.length - 1], { gift: true, rarity: "legendary" });   // work uniforms: only as a job prize
     if (o.event) items[items.length - 1].event = o.event;   // holiday items: sold only while that event is on (public/shared/events.js)
@@ -146,6 +147,23 @@ VEHICLES.forEach((v, i) => {
 
 export const CATALOG = items;
 export const ITEMS = new Map(items.map((it) => [it.id, it]));
+// the items made in the admin panel (routes/items.js calls this after loading them, and after every change):
+// they are added to CATALOG / ITEMS, or updated in place. "sale": shop (default), future (Sky Mall), members, none (not sold)
+export function syncCustomCatalog() {
+  for (const slot of OUTFIT_SLOTS)
+    for (let i = CUSTOM_FROM; i < OUTFITS[slot].length; i++) {
+      const o = OUTFITS[slot][i], id = `${slot}:${i}`;
+      if (!o || !o.custom) continue;
+      const it = { id, category: slot, index: i, name: o.name, price: o.price, starter: false, custom: true };
+      if (o.rarity) it.rarity = o.rarity;
+      if (o.sale === "members") it.member = true;
+      if (o.sale === "future") it.world = "future";
+      if (o.sale === "none") it.gift = true;
+      const old = ITEMS.get(id);
+      if (old) { for (const k of Object.keys(old)) delete old[k]; Object.assign(old, it); }
+      else { CATALOG.push(it); ITEMS.set(id, it); }
+    }
+}
 // the moderator set (shirt, pants, cap): moderators always have it while they are moderators
 export const MEMBER_FREE = items.filter((it) => it.memberFree).map((it) => it.id);
 // the monthly members gift goes round the members' clothes, one a month (routes/member.js)
@@ -157,13 +175,13 @@ export const MOD_ITEMS = OUTFIT_SLOTS.flatMap((slot) => OUTFITS[slot].map((o, i)
 export const LOOK_SLOTS = {
   color: { max: 21, optional: false },
   eyes: { max: 25, optional: false },
-  hair: { max: OUTFITS.hair.length - 1, optional: true },
-  shirt: { max: OUTFITS.shirt.length - 1, optional: true },
-  pants: { max: OUTFITS.pants.length - 1, optional: true },
-  glasses: { max: OUTFITS.glasses.length - 1, optional: true },
-  hat: { max: OUTFITS.hat.length - 1, optional: true },
-  neck: { max: OUTFITS.neck.length - 1, optional: true },
-  beard: { max: OUTFITS.beard.length - 1, optional: true },
+  hair: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  shirt: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  pants: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  glasses: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  hat: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  neck: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
+  beard: { max: CUSTOM_FROM + CUSTOM_MAX - 1, optional: true },   // (room for the panel's items: public/shared/outfits.js)
   tag: { max: 17, optional: true },
   aura: { max: 12, optional: true },
 };

@@ -18,6 +18,7 @@ import { ChatLog, TradeLog, DuelLog, AdminLog, logQuietly } from "../models/Logs
 import { PerfDay } from "../models/PerfDay.js";
 import { currentUser } from "./auth.js";
 import { CATALOG, ITEMS, LOOK_SLOTS, maxFurniture } from "../catalog.js";
+import { itemAdmin } from "./items.js";
 import { moderation, onlinePlayers, onlineWhere, setInvisible, modBudgetLeft, MOD_BUDGET } from "../realtime/plaza.js";
 import { MOD_ITEMS } from "../catalog.js";
 import { checkName } from "../public/shared/profanity.js";
@@ -153,6 +154,8 @@ router.use((req, res, next) => {
 
 /* ---------- payments: one more code (routes/payments.js) ---------- */
 router.use("/pay", paymentsRoutes);
+/* ---------- the Item studio: positions on the character, and new items (routes/items.js) ---------- */
+router.use("/itemdefs", itemAdmin);
 
 /* ---------- helpers for players ---------- */
 const brief = (u) => ({

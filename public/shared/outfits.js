@@ -9,6 +9,7 @@ import { ITEMS as NEW_HAIR } from "./items/hair.js";
 import { ITEMS as NEW_HEADS } from "./items/heads.js";
 import { ITEMS as NEW_BEARDS } from "./items/beards.js";
 import { ITEMS as FUTURE_ITEMS } from "./items/future.js";
+import { CUSTOM } from "./items/custom.js";
 const out = { hair: [], shirt: [], pants: [], glasses: [], hat: [], neck: [], beard: [] };   // beard: autumn 2026
 const add = (slot, o) => out[slot].push(o);
 
@@ -334,3 +335,27 @@ COS("pants", { id: "emoji", name: "Emoji pants", base: "#ff8a1c", waist: "#c75e0
 FUTURE_ITEMS.forEach(([slot, o]) => add(slot, o));
 
 export const OUTFIT_SLOTS = Object.keys(out);
+
+/* ---------- items made in the admin panel (Admin → Item studio) ----------
+  They are numbered from CUSTOM_FROM up in every list, so the items written here in code can keep growing at the end of
+  their lists (up to CUSTOM_FROM) without ever taking a number that a panel item already has. The gap in between is
+  filled with empty "placeholder" entries: never sold, never shown, never built.
+  Position fixes ("fix": move / turn / size on the character) can be set on any item, from the code or the panel. */
+export const CUSTOM_FROM = 600, CUSTOM_MAX = 400;
+export const PLACEHOLDER = Object.freeze({ id: "none", name: "", price: 0, gift: "none", placeholder: true });
+// where a panel item is sold → the same flags the code's items use (the shops and the server read these)
+const SALE_FLAGS = { shop: {}, future: { world: "future" }, members: { member: true }, none: { gift: "panel" } };
+export const isRealItem = (o) => !!o && !o.placeholder;
+export function applyCustom(C) {
+  for (const slot of OUTFIT_SLOTS) {
+    const L = out[slot];
+    while (L.length && (L[L.length - 1].custom || L[L.length - 1].placeholder)) L.length--;   // (applied again: start clean)
+    if (L.length > CUSTOM_FROM) throw new Error(`outfits.js: the ${slot} list reached ${CUSTOM_FROM} (CUSTOM_FROM): move the panel items further up first`);
+    const mine = (C && C.items && C.items[slot]) || {};
+    const top = Math.max(-1, ...Object.keys(mine).map(Number).filter((n) => n >= CUSTOM_FROM && n < CUSTOM_FROM + CUSTOM_MAX));
+    if (top >= CUSTOM_FROM) { while (L.length < top + 1) L.push(PLACEHOLDER); for (const [n, o] of Object.entries(mine)) if (+n >= CUSTOM_FROM && +n <= top) L[+n] = { ...o, custom: true, ...SALE_FLAGS[o.sale || "shop"] }; }
+  }
+  for (const slot of OUTFIT_SLOTS) for (const o of out[slot]) if (o && o.fixPanel) { delete o.fix; delete o.fixPanel; }
+  for (const [key, f] of Object.entries((C && C.fixes) || {})) { const [slot, i] = key.split(":"), o = out[slot] && out[slot][+i]; if (o && !o.placeholder) { o.fix = f; o.fixPanel = true; } }
+}
+applyCustom(CUSTOM);

@@ -47,6 +47,7 @@ import { discordInteractions } from "./discord/interactions.js";
 import { loadEvent, eventInfo } from "./realtime/events.js";
 import { reqIp, isHttps, viaCloudflare } from "./routes/ip.js";
 import crypto from "node:crypto";
+import { loadCustom, customJs, customRev } from "./routes/items.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { MONGODB_URI, MONGODB_DB = "jumpi", JWT_SECRET, PORT = 3000 } = process.env;
@@ -118,7 +119,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
 const PUBLIC_DIR = path.join(__dirname, "public");
-const freshPage = makeFresh(PUBLIC_DIR);   // every page: its own files with a version (?v=…), so everyone always gets the newest (routes/fresh.js)
+const freshPage = makeFresh(PUBLIC_DIR, { "/shared/items/custom.js": customRev });   // (the Item studio's items: their version changes with every change, routes/items.js)   // every page: its own files with a version (?v=…), so everyone always gets the newest (routes/fresh.js)
 /* Content-Security-Policy for our pages: scripts only from this site, plus the page's own inline scripts (allowed by their
    sha256, worked out from the file itself), fonts from Google Fonts, and nothing can be framed or posted elsewhere.
    A script someone manages to sneak into a page (XSS) wouldn't run. */
@@ -289,6 +290,7 @@ app.get(/\.glb$/i, (req, res, next) => {
   } catch (err) { next(); }
 });
 // a file asked for with its version (?v=…, from routes/fresh.js) never changes at that address: keep it a year. The rest: always ask
+app.get("/shared/items/custom.js", customJs);   // the Item studio's items and fixes, from the database (routes/items.js)
 app.use(express.static(PUBLIC_DIR, { index: false, setHeaders: (res, file) => { if (versioned(res.req)) res.set("Cache-Control", "public, max-age=31536000, immutable"); else if (/\.(js|mjs|css|html|json)$/i.test(file)) res.set("Cache-Control", "no-cache"); } }));
 
 // anything else: the "Jumpi got lost" page for people, a short text for files and scripts
@@ -318,6 +320,7 @@ try {
   await loadRevoked();   // logins that were ended stay ended after a restart
   console.log(`✓ Connected to MongoDB (database "${MONGODB_DB}")`);
   await loadEvent();
+  await loadCustom();   // the Item studio's items and fixes (routes/items.js)
 } catch (err) {
   console.error("✗ Could not connect to MongoDB:", err.message);
   console.error("  Check the connection string and password in .env, and that Atlas → Network Access allows your IP address.");
