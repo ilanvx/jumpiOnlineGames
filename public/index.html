@@ -6386,9 +6386,11 @@ function outfitGet(k,i){const L=OUTFIT_OBJ[k];if(!L||!OUTFIT_READY||!Number.isIn
   return L[i];}
 // the Item studio's fix for an item (admin panel → Item studio; public/shared/outfits.js "fix"): moved p[x,y,z], turned r[x,y,z]
 // and sized s, on top of where its builder put it. Shirts and pants are painted on, so they have none.
-function fixApply(k,i,g){if(!g||Array.isArray(g))return;const it=OUTFIT_PARTS[k]&&OUTFIT_PARTS[k][i],u=g.userData;
-  if(!u.fix0)u.fix0={p:g.position.clone(),r:g.rotation.clone(),s:g.scale.clone()};
-  g.position.copy(u.fix0.p);g.rotation.copy(u.fix0.r);g.scale.copy(u.fix0.s);const f=it&&it.fix;if(!f)return;
+// A fix can also move parts of the item on their own (parts: {"<child number>": fix}: a jetpack's tanks without its straps).
+function fixApply(k,i,g){if(!g||Array.isArray(g))return;const it=OUTFIT_PARTS[k]&&OUTFIT_PARTS[k][i],f=it&&it.fix;
+  fixOne(g,f);g.children.forEach((c,n)=>{if(c.userData.fix0||(f&&f.parts&&f.parts[n]))fixOne(c,f&&f.parts&&f.parts[n]);});}
+function fixOne(g,f){const u=g.userData;if(!u.fix0)u.fix0={p:g.position.clone(),r:g.rotation.clone(),s:g.scale.clone()};
+  g.position.copy(u.fix0.p);g.rotation.copy(u.fix0.r);g.scale.copy(u.fix0.s);if(!f)return;
   if(f.p){g.position.x+=f.p[0];g.position.y+=f.p[1];g.position.z+=f.p[2];}
   if(f.r){g.rotation.x+=f.r[0];g.rotation.y+=f.r[1];g.rotation.z+=f.r[2];}
   if(f.s)g.scale.multiplyScalar(f.s);}

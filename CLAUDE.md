@@ -207,6 +207,7 @@
 
 ## Item studio (admin panel → Item studio)
 - Any hair / hat / glasses / neck / beard item can be moved, turned and sized on the character ("fix": p[x,y,z], r[x,y,z] radians, s). Shirts and pants are painted on: no fix.
+- Parts can be moved on their own: fix.parts = {"<child index of the item's group>": {p,r,s}} (a jetpack's pack without its straps). So a builder's children order is part of saved data: add new children at the END of a builder, never in the middle.
 - New items are made from an existing item's look (same `id`, own colours / name / Hebrew name / price / rarity / where sold: shop, future, members, none).
 - Stored in Mongo (models/ItemDef.js), applied by routes/items.js: `applyCustom` (public/shared/outfits.js) + `syncCustomCatalog` (catalog.js). The game gets them from `/shared/items/custom.js`, made by the server (the file on disk is an empty default; its ?v= is the data's version via makeFresh's `dynamic`).
 - Panel items are numbered from CUSTOM_FROM (600) in each list; the gap is filled with `placeholder` entries (never sold, built or pictured). Items added in code still go at the end of their list, below 600 (the server refuses to start if a list reaches 600).

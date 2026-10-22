@@ -272,3 +272,9 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 .st-col input[type=color]{width:42px;height:30px;border:0;border-radius:8px;padding:0;background:none;cursor:pointer}
 @media (max-width:1380px){.st{grid-template-columns:270px minmax(0,1fr)}.st-right{grid-column:1 / -1}}
 @media (max-width:900px){.st{grid-template-columns:1fr}.st-left,.st-mid{position:static;max-height:none}.st-list{max-height:320px}}
+.st-parts{display:grid;gap:6px}.st-parts p{margin:0}
+.st-chips{display:flex;flex-wrap:wrap;gap:5px}
+.st-part{border:0;border-radius:999px;padding:4px 11px;background:#e8eef7;color:var(--ink);cursor:pointer;font:500 .85rem var(--body)}
+.st-part.mv{box-shadow:inset 0 0 0 2px #2fd36b}
+.st-part.on{background:var(--orange);color:#fff}
+.st-axis input:disabled{opacity:.4}

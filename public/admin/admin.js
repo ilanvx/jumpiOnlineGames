@@ -992,24 +992,30 @@
   /* ---------- Item studio: every item, where it sits on the character, and new items from existing looks ----------
      The 3D view is the game itself in a frame (/play?game&itemlab: public/world/item-lab.js); the server side is
      routes/items.js. Moving an item changes it for everyone (the next time they open the game). */
-  const ST = { data: null, slot: "neck", sel: null, q: "", filter: "all", fix: null, savedFix: null, draft: null, look: { color: 0, hair: 5, shirt: 3, pants: 2 }, withHair: true, withClothes: true, frame: null, ready: false, queue: [], ui: {} };
+  const ST = { data: null, slot: "neck", sel: null, parts: [], partCount: 0, q: "", filter: "all", fix: null, savedFix: null, draft: null, look: { color: 0, hair: 5, shirt: 3, pants: 2 }, withHair: true, withClothes: true, frame: null, ready: false, queue: [], ui: {} };
   const SLOT_NAMES = { hair: "Hair", shirt: "Shirts", pants: "Pants", glasses: "Glasses", hat: "Hats", neck: "Neck & back", beard: "Beards" };
   const MOVABLE = new Set(["hair", "hat", "glasses", "neck", "beard"]);
   const SALES = [["shop", "Shop"], ["future", "Sky Mall (Future City)"], ["members", "Members Club"], ["none", "Not sold (prize only)"]];
   const SALE_TAG = { prize: "prize", store: "Jumpi Store", members: "members", future: "Sky Mall", event: "event", none: "not sold" };
   const deg = (r) => Math.round(r * 180 / Math.PI * 10) / 10, rad = (d) => Math.round(d * Math.PI / 180 * 10000) / 10000;
   const sameFix = (a, b) => JSON.stringify(normFix(a)) === JSON.stringify(normFix(b));
-  function normFix(f) {
+  // a fix: the whole item (p, r, s) + parts moved on their own (parts: {"<child number>": {p, r, s}}), without the zeros
+  function normFix(f, part) {
     const p = (f && f.p) || [0, 0, 0], r = (f && f.r) || [0, 0, 0], s = (f && f.s) || 1, z = (v) => Math.round(v * 10000) / 10000;
     const o = {}; if (p.some((v) => z(v))) o.p = p.map(z); if (r.some((v) => z(v))) o.r = r.map(z); if (z(s) !== 1) o.s = z(s);
+    if (!part && f && f.parts) { const ps = {}; for (const [k, v] of Object.entries(f.parts)) { const n = normFix(v, true); if (n) ps[k] = n; } if (Object.keys(ps).length) o.parts = ps; }
     return Object.keys(o).length ? o : null;
   }
+  // the numbers on the right are for what is picked in the 3D view: the whole item, or one part
+  const editKey = () => (ST.parts.length === 1 ? ST.parts[0] : ST.parts.length ? null : "");
+  const subFix = (F, key) => (key === "" ? F || {} : (F && F.parts && F.parts[key]) || {});
   const lab = (m) => { if (ST.ready && ST.frame) ST.frame.contentWindow.postMessage(m, location.origin); else ST.queue.push(m); };
   addEventListener("message", (e) => {
     if (e.origin !== location.origin || !ST.frame || e.source !== ST.frame.contentWindow) return;
     const m = e.data || {};
     if (m.t === "ready") { ST.ready = true; const q = ST.queue.splice(0); q.forEach(lab); if (ST.sel != null || ST.draft) showInLab(true); }
     else if (m.t === "fix") { ST.fix = m.fix; paintFix(); }
+    else if (m.t === "sel") { ST.parts = m.parts || []; ST.partCount = m.count || 0; paintParts(); paintFix(); }
   });
   const cur = () => (ST.data && ST.sel != null ? ST.data.slots[ST.slot].find((x) => x.i === ST.sel) : null);
   const lookFor = () => ({ color: ST.look.color, eyes: 1, hair: ST.withHair && ST.slot !== "hair" ? ST.look.hair : -1, shirt: ST.withClothes && ST.slot !== "shirt" ? ST.look.shirt : -1, pants: ST.withClothes && ST.slot !== "pants" ? ST.look.pants : -1 });
@@ -1060,7 +1066,7 @@
   function pick(i) {
     if (ST.sel === i && !ST.draft) return;
     if (!leaveOk()) return;
-    ST.draft = null; ST.sel = i; const x = cur(); ST.fix = x.fix ? JSON.parse(JSON.stringify(x.fix)) : null; ST.savedFix = ST.fix;
+    ST.draft = null; ST.sel = i; ST.parts = []; const x = cur(); ST.fix = x.fix ? JSON.parse(JSON.stringify(x.fix)) : null; ST.savedFix = ST.fix;
     showInLab(true); paintList(); paintSide();
   }
 
@@ -1083,23 +1089,47 @@
   function fixBox() {
     const row = (label, key, k, min, max, step, unit) => {
       const range = h("input", { type: "range", min, max, step, "data-k": key + k }), numIn = h("input", { class: "inp st-n", type: "number", min, max, step, "data-k": key + k });
-      const set = (v) => { const f = normFix(ST.fix) || {}; const out = { p: f.p || [0, 0, 0], r: f.r || [0, 0, 0], s: f.s || 1 };
+      const set = (v) => { const ek = editKey(); if (ek === null) return;
+        const F = JSON.parse(JSON.stringify(normFix(ST.fix) || {})), f = subFix(F, ek), out = { p: f.p || [0, 0, 0], r: f.r || [0, 0, 0], s: f.s || 1 };
         if (key === "s") out.s = Math.max(.2, Math.min(5, +v || 1)); else if (key === "r") out.r[k] = rad(+v || 0); else out.p[k] = +v || 0;
-        ST.fix = normFix(out); lab({ t: "fix", fix: ST.fix }); paintFix(); };
+        if (ek === "") { const parts = F.parts; ST.fix = normFix({ ...out, parts }); } else { (F.parts ||= {})[ek] = out; ST.fix = normFix(F); }
+        lab({ t: "fix", fix: ST.fix }); paintFix(); };
       range.addEventListener("input", () => set(range.value)); numIn.addEventListener("change", () => set(numIn.value));
       return h("label", { class: "st-axis" }, h("b", null, label), range, numIn, h("small", null, unit));
     };
     ST.ui.save = h("button", { type: "button", class: "b b-green", onclick: saveFix }, "Save position");
     ST.ui.state = h("span", { class: "small" });
+    ST.ui.parts = h("div", { class: "st-parts" });
     return h("div", { class: "st-box" }, h("h3", null, "Where it sits"),
+      ST.ui.parts,
       h("p", { class: "small muted" }, "Left / right, up / down, back / front: compared with where it was made."),
       row("X", "p", 0, -1, 1, .005, ""), row("Y", "p", 1, -1, 1, .005, ""), row("Z", "p", 2, -1, 1, .005, ""),
       h("h4", null, "Turn"), row("X", "r", 0, -180, 180, 1, "°"), row("Y", "r", 1, -180, 180, 1, "°"), row("Z", "r", 2, -180, 180, 1, "°"),
       h("h4", null, "Size"), row("×", "s", 0, .2, 3, .01, ""),
-      h("div", { class: "row st-acts" }, ST.draft ? null : ST.ui.save, h("button", { type: "button", class: "b b-ghost", onclick: () => { ST.fix = null; lab({ t: "fix", fix: null }); paintFix(); } }, "Back to how it was made"), ST.ui.state));
+      h("div", { class: "row st-acts" }, ST.draft ? null : ST.ui.save, h("button", { type: "button", class: "b b-ghost", onclick: resetPicked }, "Back to how it was made"), ST.ui.state));
+  }
+  function paintParts() {
+    const box = ST.ui.parts; if (!box) return;
+    if (ST.partCount < 2) { box.replaceChildren(); return; }
+    const moved = (k) => !!(ST.fix && ST.fix.parts && ST.fix.parts[k]);
+    const chip = (label, parts, on, mv) => h("button", { type: "button", class: "st-part" + (on ? " on" : "") + (mv ? " mv" : ""), onclick: (e) => {
+      const add = e.shiftKey && parts.length === 1, cur = ST.parts.slice();
+      const next = !parts.length ? [] : add ? (cur.includes(parts[0]) ? cur.filter((k) => k !== parts[0]) : [...cur, parts[0]]) : parts;
+      lab({ t: "select", parts: next }); } }, label);
+    box.replaceChildren(h("p", { class: "small muted" }, "Move all of it, or one part on its own (click a part in the 3D view too; shift + click for more parts):"),
+      h("div", { class: "st-chips" }, chip("Whole item", [], !ST.parts.length, false),
+        Array.from({ length: ST.partCount }, (_, k) => chip("Part " + (k + 1), [String(k)], ST.parts.includes(String(k)), moved(String(k))))));
+  }
+  function resetPicked() {
+    const ek = editKey();
+    if (ek === "" ) ST.fix = null;   // the whole item, parts and all
+    else { const F = JSON.parse(JSON.stringify(normFix(ST.fix) || {})); if (F.parts) (ek === null ? ST.parts : [ek]).forEach((k) => delete F.parts[k]); ST.fix = normFix(F); }
+    lab({ t: "fix", fix: ST.fix }); paintFix(); paintParts();
   }
   function paintFix() {
-    const f = normFix(ST.fix) || {}, p = f.p || [0, 0, 0], r = f.r || [0, 0, 0], s = f.s || 1;
+    paintParts();
+    const ek = editKey(), f = ek === null ? {} : normFix(subFix(ST.fix, ek), true) || {}, p = f.p || [0, 0, 0], r = f.r || [0, 0, 0], s = f.s || 1;
+    ST.ui.side && ST.ui.side.querySelectorAll(".st-axis input").forEach((el) => { el.disabled = ek === null; });
     const vals = { p0: p[0], p1: p[1], p2: p[2], r0: deg(r[0]), r1: deg(r[1]), r2: deg(r[2]), s0: s };
     ST.ui.side && ST.ui.side.querySelectorAll("[data-k]").forEach((el) => { if (el !== document.activeElement) el.value = vals[el.dataset.k]; });
     if (ST.ui.save) { const d = !ST.draft && !sameFix(ST.fix, ST.savedFix); ST.ui.save.disabled = !d; ST.ui.state.textContent = ST.draft ? "" : d ? "Not saved yet" : ST.savedFix ? "Saved (moved)" : "As it was made"; ST.ui.state.className = "small " + (d ? "st-warn" : "muted"); }

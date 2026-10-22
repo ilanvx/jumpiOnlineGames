@@ -46,8 +46,9 @@ const RARITY = ["common", "rare", "epic", "legendary"], SALE = ["shop", "future"
 const OWN = ["name", "he", "price", "starter", "gift", "event", "world", "member", "costume", "custom", "fix", "fixPanel", "rarity", "sale", "base", "placeholder"];
 const txt = (v, max) => String(v ?? "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, max);
 const r4 = (n) => Math.round(n * 10000) / 10000;
-function readFix(f) {
-  if (f == null) return null;
+// a fix: the whole item (p, r, s) and its parts on their own (parts: {"<child number>": {p, r, s}}: a jetpack's tanks without its straps)
+function readFix(f, part = false) {
+  if (f == null || typeof f !== "object") return null;
   const v3 = (a, lim) => (Array.isArray(a) && a.length === 3 && a.every((x) => Number.isFinite(+x) && Math.abs(+x) <= lim) ? a.map((x) => r4(+x)) : null);
   const p = v3(f.p, 3), r = v3(f.r, 7), s = Number.isFinite(+f.s) && +f.s >= .2 && +f.s <= 5 ? r4(+f.s) : 1;
   if ((f.p && !p) || (f.r && !r)) throw new Error("That position is out of range.");
@@ -55,6 +56,11 @@ function readFix(f) {
   if (p && p.some((x) => x !== 0)) out.p = p;
   if (r && r.some((x) => x !== 0)) out.r = r;
   if (s !== 1) out.s = s;
+  if (!part && f.parts && typeof f.parts === "object") {
+    const parts = {};
+    for (const [k, v] of Object.entries(f.parts).slice(0, 80)) { if (!/^\d{1,3}$/.test(k)) continue; const one = readFix(v, true); if (one) parts[k] = one; }
+    if (Object.keys(parts).length) out.parts = parts;
+  }
   return Object.keys(out).length ? out : null;
 }
 function readDetails(d, colorKeys) {
