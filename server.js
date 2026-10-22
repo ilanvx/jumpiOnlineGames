@@ -256,7 +256,8 @@ app.get(["/admin", "/admin/"], async (req, res, next) => {
       "Cache-Control": "no-store", "X-Frame-Options": "DENY", "X-Robots-Tag": "noindex",
       "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     });
-    res.sendFile(path.join(PUBLIC_DIR, "admin", "index.html"));
+    // its own files get versions like every page (routes/fresh.js), so a new admin.js reaches everyone at once
+    res.type("html").send(freshPage("admin/index.html", rawPage("admin/index.html"), { guard: false }));
   } catch (err) {
     next(err);
   }
