@@ -215,7 +215,7 @@ export const NECK_STYLES = {
     pack.add(mesh(new T.BoxGeometry(.38, .44, .12), dark, 0, 0, .04));
     const flames = [];
     [-1, 1].forEach((s) => { pack.add(mesh(new T.CapsuleGeometry(.1, .32, 6, 14), body, s * .14, 0, -.06)); pack.add(mesh(new T.CylinderGeometry(.06, .09, .1, 14), dark, s * .14, -.3, -.06));
-      pack.add(mesh(new T.TorusGeometry(.1, .015, 6, 20), glow, s * .14, .12, -.06)).rotation.x = Math.PI / 2;
+      const ring = mesh(new T.TorusGeometry(.1, .015, 6, 20), glow, s * .14, .12, -.06); ring.rotation.x = Math.PI / 2; pack.add(ring);   // (add() returns the pack: turning its result laid the whole jetpack on its back)
       const f = mesh(new T.ConeGeometry(.07, .26, 12, 1, true), new T.MeshBasicMaterial({ color: o.col2, transparent: true, opacity: .8, blending: T.AdditiveBlending, depthWrite: false }), s * .14, -.47, -.06); f.rotation.x = Math.PI; pack.add(f); flames.push(f); });
     [-1, 1].forEach((s) => { const pts = [H.bodyPt(Math.PI + s * .35, .5, 1.09), H.bodyPt(s * 1.2, .55, 1.12), H.bodyPt(s * .35, .3, 1.1), H.bodyPt(s * .4, -.1, 1.09)]; g.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 24, .022, 6), dark)); });
     H.anim((t) => { flames.forEach((f, k) => { const s = .8 + .35 * Math.abs(Math.sin(t * 23 + k * 2)); f.scale.set(1, s, 1); f.position.y = -.47 - (s - 1) * .13; }); glow.emissiveIntensity = .8 + .4 * Math.sin(t * 6); });

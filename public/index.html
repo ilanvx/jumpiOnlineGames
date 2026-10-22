@@ -1484,6 +1484,24 @@ body.rtl .dlx-pin{translate:50% 0}
 .dlx-lost-acts button:disabled{opacity:.6;cursor:progress}
 .dlx-lost-msg{min-height:1.2em;font-weight:600;color:#e2322a;margin:0}
 @media (max-width:560px){.dlx{padding:40px 8px 10px}.dlx-in{padding:14px 8px 12px;gap:10px}.dlx-week{gap:6px;grid-template-columns:repeat(3,1fr) 1.15fr}.dlx-day{min-height:96px}.dlx-day .pic svg{width:30px;height:30px}.dlx-day .c b{font-size:1.05rem}.dlx-day.big .pic svg{width:46px;height:46px}.dlx-stamp span{width:56px;height:56px;font-size:.75rem}.dlx-goal .gift{width:44px;height:44px}.dlx-goal .gift svg{width:32px;height:32px}.dlx-claim{height:52px;font-size:1.3rem}}
+/* a phone held sideways (the app): everything on one screen, no scrolling. The week is one row of 7, all a bit smaller */
+@media (max-height:520px) and (orientation:landscape){
+  .dl-ov{padding:8px}
+  .dlx{width:min(860px,100%);max-height:calc(100dvh - 12px);padding:30px 10px 10px;border-radius:24px}
+  .dlx-ribbon{top:-4px;padding:6px 24px 8px}.dlx-ribbon h2{font-size:1.25rem}.dlx-ribbon i{font-size:1rem}.dlx-ribbon::before,.dlx-ribbon::after{top:10px;height:28px}
+  .dlx .set-close{top:8px;right:8px;width:38px;height:38px}body.rtl .dlx .set-close{right:auto;left:8px}
+  .dlx-in{gap:6px;padding:8px 12px 10px;border-radius:18px}
+  .dlx-bar{height:46px;margin-top:0}.dlx-track{top:20px;height:12px}.dlx-goal{top:0}.dlx-goal .gift{width:38px;height:38px;border-radius:12px}.dlx-goal .gift svg{width:28px;height:28px}
+  .dlx-goal b{font-size:.72rem}.dlx-pin{top:14px;font-size:.78rem}
+  .dlx-week{grid-template-columns:repeat(6,1fr) 1.2fr;grid-template-rows:auto;gap:6px}
+  .dlx-day,.dlx-day.big{grid-row:auto;grid-column:auto;min-height:0}
+  .dlx-day .h{padding:3px 0;font-size:.85rem}.dlx-day .c{gap:2px;padding:4px 2px 6px}
+  .dlx-day .pic svg{width:28px;height:28px}.dlx-day.big .pic svg{width:34px;height:34px}.dlx-day .c b,.dlx-day.big .c b{font-size:1rem}.dlx-day .c em{font-size:.68rem}
+  .dlx-stamp{inset:20px 0 0}.dlx-stamp span,.dlx-day.big .dlx-stamp span{width:48px;height:48px;font-size:.62rem;border-width:3px}.dlx-stamp span svg{width:18px;height:18px}
+  .dlx-note{font-size:.85rem}.dlx-next{font-size:.85rem}.dlx-next svg{width:20px;height:20px}
+  .dlx-claim{height:44px;font-size:1.2rem;min-width:min(260px,100%)}
+  .dlx-lost{padding:8px;overflow:auto}.dlx-lost-card{padding:12px 16px;gap:6px}.dlx-lost-card .flame{font-size:2rem}.dlx-lost-card h3{font-size:1.25rem}.dlx-lost-acts button{height:42px}
+}
 .coin-rain{position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden}
 .rain-coin{position:absolute;top:-50px;width:40px;height:40px;animation:coinFall 1.6s cubic-bezier(.4,.1,.7,1) forwards}
 .rain-coin svg{width:100%;height:100%}
