@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jumpi Games · Who We Are | ג'אמפי גיימס · מי אנחנו</title>
+<meta name="description" content="Jumpi Games is an independent studio from Israel that makes games for kids: Jumpi, a 3D virtual world, and Puffball, bubble soccer in the browser. Fun for kids, peace of mind for parents.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1b1f4a">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/shared/a11y.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap">
+<link rel="stylesheet" href="/site/company-world.css">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+</head>
+<body class="cw">
+
+<!-- the world: one 3D scene behind the page; scrolling moves its camera (company-world.js) -->
+<canvas id="cwWorld" aria-hidden="true"></canvas>
+<div class="cw-still" aria-hidden="true"></div>
+
+<header class="cw-top">
+  <img class="cw-top-logo" src="/jumpi-logo.png" alt="Jumpi Games" width="110" height="64">
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">EN</button><button type="button" data-set="he" aria-pressed="false">עב</button></div>
+</header>
+
+<nav class="cw-rail" aria-label="Scenes">
+  <a href="#s0" data-go="0"><span data-l="en">Welcome</span><span data-l="he">ברוכים הבאים</span></a>
+  <a href="#s1" data-go="1"><span data-l="en">Who we are</span><span data-l="he">מי אנחנו</span></a>
+</nav>
+
+<main>
+  <!-- 1. the island and the logo -->
+  <section class="cw-sc cw-s0" id="s0" data-scene="0">
+    <h1 class="cw-sr"><span data-l="en">Jumpi Games</span><span data-l="he">ג'אמפי גיימס</span></h1>
+    <div class="cw-hint" aria-hidden="true">
+      <span class="cw-mouse"><i></i></span>
+      <span data-l="en">Scroll to enter</span><span data-l="he">גללו כדי להיכנס</span>
+    </div>
+  </section>
+
+  <!-- 2. into the world -->
+  <section class="cw-sc cw-s1" id="s1" data-scene="1">
+    <div class="cw-stick">
+      <h2 class="cw-big" data-words>
+        <span data-l="en">We make games for kids</span><span data-l="he">אנחנו יוצרים משחקים לילדים</span>
+      </h2>
+      <p class="cw-lead" data-rise>
+        <span data-l="en">Jumpi Games is an independent studio from Israel. We build bright, joyful worlds where kids play, create and laugh with friends, and parents can feel calm.</span>
+        <span data-l="he">ג'אמפי גיימס הוא סטודיו עצמאי מישראל. אנחנו בונים עולמות שמחים ומוארים, שבהם ילדים משחקים, יוצרים וצוחקים עם חברים, וההורים יכולים להיות רגועים.</span>
+      </p>
+    </div>
+  </section>
+  <div class="cw-tail"></div>
+</main>
+
+<script type="module" src="/site/guide-lang.js"></script>
+<script type="module" src="/site/company-world.js"></script>
+</body>
+</html>

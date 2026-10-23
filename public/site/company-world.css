@@ -1,0 +1,62 @@
+/* The company landing page (company-world.html): a 3D world behind the page, the scroll moves its camera.
+   Its own look (not the game's): sunset over the sea, clean modern type (Heebo), lots of quiet space. */
+html[lang="en"] [data-l="he"],html[lang="he"] [data-l="en"]{display:none!important}
+:root{--ink:#fff8ef;--ink2:rgb(255 248 239 / .78);--night:#141833;--coral:#ff8a6b;--peach:#ffd2a1;--sea:#0f5a6b;--accent:#ffb35c;
+  --font:"Heebo",system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html{background:#1b1f4a;scroll-behavior:auto}
+body.cw{margin:0;color:var(--ink);font:400 18px/1.6 var(--font);background:linear-gradient(180deg,#2a2d66,#ff9a7a 55%,#ffcf9f);min-height:100vh;overflow-x:hidden}
+.cw :focus-visible{outline:2px solid var(--peach);outline-offset:4px;border-radius:6px}
+.cw-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* the world, fixed behind everything; a still picture under it until it draws (and when 3D isn't there) */
+#cwWorld{position:fixed;inset:0;width:100vw;height:100vh;height:100lvh;display:block;z-index:0}
+.cw-still{position:fixed;inset:0;z-index:-1;background:url(/site/img/company/hero-1600.jpg) center/cover}
+html.cw-3d .cw-still{display:none}
+
+/* top: the logo (once the big one is behind us) and the language */
+.cw-top{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:18px clamp(16px,4vw,44px);pointer-events:none}
+.cw-top>*{pointer-events:auto}
+.cw-top-logo{width:96px;height:auto;opacity:var(--logo,0);transform:translateY(calc((1 - var(--logo,0)) * -10px));transition:opacity .3s,transform .3s;filter:drop-shadow(0 6px 14px rgb(20 20 60 / .35))}
+.lang-sw{display:flex;gap:2px;padding:4px;border-radius:999px;background:rgb(20 22 60 / .32);backdrop-filter:blur(10px);border:1px solid rgb(255 255 255 / .18)}
+.lang-sw button{border:0;background:none;color:var(--ink2);font:500 .85rem var(--font);letter-spacing:.04em;padding:6px 13px;border-radius:999px;cursor:pointer}
+.lang-sw button[aria-pressed="true"]{background:rgb(255 255 255 / .92);color:#22244f}
+
+/* the scenes rail */
+.cw-rail{position:fixed;z-index:10;top:50%;inset-inline-end:clamp(12px,2.4vw,30px);transform:translateY(-50%);display:grid;gap:14px}
+.cw-rail a{position:relative;display:block;width:10px;height:10px;border-radius:50%;background:rgb(255 255 255 / .35);transition:transform .25s,background .25s}
+.cw-rail a span{position:absolute;inset-inline-end:22px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.8rem;color:var(--ink);opacity:0;transition:opacity .2s;text-shadow:0 1px 8px rgb(0 0 0 / .4)}
+.cw-rail a:hover span,.cw-rail a:focus-visible span{opacity:1}
+.cw-rail a[aria-current="step"]{background:#fff;transform:scale(1.35)}
+
+/* scenes: their height is the scroll that plays them */
+main{position:relative;z-index:2}
+.cw-sc{position:relative}
+.cw-s0{height:140vh}
+.cw-s1{height:260vh}
+.cw-tail{height:40vh}
+.cw-stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;align-content:center;justify-items:center;text-align:center;padding:0 clamp(20px,6vw,80px)}
+/* a soft shade behind the words, so they read on any part of the world */
+.cw-stick::before{content:"";position:absolute;inset:18% 0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgb(30 22 70 / .28),transparent 72%);opacity:var(--shade,0);pointer-events:none;z-index:-1}
+
+/* scroll hint */
+.cw-hint{position:absolute;left:50%;bottom:max(5vh,28px);top:auto;transform:translateX(-50%);display:grid;justify-items:center;gap:10px;
+  font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);opacity:calc(1 - var(--t,0) * 4);text-shadow:0 2px 10px rgb(30 20 60 / .45)}
+html[lang="he"] .cw-hint{letter-spacing:.04em;text-transform:none;font-size:.95rem}
+.cw-hint{position:fixed}
+.cw-mouse{width:26px;height:40px;border-radius:14px;border:2px solid rgb(255 255 255 / .9);display:block;position:relative}
+.cw-mouse i{position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#fff;animation:cwWheel 1.8s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes cwWheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:0}}
+
+/* big words, built word by word as the scene plays (company-world.js sets --w on each word) */
+.cw-big{margin:0;font-weight:800;font-size:clamp(2.6rem,8vw,7rem);line-height:1.02;letter-spacing:-.025em;max-width:13ch;text-wrap:balance;text-shadow:0 8px 40px rgb(40 20 70 / .35)}
+html[lang="he"] .cw-big{letter-spacing:-.01em;line-height:1.08}
+.cw-big .w{display:inline-block;opacity:var(--w,0);transform:translateY(calc((1 - var(--w,0)) * .45em)) scale(calc(.94 + var(--w,0) * .06));filter:blur(calc((1 - var(--w,0)) * 8px));will-change:transform,opacity}
+.cw-lead{max-width:660px;margin:28px 0 0;font-size:clamp(1.1rem,1.9vw,1.4rem);font-weight:500;line-height:1.55;color:var(--ink);opacity:var(--r,0);transform:translateY(calc((1 - var(--r,0)) * 24px));
+  text-shadow:0 2px 18px rgb(40 20 70 / .5)}
+
+/* no 3D, or less motion: a still picture and plain text */
+html.cw-calm .cw-big .w,html.cw-calm .cw-lead{opacity:1!important;transform:none!important;filter:none!important}
+html.cw-calm .cw-mouse i{animation:none}
+
+@media (max-width:700px){.cw-rail{display:none}.cw-top{padding:14px 16px}.cw-top-logo{width:78px}.cw-s1{height:220vh}}
