@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jumpi Games · Worlds in a Box | ג'אמפי גיימס · עולמות באריזה</title>
+<meta name="description" content="Jumpi Games makes games for kids. Every game is a whole world: Jumpi, a 3D virtual world, and Puffball, bubble soccer in the browser.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#fff8ee">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="/shared/a11y.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Heebo:wght@400;500;700&family=Caveat:wght@600;700&family=Amatic+SC:wght@700&display=swap">
+<link rel="stylesheet" href="/site/company-box.css">
+<script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
+</head>
+<body class="bx">
+
+<!-- the room behind everything: cream paper, soft colour that changes with the game on show -->
+<div class="bx-room" aria-hidden="true"><i class="g0"></i><i class="g1"></i><i class="g2"></i><i class="g3"></i></div>
+<!-- the toy boxes, the worlds inside them and the characters: one 3D scene, the scroll plays it (company-box.js) -->
+<canvas id="bxWorld" aria-hidden="true"></canvas>
+
+<header class="bx-top">
+  <img class="bx-top-logo" src="/jumpi-logo.png" alt="Jumpi Games" width="110" height="64">
+  <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">EN</button><button type="button" data-set="he" aria-pressed="false">עב</button></div>
+</header>
+
+<main>
+  <!-- 1. opening -->
+  <section class="bx-sc bx-hero" id="hero" data-scene="0">
+    <div class="bx-stick">
+      <div class="bx-hero-text bx-show" data-show="-1,.62">
+        <h1 class="bx-h1">
+          <span data-l="en">We have a whole <mark>world</mark> in our heads.</span>
+          <span data-l="he">יש לנו <mark>עולם</mark> שלם בראש.</span>
+        </h1>
+        <p class="bx-sub"><span data-l="en">And we turn it into games.</span><span data-l="he">ואנחנו הופכים אותו למשחקים.</span></p>
+        <p class="bx-by"><img src="/jumpi-logo.png" alt="" width="684" height="398"><span data-l="en">Jumpi Games · a studio that makes games for kids</span><span data-l="he">ג'אמפי גיימס · סטודיו למשחקים לילדים</span></p>
+      </div>
+      <div class="bx-hint" aria-hidden="true"><span class="bx-mouse"><i></i></span><span data-l="en">Scroll to open</span><span data-l="he">גללו כדי לפתוח</span></div>
+    </div>
+  </section>
+
+  <!-- 2. our games: each one is a collector's box that opens into its world -->
+  <section class="bx-sc bx-game bx-jumpi" id="games" data-scene="1">
+    <div class="bx-stick">
+      <div class="bx-intro bx-show" data-show="0,.13">
+        <h2 class="bx-h2"><span data-l="en">Our games</span><span data-l="he">המשחקים שלנו</span></h2>
+        <p><span data-l="en">Every game is a whole world. Let's open the box.</span><span data-l="he">כל משחק הוא עולם שלם. בואו נפתח את הקופסה.</span></p>
+      </div>
+      <article class="bx-panel bx-show" data-show=".46,.92">
+        <figure class="bx-screen"><img src="/site/img/home/card-explore.jpg" alt="" width="720" height="533" loading="lazy"><figcaption><span data-l="en">Inside Jumpi</span><span data-l="he">בתוך ג'אמפי</span></figcaption></figure>
+        <img class="bx-logo" src="/jumpi-logo.png" alt="Jumpi" width="684" height="398" loading="lazy">
+        <h3><span data-l="en">A 3D virtual world for kids</span><span data-l="he">עולם וירטואלי בתלת־ממד לילדים</span></h3>
+        <p><span data-l="en">Every kid creates their own character and steps into a big, bright world: a whole city to explore with friends, fun jobs, pets, a home to decorate and mini-games to play together.</span>
+          <span data-l="he">כל ילד יוצר דמות משלו ונכנס לעולם גדול וצבעוני: עיר שלמה לטייל בה עם חברים, עבודות כיפיות, חיות מחמד, בית לעצב ומיני־משחקים לשחק ביחד.</span></p>
+        <ul class="bx-tags"><li><span data-l="en">Ages 6+</span><span data-l="he">גיל 6+</span></li><li><span data-l="en">Friends-only messages</span><span data-l="he">הודעות רק בין חברים</span></li><li><span data-l="en">Parental controls</span><span data-l="he">בקרת הורים</span></li></ul>
+        <a class="bx-btn" href="/" target="_blank" rel="noopener"><span data-l="en">Visit Jumpi</span><span data-l="he">לעולם של ג'אמפי</span></a>
+      </article>
+    </div>
+  </section>
+
+  <section class="bx-sc bx-game bx-puff" id="puffball" data-scene="2">
+    <div class="bx-stick">
+      <article class="bx-panel bx-show" data-show=".46,.92">
+        <figure class="bx-screen"><img src="/site/img/company/puffball.jpg" alt="" width="1200" height="750" loading="lazy"><figcaption><span data-l="en">Inside Puffball</span><span data-l="he">בתוך פאפבול</span></figcaption></figure>
+        <img class="bx-logo" src="/site/img/company/puffball-logo.png" alt="Puffball" width="720" height="257" loading="lazy">
+        <h3><span data-l="en">Bubble soccer in the browser</span><span data-l="he">כדורגל בועות בדפדפן</span></h3>
+        <p><span data-l="en">A fast, funny soccer game where every player is a bouncy Puff. A quick game, a room with a code for friends, or practice against bots. Nothing to download and no sign-up.</span>
+          <span data-l="he">משחק כדורגל מהיר ומצחיק שבו כל שחקן הוא Puff קופצני. משחק מהיר, חדר עם קוד בשביל החברים, או אימון מול בובות. בלי הורדה ובלי הרשמה.</span></p>
+        <ul class="bx-tags"><li><span data-l="en">No sign-up</span><span data-l="he">בלי הרשמה</span></li><li><span data-l="en">Made-up names</span><span data-l="he">שמות כיפיים</span></li><li><span data-l="en">Filtered chat</span><span data-l="he">צ'אט מסונן</span></li></ul>
+        <a class="bx-btn lime" href="https://puffball.site/" target="_blank" rel="noopener"><span data-l="en">Play Puffball</span><span data-l="he">לשחק פאפבול</span></a>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. who we are: a studio notebook -->
+  <section class="bx-notes" id="us" data-scene="3">
+    <div class="bx-book">
+      <div class="bx-page bx-p1">
+        <span class="bx-tape" aria-hidden="true"></span>
+        <h2 class="bx-hand"><span data-l="en">Behind the scenes</span><span data-l="he">מאחורי הקלעים</span></h2>
+        <h3><span data-l="en">Our story</span><span data-l="he">הסיפור שלנו</span></h3>
+        <p><span data-l="en">Jumpi Games is an independent studio from Israel. It started with one idea: build kids a place they love coming back to, where they create, play and laugh with friends, and their parents can feel calm.</span>
+          <span data-l="he">ג'אמפי גיימס הוא סטודיו עצמאי מישראל. הכל התחיל מרעיון אחד: לבנות לילדים מקום שכיף לחזור אליו, שבו הם יוצרים, משחקים וצוחקים עם חברים, וההורים יכולים להיות רגועים.</span></p>
+        <h3><span data-l="en">Where we're going</span><span data-l="he">לאן אנחנו הולכים</span></h3>
+        <p><span data-l="en">Happy, safe worlds that every kid can step into with one click: no downloads, no worries. Every new game we make is one more world opening up.</span>
+          <span data-l="he">עולמות שמחים ובטוחים שכל ילד יכול להיכנס אליהם בלחיצה אחת, בלי הורדות ובלי דאגות. כל משחק חדש שלנו הוא עוד עולם שנפתח.</span></p>
+        <div class="bx-sticky" aria-hidden="true"><span data-l="en">Remember: fun first, safe always ♥</span><span data-l="he">לזכור: קודם כל כיף, תמיד בטוח ♥</span></div>
+      </div>
+      <div class="bx-page bx-p2">
+        <h3 class="bx-hand small"><span data-l="en">From an idea to a game</span><span data-l="he">מרעיון למשחק</span></h3>
+        <ol class="bx-steps">
+          <li><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8c-11 0-18 8-18 17 0 7 4 10 7 14 2 2 2 5 2 7h18c0-2 0-5 2-7 3-4 7-7 7-14 0-9-7-17-18-17zM24 52h16M26 57h12"/><path class="ray" d="M32 1v3M8 12l3 2M56 12l-3 2M3 28h4M57 28h4"/></svg>
+            <b><span data-l="en">An idea</span><span data-l="he">רעיון</span></b><span data-l="en">It starts with a question: what would be the most fun to play?</span><span data-l="he">הכל מתחיל בשאלה: במה הכי כיף לשחק?</span></li>
+          <li><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 54l4-14 30-30 10 10-30 30zM14 40l10 10M38 16l10 10"/><path class="ray" d="M8 60c8-3 14 3 22-1s12 2 20-1"/></svg>
+            <b><span data-l="en">A sketch</span><span data-l="he">סקיצה</span></b><span data-l="en">Characters, maps and buttons, drawn on paper first.</span><span data-l="he">דמויות, מפות וכפתורים, קודם על נייר.</span></li>
+          <li><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6l22 12v28L32 58 10 46V18zM10 18l22 12 22-12M32 30v28"/><path class="ray" d="M21 12l22 12"/></svg>
+            <b><span data-l="en">Building</span><span data-l="he">בנייה</span></b><span data-l="en">We build the world in 3D, piece by piece.</span><span data-l="he">בונים את העולם בתלת־ממד, חלק אחרי חלק.</span></li>
+          <li><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 22h36c6 0 9 6 9 14s-3 14-8 14c-4 0-6-3-9-7H22c-3 4-5 7-9 7-5 0-8-6-8-14s3-14 9-14z"/><path class="ray" d="M18 30v10M13 35h10M44 32h0M50 38h0"/></svg>
+            <b><span data-l="en">Play, listen, improve</span><span data-l="he">משחקים, מקשיבים, משפרים</span></b><span data-l="en">Kids play, we listen, and the game gets better.</span><span data-l="he">ילדים משחקים, אנחנו מקשיבים, והמשחק משתפר.</span></li>
+        </ol>
+        <div class="bx-polas">
+          <figure class="bx-pola"><img src="/site/img/home/card-team.jpg" alt="" width="720" height="533" loading="lazy"><figcaption><span data-l="en">Jumpis, ready to play</span><span data-l="he">ג'אמפים מוכנים לשחק</span></figcaption></figure>
+          <figure class="bx-pola"><img src="/site/img/company/puffball.jpg" alt="" width="1200" height="750" loading="lazy"><figcaption><span data-l="en">Puffball's first pitch</span><span data-l="he">המגרש של פאפבול</span></figcaption></figure>
+        </div>
+        <p class="bx-scribble" aria-hidden="true"><span data-l="en">bigger buttons for little hands!</span><span data-l="he">כפתורים גדולים לידיים קטנות!</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. the future: boxes that haven't been opened yet -->
+  <section class="bx-sc bx-next" id="next" data-scene="4">
+    <div class="bx-stick">
+      <div class="bx-intro bx-show" data-show=".02,1.5">
+        <h2 class="bx-h2"><span data-l="en">What's in the next box?</span><span data-l="he">מה בקופסה הבאה?</span></h2>
+        <p><span data-l="en">A few more worlds are already on our desk. We're not opening them yet…</span><span data-l="he">יש לנו עוד כמה עולמות על השולחן. עוד לא פותחים אותם…</span></p>
+      </div>
+      <ul class="bx-soon bx-show" data-show=".12,1.5">
+        <li><b><span data-l="en">Coming soon</span><span data-l="he">בקרוב</span></b><span>???</span></li>
+        <li><b><span data-l="en">Top secret</span><span data-l="he">סודי ביותר</span></b><span>???</span></li>
+        <li><b><span data-l="en">In the workshop</span><span data-l="he">בסדנה</span></b><span>???</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. the end -->
+  <section class="bx-sc bx-end" id="end" data-scene="5">
+    <div class="bx-stick">
+      <div class="bx-end-in bx-show" data-show=".1,1.5">
+        <h2 class="bx-h1"><span data-l="en">Our next <mark>world</mark> is waiting for you.</span><span data-l="he">ה<mark>עולם</mark> הבא שלנו מחכה לכם.</span></h2>
+        <a class="bx-btn big" href="#games" data-go="games"><span data-l="en">Let's play</span><span data-l="he">בואו לשחק</span></a>
+        <footer class="bx-foot">
+          <nav aria-label="Legal"><a href="/contact"><span data-l="en">Contact</span><span data-l="he">צרו קשר</span></a><a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a><a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a><a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a></nav>
+          <p>© 2026 Jumpi Games™</p>
+        </footer>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="/site/guide-lang.js"></script>
+<script type="module" src="/site/company-box.js"></script>
+</body>
+</html>

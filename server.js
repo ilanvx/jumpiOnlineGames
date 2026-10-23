@@ -217,7 +217,8 @@ app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.h
 app.get(["/safety", "/online-safety", "/betihut"], page("site/safety.html"));   // online safety tips for kids
 app.get(["/about", "/about-us", "/odot"], page("site/about.html"));
 app.get(["/company", "/who-we-are", "/mi-anachnu"], page("site/company.html"));
-app.get("/company-new", page("site/company-world.html"));   // the 3D company landing page, while it is being built (noindex)   // the studio: who we are and our games (Jumpi, Puffball), no game menus   // about the company (linked from the footer)
+app.get("/company-new", page("site/company-world.html"));
+app.get("/company-box", page("site/company-box.html"));   // the company page, "Worlds in a Box" version, while it is being built (noindex)   // the 3D company landing page, while it is being built (noindex)   // the studio: who we are and our games (Jumpi, Puffball), no game menus   // about the company (linked from the footer)
 app.get(["/partners", "/partnerships", "/shutafim"], page("site/partners.html"));   // the businesses and projects we work with (footer)   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
