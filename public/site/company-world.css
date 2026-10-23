@@ -1,8 +1,13 @@
 /* The company landing page (company-world.html): a 3D world behind the page, the scroll moves its camera.
-   Its own look (not the game's): sunset over the sea, clean modern type (Heebo), lots of quiet space. */
+   Its own look (not the game's): sunset over the sea turning to night. Display type: Fraunces (English, with italic
+   accents) and Suez One (Hebrew), filled with a warm light gradient; body: Heebo. */
 html[lang="en"] [data-l="he"],html[lang="he"] [data-l="en"]{display:none!important}
-:root{--ink:#fff8ef;--ink2:rgb(255 248 239 / .78);--night:#141833;--coral:#ff8a6b;--peach:#ffd2a1;--sea:#0f5a6b;--accent:#ffb35c;
-  --font:"Heebo",system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--ink:#fff8ef;--ink2:rgb(255 244 232 / .84);--coral:#ff8a6b;--peach:#ffd2a1;--gold:#ffd27a;
+  --font:"Heebo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Fraunces","Suez One",Georgia,serif;
+  --fill:linear-gradient(176deg,#fffdf6 8%,#ffe7c4 48%,#ffbe94 92%);
+  --fill-em:linear-gradient(176deg,#ffe48a 0%,#ffa36c 52%,#ff6f8e 100%)}
+html[lang="he"]{--display:"Suez One","Fraunces",Georgia,serif}
 *{box-sizing:border-box}
 html{background:#1b1f4a;scroll-behavior:auto}
 body.cw{margin:0;color:var(--ink);font:400 18px/1.6 var(--font);background:linear-gradient(180deg,#2a2d66,#ff9a7a 55%,#ffcf9f);min-height:100vh;overflow-x:hidden}
@@ -25,38 +30,123 @@ html.cw-3d .cw-still{display:none}
 /* the scenes rail */
 .cw-rail{position:fixed;z-index:10;top:50%;inset-inline-end:clamp(12px,2.4vw,30px);transform:translateY(-50%);display:grid;gap:14px}
 .cw-rail a{position:relative;display:block;width:10px;height:10px;border-radius:50%;background:rgb(255 255 255 / .35);transition:transform .25s,background .25s}
-.cw-rail a span{position:absolute;inset-inline-end:22px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.8rem;color:var(--ink);opacity:0;transition:opacity .2s;text-shadow:0 1px 8px rgb(0 0 0 / .4)}
+.cw-rail a span{position:absolute;inset-inline-end:22px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:.8rem;color:var(--ink);opacity:0;transition:opacity .2s;text-shadow:0 1px 8px rgb(0 0 0 / .5)}
 .cw-rail a:hover span,.cw-rail a:focus-visible span{opacity:1}
-.cw-rail a[aria-current="step"]{background:#fff;transform:scale(1.35)}
+.cw-rail a[aria-current="step"]{background:#fff;transform:scale(1.35);box-shadow:0 0 12px rgb(255 220 170 / .8)}
 
 /* scenes: their height is the scroll that plays them */
 main{position:relative;z-index:2}
 .cw-sc{position:relative}
 .cw-s0{height:140vh}
 .cw-s1{height:260vh}
-.cw-tail{height:40vh}
+.cw-s2{height:430vh}
+.cw-s3{height:400vh}
+.cw-s4{height:300vh}
+.cw-s5{height:190vh}
 .cw-stick{position:sticky;top:0;height:100vh;height:100svh;display:grid;align-content:center;justify-items:center;text-align:center;padding:0 clamp(20px,6vw,80px)}
-/* a soft shade behind the words, so they read on any part of the world */
-.cw-stick::before{content:"";position:absolute;inset:18% 0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgb(30 22 70 / .28),transparent 72%);opacity:var(--shade,0);pointer-events:none;z-index:-1}
+/* a soft shade behind centred words, so they read on any part of the world */
+.cw-stick::before{content:"";position:absolute;inset:14% 0;background:radial-gradient(ellipse 66% 58% at 50% 50%,rgb(26 18 64 / .34),transparent 72%);opacity:var(--shade,0);pointer-events:none;z-index:-1}
+.cw-center{display:grid;justify-items:center}
+
+/* things that appear and leave as their scene plays (company-world.js sets --v from data-show) */
+.cw-show{opacity:var(--v,0);transform:translateY(calc((1 - var(--v,0)) * 28px))}
+.cw-show.off{visibility:hidden}
 
 /* scroll hint */
-.cw-hint{position:absolute;left:50%;bottom:max(5vh,28px);top:auto;transform:translateX(-50%);display:grid;justify-items:center;gap:10px;
+.cw-hint{position:fixed;left:50%;bottom:max(5vh,28px);transform:translateX(-50%);display:grid;justify-items:center;gap:10px;
   font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);opacity:calc(1 - var(--t,0) * 4);text-shadow:0 2px 10px rgb(30 20 60 / .45)}
 html[lang="he"] .cw-hint{letter-spacing:.04em;text-transform:none;font-size:.95rem}
-.cw-hint{position:fixed}
 .cw-mouse{width:26px;height:40px;border-radius:14px;border:2px solid rgb(255 255 255 / .9);display:block;position:relative}
 .cw-mouse i{position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:#fff;animation:cwWheel 1.8s cubic-bezier(.6,0,.4,1) infinite}
 @keyframes cwWheel{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{transform:translateY(0);opacity:0}}
 
-/* big words, built word by word as the scene plays (company-world.js sets --w on each word) */
-.cw-big{margin:0;font-weight:800;font-size:clamp(2.6rem,8vw,7rem);line-height:1.02;letter-spacing:-.025em;max-width:13ch;text-wrap:balance;text-shadow:0 8px 40px rgb(40 20 70 / .35)}
-html[lang="he"] .cw-big{letter-spacing:-.01em;line-height:1.08}
-.cw-big .w{display:inline-block;opacity:var(--w,0);transform:translateY(calc((1 - var(--w,0)) * .45em)) scale(calc(.94 + var(--w,0) * .06));filter:blur(calc((1 - var(--w,0)) * 8px));will-change:transform,opacity}
-.cw-lead{max-width:660px;margin:28px 0 0;font-size:clamp(1.1rem,1.9vw,1.4rem);font-weight:500;line-height:1.55;color:var(--ink);opacity:var(--r,0);transform:translateY(calc((1 - var(--r,0)) * 24px));
-  text-shadow:0 2px 18px rgb(40 20 70 / .5)}
+/* display type: warm light inside the letters, an accent word in sunset colours, a soft glow under them.
+   The words are built one by one as the scene plays (--w on each word). */
+.cw-big,.cw-mid,.cw-card h3,.cw-stars b{font-family:var(--display);font-optical-sizing:auto}
+.cw-big{margin:0;font-weight:800;font-size:clamp(2.7rem,8.4vw,7.4rem);line-height:.98;letter-spacing:-.035em;max-width:12ch;text-wrap:balance}
+.cw-mid{margin:0;font-weight:800;font-size:clamp(2.3rem,6vw,5rem);line-height:1;letter-spacing:-.03em;align-self:start;margin-top:18vh;text-wrap:balance}
+html[lang="he"] .cw-big,html[lang="he"] .cw-mid{font-weight:400;letter-spacing:0;line-height:1.08}
+.cw-big .w,.cw-mid .w{display:inline-block;padding:0 .04em .08em;background:var(--fill);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  opacity:var(--w,0);transform:translateY(calc((1 - var(--w,0)) * .5em)) rotate(calc((1 - var(--w,0)) * 4deg));
+  filter:blur(calc((1 - var(--w,0)) * 10px)) drop-shadow(0 6px 22px rgb(70 20 60 / .45)) drop-shadow(0 0 30px rgb(255 190 140 / .22));will-change:transform,opacity}
+.cw-big em,.cw-mid em{font-style:italic;font-weight:800;position:relative}
+html[lang="he"] .cw-big em,html[lang="he"] .cw-mid em{font-style:normal;font-weight:400}
+.cw-big em .w,.cw-mid em .w{background:var(--fill-em);-webkit-background-clip:text;background-clip:text}
+/* a brush stroke of light under the accent word */
+.cw-big em::after,.cw-mid em::after{content:"";position:absolute;inset-inline:2% 0;bottom:-.02em;height:.16em;border-radius:99px;
+  background:linear-gradient(90deg,transparent,rgb(255 196 120 / .9) 18%,rgb(255 120 140 / .85) 82%,transparent);filter:blur(1px);
+  transform:scaleX(var(--em,0));transform-origin:var(--em-from,left);opacity:.9}
+html[dir="rtl"] .cw-big em::after,html[dir="rtl"] .cw-mid em::after{--em-from:right}
 
-/* no 3D, or less motion: a still picture and plain text */
-html.cw-calm .cw-big .w,html.cw-calm .cw-lead{opacity:1!important;transform:none!important;filter:none!important}
+.cw-lead{max-width:640px;margin:30px 0 0;font-size:clamp(1.08rem,1.8vw,1.35rem);font-weight:400;line-height:1.6;color:var(--ink2);text-shadow:0 2px 18px rgb(40 20 70 / .6)}
+.cw-lead::before{content:"";display:block;width:56px;height:2px;margin:0 auto 22px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+/* cards beside a place in the world (the camera keeps that place on the other side) */
+.cw-side{grid-template-columns:1fr;grid-template-rows:1fr;align-content:stretch;justify-items:stretch;text-align:start}
+.cw-side>*{grid-area:1/1}
+.cw-side>.cw-mid{justify-self:center;text-align:center}
+.cw-card{align-self:center;justify-self:start;width:min(440px,100%);padding:30px 30px 32px;border-radius:30px;
+  background:linear-gradient(160deg,rgb(40 28 86 / .55),rgb(24 20 60 / .42));border:1px solid rgb(255 230 210 / .2);
+  backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);box-shadow:0 30px 80px rgb(14 10 40 / .35),inset 0 1px 0 rgb(255 255 255 / .12)}
+.cw-num{display:block;font:italic 800 3.2rem/1 "Fraunces",Georgia,serif;color:transparent;-webkit-text-stroke:1.5px rgb(255 214 170 / .75);margin-bottom:10px;letter-spacing:-.02em}
+.cw-card h3{margin:0 0 10px;font-weight:800;font-size:clamp(1.6rem,2.6vw,2.2rem);line-height:1.08;letter-spacing:-.02em;background:var(--fill);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+html[lang="he"] .cw-card h3{font-weight:400;letter-spacing:0}
+.cw-card p{margin:0;color:var(--ink2);font-size:1.02rem;line-height:1.6}
+.cw-game-logo{height:74px;width:auto;display:block;margin:-4px 0 14px;filter:drop-shadow(0 8px 16px rgb(10 10 40 / .4))}
+.cw-ticks{list-style:none;margin:16px 0 22px;padding:0;display:grid;gap:8px}
+.cw-ticks li{position:relative;padding-inline-start:28px;font-size:.98rem;font-weight:500}
+.cw-ticks li::before{content:"";position:absolute;inset-inline-start:0;top:.42em;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle,#fff6d8 0 25%,var(--gold) 26% 55%,transparent 58%);box-shadow:0 0 12px rgb(255 210 122 / .8)}
+
+/* buttons */
+.cw-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 28px;border-radius:999px;text-decoration:none;
+  font:600 1.06rem var(--font);color:#2a1638;background:linear-gradient(135deg,#ffe48a,#ffa36c 55%,#ff7d94);box-shadow:0 10px 30px rgb(255 130 110 / .35),inset 0 1px 0 rgb(255 255 255 / .6);transition:transform .15s,box-shadow .15s}
+.cw-btn::after{content:"→";font-size:1.1em;transition:transform .15s}
+html[dir="rtl"] .cw-btn::after{content:"←"}
+.cw-btn:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgb(255 130 110 / .5)}
+.cw-btn:hover::after{transform:translateX(3px)}
+html[dir="rtl"] .cw-btn:hover::after{transform:translateX(-3px)}
+.cw-btn.green{background:linear-gradient(135deg,#f0ff9a,#d8ff6e 45%,#8af4ff);box-shadow:0 10px 30px rgb(160 255 160 / .3),inset 0 1px 0 rgb(255 255 255 / .6)}
+
+/* night: four promises light up like stars */
+.cw-s4 .cw-big{max-width:14ch}
+.cw-stars{list-style:none;margin:44px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,330px));gap:26px 44px;text-align:start}
+.cw-stars li{position:relative;padding-inline-start:42px;color:var(--ink2);font-size:1rem;line-height:1.5;text-shadow:0 2px 14px rgb(5 8 30 / .8)}
+.cw-stars li::before{content:"";position:absolute;inset-inline-start:0;top:.15em;width:26px;height:26px;
+  background:radial-gradient(circle,#fff 0 12%,#ffe9a8 22%,rgb(255 210 122 / .55) 40%,transparent 68%);
+  box-shadow:0 0 calc(var(--v,0) * 26px) rgb(255 220 150 / .9);border-radius:50%;transform:scale(calc(.4 + var(--v,0) * .6))}
+.cw-stars b{display:block;font-weight:800;font-size:1.32rem;line-height:1.15;margin-bottom:4px;color:#fff2d6;letter-spacing:-.01em}
+html[lang="he"] .cw-stars b{font-weight:400;letter-spacing:0}
+.cw-stars li>span{display:block}
+
+/* the end */
+.cw-end{gap:0}
+.cw-end-logo{width:min(220px,48vw);height:auto;margin-bottom:12px;filter:drop-shadow(0 12px 30px rgb(10 10 50 / .5))}
+.cw-end .cw-big .w{opacity:1;transform:none;filter:drop-shadow(0 6px 22px rgb(70 20 60 / .45))}
+.cw-end .cw-big em{--em:1}
+.cw-end .cw-lead{margin-top:18px}
+.cw-end .cw-lead::before{display:none}
+.cw-end .cw-btn{margin-top:26px}
+.cw-foot{margin-top:56px;display:grid;justify-items:center;gap:10px;font-size:.88rem;color:rgb(255 244 232 / .62)}
+.cw-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px}
+.cw-foot a{color:rgb(255 244 232 / .8);text-decoration:none;border-bottom:1px solid rgb(255 244 232 / .25)}
+.cw-foot a:hover{color:#fff;border-color:#fff}
+.cw-foot p{margin:0}
+
+/* less motion: no blur or movement, the words are simply there as their scene plays */
+html.cw-calm .cw-big .w,html.cw-calm .cw-mid .w{transform:none!important;filter:drop-shadow(0 6px 22px rgb(70 20 60 / .45))!important}
+html.cw-calm .cw-show{transform:none!important}
 html.cw-calm .cw-mouse i{animation:none}
 
-@media (max-width:700px){.cw-rail{display:none}.cw-top{padding:14px 16px}.cw-top-logo{width:78px}.cw-s1{height:220vh}}
+@media (max-width:700px){
+  .cw-rail{display:none}.cw-top{padding:14px 16px}.cw-top-logo{width:78px}
+  .cw-s1{height:230vh}.cw-s2{height:400vh}.cw-s3{height:380vh}
+  .cw-mid{margin-top:14vh}
+  .cw-card{align-self:end;justify-self:center;margin-bottom:max(4vh,18px);padding:22px 22px 24px;border-radius:24px}
+  .cw-num{font-size:2.3rem;margin-bottom:6px}
+  .cw-card p{font-size:.96rem}
+  .cw-game-logo{height:54px;margin-bottom:10px}
+  .cw-ticks{margin:12px 0 16px}
+  .cw-stars{grid-template-columns:1fr;gap:16px;margin-top:28px;max-width:360px}
+  .cw-stars li{font-size:.94rem}.cw-stars b{font-size:1.15rem}
+}
+@media (max-height:640px) and (max-width:700px){.cw-card p{font-size:.9rem;line-height:1.5}.cw-ticks{display:none}}
