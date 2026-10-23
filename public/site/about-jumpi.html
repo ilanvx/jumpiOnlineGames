@@ -12,9 +12,8 @@
 <meta property="og:description" content="We build bright, safe worlds for kids, where every kid is the hero of their own story.">
 <meta property="og:image" content="https://jumpigames.com/site/img/about/hero-poster.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f5f8fd" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0d1430" media="(prefers-color-scheme: dark)">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#121733">
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -22,216 +21,172 @@
 <script src="/shared/a11y.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap">
-<link rel="preload" as="image" href="/site/img/about/hero-poster.jpg" fetchpriority="high">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,800&family=Heebo:wght@300;400;500;700;800;900&display=swap">
+<link rel="preload" as="image" href="/site/img/about/hero-poster.jpg" fetchpriority="high" media="(min-width:641px) and (min-aspect-ratio:4/5)">
+<link rel="preload" as="image" href="/site/img/about/hero-poster-540.jpg" fetchpriority="high" media="(max-width:640px), (max-aspect-ratio:4/5)">
 <link rel="stylesheet" href="/site/about-jumpi.css">
 </head>
 <body class="aj">
 <a class="aj-skip" href="#main"><span data-l="en">Skip to content</span><span data-l="he">דלגו לתוכן</span></a>
 <a class="aj-skip" href="#foot"><span data-l="en">Skip to footer</span><span data-l="he">דלגו לתחתית</span></a>
 
-<!-- the bar on top: the logo, the page's parts, the language. No way out of the page from here. -->
+<!-- the bar: the logo as a sticker that hangs over the edge, the page's parts, the language. No way out of the page from here. -->
 <header class="aj-bar">
-  <div class="aj-bar-in">
-    <a class="aj-brand" href="#top" aria-label="Jumpi Games"><img src="/jumpi-logo.png" alt="Jumpi Games" width="684" height="398"></a>
-    <nav class="aj-nav" id="ajNav" aria-label="On this page">
-      <a href="#games"><span data-l="en">Our Games</span><span data-l="he">המשחקים</span></a>
-      <a href="#numbers"><span data-l="en">By the Numbers</span><span data-l="he">במספרים</span></a>
-      <a href="#safety"><span data-l="en">Safety</span><span data-l="he">בטיחות</span></a>
-      <a href="#team"><span data-l="en">Our Team</span><span data-l="he">הצוות</span></a>
-      <a href="#promise"><span data-l="en">Our Promise</span><span data-l="he">ההבטחה שלנו</span></a>
-    </nav>
-    <div class="lang-sw" role="group" aria-label="Language"><button type="button" data-set="en" aria-pressed="true">EN</button><button type="button" data-set="he" aria-pressed="false">עב</button></div>
-    <button class="aj-menu" type="button" aria-expanded="false" aria-controls="ajNav"><span class="aj-sr"><span data-l="en">Menu</span><span data-l="he">תפריט</span></span><i></i><i></i><i></i></button>
-  </div>
+  <a class="aj-sticker-logo" href="#top"><img src="/site/img/about/logo-240.webp" alt="Jumpi Games" width="240" height="140"></a>
+  <button class="aj-menu" type="button" aria-expanded="false" aria-controls="ajNav"><span class="aj-sr"><span data-l="en">Menu</span><span data-l="he">תפריט</span></span><i></i><i></i><i></i></button>
+  <nav class="aj-nav" id="ajNav" data-aria-en="On this page" data-aria-he="בעמוד הזה" aria-label="On this page">
+    <a href="#games"><span data-l="en">Games</span><span data-l="he">משחקים</span></a>
+    <a href="#numbers"><span data-l="en">Numbers</span><span data-l="he">מספרים</span></a>
+    <a href="#safety"><span data-l="en">Safety</span><span data-l="he">בטיחות</span></a>
+    <a href="#team"><span data-l="en">Team</span><span data-l="he">צוות</span></a>
+    <a href="#promise"><span data-l="en">Our Promise</span><span data-l="he">ההבטחה שלנו</span></a>
+  </nav>
+  <div class="lang-sw" role="group" data-aria-en="Language" data-aria-he="שפה" aria-label="Language"><button type="button" data-set="en" lang="en" aria-pressed="true">EN</button><button type="button" data-set="he" lang="he" aria-pressed="false">עב</button></div>
 </header>
 
 <main id="main">
-  <!-- 1. the opening: the game itself, moving, behind the words -->
+  <!-- 1. the opening: the game itself, moving -->
   <section class="aj-hero" id="top">
-    <h1 class="aj-sr">Jumpi Games</h1>
     <div class="aj-hero-media" aria-hidden="true">
-      <video class="aj-video" muted loop playsinline preload="none" poster="/site/img/about/hero-poster.jpg"
-        data-wide="/site/img/about/hero-1280" data-tall="/site/img/about/hero-540" data-poster-tall="/site/img/about/hero-poster-540.jpg"></video>
+      <video class="aj-video" muted loop playsinline preload="none" data-wide="/site/img/about/hero-1280" data-tall="/site/img/about/hero-540" data-poster-tall="/site/img/about/hero-poster-540.jpg"></video>
+      <script>(function(){var v=document.querySelector(".aj-video");v.poster=matchMedia("(max-width:640px), (max-aspect-ratio:4/5)").matches?v.dataset.posterTall:"/site/img/about/hero-poster.jpg"})()</script>
     </div>
-    <div class="aj-hero-in">
-      <h2 class="aj-hero-title aj-in">
-        <span data-l="en">Live Your <em>Story</em></span>
-        <span data-l="he">חיו את <em>הסיפור</em> שלכם</span>
-      </h2>
-      <p class="aj-hero-sub aj-in" style="--d:.15s">
-        <span data-l="en">Jumpi Games is an independent studio from Israel. We build bright, safe worlds for kids, where every kid gets to be the hero of their own story.</span>
-        <span data-l="he">ג'אמפי גיימס הוא סטודיו עצמאי מישראל. אנחנו בונים לילדים עולמות צבעוניים ובטוחים, שבהם כל ילד הוא הגיבור של הסיפור שלו.</span>
-      </p>
-    </div>
-    <a class="aj-scroll" href="#games"><span class="aj-mouse" aria-hidden="true"><i></i></span><span class="aj-sr"><span data-l="en">Scroll to our games</span><span data-l="he">גללו למשחקים שלנו</span></span></a>
-    <button class="aj-pause" type="button" aria-pressed="false" hidden>
-      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+    <h1 class="aj-hero-logo"><img src="/jumpi-logo.png" alt="Jumpi Games" width="684" height="398"></h1>
+    <a class="aj-down" href="#story"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg><span class="aj-sr"><span data-l="en">Scroll down</span><span data-l="he">גללו למטה</span></span></a>
+    <button class="aj-pause" type="button" hidden>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
       <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
-      <span class="aj-pause-t"><span data-l="en">Pause background video</span><span data-l="he">עצירת סרטון הרקע</span></span>
-      <span class="aj-play-t"><span data-l="en">Play background video</span><span data-l="he">הפעלת סרטון הרקע</span></span>
+      <span class="aj-sr aj-pause-t"><span data-l="en">Pause background video</span><span data-l="he">עצירת סרטון הרקע</span></span>
+      <span class="aj-sr aj-play-t"><span data-l="en">Play background video</span><span data-l="he">הפעלת סרטון הרקע</span></span>
     </button>
   </section>
 
-  <!-- 2. our games -->
-  <section class="aj-sec aj-games" id="games" aria-labelledby="gamesH">
-    <div class="aj-wrap">
-      <h2 class="aj-h2 aj-in" id="gamesH"><span data-l="en">Our Games</span><span data-l="he">המשחקים שלנו</span></h2>
-
-      <article class="aj-game aj-in">
-        <figure class="aj-game-pic">
-          <img src="/site/img/about/jg-friends.webp" alt="Three Jumpis on the beach at sunset, with a kitten and a little crab." width="1280" height="630" loading="lazy">
-          <img class="aj-game-inset" src="/site/img/about/jg-shop.webp" alt="A Jumpi buying cool shades in the Jumpi Style shop." width="1280" height="630" loading="lazy">
-        </figure>
-        <div class="aj-game-txt">
-          <img class="aj-game-logo" src="/jumpi-logo.png" alt="" width="684" height="398" loading="lazy">
-          <h3 class="aj-h3">Jumpi</h3>
-          <p><span data-l="en">A free 3D world for kids. Create your own Jumpi, explore a whole city with friends, work at fun jobs, raise a pet and make your home your own.</span>
-            <span data-l="he">עולם תלת־ממדי חינמי לילדים. יוצרים ג'אמפי משלכם, מטיילים בעיר שלמה עם חברים, עובדים בעבודות כיפיות, מגדלים חיית מחמד ומעצבים בית משלכם.</span></p>
-          <ul class="aj-chips"><li><span data-l="en">Free to play</span><span data-l="he">חינם</span></li><li><span data-l="en">Ages 6+</span><span data-l="he">מגיל 6</span></li><li><span data-l="en">Hebrew &amp; English</span><span data-l="he">עברית ואנגלית</span></li></ul>
-          <div class="aj-btns">
-            <a class="aj-btn" href="/" target="_blank" rel="noopener"><span data-l="en">Play Now!</span><span data-l="he">לשחק עכשיו!</span><span class="aj-sr"><span data-l="en">(opens in a new tab)</span><span data-l="he">(נפתח בלשונית חדשה)</span></span></a>
-            <a class="aj-btn ghost" href="/trailer" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><span data-l="en">Watch the Trailer</span><span data-l="he">לצפות בטריילר</span><span class="aj-sr"><span data-l="en">(opens in a new tab)</span><span data-l="he">(נפתח בלשונית חדשה)</span></span></a>
-          </div>
-        </div>
-      </article>
-
-      <article class="aj-game aj-puff aj-in">
-        <figure class="aj-game-pic">
-          <img src="/site/img/company/puffball.webp" alt="Puffball: two teams of round Puffs playing soccer on a green pitch." width="1200" height="750" loading="lazy">
-        </figure>
-        <div class="aj-game-txt">
-          <img class="aj-game-logo" src="/site/img/company/puffball-logo.png" alt="" width="720" height="257" loading="lazy">
-          <h3 class="aj-h3">Puffball</h3>
-          <p><span data-l="en">Bubble soccer in the browser. Every player is a bouncy Puff: jump into a quick game, open a room for friends with a code, or practice against bots.</span>
-            <span data-l="he">כדורגל בועות בדפדפן. כל שחקן הוא Puff קופצני: נכנסים למשחק מהיר, פותחים חדר לחברים עם קוד, או מתאמנים מול בובות.</span></p>
-          <ul class="aj-chips"><li><span data-l="en">Free to play</span><span data-l="he">חינם</span></li><li><span data-l="en">No sign-up</span><span data-l="he">בלי הרשמה</span></li><li><span data-l="en">Nothing to download</span><span data-l="he">בלי הורדה</span></li></ul>
-          <div class="aj-btns">
-            <a class="aj-btn lime" href="https://puffball.site/" target="_blank" rel="noopener"><span data-l="en">Play Now!</span><span data-l="he">לשחק עכשיו!</span><span class="aj-sr"><span data-l="en">(opens in a new tab)</span><span data-l="he">(נפתח בלשונית חדשה)</span></span></a>
-          </div>
-        </div>
-      </article>
+  <!-- 2. who we are, in one card -->
+  <section class="aj-story" id="story" aria-labelledby="storyH">
+    <div class="aj-card-dark aj-in">
+      <h2 class="aj-stack" id="storyH"><span data-l="en"><span>Live</span> <span>Your</span> <span>Story</span></span><span data-l="he"><span>חיו</span> <span>את הסיפור</span> <span>שלכם</span></span></h2>
+      <p><span data-l="en">Jumpi Games is an independent game studio from Israel. We build bright, safe worlds for kids, where every kid gets to be the hero of their own story, and every parent can feel calm.</span>
+        <span data-l="he">ג'אמפי גיימס הוא סטודיו עצמאי למשחקים מישראל. אנחנו בונים לילדים עולמות צבעוניים ובטוחים, שבהם כל ילד הוא הגיבור של הסיפור שלו, וכל הורה יכול להיות רגוע.</span></p>
+      <img class="aj-mark" src="/site/img/about/jumpi-head.webp" alt="" width="160" height="160">
     </div>
   </section>
 
-  <!-- 3. by the numbers (all counted from the game itself) -->
-  <section class="aj-sec aj-numbers" id="numbers" aria-labelledby="numH">
-    <div class="aj-wrap">
+  <!-- 3. our games: a picture and a panel of colour, cut on a slant -->
+  <section class="aj-games" id="games" aria-labelledby="gamesH">
+    <h2 class="aj-sr" id="gamesH"><span data-l="en">Our Games</span><span data-l="he">המשחקים שלנו</span></h2>
+    <article class="aj-split aj-jumpi">
+      <div class="aj-split-pic"><img src="/site/img/about/jg-friends.webp" alt="Three Jumpis on the beach at sunset, with a kitten and a little crab." width="1280" height="630" loading="lazy"></div>
+      <div class="aj-split-slant" aria-hidden="true"><i></i></div>
+      <div class="aj-split-panel">
+        <h3><img src="/jumpi-logo.png" alt="Jumpi" width="684" height="398" loading="lazy"></h3>
+        <p><span data-l="en">A free 3D world where kids create their own Jumpi, explore a whole city with friends, work fun jobs and raise pets.</span>
+          <span data-l="he">עולם תלת־ממדי חינמי, שבו ילדים יוצרים ג'אמפי משלהם, מטיילים בעיר שלמה עם חברים, עובדים בעבודות כיפיות ומגדלים חיות מחמד.</span></p>
+        <div class="aj-btns">
+          <a class="aj-btn" href="/" target="_blank" rel="noopener"><span data-l="en">Play Now!</span><span data-l="he">לשחק עכשיו!</span><span class="aj-sr"><span data-l="en">Jumpi (opens in a new tab)</span><span data-l="he">בג'אמפי (נפתח בלשונית חדשה)</span></span></a>
+          <a class="aj-btn" href="/trailer"><span data-l="en">Trailer</span><span data-l="he">טריילר</span></a>
+        </div>
+      </div>
+    </article>
+    <article class="aj-split aj-puff">
+      <div class="aj-split-pic"><img src="/site/img/about/puff-pitch.webp" alt="A Puffball match: round Puffs playing soccer on a green pitch." width="1080" height="510" loading="lazy"></div>
+      <div class="aj-split-slant" aria-hidden="true"><i></i></div>
+      <div class="aj-split-panel">
+        <h3><img src="/site/img/company/puffball-logo.png" alt="Puffball" width="720" height="257" loading="lazy"></h3>
+        <p><span data-l="en">Bubble soccer in the browser, where every player is a bouncy Puff. No download and no sign-up.</span>
+          <span data-l="he">כדורגל בועות בדפדפן, שבו כל שחקן הוא Puff קופצני. בלי הורדה ובלי הרשמה.</span></p>
+        <div class="aj-btns">
+          <a class="aj-btn" href="https://puffball.site/" target="_blank" rel="noopener"><span data-l="en">Play Now!</span><span data-l="he">לשחק עכשיו!</span><span class="aj-sr"><span data-l="en">Puffball (opens in a new tab)</span><span data-l="he">פאפבול (נפתח בלשונית חדשה)</span></span></a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- 4. by the numbers (all counted from the game itself) -->
+  <section class="aj-numbers" id="numbers" aria-labelledby="numH">
+    <div class="aj-numbers-in">
       <h2 class="aj-h2 aj-in" id="numH"><span data-l="en">Jumpi by the Numbers</span><span data-l="he">ג'אמפי במספרים</span></h2>
-      <p class="aj-lead aj-in"><span data-l="en">A whole world, built piece by piece.</span><span data-l="he">עולם שלם, שנבנה חלק אחרי חלק.</span></p>
-      <div class="aj-bento">
-        <figure class="aj-tile pic big aj-in"><img src="/site/img/about/jg-aerial.webp" alt="Jumpi's city from above: the beach, the parks, the water park and the houses." width="1280" height="630" loading="lazy"></figure>
-        <div class="aj-tile stat aj-in" style="--d:.05s"><b data-n="900" data-plus="+">900+</b><span data-l="en">Items to wear</span><span data-l="he">פריטים ללבוש</span></div>
-        <div class="aj-tile stat c2 aj-in" style="--d:.1s"><b data-n="99">99</b><span data-l="en">Levels</span><span data-l="he">רמות</span></div>
-        <div class="aj-tile stat c3 aj-in" style="--d:.15s"><b data-n="60">60</b><span data-l="en">Quests</span><span data-l="he">משימות</span></div>
-        <div class="aj-tile stat c4 aj-in" style="--d:.2s"><b data-n="53">53</b><span data-l="en">Vehicles</span><span data-l="he">כלי רכב</span></div>
-        <div class="aj-tile stat c3 aj-in"><b data-n="16">16</b><span data-l="en">Neighborhoods to explore</span><span data-l="he">שכונות לגלות</span></div>
-        <div class="aj-tile stat aj-in" style="--d:.05s"><b data-n="51">51</b><span data-l="en">Pieces of furniture</span><span data-l="he">רהיטים לבית</span></div>
-        <figure class="aj-tile pic wide aj-in" style="--d:.1s"><img src="/site/img/about/jg-delivery.webp" alt="A Jumpi in a red helmet delivering pizza on a scooter, following the map." width="1280" height="630" loading="lazy"></figure>
-        <div class="aj-tile stat c4 aj-in" style="--d:.05s"><b data-n="14">14</b><span data-l="en">Games in the Jumpi Club</span><span data-l="he">משחקים במועדון ג'אמפי</span></div>
-        <div class="aj-tile stat c2 aj-in" style="--d:.1s"><b data-n="6">6</b><span data-l="en">Kinds of pets</span><span data-l="he">סוגי חיות מחמד</span></div>
-        <div class="aj-tile stat aj-in" style="--d:.15s"><b data-n="4">4</b><span data-l="en">Jobs to work at</span><span data-l="he">עבודות לעבוד בהן</span></div>
-        <div class="aj-tile stat c3 aj-in" style="--d:.2s"><b data-n="2">2</b><span data-l="en">Languages</span><span data-l="he">שפות</span></div>
+      <div class="aj-grid">
+        <div class="aj-t big brand aj-in"><img src="/jumpi-logo.png" alt="Jumpi" width="684" height="398" loading="lazy"><a class="aj-btn sm" href="/" target="_blank" rel="noopener"><span data-l="en">Play Now!</span><span data-l="he">לשחק עכשיו!</span><span class="aj-sr"><span data-l="en">Jumpi (opens in a new tab)</span><span data-l="he">בג'אמפי (נפתח בלשונית חדשה)</span></span></a></div>
+        <div class="aj-t aj-in" style="--d:.05s"><strong class="n" data-n="99">99</strong><span class="l"><span data-l="en">Levels</span><span data-l="he">רמות</span></span></div>
+        <div class="aj-t tall aj-in" style="--d:.1s"><img class="aj-t-art" src="/site/img/about/jumpi-head.webp" alt="" width="160" height="160" loading="lazy"><strong class="n" data-n="60">60</strong><span class="l"><span data-l="en">Quests</span><span data-l="he">משימות</span></span></div>
+        <div class="aj-t wide aj-in" style="--d:.15s"><strong class="n" data-n="16">16</strong><span class="l"><span data-l="en">Neighborhoods</span><span data-l="he">שכונות בעיר</span></span></div>
+        <div class="aj-t aj-in" style="--d:.1s"><strong class="n" data-n="53">53</strong><span class="l"><span data-l="en">Vehicles</span><span data-l="he">כלי רכב</span></span></div>
+        <div class="aj-t wide aj-in" style="--d:.2s"><strong class="n" data-n="14">14</strong><span class="l"><span data-l="en">Jumpi Club Games</span><span data-l="he">משחקים במועדון</span></span></div>
+        <div class="aj-t aj-in"><strong class="n" data-n="51">51</strong><span class="l"><span data-l="en">Furniture</span><span data-l="he">רהיטים</span></span></div>
+        <div class="aj-t aj-in" style="--d:.05s"><strong class="n" data-n="4">4</strong><span class="l"><span data-l="en">Jobs</span><span data-l="he">עבודות</span></span></div>
+        <div class="aj-t big pic aj-in" style="--d:.1s"><img src="/site/img/about/jg-shop.webp" alt="A Jumpi buying cool shades in the Jumpi Style shop." width="1280" height="630" loading="lazy"><div class="aj-t-cap"><strong class="n" data-n="900" data-plus="+">900+</strong><span class="l"><span data-l="en">Items to Wear</span><span data-l="he">פריטי לבוש</span></span></div></div>
+        <div class="aj-t big aj-in" style="--d:.15s"><strong class="n huge" data-n="2" data-plus="x">2x</strong><span class="l lg"><span data-l="en">Languages: Hebrew &amp; English</span><span data-l="he">שפות: עברית ואנגלית</span></span></div>
+        <div class="aj-t aj-in"><strong class="n" data-n="6">6</strong><span class="l"><span data-l="en">Kinds of Pets</span><span data-l="he">סוגי חיות</span></span></div>
+        <div class="aj-t x8 aj-in" style="--d:.05s"><strong class="n" data-n="8">8</strong><span class="l"><span data-l="en">Residents</span><span data-l="he">תושבים</span></span></div>
       </div>
     </div>
   </section>
 
-  <!-- 4. the next world: a full band of colour -->
-  <section class="aj-next" aria-labelledby="nextH">
-    <div class="aj-next-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="aj-wrap">
-      <h2 class="aj-h2 aj-in" id="nextH"><span data-l="en">The Next World</span><span data-l="he">העולם הבא</span></h2>
-      <p class="aj-in" style="--d:.1s"><span data-l="en">And we're always building our next big thing…</span><span data-l="he">ותמיד אנחנו כבר בונים את הדבר הגדול הבא שלנו…</span></p>
+  <!-- 5. a band of colour -->
+  <section class="aj-band" data-aria-en="Coming next" data-aria-he="מה הלאה" aria-label="Coming next">
+    <p class="aj-in"><span data-l="en">And we're always building our next <em>big</em> thing...</span><span data-l="he">ותמיד אנחנו בונים את הדבר <em>הגדול</em> הבא שלנו...</span></p>
+  </section>
+
+  <!-- 6. safe from the start -->
+  <section class="aj-safety" id="safety" aria-labelledby="safeH">
+    <h2 class="aj-h2 xl brand aj-in" id="safeH"><span data-l="en">Safe from the Start</span><span data-l="he">בטוח מההתחלה</span></h2>
+    <p class="aj-lead aj-in"><span data-l="en">Every part of Jumpi is built so kids can play freely and parents can relax.</span><span data-l="he">כל חלק בג'אמפי בנוי כך שילדים ישחקו בחופשיות, וההורים יוכלו להיות רגועים.</span></p>
+    <div class="aj-tall-cards">
+      <article class="aj-tc aj-in"><img src="/site/img/about/safe-block.webp" alt="" width="600" height="800" loading="lazy"><h3><span data-l="en">Chat Filter</span><span data-l="he">מסנן צ'אט</span></h3>
+        <p><span data-l="en">Rude words and personal details are hidden before anyone sees them.</span><span data-l="he">מילים גסות ופרטים אישיים מוסתרים לפני שמישהו רואה אותם.</span></p></article>
+      <article class="aj-tc aj-in" style="--d:.1s"><img src="/site/img/about/safe-kind.webp" alt="" width="600" height="800" loading="lazy"><h3><span data-l="en">Friends Only</span><span data-l="he">רק חברים</span></h3>
+        <p><span data-l="en">Private messages only go to friends a kid has added.</span><span data-l="he">הודעות פרטיות נשלחות רק לחברים שהילד הוסיף.</span></p></article>
+      <article class="aj-tc aj-in" style="--d:.2s"><img src="/site/img/about/safe-grownup.webp" alt="" width="600" height="800" loading="lazy"><h3><span data-l="en">Parental Controls</span><span data-l="he">בקרת הורים</span></h3>
+        <p><span data-l="en">Free quiet hours, and a chat lock to friendly ready-made messages.</span><span data-l="he">שעות שקטות, ונעילת צ'אט להודעות מוכנות ונחמדות. בחינם.</span></p></article>
     </div>
   </section>
 
-  <!-- 5. safe from the start -->
-  <section class="aj-sec aj-safety" id="safety" aria-labelledby="safeH">
-    <div class="aj-wrap">
-      <h2 class="aj-h2 big aj-in" id="safeH"><span data-l="en">Safe from the Start</span><span data-l="he">בטוח מההתחלה</span></h2>
-      <p class="aj-lead aj-in"><span data-l="en">Every part of Jumpi is built so kids can play freely and parents can relax.</span><span data-l="he">כל חלק בג'אמפי בנוי כך שילדים ישחקו בחופשיות, וההורים יוכלו להיות רגועים.</span></p>
-      <div class="aj-cards">
-        <article class="aj-card aj-in"><img src="/site/img/about/safe-block.webp" alt="" width="600" height="800" loading="lazy">
-          <div><h3><span data-l="en">A chat filter that protects</span><span data-l="he">מסנן שמגן</span></h3>
-          <p><span data-l="en">Rude words and personal details are hidden before anyone sees them.</span><span data-l="he">מילים גסות ופרטים אישיים מוסתרים עוד לפני שמישהו רואה אותם.</span></p></div></article>
-        <article class="aj-card c2 aj-in" style="--d:.08s"><img src="/site/img/about/safe-kind.webp" alt="" width="600" height="800" loading="lazy">
-          <div><h3><span data-l="en">Messages only between friends</span><span data-l="he">הודעות רק בין חברים</span></h3>
-          <p><span data-l="en">Private messages only go to friends a kid has added.</span><span data-l="he">הודעות פרטיות נשלחות רק לחברים שהילד הוסיף.</span></p></div></article>
-        <article class="aj-card c3 aj-in" style="--d:.16s"><img src="/site/img/about/safe-grownup.webp" alt="" width="600" height="800" loading="lazy">
-          <div><h3><span data-l="en">Free parental controls</span><span data-l="he">בקרת הורים בחינם</span></h3>
-          <p><span data-l="en">Parents set quiet hours when the game is closed, and can lock the chat to friendly ready-made messages.</span><span data-l="he">ההורים קובעים שעות שקטות שבהן המשחק סגור, ויכולים לנעול את הצ'אט להודעות מוכנות ונחמדות.</span></p></div></article>
-        <article class="aj-card c4 aj-in" style="--d:.24s"><img src="/site/img/about/safe-breaks.webp" alt="" width="600" height="800" loading="lazy">
-          <div><h3><span data-l="en">Play, then take a break</span><span data-l="he">משחקים, ואז הפסקה</span></h3>
-          <p><span data-l="en">Pay slows down after a lot of play in one hour, so nobody has to play all day.</span><span data-l="he">אחרי הרבה משחק בשעה אחת התשלום במשחק יורד, כך שאף אחד לא צריך לשחק כל היום.</span></p></div></article>
+  <!-- 7. join our team -->
+  <section class="aj-split aj-team" id="team" aria-labelledby="teamH">
+    <div class="aj-split-pic"><img src="/site/img/about/jg-hug.webp" alt="A Jumpi police officer helping a lost little Jumpi find her mom." width="1280" height="630" loading="lazy"></div>
+    <div class="aj-split-slant" aria-hidden="true"><i></i></div>
+    <div class="aj-split-panel">
+      <img class="aj-team-art" src="/site/img/about/jumpis.webp" alt="" width="839" height="467" loading="lazy">
+      <h2 id="teamH"><span data-l="en">Join Our Team</span><span data-l="he">הצטרפו לצוות</span></h2>
+      <p><span data-l="en">Help kids live their story with us!</span><span data-l="he">עזרו לנו לתת לילדים לחיות את הסיפור שלהם!</span></p>
+      <div class="aj-btns">
+        <a class="aj-btn" href="/team"><span data-l="en">Open Roles</span><span data-l="he">תפקידים פתוחים</span></a>
+        <a class="aj-btn" href="/partners"><span data-l="en">Partner With Us</span><span data-l="he">שותפויות</span></a>
       </div>
-      <a class="aj-btn aj-in" href="/for-parents"><span data-l="en">The Parents' Guide</span><span data-l="he">למדריך להורים</span></a>
     </div>
   </section>
 
-  <!-- 6. join our team -->
-  <section class="aj-sec aj-team" id="team" aria-labelledby="teamH">
-    <div class="aj-wrap aj-team-in">
-      <div class="aj-team-txt">
-        <h2 class="aj-h2 aj-in" id="teamH"><span data-l="en">Join Our Team</span><span data-l="he">הצטרפו לצוות</span></h2>
-        <p class="aj-team-motto aj-in" style="--d:.08s"><span data-l="en">Help kids live their story with us!</span><span data-l="he">בואו לעזור לילדים לחיות את הסיפור שלהם!</span></p>
-        <p class="aj-in" style="--d:.14s"><span data-l="en">We're looking for our very first Community Team: a Community Manager, Guides and Beta Testers. Online, from anywhere, in Hebrew or English.</span>
-          <span data-l="he">אנחנו מחפשים את צוות הקהילה הראשון שלנו: מנהל או מנהלת קהילה, מדריכים ובודקי בטא. אונליין, מכל מקום, בעברית או באנגלית.</span></p>
-        <div class="aj-btns aj-in" style="--d:.2s">
-          <a class="aj-btn" href="/team"><span data-l="en">See the Roles</span><span data-l="he">לתפקידים</span></a>
-          <a class="aj-btn ghost" href="/partners"><span data-l="en">Work With Us</span><span data-l="he">שותפויות</span></a>
-        </div>
-      </div>
-      <figure class="aj-team-pic aj-in" style="--d:.1s">
-        <img src="/site/img/about/team.webp" alt="Three Jumpis waving hello among the confetti: a yellow one, a blue one in a team cap and shirt, and a green one with glasses." width="720" height="533" loading="lazy">
-        <span class="aj-sticker" aria-hidden="true"><span data-l="en">We're hiring!</span><span data-l="he">מגייסים!</span></span>
-      </figure>
+  <!-- 8. what we stand for, the stickers over the world -->
+  <section class="aj-promise" id="promise" aria-labelledby="promH">
+    <div class="aj-promise-bg" aria-hidden="true"><img src="/site/img/about/jg-aerial.webp" alt="" width="1280" height="630" loading="lazy"></div>
+    <div class="aj-promise-in">
+      <h2 class="aj-h2 xl aj-in" id="promH"><span data-l="en">The Jumpi Promise</span><span data-l="he">ההבטחה של ג'אמפי</span></h2>
+      <p class="aj-lead aj-in"><span data-l="en">We believe every kid deserves a place online that's fun, kind and safe. That's what we build, and how we build it: with safety built in from day one, real people who read every report, and parents always in the loop.</span>
+        <span data-l="he">אנחנו מאמינים שלכל ילד מגיע מקום ברשת שהוא כיפי, נחמד ובטוח. את זה אנחנו בונים, וככה אנחנו בונים: בטיחות מהיום הראשון, אנשים אמיתיים שקוראים כל דיווח, והורים שתמיד נמצאים בתמונה.</span></p>
+      <a class="aj-btn lg aj-in" href="/for-parents"><span data-l="en">Learn More</span><span data-l="he">לקרוא עוד</span></a>
+      <ul class="aj-stickers">
+        <li class="s1 aj-in"><a href="/safety"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z"/></svg><span data-l="en">Online Safety</span><span data-l="he">בטיחות ברשת</span></a></li>
+        <li class="s2 aj-in" style="--d:.1s"><a href="/for-parents"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 42S6 31 6 18a9 9 0 0 1 18-3 9 9 0 0 1 18 3c0 13-18 24-18 24z"/></svg><span data-l="en">For Parents</span><span data-l="he">להורים</span></a></li>
+        <li class="s3 aj-in" style="--d:.2s"><a href="/accessibility"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="9" r="5"/><path d="M8 17l16 3 16-3-2 5-10 2v8l5 12h-5l-4-10-4 10h-5l5-12v-8l-10-2z"/></svg><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a></li>
+      </ul>
     </div>
-  </section>
-
-  <!-- 7. what we stand for -->
-  <section class="aj-sec aj-promise" id="promise" aria-labelledby="promH">
-    <div class="aj-wrap">
-      <h2 class="aj-h2 big aj-in" id="promH"><span data-l="en">The Jumpi Promise</span><span data-l="he">ההבטחה של ג'אמפי</span></h2>
-      <p class="aj-lead aj-in"><span data-l="en">We believe every kid deserves a place online that's fun, kind and safe. That's what we build, and it's how we build it.</span><span data-l="he">אנחנו מאמינים שלכל ילד מגיע מקום ברשת שהוא כיפי, נחמד ובטוח. את זה אנחנו בונים, וככה אנחנו בונים.</span></p>
-      <div class="aj-pillars">
-        <a class="aj-pillar aj-in" href="/safety">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l16 6v12c0 10-7 18-16 22C15 40 8 32 8 22V10z"/><path class="tick" d="M16 24l6 6 11-12"/></svg>
-          <h3><span data-l="en">Online Safety</span><span data-l="he">בטיחות ברשת</span></h3>
-          <p><span data-l="en">Kids learn how to stay safe online, in Jumpi and beyond.</span><span data-l="he">ילדים לומדים איך לשמור על עצמם ברשת, בג'אמפי ומחוצה לו.</span></p>
-          <span class="aj-more"><span data-l="en">Learn more</span><span data-l="he">לקרוא עוד</span></span></a>
-        <a class="aj-pillar aj-in" style="--d:.08s" href="/for-parents">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="17" cy="15" r="6"/><circle cx="33" cy="19" r="4.5"/><path d="M6 40c0-7 5-12 11-12s11 5 11 12M26 40c0-5 3-9 7-9s8 4 8 9"/></svg>
-          <h3><span data-l="en">For Parents</span><span data-l="he">להורים</span></h3>
-          <p><span data-l="en">What kids do in Jumpi, what they take from it, and how you stay in the loop.</span><span data-l="he">מה ילדים עושים בג'אמפי, מה הם לוקחים מזה, ואיך אתם נשארים בתמונה.</span></p>
-          <span class="aj-more"><span data-l="en">Learn more</span><span data-l="he">לקרוא עוד</span></span></a>
-        <a class="aj-pillar aj-in" style="--d:.16s" href="/accessibility">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="19"/><circle cx="24" cy="14" r="3"/><path d="M14 20l10 2 10-2M24 22v8l-5 9M24 30l5 9"/></svg>
-          <h3><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></h3>
-          <p><span data-l="en">Big buttons, clear words and settings so every kid can play.</span><span data-l="he">כפתורים גדולים, מילים ברורות והגדרות, כדי שכל ילד יוכל לשחק.</span></p>
-          <span class="aj-more"><span data-l="en">Learn more</span><span data-l="he">לקרוא עוד</span></span></a>
-      </div>
-    </div>
-    <div class="aj-planet" aria-hidden="true"><img src="/site/img/about/jg-aerial.webp" alt="" width="1280" height="630" loading="lazy"></div>
   </section>
 </main>
 
 <footer class="aj-foot" id="foot">
-  <h2 class="aj-sr"><span data-l="en">Footer</span><span data-l="he">תחתית העמוד</span></h2>
-  <div class="aj-wrap aj-foot-in">
-    <div class="aj-foot-brand">
-      <img src="/jumpi-logo.png" alt="Jumpi Games" width="684" height="398" loading="lazy">
-      <p><span data-l="en">Live your story.</span><span data-l="he">חיו את הסיפור שלכם.</span></p>
-    </div>
-    <nav class="aj-foot-col" aria-labelledby="fc1"><h3 id="fc1"><span data-l="en">Our Games</span><span data-l="he">המשחקים</span></h3>
-      <a href="/" target="_blank" rel="noopener">Jumpi</a><a href="https://puffball.site/" target="_blank" rel="noopener">Puffball</a><a href="/club"><span data-l="en">Jumpi Club</span><span data-l="he">מועדון ג'אמפי</span></a><a href="/trailer"><span data-l="en">Trailer</span><span data-l="he">טריילר</span></a></nav>
-    <nav class="aj-foot-col" aria-labelledby="fc2"><h3 id="fc2"><span data-l="en">Parents</span><span data-l="he">להורים</span></h3>
+  <h2 class="aj-sr"><span data-l="en">More about Jumpi Games</span><span data-l="he">עוד על ג'אמפי גיימס</span></h2>
+  <div class="aj-foot-in">
+    <div class="aj-foot-brand"><img src="/site/img/about/logo-240.webp" alt="Jumpi Games" width="240" height="140" loading="lazy"><p><span data-l="en">Live your story.</span><span data-l="he">חיו את הסיפור שלכם.</span></p></div>
+    <nav aria-labelledby="fc1"><h3 id="fc1"><span data-l="en">Games</span><span data-l="he">משחקים</span></h3>
+      <a href="/" target="_blank" rel="noopener">Jumpi<span class="aj-sr"><span data-l="en"> (opens in a new tab)</span><span data-l="he"> (נפתח בלשונית חדשה)</span></span></a><a href="https://puffball.site/" target="_blank" rel="noopener">Puffball<span class="aj-sr"><span data-l="en"> (opens in a new tab)</span><span data-l="he"> (נפתח בלשונית חדשה)</span></span></a><a href="/club"><span data-l="en">Jumpi Club</span><span data-l="he">מועדון ג'אמפי</span></a><a href="/trailer"><span data-l="en">Trailer</span><span data-l="he">טריילר</span></a></nav>
+    <nav aria-labelledby="fc2"><h3 id="fc2"><span data-l="en">Parents</span><span data-l="he">הורים</span></h3>
       <a href="/for-parents"><span data-l="en">Parents' Guide</span><span data-l="he">מדריך להורים</span></a><a href="/parents"><span data-l="en">Parental Controls</span><span data-l="he">בקרת הורים</span></a><a href="/safety"><span data-l="en">Online Safety</span><span data-l="he">בטיחות ברשת</span></a><a href="/help"><span data-l="en">Help</span><span data-l="he">עזרה</span></a></nav>
-    <nav class="aj-foot-col" aria-labelledby="fc3"><h3 id="fc3"><span data-l="en">Company</span><span data-l="he">החברה</span></h3>
+    <nav aria-labelledby="fc3"><h3 id="fc3"><span data-l="en">Company</span><span data-l="he">החברה</span></h3>
       <a href="/team"><span data-l="en">Join the Team</span><span data-l="he">הצטרפו לצוות</span></a><a href="/partners"><span data-l="en">Partners</span><span data-l="he">שותפים</span></a><a href="/contact"><span data-l="en">Contact Us</span><span data-l="he">צרו קשר</span></a></nav>
-    <nav class="aj-foot-col" aria-labelledby="fc4"><h3 id="fc4"><span data-l="en">Legal</span><span data-l="he">משפטי</span></h3>
+    <nav aria-labelledby="fc4"><h3 id="fc4"><span data-l="en">Legal</span><span data-l="he">משפטי</span></h3>
       <a href="/terms"><span data-l="en">Terms of Use</span><span data-l="he">תנאי שימוש</span></a><a href="/privacy"><span data-l="en">Privacy Policy</span><span data-l="he">מדיניות פרטיות</span></a><a href="/accessibility"><span data-l="en">Accessibility</span><span data-l="he">נגישות</span></a><a href="/delete-account"><span data-l="en">Delete an Account</span><span data-l="he">מחיקת חשבון</span></a></nav>
   </div>
-  <p class="aj-wrap aj-copy">© 2026 Jumpi Games. <span data-l="en">All rights reserved.</span><span data-l="he">כל הזכויות שמורות.</span></p>
+  <p class="aj-copy"><span data-l="en">© 2026 Jumpi Games. All rights reserved.</span><span data-l="he">© 2026 ג'אמפי גיימס. כל הזכויות שמורות.</span></p>
 </footer>
 
 <script type="module" src="/site/guide-lang.js"></script>
