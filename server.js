@@ -215,11 +215,7 @@ app.get("/contact", page("site/contact.html"));
 app.get(["/parents", "/parent", "/horim"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/parents.html")(req, res, next); });   // parental controls
 app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.html"));
 app.get(["/safety", "/online-safety", "/betihut"], page("site/safety.html"));   // online safety tips for kids
-app.get(["/about", "/about-us", "/odot"], page("site/about.html"));
-app.get(["/company", "/who-we-are", "/mi-anachnu"], page("site/company.html"));
-app.get("/company-new", page("site/company-world.html"));
-app.get("/company-box", page("site/company-box.html"));
-app.get("/about-new", page("site/about-jumpi.html"));   // the new About Jumpi Games page, while it is being reviewed (noindex)   // the company page, "Worlds in a Box" version, while it is being built (noindex)   // the 3D company landing page, while it is being built (noindex)   // the studio: who we are and our games (Jumpi, Puffball), no game menus   // about the company (linked from the footer)
+app.get(["/about", "/about-us", "/odot", "/company", "/who-we-are", "/mi-anachnu"], page("site/about.html"));   // about Jumpi Games: the studio, our games, the numbers, safety, the team (linked from the footer)
 app.get(["/partners", "/partnerships", "/shutafim"], page("site/partners.html"));   // the businesses and projects we work with (footer)   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
