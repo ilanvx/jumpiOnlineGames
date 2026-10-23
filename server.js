@@ -215,7 +215,8 @@ app.get("/contact", page("site/contact.html"));
 app.get(["/parents", "/parent", "/horim"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/parents.html")(req, res, next); });   // parental controls
 app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.html"));
 app.get(["/safety", "/online-safety", "/betihut"], page("site/safety.html"));   // online safety tips for kids
-app.get(["/about", "/about-us", "/company", "/odot"], page("site/about.html"));   // about the company (linked from the footer)
+app.get(["/about", "/about-us", "/odot"], page("site/about.html"));
+app.get(["/company", "/who-we-are", "/mi-anachnu"], page("site/company.html"));   // the studio: who we are and our games (Jumpi, Puffball), no game menus   // about the company (linked from the footer)
 app.get(["/partners", "/partnerships", "/shutafim"], page("site/partners.html"));   // the businesses and projects we work with (footer)   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
 app.get(["/team", "/join-the-team", "/careers"], page("site/team.html"));   // join the first Community Team (routes/team.js)
