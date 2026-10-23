@@ -1,41 +1,49 @@
-/* About Jumpi Games (about-jumpi.html): the studio's page. Dark and bold: a heavy monospaced display type in capitals
-   (JetBrains Mono, Hebrew in Heebo), Jumpi blue for the big panels and the colour band, sky-blue buttons, real
-   pictures from the game, panels cut on a slant, square tiles for the numbers, the logo as a sticker up top. */
+/* About Jumpi Games (about-jumpi.html): the studio's page, set in Jumpi's own nature: a sunny low-poly forest behind
+   everything, wood for the bar, the signs, the planks between the scenes and the footer, cream cards for the words.
+   One look only (no dark or light version). Bold capital display type (JetBrains Mono, Hebrew in Heebo), Jumpi blue
+   panels cut on a slant, square tiles for the numbers, the logo as a sticker up top. */
 html[lang="en"] [data-l="he"],html[lang="he"] [data-l="en"]{display:none!important}
 :root{
-  --bg:#121733;--card:#1f2752;--card2:#273163;--fg:#f2f4fb;--fg2:rgb(242 244 251 / .78);
+  --bg:#7cc95a;--card:rgb(255 251 239 / .95);--card2:#fffdf6;--fg:#24331a;--fg2:#4f6038;--cream:#fff4dc;
+  --wood:repeating-linear-gradient(178.8deg,transparent 0 9px,rgb(70 38 14 / .2) 9px 10px,transparent 10px 17px),linear-gradient(180deg,#c08a52 0%,#9d6a37 40%,#7e4f28 85%,#6a4020 100%);
+  --wood-d:repeating-linear-gradient(178.8deg,transparent 0 9px,rgb(0 0 0 / .18) 9px 10px,transparent 10px 17px),linear-gradient(180deg,#7a4b26 0%,#5f3a1d 50%,#4b2d16 100%);
   --brand:#1159d8;--brand-hi:#4b93ff;--btn:#36bdff;--btn-hi:#7fd6ff;--btn-ink:#08102e;
   --grape:#5a3ad6;--volt:#d8ff6e;--sun:#ffc23a;
   --font:"JetBrains Mono","Heebo",ui-monospace,monospace;--he:"Heebo","JetBrains Mono",system-ui,sans-serif;
   --bar:76px;--ease:cubic-bezier(.2,.7,.2,1);--max:1060px}
 html[lang="he"]{--font:"Heebo","JetBrains Mono",system-ui,sans-serif}
 *{box-sizing:border-box}
-html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:var(--bar);overflow-x:clip}
-body.aj{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.65 var(--font);letter-spacing:.3px;-webkit-font-smoothing:antialiased;overflow-x:clip}
+html{background:#7cc95a;color-scheme:light;scroll-behavior:smooth;scroll-padding-top:var(--bar);overflow-x:clip}
+body.aj{margin:0;background:transparent;color:var(--fg);font:400 18px/1.65 var(--font);letter-spacing:.3px;-webkit-font-smoothing:antialiased;overflow-x:clip}
 html[lang="he"] body.aj{letter-spacing:0;font-size:19px}
 .aj img{display:block;max-width:100%;height:auto}
+/* the forest behind the whole page (it stays put while the page moves) */
+body.aj::before{content:"";position:fixed;inset:0;z-index:-2;background:#9fdcff url(/site/img/about/forest-1920.webp) center 30%/cover no-repeat}
+@media (max-aspect-ratio:4/5){body.aj::before{background-image:url(/site/img/about/forest-tall.webp);background-position:center 60%}}
 .aj a{color:inherit}
-.aj :focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 7px var(--brand)}
+.aj :focus-visible{outline:3px solid #24331a;outline-offset:3px;box-shadow:0 0 0 7px #ffd23a}
 .aj-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .aj-skip{position:fixed;z-index:100;top:10px;inset-inline-start:10px;padding:10px 16px;border-radius:6px;background:#fff;color:var(--bg)!important;font-weight:700;text-decoration:none;transform:translateY(-160%)}
 .aj-skip:focus{transform:none}
 
 /* ---------- the bar: logo sticker hanging over the edge, parts of the page split by bars ---------- */
-.aj-bar{position:sticky;top:-1px;z-index:50;height:var(--bar);display:flex;align-items:center;justify-content:flex-end;gap:18px;padding-inline:clamp(16px,2.6vw,36px);background:var(--bg)}
+.aj-bar{position:sticky;top:-1px;z-index:50;height:var(--bar);display:flex;align-items:center;justify-content:flex-end;gap:18px;padding-inline:clamp(16px,2.6vw,36px);background:var(--wood);
+  box-shadow:0 8px 18px rgb(40 22 8 / .4),inset 0 3px 0 rgb(255 228 185 / .3),inset 0 -4px 0 rgb(0 0 0 / .3)}
+.aj-bar::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 8px 50%,#3f2410 0 2.5px,#c9a172 3px 4px,transparent 4.5px) 0 0/50% 100% no-repeat,radial-gradient(circle at calc(100% - 8px) 50%,#3f2410 0 2.5px,#c9a172 3px 4px,transparent 4.5px) 100% 0/50% 100% no-repeat}
 .aj-sticker-logo{position:absolute;top:12px;inset-inline-start:clamp(14px,2.4vw,30px);display:block;padding:12px 18px 14px;border-radius:12px;background:var(--brand);
   box-shadow:0 10px 24px rgb(0 0 0 / .35),inset 0 0 0 2px rgb(255 255 255 / .12);transform:rotate(-3.5deg);transition:transform .25s var(--ease)}
 html[dir="rtl"] .aj-sticker-logo{transform:rotate(3.5deg)}
 .aj-sticker-logo:hover{transform:rotate(0) scale(1.04)!important}
 .aj-sticker-logo img{width:clamp(110px,10vw,150px)}
 .aj-nav{display:flex;align-items:center}
-.aj-nav a{position:relative;padding:4px 14px;text-decoration:none;font-weight:800;font-size:1.12rem;line-height:1.2;color:var(--fg);transition:color .15s}
-.aj-nav a+a::before{content:"";position:absolute;inset-inline-start:0;top:4px;bottom:4px;width:2px;background:rgb(255 255 255 / .35)}
-.aj-nav a:hover,.aj-nav a[aria-current="location"]{color:var(--btn)}
-.lang-sw{display:flex;align-items:center;padding-inline-start:14px;border-inline-start:2px solid rgb(255 255 255 / .35)}
-.lang-sw button{border:0;background:none;color:var(--fg2);font:800 1rem "JetBrains Mono",monospace;padding:4px 7px;border-radius:5px;cursor:pointer}
-.lang-sw button[aria-pressed="true"]{color:var(--btn-ink);background:var(--btn)}
-.aj-menu{display:none;width:46px;height:46px;border:0;border-radius:8px;background:rgb(255 255 255 / .12);cursor:pointer;position:relative;order:3}
-.aj-menu i{position:absolute;inset-inline-start:13px;width:20px;height:2.5px;border-radius:2px;background:#fff;transition:transform .25s,opacity .2s}
+.aj-nav a{position:relative;padding:4px 14px;text-decoration:none;font-weight:800;font-size:1.12rem;line-height:1.2;color:var(--cream);text-shadow:0 2px 0 rgb(60 30 10 / .55);transition:color .15s}
+.aj-nav a+a::before{content:"";position:absolute;inset-inline-start:0;top:4px;bottom:4px;width:3px;border-radius:2px;background:#5a3519;box-shadow:1px 0 0 rgb(255 225 180 / .35)}
+.aj-nav a:hover,.aj-nav a[aria-current="location"]{color:#ffe27a}
+.lang-sw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:9px;background:#5a3519;box-shadow:inset 0 2px 4px rgb(0 0 0 / .4)}
+.lang-sw button{border:0;background:none;color:var(--cream);font:800 1rem "JetBrains Mono",monospace;padding:4px 7px;border-radius:5px;cursor:pointer}
+.lang-sw button[aria-pressed="true"]{color:#3a2210;background:#ffe9b8;box-shadow:0 2px 0 #b98a52}
+.aj-menu{display:none;width:46px;height:46px;border:0;border-radius:8px;background:#5a3519;box-shadow:inset 0 2px 4px rgb(0 0 0 / .4);cursor:pointer;position:relative;order:3}
+.aj-menu i{position:absolute;inset-inline-start:13px;width:20px;height:2.5px;border-radius:2px;background:var(--cream);transition:transform .25s,opacity .2s}
 .aj-menu i:nth-of-type(1){top:16px}.aj-menu i:nth-of-type(2){top:22px}.aj-menu i:nth-of-type(3){top:28px}
 .aj-menu[aria-expanded="true"] i:nth-of-type(1){transform:translateY(6px) rotate(45deg)}
 .aj-menu[aria-expanded="true"] i:nth-of-type(2){opacity:0}
@@ -59,7 +67,8 @@ html[dir="rtl"] .aj-sticker-logo{transform:rotate(3.5deg)}
 
 /* ---------- who we are: one card ---------- */
 .aj-story{padding:48px 20px}
-.aj-card-dark{position:relative;max-width:var(--max);margin-inline:auto;display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,3vw,44px);align-items:center;padding:32px clamp(24px,3vw,40px);background:var(--card)}
+.aj-card-dark{position:relative;max-width:var(--max);margin-inline:auto;display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,3vw,44px);align-items:center;padding:32px clamp(24px,3vw,40px);background:var(--card);border-radius:18px;box-shadow:0 18px 40px rgb(30 50 10 / .25)}
+.aj-stack{color:#2f6b28}
 .aj-stack{margin:0;font-weight:800;font-size:clamp(2.1rem,3.6vw,2.85rem);line-height:1.06;text-transform:uppercase}
 .aj-stack>span>span{display:block}
 html[lang="he"] .aj-stack{font-weight:900;font-size:clamp(2.2rem,3.8vw,3rem)}
@@ -74,7 +83,7 @@ html[lang="he"] .aj-stack{font-weight:900;font-size:clamp(2.2rem,3.8vw,3rem)}
 .aj-split-slant i{display:block;height:100%;background:var(--brand);clip-path:polygon(101% -1%,0 101%,101% 101%)}
 html[dir="rtl"] .aj-split-slant{filter:drop-shadow(3px 0 5px rgb(0 0 0 / .4))}
 html[dir="rtl"] .aj-split-slant i{clip-path:polygon(-1% -1%,100% 101%,-1% 101%)}
-.aj-split-panel{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px clamp(18px,2.4vw,36px) 36px;background:var(--brand);text-align:center;margin-inline-start:-1px}
+.aj-split-panel{color:#fff;grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:32px clamp(18px,2.4vw,36px) 36px;background:var(--brand);text-align:center;margin-inline-start:-1px}
 .aj-split-panel h3{margin:0;width:100%}
 .aj-split-panel h3 img{width:min(100%,420px);margin-inline:auto;filter:drop-shadow(0 8px 14px rgb(0 0 0 / .3))}
 .aj-split-panel p{margin:0;font-weight:700;font-size:clamp(1rem,1.4vw,1.25rem);line-height:1.45;max-width:30ch}
@@ -104,13 +113,18 @@ html[lang="he"] .aj-btn{letter-spacing:0;font-weight:900}
 /* ---------- by the numbers: square tiles ---------- */
 .aj-numbers{padding:64px 20px 80px}
 .aj-numbers-in{max-width:var(--max);margin-inline:auto}
-.aj-h2{margin:0 0 20px;font-weight:800;font-size:clamp(2rem,3.3vw,2.85rem);line-height:1.35;text-transform:uppercase}
+.aj-h2{position:relative;width:fit-content;margin:0 0 24px;padding:10px 28px 12px;border-radius:12px;font-weight:800;font-size:clamp(1.8rem,3.1vw,2.7rem);line-height:1.2;text-transform:uppercase;
+  color:var(--cream);text-shadow:0 2px 0 rgb(60 30 10 / .6);background:var(--wood);box-shadow:0 12px 24px rgb(40 22 8 / .35),inset 0 3px 0 rgb(255 228 185 / .3),inset 0 -4px 0 rgb(0 0 0 / .28);transform:rotate(-1deg)}
+.aj-h2::before,.aj-h2::after{content:"";position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#d8c09a,#6b5236 60%,#3a2a18)}
+.aj-h2::before{left:10px}.aj-h2::after{right:10px}
 html[lang="he"] .aj-h2{font-weight:900}
-.aj-h2.xl{font-size:clamp(2.4rem,5.2vw,4.5rem);line-height:1.05;text-align:center}
-.aj-h2.brand{color:var(--brand-hi)}
+.aj-h2.xl{font-size:clamp(2.2rem,4.6vw,4rem);line-height:1.08;text-align:center;margin-inline:auto;padding:14px 40px 16px;transform:rotate(1deg)}
+
 .aj-grid{display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:calc((min(100vw - 40px, var(--max)) - 80px) / 6);grid-auto-flow:dense;gap:16px}
 .aj-t{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px;background:var(--card);text-align:center;overflow:hidden;min-width:0;transition:background .2s}
+.aj-t{border-radius:10px;box-shadow:0 10px 22px rgb(30 50 10 / .22)}
 .aj-t:hover{background:var(--card2)}
+.aj-t .n{color:#2f6b28}
 .aj-t.big{grid-column:span 2;grid-row:span 2}
 .aj-t.wide{grid-column:span 2}
 .aj-t.tall{grid-row:span 2}
@@ -118,29 +132,32 @@ html[lang="he"] .aj-h2{font-weight:900}
 .aj-t .n.huge{font-size:clamp(4.5rem,9vw,8rem)}
 .aj-t .l{font-size:clamp(.85rem,1.3vw,1.25rem);line-height:1.3;text-transform:uppercase}
 .aj-t .l.lg{font-size:clamp(1.1rem,1.9vw,1.85rem);line-height:1.2;max-width:12ch}
-.aj-t.brand{background:var(--brand);gap:20px;padding:24px}
+.aj-t.brand{color:#fff;background:var(--brand);gap:20px;padding:24px}
 .aj-t.brand img{width:86%;filter:drop-shadow(0 8px 14px rgb(0 0 0 / .3))}
 .aj-t-art{width:60%;margin-bottom:10px;filter:drop-shadow(0 8px 12px rgb(0 0 0 / .35));transition:transform .4s var(--ease)}
 .aj-t:hover .aj-t-art{transform:rotate(-8deg) scale(1.06)}
 .aj-t.pic{padding:0;justify-content:flex-end}
 .aj-t.pic>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 1s var(--ease)}
 .aj-t.pic:hover>img{transform:scale(1.05)}
-.aj-t-cap{position:relative;width:100%;padding:44px 12px 16px;background:linear-gradient(180deg,transparent,rgb(10 14 40 / .9));display:flex;flex-direction:column;align-items:center;gap:6px}
+.aj-t-cap .n{color:#fff}
+.aj-t-cap{position:relative;width:100%;padding:44px 12px 16px;color:#fff;background:linear-gradient(180deg,transparent,rgb(20 30 8 / .85));display:flex;flex-direction:column;align-items:center;gap:6px}
 
 /* ---------- the colour band ---------- */
-.aj-band{background:var(--brand);padding:24px 20px}
+.aj-band{background:linear-gradient(180deg,#4aa63b,#2f7f27);color:var(--cream);padding:26px 20px;box-shadow:inset 0 3px 0 rgb(255 255 255 / .2)}
+.aj-band p{text-shadow:0 3px 0 rgb(20 50 10 / .45)}
 .aj-band p{margin:0 auto;max-width:1200px;text-align:center;font-weight:700;font-size:clamp(1.6rem,3.4vw,3rem);line-height:1.15;text-transform:uppercase}
 .aj-band em{font-style:italic;font-weight:800}
-html[lang="he"] .aj-band em{font-style:normal;color:var(--btn-hi)}
+html[lang="he"] .aj-band em{font-style:normal;color:#ffe27a}
 
 /* ---------- safe from the start: tall cards ---------- */
 .aj-safety{padding:64px 20px 96px}
-.aj-lead{margin:20px auto 0;max-width:880px;text-align:center;font-weight:300;font-size:clamp(1.1rem,1.6vw,1.375rem);line-height:1.65}
+.aj-lead{width:fit-content;margin:20px auto 0;max-width:880px;padding:14px 26px;border-radius:14px;background:var(--card);box-shadow:0 12px 26px rgb(30 50 10 / .2);text-align:center;font-weight:400;font-size:clamp(1.1rem,1.6vw,1.375rem);line-height:1.65}
 html[lang="he"] .aj-lead{font-weight:400}
 .aj-tall-cards{max-width:1200px;margin:48px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3.4vw,48px)}
-.aj-tc{margin:0;padding:8px 8px 22px;background:var(--card);text-align:center;transition:transform .3s var(--ease),background .2s}
+.aj-tc{margin:0;padding:8px 8px 22px;border-radius:14px;box-shadow:0 16px 34px rgb(30 50 10 / .25);background:var(--card);text-align:center;transition:transform .3s var(--ease),background .2s}
 .aj-tc:hover{transform:translateY(-6px);background:var(--card2)}
-.aj-tc img{width:100%;aspect-ratio:351/440;object-fit:cover}
+.aj-tc img{width:100%;aspect-ratio:351/440;object-fit:cover;border-radius:9px}
+.aj-tc h3{color:#2f6b28}
 .aj-tc h3{margin:14px 0 4px;font-weight:500;font-size:clamp(1.6rem,2.5vw,2.25rem);line-height:1.1;text-transform:capitalize}
 html[lang="he"] .aj-tc h3{font-weight:800}
 .aj-tc p{margin:0 auto;max-width:30ch;color:var(--fg2);font-size:1rem;line-height:1.5}
@@ -149,20 +166,20 @@ html[lang="he"] .aj-tc h3{font-weight:800}
 .aj-team .aj-split-panel{gap:10px;padding-top:24px}
 .aj-team-art{width:min(100%,460px);margin-bottom:6px;filter:drop-shadow(0 14px 20px rgb(0 0 0 / .35));transition:transform .4s var(--ease)}
 .aj-team:hover .aj-team-art{transform:translateY(-6px) rotate(-1deg)}
-.aj-team h2{margin:0;font-weight:800;font-size:clamp(2rem,3.6vw,3.25rem);line-height:1;text-transform:uppercase}
+.aj-team h2{color:#fff;margin:0;font-weight:800;font-size:clamp(2rem,3.6vw,3.25rem);line-height:1;text-transform:uppercase}
 html[lang="he"] .aj-team h2{font-weight:900}
 .aj-team .aj-split-panel>p{margin:6px 0 16px}
 
 /* ---------- the promise: stickers over the world ---------- */
 .aj-promise{position:relative;overflow:hidden;isolation:isolate;padding:64px 20px 0;min-height:clamp(760px,64vw,960px)}
 .aj-promise-bg{position:absolute;inset:0;z-index:-1}
-.aj-promise-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 60%;opacity:.9}
-.aj-promise-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,var(--bg) 0%,rgb(18 23 51 / .92) 26%,rgb(18 23 51 / .55) 55%,rgb(18 23 51 / .15) 100%)}
+.aj-promise-bg img{width:100%;height:100%;object-fit:cover;object-position:50% 60%;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 34%);mask-image:linear-gradient(180deg,transparent 0,#000 34%)}
+
 .aj-promise-in{max-width:900px;margin-inline:auto;text-align:center;display:flex;flex-direction:column;align-items:center}
 .aj-promise .aj-lead{margin-bottom:30px}
 .aj-stickers{list-style:none;margin:36px 0 0;padding:0;position:relative;width:min(100%,900px);height:clamp(340px,30vw,440px)}
 .aj-stickers li{position:absolute}
-.aj-stickers a{display:inline-flex;align-items:center;gap:14px;padding:16px 26px;background:var(--brand);text-decoration:none;font-weight:800;font-size:clamp(1.6rem,3.6vw,3.1rem);line-height:1;text-transform:uppercase;white-space:nowrap;
+.aj-stickers a{color:#fff;border-radius:6px;display:inline-flex;align-items:center;gap:14px;padding:16px 26px;background:var(--brand);text-decoration:none;font-weight:800;font-size:clamp(1.6rem,3.6vw,3.1rem);line-height:1;text-transform:uppercase;white-space:nowrap;
   box-shadow:0 14px 30px rgb(0 0 0 / .35);transition:transform .25s var(--ease),background .2s}
 html[lang="he"] .aj-stickers a{font-weight:900}
 .aj-stickers a:hover{background:#1a6cf0}
@@ -173,16 +190,16 @@ html[lang="he"] .aj-stickers a{font-weight:900}
 .aj-stickers li a:hover{transform:rotate(0) scale(1.05)}
 
 /* ---------- footer ---------- */
-.aj-foot{background:#0b0f26;padding:56px 20px 30px}
+.aj-foot{color:var(--cream);background:var(--wood-d);box-shadow:inset 0 4px 0 rgb(255 220 170 / .15);padding:56px 20px 30px}
 .aj-foot-in{max-width:1200px;margin-inline:auto;display:grid;grid-template-columns:1.2fr repeat(4,1fr);gap:32px}
 .aj-foot-brand img{width:140px}
-.aj-foot-brand p{margin:12px 0 0;font-weight:800;color:var(--btn)}
+.aj-foot-brand p{margin:12px 0 0;font-weight:800;color:#ffe27a}
 .aj-foot nav{display:flex;flex-direction:column;gap:8px}
 .aj-foot h3{margin:0 0 6px;font-weight:800;font-size:1.4rem;text-transform:uppercase}
 html[lang="he"] .aj-foot h3{font-weight:900}
-.aj-foot nav a{color:var(--fg2)!important;text-decoration:none;font-size:1rem;width:fit-content}
+.aj-foot nav a{color:rgb(255 244 220 / .82)!important;text-decoration:none;font-size:1rem;width:fit-content}
 .aj-foot nav a:hover{color:#fff!important;text-decoration:underline;text-underline-offset:4px}
-.aj-copy{max-width:1200px;margin:44px auto 0;padding-top:20px;border-top:1px solid rgb(255 255 255 / .1);font-size:.9rem;color:rgb(242 244 251 / .55)}
+.aj-copy{max-width:1200px;margin:44px auto 0;padding-top:20px;border-top:1px solid rgb(255 220 170 / .2);font-size:.9rem;color:rgb(255 244 220 / .6)}
 
 /* ---------- between the scenes: a wooden plank with a vine, leaves and little roots hanging down ---------- */
 .aj-plank{position:relative;z-index:6;height:68px;margin:-34px 0;pointer-events:none;overflow-x:clip;overflow-y:visible}
@@ -218,14 +235,12 @@ html.aj-calm .aj-down svg{animation:none}
 
 /* ---------- tablets ---------- */
 @media (max-width:1060px){
-  .aj-nav{display:none;position:absolute;top:var(--bar);left:0;right:0;flex-direction:column;align-items:stretch;padding:8px 0 16px;background:var(--brand);box-shadow:0 20px 30px rgb(0 0 0 / .35)}
+  .aj-nav{display:none;position:absolute;top:var(--bar);left:0;right:0;flex-direction:column;align-items:stretch;padding:8px 0 16px;background:var(--wood-d);box-shadow:0 20px 30px rgb(0 0 0 / .35)}
   .aj-nav.open{display:flex}
   .aj-nav a{padding:14px 24px;font-size:1.25rem}
   .aj-nav a+a::before{display:none}
   .aj-menu{display:block}
-  .aj-bar{background:var(--brand)}
   .aj-sticker-logo{background:#0b45b3;box-shadow:0 10px 24px rgb(0 0 0 / .35),inset 0 0 0 2px rgb(255 255 255 / .35)}
-  .lang-sw{border:0}
   .aj-foot-in{grid-template-columns:1fr 1fr 1fr}.aj-foot-brand{grid-column:1/-1}
 }
 /* ---------- phones: everything in one column ---------- */
