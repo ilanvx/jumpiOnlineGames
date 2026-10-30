@@ -179,7 +179,11 @@ const gameGate = async (req, res, next) => {
     return sendPage(req, res, "site/play.html");
   }
   // "?soon": the game in "closed" mode, on any server and at any time (also a preview for the team)
-  if ("soon" in req.query) { res.set("Cache-Control", "no-store"); return sendGame(res, next); }
+  if ("soon" in req.query) {
+    // after the opening an old "?soon" address (a bookmark, a shortcut) would still end in the "testers only" note: drop it
+    if (isPublic(req) && Date.now() >= LAUNCH_AT) { const q = new URLSearchParams(req.query); q.delete("soon"); const qs = q.toString().replace(/=(&|$)/g, "$1"); return res.redirect(302, req.path + (qs ? "?" + qs : "")); }
+    res.set("Cache-Control", "no-store"); return sendGame(res, next);
+  }
   if (isPublic(req) && Date.now() < LAUNCH_AT && !inApp) {
     let admin = false;
     try { admin = (await currentUser(req))?.role === "admin"; } catch {}
