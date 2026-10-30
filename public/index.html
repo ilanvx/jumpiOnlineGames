@@ -9317,7 +9317,7 @@ async function goWorld(id,{film=true,spawn}={}){
   if(FWX.busy||!inGame)return;
   if(id==="future"&&!futureOpen()){openWorlds();return;}
   if(G.home){toast("Go outside first, then travel.");return;}
-  FWX.busy=true;vehBeforeLeave();closeMap();closeWorlds();G.keys={};G.target=null;if(G.marker)G.marker.visible=false;if(G.seat)try{standUp(true);}catch(e){}
+  FWX.busy=true;closeGameStore(true);vehBeforeLeave();closeMap();closeWorlds();G.keys={};G.target=null;if(G.marker)G.marker.visible=false;if(G.seat)try{standUp(true);}catch(e){}
   let fw=null;
   if(id==="future"){const pending=loadFuture();if(film)await timeMachine(pending);try{fw=await pending;}catch(e){FWX.busy=false;toast("The time machine is out of order. Please try again.");return;}}
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
@@ -10908,6 +10908,8 @@ function gsStageOn(){
   spot.visible=shadow.visible=true;scene.background=null;scene.fog=null;cam.far=50;PH.target=0;PH.k=0;resetPhonePose();
   P.root.position.set(0,0,0);P.root.rotation.set(0,0,0);shadow.position.set(0,.003,0);spot.position.set(0,.001,0);walk.x=0;walk.face=0;walk.t0=-1;
   resize();setTimeout(()=>{if(GS_STAGE)walkTo(sideX());},120);}
+// (every move between the Plaza, homes, shops inside and other worlds closes the shop first: closeGameStore(true) there,
+// or this would put back the old place's world / room / sky on top of the new place, 30.10.2026)
 function gsStageOff(){
   const S=GS_STAGE;if(!S)return;GS_STAGE=null;walk.t0=-1;walk.onDone=null;
   S.vis.forEach(([o,v])=>{o.visible=v;});scene.background=S.bg;scene.fog=S.fog;cam.fov=S.fov;cam.far=S.far;
@@ -11476,7 +11478,7 @@ async function enterHome(username){
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
-  world.visible=false;HOME.group.visible=true;G.home=true;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
   placeHomePets(HOME.mine?PETS.mine:HOME.pets,HOME.mine?PETS.out:HOME.petOut);if(PETS.me)PETS.me.x=undefined;
   if(HOME.ext)HOME.ext.visible=true;homeSky();
   G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
@@ -11494,7 +11496,7 @@ async function leaveHome(){
   if(!G.home||HOME.leaving)return;HOME.leaving=true;closeDecorate();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,450));
-  clearRemotes();homeReset();HOME.leaving=false;world.visible=true;
+  closeGameStore(true);clearRemotes();homeReset();HOME.leaving=false;world.visible=true;
   G.pos.copy(worldSaved.pos);G.face=worldSaved.face;G.camYaw=worldSaved.yaw||0;scene.background=worldSaved.bg;scene.fog=worldSaved.fog;G.target=null;G.keys={};
   if(socket&&socket.connected)socket.emit("join",netState());else netJoin();
   w.classList.remove("in");w.classList.add("out");setTimeout(()=>w.classList.remove("out"),700);tlEvent("leave");
@@ -12077,7 +12079,7 @@ async function goHotel(){
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
-  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place="work";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place="work";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
   HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);clearHomePets();if(PETS.me)PETS.me.x=undefined;
   HSHAPE=hotelShape();HOME_W=H_W;HOME_D=H_D;if(HOME.shell)HOME.shell.visible=false;if(HOME.win)HOME.win.visible=false;
   scene.background=new THREE.Color("#1a1438");scene.fog=null;
@@ -12107,7 +12109,7 @@ async function goToWork(job="waiter"){
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
-  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place="work";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place="work";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
   HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);clearHomePets();if(PETS.me)PETS.me.x=undefined;
   scene.background=new THREE.Color("#1d2b4a");scene.fog=null;
   G.pos.set(1.2,0,-2.6);G.face=0;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
@@ -12543,7 +12545,7 @@ async function goDelivery(){
   // the town is one big open "room": no walls, its own size
   HSHAPE={W:TOWN.E,D:TOWN.E,house:{},room:[-TOWN.E,-TOWN.E,TOWN.E,TOWN.E],regions:[[-TOWN.E,-TOWN.E,TOWN.E,TOWN.E]],door:[900,900,901,901],blocked:[],bounds:{x0:-TOWN.E,x1:TOWN.E,z0:-TOWN.E,z1:TOWN.E}};HOME_W=HOME_D=TOWN.E-1;
   HOME.layout=C.layout;HOME.owner="";HOME.mine=false;
-  world.visible=false;HOME.group.visible=true;if(HOME.shell)HOME.shell.visible=false;G.home=true;HOME.place="delivery";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);placePieces();
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;if(HOME.shell)HOME.shell.visible=false;G.home=true;HOME.place="delivery";PLACE.cur=C;if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);placePieces();
   HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);if(HOME.win)HOME.win.visible=false;clearHomePets();if(PETS.me)PETS.me.x=undefined;
   scene.background=new THREE.Color("#8fd8ff");scene.fog=new THREE.Fog("#8fd8ff",45,110);
   if(!DLV.scooter){DLV.scooter=buildScooter();}C.g.add(DLV.scooter);DLV.scooter.position.set(PIZZERIA.park[0],.15,PIZZERIA.park[1]);DLV.scooter.rotation.y=-Math.PI/2;
@@ -12721,14 +12723,14 @@ function tResetUI(){["clock","hello","meter","note","bub1","bub2","bub3","emo","
 
 /* ---------- scenes: the outside world, a home, a place (town, restaurant, shop) ---------- */
 function tWorld(){if(G.home||!world.visible){if(HOME.group){HOME.group.visible=false;if(TRL.placeG)TRL.placeG.removeFromParent();TRL.placeG=null;}
-  world.visible=true;G.home=false;HOME.place=null;scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);}}
+  closeGameStore(true);world.visible=true;G.home=false;HOME.place=null;scene.background=G.sky;scene.fog=new THREE.Fog(0xcdeeff,FOG_NEAR,FOG_FAR);}}
 function tHome(key,house,layout){if(!HOME.group)buildRoom();if(TRL.homeKey===key&&G.home&&!HOME.place)return;TRL.homeKey=key;
   if(TRL.placeG){TRL.placeG.removeFromParent();TRL.placeG=null;}
-  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=null;setHouse(house);if(HOME.shell)HOME.shell.visible=true;if(HOME.ext)HOME.ext.visible=true;
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=null;setHouse(house);if(HOME.shell)HOME.shell.visible=true;if(HOME.ext)HOME.ext.visible=true;
   HOME.layout=layout;paintRoom();placePieces();roomLights(null);homeSky();}
 function tPlace(id){if(!HOME.group)buildRoom();if(TRL.homeKey==="place:"+id&&G.home)return;TRL.homeKey="place:"+id;
   if(TRL.placeG){TRL.placeG.removeFromParent();TRL.placeG=null;}
-  const C=venueContent(id);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;
+  const C=venueContent(id);closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;
   if(id==="delivery"){HSHAPE={W:TOWN.E,D:TOWN.E,house:{},room:[-TOWN.E,-TOWN.E,TOWN.E,TOWN.E],regions:[[-TOWN.E,-TOWN.E,TOWN.E,TOWN.E]],door:[900,900,901,901],blocked:[],bounds:{x0:-TOWN.E,x1:TOWN.E,z0:-TOWN.E,z1:TOWN.E}};
     if(HOME.ext)HOME.ext.visible=false;if(HOME.shell)HOME.shell.visible=false;scene.background=new THREE.Color("#8fd8ff");scene.fog=new THREE.Fog("#8fd8ff",45,130);}
   else{setHouse(null);if(HOME.ext)HOME.ext.visible=false;if(HOME.shell)HOME.shell.visible=true;scene.background=new THREE.Color(C.bg||"#1d2b4a");scene.fog=null;}
@@ -13961,7 +13963,7 @@ async function enterPlace(id){
   clearRemotes();
   const w=document.getElementById("wipe");w.classList.add("in");sfx.whoosh();
   await new Promise(res=>setTimeout(res,500));
-  world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;PLACE.cur=C;nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
+  closeGameStore(true);world.visible=false;HOME.group.visible=true;G.home=true;HOME.place=id;PLACE.cur=C;nearDoor=null;seatPrompt.hidden=true;body.classList.remove("at-door");if(G.tag)HOME.group.add(G.tag);HOME.group.add(G.marker);paintRoom();placePieces();
   HOME.group.add(C.g);G.colliders.push(...C.col);roomLights(C);clearHomePets();if(PETS.me)PETS.me.x=undefined;
   scene.background=new THREE.Color(C.bg||"#1d2b4a");scene.fog=null;
   G.pos.set(0,0,HOME_D-1);G.face=Math.PI;G.target=null;G.keys={};G.marker.visible=false;G.camYaw=0;
