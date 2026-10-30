@@ -14378,7 +14378,15 @@ const GSTAR='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 L39.6 21
 const spxOverlay=document.getElementById("spxOverlay");
 const storeLink=id=>"/store"+(id?"#"+id:"");
 function openStorePage(id){if(/JumpiStore\//.test(navigator.userAgent)){toast("This item isn't available in this version of the game.");return;}   // Microsoft Store rules (10.8.1): a game there may not send players to buy anywhere else
-  if(IN_APP){toast("Ask a grown-up to visit jumpigames.com on a computer.");return;}const w=window.open(storeLink(id),"_blank","noopener");if(!w)location.href=storeLink(id);}
+  if(IN_APP){toast("Ask a grown-up to visit jumpigames.com on a computer.");return;}
+  // the game installed from the website (PWA): the store opens in the phone's real browser, not inside the app
+  if(matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches||navigator.standalone===true){
+    const url=location.origin+storeLink(id),ua=navigator.userAgent;
+    if(/Android/i.test(ua)){const u=new URL(url);   // Chrome itself (falls back to the default browser)
+      location.href="intent://"+u.host+u.pathname+u.hash+"#Intent;scheme=https;action=android.intent.action.VIEW;package=com.android.chrome;S.browser_fallback_url="+encodeURIComponent(url)+";end";return;}
+    if(/iPhone|iPad|iPod/i.test(ua)){location.href="x-safari-"+url;   // Safari itself (iOS 17+); older iPhones open it in the app's own browser view
+      setTimeout(()=>{if(!document.hidden)window.open(url,"_blank");},900);return;}}
+  const w=window.open(storeLink(id),"_blank","noopener");if(!w)location.href=storeLink(id);}
 // a picture of MY Jumpi wearing a bundle (with its aura)
 let shotR=null;
 function bundleShot(P){const key=P.id+":"+JSON.stringify(me&&me.look||{});if(OFFERS.shots[key])return OFFERS.shots[key];
