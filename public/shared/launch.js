@@ -6,5 +6,5 @@
   No date yet: LAUNCH_AT = Infinity keeps the doors closed and the page says "Coming soon!" with no countdown.
   To set a date again, e.g.: export const LAUNCH_AT = Date.parse("2026-11-01T17:00:00+02:00");
 */
-export const LAUNCH_AT = Number.POSITIVE_INFINITY;   // the 11.10.2026 opening was called off; the new date isn't set yet
+export const LAUNCH_AT = Date.parse("2026-10-30T00:00:00+02:00");   // the game is open (30.10.2026)
 export const LAUNCH_HOSTS = ["jumpigames.com", "www.jumpigames.com"];
