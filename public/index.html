@@ -805,12 +805,8 @@ body.in-game .online{display:flex}
 .coins.bump{animation:coinBump .6s cubic-bezier(.2,1.8,.4,1)}
 @keyframes coinBump{40%{transform:scale(1.25)}}
 body.in-game.logged .coins{display:flex}
-/* the Microsoft Store app (body.msbuy): the coins also show on the start screen, with a + that opens the coins window */
-body.msbuy.logged:not(.in-game):not(.login-mode) .coins{display:flex;cursor:pointer}
-body.msbuy .coins{cursor:pointer;padding-right:6px}
 .msb-plus{display:none;place-items:center;width:28px;height:28px;margin-left:4px;padding:0;border:0;border-radius:50%;background:#2fd36b;box-shadow:0 3px 0 #17a24a,inset 0 2px 0 rgb(255 255 255 / .35);color:#fff;font:400 1.35rem/1 "HeeboDisplay","Lilita One",system-ui,sans-serif;cursor:pointer;transition:transform .15s}
 .msb-plus:hover{transform:scale(1.12)}
-body.msbuy .msb-plus{display:grid}
 .msb-overlay{display:flex;overflow-y:auto}
 .idle-card.msb-card{width:min(780px,100%);margin:auto;padding:24px 22px 18px;text-align:left}
 .msb-card .np-x{position:absolute}
@@ -4597,7 +4593,6 @@ body.ws-previewing>:not(#stage):not(#wsPrev):not(.wipe):not(script){opacity:0!im
     <p class="of-parent">Real-money purchases happen on the Jumpi website. Always ask a parent first!</p>
   </div>
 </div>
-<!-- the Microsoft Store version of the computer program: coins and memberships through Microsoft (MSB block) -->
 <div class="show-ui" id="showUi" hidden>
   <div class="sh-top">
     <button type="button" class="sh-leave" id="shLeave" aria-label="Leave the show"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5 L7.5 12 L14.5 19" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Leave</span></button>
@@ -4638,16 +4633,6 @@ body.ws-previewing>:not(#stage):not(#wsPrev):not(.wipe):not(script){opacity:0!im
     <h2 id="cbTitle">GET MORE COINS</h2>
     <div id="cbBody"></div>
     <p class="msb-foot" id="cbFoot"></p>
-  </div>
-</div>
-<div class="idle-overlay msb-overlay" id="msbOv" role="dialog" aria-modal="true" aria-labelledby="msbTitle" hidden>
-  <div class="idle-card msb-card">
-    <button class="np-x" id="msbClose" type="button" aria-label="Close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5 L15 15 M15 5 L5 15" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-    <h2 id="msbTitle">GET MORE COINS</h2>
-    <div class="msb-who" id="msbWho"></div>
-    <p class="msb-msg" id="msbMsg" role="status" hidden></p>
-    <div id="msbBody"></div>
-    <p class="msb-foot" id="msbFoot"></p>
   </div>
 </div>
 <button class="btn admin-btn" id="adminBtn" type="button" aria-label="Admin panel" aria-haspopup="dialog" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><g transform="translate(0 2)"><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#8a1c1c"/></g><path d="M16 3 L27 7 V15 C27 22 22 27 16 29 C10 27 5 22 5 15 V7 Z" fill="#fff"/><path d="M16 9 L17.8 13.4 L22.5 13.7 L18.9 16.7 L20 21.3 L16 18.8 L12 21.3 L13.1 16.7 L9.5 13.7 L14.2 13.4 Z" fill="#ff4545"/></svg></button>
@@ -4925,7 +4910,7 @@ import {FOOD_SLOTS,DINER_MENU,PARK_MENU,PARK_STANDS,STAND_REACH,foodOf,standOf} 
 import {BIRTHDAY_COINS,BIRTHDAY_PINK} from "/shared/birthday.js";
 import {MAX_LEVEL,LEVEL_DAY_XP,TOTAL as LV_TOTAL,levelOf,levelProgress,RANKS,rankOf} from "/shared/levels.js";
 import {RESIDENTS,RESIDENT_BY_ID,QUESTS,QUEST_BY_ID,NPC_REACH,PICK_REACH,turnInOf,npcAt,questWorld} from "/shared/quests.js";
-import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MS_PRODUCTS,MEMBER_PERKS,memberPrice} from "/shared/store.js";
+import {PRODUCTS,PRODUCT_BY_ID,weeklyOffer,STORE_OPEN,MEMBER_PERKS,memberPrice} from "/shared/store.js";
 import {SHOW_ROWS,seatSpot,WHEEL as SHOW_WHEEL,WHEEL_SPIN_MS,SHOW_GIFT_MAX,POLL_SECS} from "/shared/show.js";
 import {PHONES_NEED_APP,ANDROID_DOWNLOAD,GOOGLE_PLAY_URL} from "/shared/app.js";
 import {JOBS,payPerOrder,maxLevel,JOB_LOOK,JOB_GIFTS} from "/shared/jobs.js";
@@ -10157,7 +10142,6 @@ function setAccount(user,quiet){
   if(!quiet)accRefresh();
   document.body.classList.toggle("logged",!!user);
   if(typeof applyRoleUI==="function"){applyRoleUI();paintCoins();}
-  try{msbCheck();}catch(e){}   // the Microsoft Store app: may this account buy there? (MSB block)
   applyColor();applyEyeColor();applyOutfit();
 }
 // "Leaving already?" - the log out button asks first
@@ -15373,105 +15357,12 @@ document.getElementById("tyOk").onclick=closeBuyNote;
 tyOv.addEventListener("click",e=>{if(e.target===tyOv)closeBuyNote();});
 tyOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"||e.key==="Tab"){if(e.key==="Escape")closeBuyNote();else{e.preventDefault();document.getElementById("tyOk").focus();}}});
 
-/* ---------- MSB: buying coins and memberships inside the Microsoft Store app ----------
-   Only the Store version of the computer program ("JumpiStore/" in the user agent, window.JumpiAppBridge.msStore).
-   Microsoft's own purchase window takes the money; the server checks with Microsoft what was bought and gives it to
-   the account that is logged in (routes/msstore.js). Costumes and bundles stay on the website. */
-const MS_APP=/JumpiStore\//.test(navigator.userAgent)&&!!(window.JumpiAppBridge&&window.JumpiAppBridge.msStore);
-const MSB={on:false,products:null,failed:false,busy:"",uid:""};
-const msbOv=document.getElementById("msbOv"),msbBody=document.getElementById("msbBody"),msbMsgEl=document.getElementById("msbMsg");
-const msbHe=()=>!!(window.I18N&&I18N.lang==="he");
-const msbT=(en,he)=>msbHe()?he:en;
-async function msbCheck(){
-  if(!MS_APP)return;
-  if(!me){MSB.on=false;document.body.classList.remove("msbuy");return;}
-  const id=String(me.id);MSB.uid=id;
-  const r=await api("/api/msstore/status");
-  if(MSB.uid!==id)return;
-  MSB.on=!!(r.ok&&r.data.on);document.body.classList.toggle("msbuy",MSB.on);
-  document.getElementById("coinsPlus").tabIndex=MSB.on?0:-1;
-}
-function msbMsg(text,ok){msbMsgEl.hidden=!text;msbMsgEl.textContent=text||"";msbMsgEl.classList.toggle("ok",!!ok);}
-async function openMsb(){
-  if(!MS_APP||!MSB.on||!me||!msbOv.hidden)return;
-  if(inGame){closePhone(true);closeChat();}G.keys={};G.target=null;
-  msbMsg("");msbOv.hidden=false;sfx.whoosh();msbPaint();
-  setTimeout(()=>{const b=msbOv.querySelector(".msb-tile:not(:disabled)");if(b)b.focus({preventScroll:true});},80);
-  if(!MSB.products){
-    let r=null;try{r=await window.JumpiAppBridge.msStore.products();}catch(e){}
-    MSB.products=r&&r.ok?Object.fromEntries((r.products||[]).filter(p=>p.token).map(p=>[p.token,p])):null;MSB.failed=!(r&&r.ok);
-    if(!msbOv.hidden)msbPaint();}
-  msbClaim(true);   // anything bought before and not given yet (the program closed, no internet…) arrives now
-}
-function closeMsb(quiet){if(msbOv.hidden)return;msbOv.hidden=true;if(!quiet)sfx.close();}
-function msbPaint(){
-  const he=msbHe();
-  document.getElementById("msbTitle").textContent=msbT("GET MORE COINS","עוד מטבעות");
-  document.getElementById("msbWho").innerHTML=`<span>${msbT("Buying for","קונים בשביל")} <b>${esc(me?me.username:"")}</b>.</span><button type="button" class="msb-switch">${msbT("Not you? Switch account","לא אתה? החלפת חשבון")}</button>`;
-  const price=id=>{const mp=MSB.products&&MSB.products[id];return MSB.busy===id?`<span class="msb-spin" aria-label="${msbT("Buying…","קונים…")}"></span>`:mp?esc(mp.price):MSB.failed?"–":`<span class="msb-spin"></span>`;};
-  const shown=id=>!MSB.products||!!MSB.products[id];
-  const tag=P=>P.tag?`<span class="tag">${P.tag==="best"?msbT("Best value","הכי משתלם"):msbT("Popular","פופולרי")}</span>`:"";
-  const can=id=>!!(MSB.products&&MSB.products[id])&&!MSB.busy;
-  const coins=PRODUCTS.filter(P=>P.kind==="coins"&&MS_PRODUCTS.includes(P.id)&&shown(P.id)).map(P=>
-    `<button type="button" class="msb-tile" data-ms="${P.id}"${can(P.id)?"":" disabled"}>${tag(P)}<img src="/site/img/store/${P.id}.webp" alt=""><b>${P.give.coins.toLocaleString("en-US")}</b><small>${msbT("coins","מטבעות")}</small><span class="msb-price">${price(P.id)}</span></button>`).join("");
-  const members=PRODUCTS.filter(P=>P.kind==="member"&&MS_PRODUCTS.includes(P.id)&&shown(P.id)).map(P=>
-    `<button type="button" class="msb-tile mb" data-ms="${P.id}"${can(P.id)?"":" disabled"}>${tag(P)}<img src="/site/img/store/${P.id}.webp" alt=""><b>${he?P.name.he:P.name.en}</b><small>+${P.give.coins.toLocaleString("en-US")} ${msbT("coins","מטבעות")}</small><span class="msb-price">${price(P.id)}</span></button>`).join("");
-  const until=me&&me.memberUntil&&new Date(me.memberUntil)>new Date()?`<p class="msb-member">${GSTAR} ${msbT("You're a member until","אתה חבר מועדון עד")} <b>${new Date(me.memberUntil).toLocaleDateString(he?"he-IL":"en-GB",{day:"numeric",month:"short",year:"numeric"})}</b>. ${msbT("Buying more adds days.","קנייה נוספת מוסיפה ימים.")}</p>`:"";
-  msbBody.innerHTML=MSB.failed?`<p class="msb-empty">${msbT("The Microsoft Store isn't answering right now. Check the internet and try again in a moment.","החנות של מיקרוסופט לא עונה כרגע. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב בעוד רגע.")}</p>`
-    :(!coins&&!members)?`<p class="msb-empty">${msbT("Coming soon!","בקרוב!")}</p>`
-    :(coins?`<section class="msb-sec"><h3>${COIN_SVG}${msbT("Coins","מטבעות")}</h3><div class="msb-grid">${coins}</div></section>`:"")
-     +(members?`<section class="msb-sec"><h3>${GSTAR}${msbT("Membership","מנוי")}<small>${msbT("One payment, never renews by itself","תשלום אחד, לא מתחדש לבד")}</small></h3>${until}<div class="msb-grid">${members}</div></section>`:"");
-  document.getElementById("msbFoot").innerHTML=`${msbT("Paid with the Microsoft account on this computer. Always ask a grown-up first! All purchases are final.","התשלום דרך חשבון מיקרוסופט שבמחשב הזה. תמיד לשאול מבוגר קודם! כל הרכישות סופיות.")} <button type="button" class="msb-terms">${msbT("Terms","תקנון")}</button>`;
-}
-async function msbBuy(id){
-  const mp=MSB.products&&MSB.products[id];if(!mp||MSB.busy||!me)return;
-  const forId=String(me.id);MSB.busy=id;msbMsg("");msbPaint();
-  try{
-    let r=null;try{r=await window.JumpiAppBridge.msStore.buy(mp.storeId);}catch(e){}
-    if(!me||String(me.id)!==forId)return;
-    if(r&&r.ok&&(r.status===0||r.status===1)){msbMsg(msbT("Payment done! Getting it ready…","התשלום עבר! מכינים את זה…"),true);await msbClaim(false);}
-    else if(r&&r.ok&&r.status===2){msbMsg("");}   // closed Microsoft's window: nothing was bought
-    else{sfx.error();msbMsg(msbT("Microsoft couldn't finish the purchase. Check the internet and try again. You weren't charged twice.","מיקרוסופט לא הצליחה לסיים את הרכישה. כדאי לבדוק את האינטרנט ולנסות שוב."));}
-  }finally{MSB.busy="";if(!msbOv.hidden)msbPaint();}
-}
-let msbClaiming=null;
-function msbClaim(quiet){if(!msbClaiming)msbClaiming=msbClaimNow(quiet).finally(()=>{msbClaiming=null;});return msbClaiming;}
-async function msbClaimNow(quiet){
-  if(!MS_APP||!me)return;
-  const forId=String(me.id),fail=t=>{if(!quiet&&!msbOv.hidden){sfx.error();msbMsg(t);}};
-  const later=msbT("We couldn't check the purchase with Microsoft yet. Don't worry: it's saved, and it will arrive the next time you open this window.","עוד לא הצלחנו לבדוק את הרכישה מול מיקרוסופט. אל דאגה: היא שמורה, ותגיע בפעם הבאה שתפתחו את החלון הזה.");
-  const t=await api("/api/msstore/ticket",{});if(!t.ok)return fail(t.data&&t.data.error||later);
-  let k=null;try{k=await window.JumpiAppBridge.msStore.key(t.data.ticket,t.data.uid);}catch(e){}
-  if(!k||!k.ok)return fail(later);
-  const c=await api("/api/msstore/claim",{key:k.key});if(!c.ok)return fail(c.data&&c.data.error||later);
-  if(!me||String(me.id)!==forId)return;
-  const got=c.data.given||[];
-  if(c.data.user){me.coins=c.data.user.coins;me.memberUntil=c.data.user.memberUntil;me.subscriber=c.data.user.subscriber;}
-  if(!got.length){if(!quiet)msbMsg("");return;}
-  paintCoins(true);try{refreshMyTag();}catch(e){}sfx.success();if(inGame)doAction("hop",null,true);
-  const names=got.map(id=>{const P=PRODUCT_BY_ID[id];return P?(P.kind==="coins"?`${P.give.coins.toLocaleString("en-US")} ${msbT("coins","מטבעות")}`:(msbHe()?P.name.he:P.name.en)+" "+msbT("membership","מנוי")):id;});
-  const text=msbT("Thank you! You got ","תודה! קיבלת ")+names.join(", ")+".";
-  if(!msbOv.hidden){msbMsg(text,true);msbPaint();}toast(text);
-}
-document.getElementById("msbClose").onclick=()=>closeMsb();
-msbOv.addEventListener("click",e=>{if(e.target===msbOv)return closeMsb();
-  const t=e.target.closest("[data-ms]");if(t&&!t.disabled){press(t);msbBuy(t.dataset.ms);return;}
-  if(e.target.closest(".msb-switch")){closeMsb(true);if(inGame)exitGame();else toast(msbT("Pick your account on the start screen, or add one.","בחרו את החשבון שלכם במסך הפתיחה, או הוסיפו חשבון."));return;}
-  if(e.target.closest(".msb-terms")){try{window.JumpiAppBridge.openOutside("https://jumpigames.com/terms#t-purchases");}catch(err){}}});
-msbOv.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape"){e.preventDefault();closeMsb();}});
-if(MS_APP){
-  const chip=document.getElementById("coins");
-  chip.addEventListener("click",e=>{if(MSB.on){e.stopPropagation();openMsb();}});
-  document.getElementById("coinsPlus").addEventListener("click",e=>{e.stopPropagation();press(e.currentTarget);openMsb();});
-  msbCheck().catch(()=>{});
-}
-
 /* ---------- CB: the coins window (browser: + next to the coins) and "not enough coins" (everywhere) ----------
    In a browser it shows the Jumpi Store's coin packs and memberships with their real pictures and opens the store
    page on the one picked (a grown-up pays there, like always). In the apps there are no links to paid things:
-   the Microsoft Store program sends you to its own coins window, and the Android app / other computer program
-   show ways to earn coins in the game instead. */
-const WEB_BUY=STORE_OPEN&&!IN_APP&&!IS_DESK&&!MS_APP&&!/JumpiStore\//.test(navigator.userAgent);
+   the Android app and the computer programs (the Microsoft Store one too: its rules don't let a game point anywhere
+   else to buy) show ways to earn coins in the game instead. */
+const WEB_BUY=STORE_OPEN&&!IN_APP&&!IS_DESK&&!/JumpiStore\//.test(navigator.userAgent);
 if(WEB_BUY)document.body.classList.add("webbuy");
 const cbOv=document.getElementById("cbOv"),cbBody=document.getElementById("cbBody");
 const CB={need:0,pick:null,from:null};
@@ -15481,8 +15372,7 @@ function cbRain(){const box=cbOv.querySelector(".cb-rain");box.innerHTML="";if(r
 function openCoinBox(opts={}){
   if(!me)return;const coins=me.coins||0;
   const need=opts.price?Math.max(0,opts.price-coins):(opts.short||0);
-  if(MS_APP){if(MSB.on&&!need){openMsb();return;}}
-  if(!WEB_BUY&&!need&&!(MS_APP&&MSB.on))return;
+  if(!WEB_BUY&&!need)return;
   CB.need=need;CB.from=document.activeElement;
   const packs=PRODUCTS.filter(P=>P.kind==="coins");
   CB.pick=need?(packs.find(P=>P.give.coins>=need)||packs[packs.length-1]).id:null;
@@ -15507,9 +15397,6 @@ function cbPaint(opts){
       <section class="msb-sec"><h3>${GSTAR}Membership<small>One payment, never renews by itself</small></h3><div class="msb-grid">${memT}</div></section>
       <button type="button" class="cb-go">${COIN_SVG}${CB.pick?"BUY THIS IN THE STORE":"TO THE JUMPI STORE"}</button>`;
     document.getElementById("cbFoot").textContent="The Jumpi Store opens in a new tab. Always ask a grown-up first!";
-  }else if(MS_APP&&MSB.on){
-    cbBody.innerHTML=head+`<button type="button" class="cb-go" data-ms-open>${COIN_SVG}GET COINS</button>`;
-    document.getElementById("cbFoot").textContent="";
   }else{
     const ways=[["#2f7bff","#1a56d6","1","<b>Mini-games</b> pay coins every round you play."],
       ["#ff8a1c","#c25a00","2","<b>Jobs</b> (phone → Jobs): waiter, police officer and pizza rider."],
@@ -15528,7 +15415,6 @@ cbBody.addEventListener("click",e=>{
     const go=cbBody.querySelector(".cb-go");if(go)go.innerHTML=COIN_SVG+"BUY THIS IN THE STORE";return;}
   const go=e.target.closest(".cb-go");if(!go)return;press(go);
   if(go.hasAttribute("data-close")){closeCoinBox();return;}
-  if(go.hasAttribute("data-ms-open")){closeCoinBox(true);openMsb();return;}
   closeCoinBox(true);openStorePage(CB.pick||"coins");toast("The Jumpi Store opened in a new tab. Ask a grown-up to help you buy.");});
 document.getElementById("cbClose").onclick=()=>closeCoinBox();
 cbOv.addEventListener("click",e=>{if(e.target===cbOv)closeCoinBox();});
@@ -15574,10 +15460,9 @@ function openMemberOffer(slot,i,why){
     ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest("[data-mof-x]")){closeMemberOffer();return;}
       const go=e.target.closest(".mof-go");if(!go)return;press(go);
       if(go.dataset.go==="web"){closeMemberOffer(true);openStorePage("membership");toast("The Jumpi Store opened in a new tab. Ask a grown-up to help you buy.");}
-      else if(go.dataset.go==="ms"){closeMemberOffer(true);openMsb();}
       else closeMemberOffer();});
     ov.addEventListener("keydown",e=>{e.stopPropagation();if(e.key==="Escape")closeMemberOffer();});}
-  const web=typeof WEB_BUY!=="undefined"&&WEB_BUY,ms=typeof MS_APP!=="undefined"&&MS_APP&&MSB.on;
+  const web=typeof WEB_BUY!=="undefined"&&WEB_BUY;
   const it=Number.isInteger(i)&&i>=0&&slot?(catalog&&catalog.get(slot+":"+i)):null;
   const what=why==="home-full"?"Your home is full! Members have room for 90 pieces of furniture.":why==="pets-full"?"Your pet house is full! Members have room for 7 pets.":why==="lounge"?"The Members Lounge is just for members.":why==="pet-color"?"This pet colour is just for members.":it?`${itemName(slot,i)} is a members-only item.`:"";
   const pic=it?`<span class="mof-pic">${slot==="emote"?`<img alt="" src="${emoteImage(EMOTES[i].id,skinOf({color:lk("color")}))}">`:itemPic(slot,i)}<i class="mof-ribbon">${MCROWN}MEMBERS</i></span>`:`<span class="mof-pic big">${MCROWN}</span>`;
@@ -15585,7 +15470,6 @@ function openMemberOffer(slot,i,why){
     <div class="mof-head">${pic}<div><h2 id="mofTitle">MEMBERS HAVE MORE FUN!</h2>${what?`<p class="mof-what">${esc(what)}</p>`:""}</div></div>
     <ul class="mof-perks">${MEMBER_PERKS.map((P,k)=>`<li style="--k:${k}"><svg viewBox="0 0 24 24" aria-hidden="true">${MPERK_IC[P.ic]||MPERK_IC.star}</svg><span>${esc(I18N.lang==="he"?P.he:P.en)}</span></li>`).join("")}</ul>
     ${web?`<button type="button" class="mof-go" data-go="web">${MCROWN}BECOME A MEMBER</button><p class="mof-small">One payment, never renews by itself. Always ask a grown-up first!<br>When a membership ends, everything you built stays yours.</p>`
-      :ms?`<button type="button" class="mof-go" data-go="ms">${MCROWN}BECOME A MEMBER</button><p class="mof-small">One payment, never renews by itself. When a membership ends, everything you built stays yours.</p>`
       :`<button type="button" class="mof-go" data-go="ok">OK!</button>`}</div>`;
   if(inGame){closePhone(true);closeChat();}G.keys={};G.target=null;
   ov.hidden=false;sfx.whoosh();MOF_FROM=document.activeElement;setTimeout(()=>{const b=ov.querySelector(".mof-go");if(b)b.focus({preventScroll:true});},80);}

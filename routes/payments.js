@@ -8,7 +8,6 @@ import { Order } from "../models/Order.js";
 import { AdminLog, logQuietly } from "../models/Logs.js";
 import { fulfillOrder } from "./store.js";
 import { hyp } from "../payments/hyp.js";
-import { msReady } from "./msstore.js";
 import { PRODUCT_BY_ID, STORE_OPEN } from "../public/shared/store.js";
 import { ITEMS, LOOK_SLOTS } from "../catalog.js";
 import { moderation, notifyCoins, notifyMember } from "../realtime/plaza.js";
@@ -322,7 +321,7 @@ router.get("/summary", async (req, res, next) => {
 function health() {
   return {
     hyp: hyp.ready(), storeOpen: STORE_OPEN, test: process.env.STORE_TEST === "1" || process.env.STORE_TEST === "true",
-    code: codeSet(), returnUrl: "/api/store/hyp/return", microsoft: msReady(),
+    code: codeSet(), returnUrl: "/api/store/hyp/return", microsoft: false,   // buying inside the Microsoft Store app was taken out (30.10.2026); old Microsoft orders still show
   };
 }
 

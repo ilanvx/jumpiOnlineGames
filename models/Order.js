@@ -18,7 +18,7 @@ const orderSchema = new mongoose.Schema(
     currency: { type: String, default: "ILS" },
     // partial = part of the money was given back; refunded = all of it (routes/payments.js)
     status: { type: String, enum: ["pending", "paid", "failed", "cancelled", "duplicate", "partial", "refunded"], default: "pending", index: true },
-    provider: { type: String, enum: ["hyp", "test", "msstore"], default: "hyp" },   // msstore = bought in the Microsoft Store app (routes/msstore.js)
+    provider: { type: String, enum: ["hyp", "test", "msstore"], default: "hyp" },   // msstore = bought in the Microsoft Store app (that way of buying was taken out on 30.10.2026; old orders keep it)
     providerRef: { type: String, default: "" }, // the payment company's transaction id
     give: { type: Object, default: {} }, // what this order gives, copied at the time of buying
     paidAt: { type: Date, default: null },
