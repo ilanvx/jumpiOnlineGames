@@ -104,3 +104,42 @@ const pio = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecti
 pio.observe($("poll"));
 
 addEventListener("gd:lang", () => { if (GUIDES) paintFaq(); paintPoll(); });
+
+
+/* ---------- download to the phone ----------
+   The game installs from the browser as an app (public/manifest.webmanifest, start_url /play): Android Chrome gives the
+   install prompt (beforeinstallprompt), iPhone is "Share → Add to Home Screen". Links elsewhere go to /#phone. */
+let installEv = null;
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEv = e; if (!sheet.hidden && card.dataset.s !== "done") card.dataset.s = "ready"; });
+addEventListener("appinstalled", () => { installEv = null; card.dataset.s = "done"; });
+const sheet = $("phoneSheet"), card = sheet.querySelector(".ph-card");
+const ua = navigator.userAgent;
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isPhone = isIOS || /Android|Mobile/i.test(ua) || matchMedia("(pointer: coarse)").matches;
+const installed = () => matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches || navigator.standalone === true;
+function openSheet() {
+  card.dataset.s = !isPhone ? "computer" : isIOS ? "ios" : installEv ? "ready" : "android";
+  sheet.hidden = false; $("phClose").focus();
+}
+function closeSheet() { sheet.hidden = true; if (location.hash === "#phone") history.replaceState(null, "", location.pathname + location.search); }
+$("phoneGet").addEventListener("click", async (e) => {
+  e.preventDefault();
+  if (installed()) { location.href = "/play"; return; }
+  if (isPhone && !isIOS && installEv) {   // straight to the phone's own "Install" question
+    installEv.prompt(); const r = await installEv.userChoice.catch(() => null); installEv = null;
+    if (r && r.outcome === "accepted") { card.dataset.s = "done"; sheet.hidden = false; }
+    return;
+  }
+  openSheet();
+});
+$("phInstall").addEventListener("click", async () => {
+  if (!installEv) { card.dataset.s = "android"; return; }
+  installEv.prompt(); const r = await installEv.userChoice.catch(() => null); installEv = null;
+  card.dataset.s = r && r.outcome === "accepted" ? "done" : "android";
+});
+$("phClose").addEventListener("click", closeSheet);
+sheet.addEventListener("click", (e) => { if (e.target === sheet) closeSheet(); });
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !sheet.hidden) closeSheet(); });
+if (location.hash === "#phone") openSheet();
+addEventListener("hashchange", () => { if (location.hash === "#phone") openSheet(); });
+if ("serviceWorker" in navigator && location.protocol === "https:") addEventListener("load", () => setTimeout(() => navigator.serviceWorker.register("/sw.js").catch(() => {}), 3000));

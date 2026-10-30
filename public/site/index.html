@@ -26,6 +26,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/jumpi-head-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/jumpi-head-192.png">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <script src="/shared/a11y.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,9 +104,9 @@
       <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 11 H26 L24.5 26 Q24.3 28 22.3 28 H9.7 Q7.7 28 7.5 26 Z" fill="currentColor"/><path d="M11 11 V8.5 A5 5 0 0 1 21 8.5 V11" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="11" y="14.5" width="4.4" height="4.4" rx=".6" fill="#1d2b4f"/><rect x="16.6" y="14.5" width="4.4" height="4.4" rx=".6" fill="#1d2b4f"/><rect x="11" y="20.1" width="4.4" height="4.4" rx=".6" fill="#1d2b4f"/><rect x="16.6" y="20.1" width="4.4" height="4.4" rx=".6" fill="#1d2b4f"/></svg>
       <span><small data-l="en">Get it from</small><small data-l="he">להורדה מ-</small>Microsoft Store</span>
     </a>
-    <a class="hm-store" href="/download/android">
+    <a class="hm-store" id="phoneGet" href="/#phone">
       <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="9" y="3" width="14" height="26" rx="3.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M16 9 V18 M12.5 14.5 L16 18 L19.5 14.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="24.5" r="1.5" fill="currentColor"/></svg>
-      <span><small data-l="en">Download for</small><small data-l="he">להורדה ל-</small>Android</span>
+      <span><small data-l="en">Download to your</small><small data-l="he">הורדה</small><b data-l="en">Phone</b><b data-l="he">לטלפון</b></span>
     </a>
   </div>
 </section>
@@ -212,7 +213,7 @@
       <h3><span data-l="en">Play</span><span data-l="he">משחק</span></h3>
       <a href="/play"><span data-l="en">Play online</span><span data-l="he">לשחק אונליין</span></a>
       <a class="hm-noapp" href="https://apps.microsoft.com/detail/9NRWVNFQH5MK" target="_blank" rel="noopener">Microsoft Store</a>
-      <a class="hm-noapp" href="/download/android"><span data-l="en">Android app</span><span data-l="he">אפליקציה לאנדרואיד</span></a>
+      <a class="hm-noapp" href="/#phone"><span data-l="en">Download to your phone</span><span data-l="he">הורדה לטלפון</span></a>
       <a href="/trailer"><span data-l="en">Watch the trailer</span><span data-l="he">הטריילר</span></a>
       <a class="hm-noapp" href="/store"><span data-l="en">Jumpi Store</span><span data-l="he">החנות</span></a>
     </nav>
@@ -248,6 +249,38 @@
     <p>© 2026 Jumpi Games™</p>
   </div>
 </footer>
+
+<!-- download to the phone: installs the game as an app from the browser (home.js, public/manifest.webmanifest) -->
+<div class="ph-ov" id="phoneSheet" hidden>
+  <div class="ph-card" role="dialog" aria-modal="true" aria-labelledby="phTitle">
+    <button class="ph-x" type="button" id="phClose" aria-label="Close">×</button>
+    <img class="ph-icon" src="/icons/jumpi-head-192.png" alt="" width="96" height="96">
+    <h2 id="phTitle"><span data-l="en">Jumpi on your phone</span><span data-l="he">ג'אמפי בטלפון</span></h2>
+    <p class="ph-sub"><span data-l="en">Free, no app store needed. It opens full screen, straight from your home screen.</span><span data-l="he">בחינם, בלי חנות אפליקציות. נפתח במסך מלא, ישר ממסך הבית.</span></p>
+    <div class="ph-step" data-s="ready">
+      <button class="hm-btn orange xl" type="button" id="phInstall"><span data-l="en">Add to my phone</span><span data-l="he">להוסיף לטלפון</span></button>
+    </div>
+    <ol class="ph-step" data-s="android">
+      <li><span data-l="en">Tap the menu</span><span data-l="he">לוחצים על התפריט</span> <b class="ph-k">⋮</b> <span data-l="en">at the top of the browser</span><span data-l="he">בראש הדפדפן</span></li>
+      <li><span data-l="en">Choose</span><span data-l="he">בוחרים</span> <b><span data-l="en">"Install app"</span><span data-l="he">"התקנת אפליקציה"</span></b> <span data-l="en">or</span><span data-l="he">או</span> <b><span data-l="en">"Add to Home screen"</span><span data-l="he">"הוספה למסך הבית"</span></b></li>
+      <li><span data-l="en">Jumpi is on your home screen!</span><span data-l="he">ג'אמפי מחכה במסך הבית!</span></li>
+    </ol>
+    <ol class="ph-step" data-s="ios">
+      <li><span data-l="en">Tap the Share button</span><span data-l="he">לוחצים על כפתור השיתוף</span> <svg class="ph-k" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 V15 M7.5 7.5 L12 3 L16.5 7.5 M6 11 H5 V21 H19 V11 H18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></li>
+      <li><span data-l="en">Choose</span><span data-l="he">בוחרים</span> <b><span data-l="en">"Add to Home Screen"</span><span data-l="he">"הוספה למסך הבית"</span></b></li>
+      <li><span data-l="en">Tap "Add". Jumpi is on your home screen!</span><span data-l="he">לוחצים "הוסף". ג'אמפי מחכה במסך הבית!</span></li>
+    </ol>
+    <div class="ph-step" data-s="computer">
+      <p><span data-l="en">Open this page on your phone:</span><span data-l="he">פותחים את הדף הזה בטלפון:</span></p>
+      <p class="ph-url" dir="ltr">jumpigames.com</p>
+      <p><span data-l="en">and tap "Download to your phone".</span><span data-l="he">ולוחצים "הורדה לטלפון".</span></p>
+    </div>
+    <div class="ph-step" data-s="done">
+      <p><b><span data-l="en">Done! Jumpi is on your phone.</span><span data-l="he">מוכן! ג'אמפי בטלפון.</span></b></p>
+      <a class="hm-btn orange" href="/play"><span data-l="en">Play now</span><span data-l="he">לשחק עכשיו</span></a>
+    </div>
+  </div>
+</div>
 
 <script type="module" src="/site/home.js"></script>
 <script type="module" src="/site/home3d.js"></script>
