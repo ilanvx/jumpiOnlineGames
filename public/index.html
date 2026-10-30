@@ -5318,6 +5318,9 @@ function perfSend(){if(PERF.ms<30000||!me)return;const min=PERF.ms/60000;
   fetch("/api/perf",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body,keepalive:true}).catch(()=>{});}
 addEventListener("pagehide",perfSend);
 // the service worker (/sw.js): the heavy files (model, pictures, music, fonts) stay on the device for the next visit
+// installed from the website ("Download to your phone", PWA): sideways like the Android app (the manifest says landscape too;
+// screen.orientation.lock only works full screen / installed, iPhones ignore it)
+if(matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches&&screen.orientation&&screen.orientation.lock){const lk=()=>screen.orientation.lock("landscape").catch(()=>{});lk();addEventListener("pointerdown",lk,{once:true});}
 if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>setTimeout(()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}),4000));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)perfSend();});
 function perfMeterPaint(){

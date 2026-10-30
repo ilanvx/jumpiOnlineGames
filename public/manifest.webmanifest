@@ -9,7 +9,7 @@
   "fullscreen",
   "standalone"
  ],
- "orientation": "any",
+ "orientation": "landscape",
  "background_color": "#1fb6ff",
  "theme_color": "#1fb6ff",
  "lang": "en",
