@@ -663,6 +663,45 @@
       await load();
     },
 
+    async tiktok(arg) {
+      page("TikTok city");
+      const msg = arg ? decodeURIComponent(arg) : "";
+      if (msg) { msg === "ok" ? toast("TikTok is connected.") : toast(msg === "expired" ? "That connection link ran out. Press Connect again." : "TikTok: " + msg, true); history.replaceState(null, "", "#tiktok"); }
+      const box = h("div");
+      const draw = (d) => {
+        const shown = d.manual !== null && d.manual !== undefined ? d.manual : d.followers;
+        const manual = h("input", { class: "inp", type: "number", min: 0, placeholder: "Followers", value: d.manual ?? "" });
+        box.replaceChildren(
+          panel("Followers",
+            h("div", { class: "tt-big" }, h("b", null, shown === null || shown === undefined ? "—" : fmtNum(shown)),
+              h("span", { class: "tag " + (d.manual !== null && d.manual !== undefined ? "orange" : d.connected ? "green" : "") },
+                d.manual !== null && d.manual !== undefined ? "Manual number" : d.connected ? "Live from TikTok" : "Not connected")),
+            h("p", { class: "muted small" }, d.connected
+              ? `Account: ${d.account || "…"} · last read ${fmtDate(d.at)} · read every 5 minutes`
+              : "The Jumpi City page reads this number. Connect the Jumpi Games TikTok account and it updates by itself."),
+            d.error ? h("p", { class: "muted small", style: "color:#c2410c" }, "Last problem: " + d.error) : null,
+            h("div", { class: "tt-row" },
+              !d.ready ? h("p", { class: "muted small" }, "First put TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET in .env on the server and restart it.")
+                : h("button", { class: "b b-orange", type: "button", onclick: async () => {
+                    try { location.href = (await api("/tiktok/connect", {})).url; } catch (e) { oops(e); }
+                  } }, d.connected ? "Connect again" : "Connect TikTok"),
+              d.connected ? h("button", { class: "b b-ghost", type: "button", onclick: async () => { try { draw(await api("/tiktok/refresh", {})); toast("Read again."); } catch (e) { oops(e); } } }, "Read now") : null,
+              d.connected ? h("button", { class: "b b-ghost", type: "button", onclick: async () => {
+                  if (!confirm("Disconnect TikTok? The city stays at the last number until you connect again.")) return;
+                  try { draw(await api("/tiktok/disconnect", {})); } catch (e) { oops(e); } } }, "Disconnect") : null)),
+          panel("Manual number",
+            h("p", { class: "muted small" }, "Only until TikTok is connected, or if it stops working: while a number is here, the city uses it instead of the live count."),
+            h("div", { class: "tt-row" }, manual,
+              h("button", { class: "b b-orange", type: "button", onclick: async () => { try { draw(await api("/tiktok/manual", { followers: manual.value === "" ? null : Number(manual.value) })); toast("Saved."); } catch (e) { oops(e); } } }, "Save"),
+              d.manual !== null && d.manual !== undefined ? h("button", { class: "b b-ghost", type: "button", onclick: async () => { try { draw(await api("/tiktok/manual", { followers: null })); toast("Back to the live count."); } catch (e) { oops(e); } } }, "Use the live count") : null)),
+          panel("Set-up",
+            h("p", { class: "muted small" }, "In the TikTok app (developers.tiktok.com → Jumpi City) the redirect address must be exactly:"),
+            h("p", null, h("code", null, d.redirect))));
+      };
+      main.append(box);
+      draw(await api("/tiktok"));
+    },
+
     async announce() {
       page("Announcements");
       const ta = h("textarea", { class: "inp", maxlength: 160, placeholder: "Write a message everyone in the game will see on their screen…" });

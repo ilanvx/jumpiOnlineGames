@@ -281,3 +281,10 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f5f9ff}
 
 /* Item designer: the designer (a dark, Blender-like app) fills the page below the title */
 .dz-frame{display:block;width:100%;height:calc(100vh - 175px);min-height:520px;border:0;border-radius:14px;background:#1d1d1d;box-shadow:0 12px 28px rgb(16 40 90 / .18)}
+
+/* TikTok city (VIEWS.tiktok): a plain music-note mark, no brand logo */
+.ic-tiktok{--m:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 3h11v4h-7v10.5A3.5 3.5 0 1 1 9 14.3z'/%3E%3C/svg%3E")}
+.tt-big{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0 10px}
+.tt-big b{font-size:44px;line-height:1;color:#1d2b4f}
+.tt-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.tt-row .inp{max-width:200px}

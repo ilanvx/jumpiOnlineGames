@@ -44,6 +44,7 @@ import { attachPlaza, onlinePlayers, announceUpdate } from "./realtime/plaza.js"
 import { startDiscordStats } from "./discord/pip.js";
 import { discordInteractions } from "./discord/interactions.js";
 import { loadEvent, eventInfo } from "./realtime/events.js";
+import { tiktokPublic, startTiktok, cityFollowers } from "./routes/tiktok.js";
 import { reqIp, isHttps, viaCloudflare } from "./routes/ip.js";
 import crypto from "node:crypto";
 import { loadCustom, customJs, customRev } from "./routes/items.js";
@@ -113,6 +114,9 @@ app.use("/api", blogRoutes);   // Jumpi Club blog: posts by admins, comments app
 app.use("/api/parents", parentRoutes);   // parental controls (the /parents page)
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });
+app.use("/api", tiktokPublic);   // TikTok sends the owner back here after "Connect TikTok" (routes/tiktok.js)
+// the Jumpi City page: the TikTok follower count (live from TikTok, or the admin's manual number)
+app.get("/api/city", async (req, res, next) => { try { res.set("Cache-Control", "no-store"); res.json(await cityFollowers()); } catch (err) { next(err); } });
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -323,6 +327,7 @@ try {
   await loadRevoked();   // logins that were ended stay ended after a restart
   console.log(`✓ Connected to MongoDB (database "${MONGODB_DB}")`);
   await loadEvent();
+  startTiktok();   // reads the TikTok follower count every few minutes (only once it is connected)
   await loadCustom();   // the Item studio's items and fixes (routes/items.js)
 } catch (err) {
   console.error("✗ Could not connect to MongoDB:", err.message);
