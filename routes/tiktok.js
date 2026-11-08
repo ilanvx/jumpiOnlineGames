@@ -23,7 +23,7 @@ import { currentUser } from "./auth.js";
 const KEY = "tiktok";
 const AUTH_URL = "https://www.tiktok.com/v2/auth/authorize/";
 const TOKEN_URL = "https://open.tiktokapis.com/v2/oauth/token/";
-const INFO_URL = "https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,username,follower_count";
+const INFO_URL = "https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,follower_count";
 const SCOPES = "user.info.basic,user.info.stats";
 const POLL_MS = 5 * 60 * 1000;   // how often we read the count
 const base = () => (process.env.PUBLIC_URL || "https://jumpigames.com").replace(/\/+$/, "");
@@ -110,7 +110,7 @@ export async function readFollowers() {
       state.followers = Number(u.follower_count);
       state.at = new Date();
     }
-    state.account = u.username || u.display_name || state.account;
+    state.account = u.display_name || state.account;   // (username needs another permission, user.info.profile: not asked)
     state.error = "";
   } catch (err) {
     state.error = String(err.message || err).slice(0, 200);
