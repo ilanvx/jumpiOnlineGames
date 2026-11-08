@@ -83,3 +83,25 @@ body.ct{margin:0;background:#bfe6ff;color:var(--ink);font:400 1.05rem/1.55 var(-
   .ct-hint{display:none}
   .ct-steps{grid-template-columns:1fr}
 }
+
+/* Followers Village: find your house */
+.ct-find{position:absolute;top:72px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:18px;background:rgba(255,255,255,.92);box-shadow:0 5px 0 rgba(0,60,140,.18);width:min(360px,calc(100% - 24px));flex-wrap:wrap}
+.ct-find input{flex:1 1 0;min-width:0;border:2px solid #d6e6fa;border-radius:13px;padding:8px 12px;font:500 1rem/1.2 var(--body);color:var(--ink);background:#fff;outline:none}
+.ct-find input:focus{border-color:#ff5fb4}
+.ct-find-go{border:0;border-radius:13px;padding:0 16px;background:#ff5fb4;color:#fff;font:400 1.05rem/1 var(--display);box-shadow:0 3px 0 #c42a7f;cursor:pointer}
+.ct-find-msg{flex:1 0 100%;margin:0;padding:0 6px;font-size:.85rem;font-weight:600;color:#4a5878}
+.ct-find-msg:empty{display:none}
+.ct-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cl-village{background:#ff5fb4}
+.cl-home{background:#ffd23a;color:var(--ink);box-shadow:0 5px 0 #d99a00,0 10px 22px rgba(0,30,80,.25)}
+.cl-home span{opacity:.85}
+.ct-village{max-width:720px;margin:44px auto 0;text-align:center}
+.ct-village h2{margin-bottom:10px}
+.ct-small{font-size:.92rem;color:#4a5878}
+.ct-small a{color:#d61f86;font-weight:600}
+@media (max-width:760px){
+  .ct-views{max-width:calc(100% - 16px);overflow-x:auto}
+  .ct-find{top:62px}
+  .ct-find input{font-size:.95rem;padding:7px 10px}
+}
+.cl span span{display:inline}

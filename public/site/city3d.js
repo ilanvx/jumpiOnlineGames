@@ -12,6 +12,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { NAMES } from "./city-names.js";
 
 const reduce = () => !!(window.JUMPI_REDUCE_MOTION || matchMedia("(prefers-reduced-motion: reduce)").matches);
 const TAU = Math.PI * 2;
@@ -570,6 +571,16 @@ anims.push((t) => {
   }
 });
 
+// Jumpis walking up and down the village avenue and along its first streets (added once the model has loaded)
+function villageCrowd() {
+  for (let i = 0; i < 8; i++) {
+    const J = makeJumpi(SKINS[(i + 2) % SKINS.length], 1.15), off = rnd() * 400, dir = i % 2 ? 1 : -1;
+    if (i < 4) { const len = VHZ * 2 - 26, x = (i % 2 ? 1.6 : -1.6); J.path = (t) => { const s = ((t * 2 + off) % len) - len / 2; return [x, VZ + s * dir, dir > 0 ? 0 : Math.PI]; }; }
+    else { const p = (i - 4) % Math.max(1, vPairs), zs = VZ0 + p * (ROW * 2 + STREET + GAP) + ROW + STREET / 2 + (i % 2 ? 1.2 : -1.2), len = VHX * 2 - 20; J.path = (t) => { const s = ((t * 2 + off) % len) - len / 2; return [s * dir, zs, dir > 0 ? Math.PI / 2 : -Math.PI / 2]; }; }
+    crowd.push(J);
+  }
+}
+
 /* ---------- trees all over, clouds ---------- */
 for (let i = 0; i < 70; i++) {
   const x = (rnd() * 2 - 1) * (ISLAND - 6), z = (rnd() * 2 - 1) * (ISLAND - 6);
@@ -586,7 +597,7 @@ const clouds = [];
 for (let i = 0; i < 12; i++) {
   const c = new THREE.Group(); const cm = new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false });
   for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(8 + rnd() * 6, 12, 8), cm, [k * 10 - 15, rnd() * 3, rnd() * 6], c, null, false);
-  const a = (i / 12) * TAU + rnd() * 0.3, r = 300 + rnd() * 60;
+  const a = (i / 12) * TAU + rnd() * 0.3, r = 480 + rnd() * 60;
   c.position.set(Math.cos(a) * r, 55 + rnd() * 40, Math.sin(a) * r); c.userData.a = a; c.userData.r = r; c.userData.v = 0.004 + rnd() * 0.004; scene.add(c); clouds.push(c);
 }
 anims.push((t, dt) => { if (!reduce()) for (const c of clouds) { c.userData.a += dt * c.userData.v; c.position.x = Math.cos(c.userData.a) * c.userData.r; c.position.z = Math.sin(c.userData.a) * c.userData.r; c.lookAt(0, c.position.y, 0); } });
@@ -604,6 +615,171 @@ function placeLabel(el, pos) {
   el.style.opacity = vis ? "1" : "0";
   if (vis) el.style.transform = `translate(-50%,-100%) translate(${((pv.x + 1) / 2) * stage.clientWidth}px,${((1 - pv.y) / 2) * stage.clientHeight}px)`;
 }
+
+/* ---------- FOLLOWERS VILLAGE (south, over a bridge): a house for every name in city-names.js ----------
+   Rows of little houses along streets; the first names are nearest the bridge, new ones add rows further south.
+   The houses are instanced (a few draw calls for all of them) and the names float over the roofs as billboards drawn
+   from one canvas atlas (one draw call), fading out when the camera is far. findHome() flies to a house and marks it. */
+const VCOLS = 20, LOT = 7, ROW = 7.5, STREET = 6, GAP = 2.5, AVE = 9;   // houses per row, lot width, row depth, street, path between pairs, main avenue
+const vRows = Math.max(2, Math.ceil(NAMES.length / VCOLS));
+const vPairs = Math.ceil(vRows / 2);
+const VHX = (VCOLS / 2) * LOT + AVE / 2 + 10;                       // half width of the village island
+const VHZ = (vPairs * (ROW * 2 + STREET) + (vPairs - 1) * GAP) / 2 + 14;
+const VZ = ISLAND + 9 + 34 + VHZ;                                   // its centre (34 = the sea between, the bridge)
+const VZ0 = VZ - VHZ + 14;                                          // where the first row starts
+const homes = [];                                                   // { x, z, face, h, name }
+{
+  // the island (same rounded look as the main one)
+  const rect = (hx, hz, round) => { const s = new THREE.Shape(); s.moveTo(-hx + round, -hz); s.lineTo(hx - round, -hz); s.quadraticCurveTo(hx, -hz, hx, -hz + round); s.lineTo(hx, hz - round); s.quadraticCurveTo(hx, hz, hx - round, hz); s.lineTo(-hx + round, hz); s.quadraticCurveTo(-hx, hz, -hx, hz - round); s.lineTo(-hx, -hz + round); s.quadraticCurveTo(-hx, -hz, -hx + round, -hz); return s; };
+  const ext = (s, depth, mat, y) => { const g = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: 0.5, bevelSize: 1, bevelSegments: 3, curveSegments: 14 }); g.rotateX(-Math.PI / 2); const m = mesh(g, mat, [0, y, VZ], scene, null, false); m.receiveShadow = false; return m; };
+  ext(rect(VHX + 8, VHZ + 8, 24), 2.2, M("#f3d9a0", { roughness: 0.95 }), -3.4);
+  const vg = new THREE.MeshStandardMaterial({ color: "#86d65a", roughness: 0.95 });
+  ext(rect(VHX, VHZ, 20), 2.4, vg, -2.4);
+  // the bridge from the end of the south road
+  const b0 = ISLAND - 2, b1 = VZ - VHZ + 2, bl = b1 - b0, bm = (b0 + b1) / 2;
+  mesh(box(9, 0.8, bl), M("#c98a4b", { roughness: 0.85 }), [0, 0.2, bm], scene, null, false);
+  for (const s of [-1, 1]) {
+    mesh(box(0.4, 1.2, bl), M("#ffffff"), [s * 4.4, 1.2, bm], scene, null, false);
+    for (let z = b0 + 4; z < b1 - 2; z += 8) mesh(cyl(0.6, 0.7, 6, 10), M("#8a5a30"), [s * 4.2, -2.6, z], scene, null, false);
+  }
+  // entrance arch with the village sign
+  const arch = new THREE.Group(); arch.position.set(0, 0, VZ - VHZ + 6); scene.add(arch);
+  for (const s of [-1, 1]) mesh(cyl(0.7, 0.8, 9, 14), M("#ff5fb4"), [s * 6, 4.5, 0], arch, null, false);
+  const archSign = mesh(new THREE.PlaneGeometry(15, 3.6), new THREE.MeshStandardMaterial({ map: signTex("שכונת העוקבים", { bg: "#ff5fb4", w: 1024, h: 248, size: 132 }), roughness: 0.6, side: THREE.DoubleSide }), [0, 9.4, 0], arch, [0, Math.PI, 0], false);
+  void archSign;
+  // the main avenue (from the bridge to the south end) and the streets across it
+  const asphalt = M("#6a7382", { roughness: 0.9 }), walk = M("#ece5d6", { roughness: 0.9 });
+  mesh(box(AVE - 2, 0.12, VHZ * 2 - 16), asphalt, [0, 0.06, VZ], scene, null, false);
+  for (let p = 0; p < vPairs; p++) {
+    const zs = VZ0 + p * (ROW * 2 + STREET + GAP) + ROW + STREET / 2;
+    mesh(box(VHX * 2 - 14, 0.1, STREET - 1.4), asphalt, [0, 0.05, zs], scene, null, false);
+    for (const s of [-1, 1]) mesh(box(VHX * 2 - 14, 0.16, 0.7), walk, [0, 0.08, zs + s * (STREET / 2 - 0.35)], scene, null, false);
+  }
+  // where every house stands
+  NAMES.forEach((name, i) => {
+    const row = Math.floor(i / VCOLS), col = i % VCOLS, pair = Math.floor(row / 2), north = row % 2 === 0;
+    const half = col < VCOLS / 2 ? -1 : 1, k = col < VCOLS / 2 ? VCOLS / 2 - 1 - col : col - VCOLS / 2;   // fill from the avenue outwards
+    const x = half * (AVE / 2 + LOT / 2 + k * LOT);
+    const zPair = VZ0 + pair * (ROW * 2 + STREET + GAP);
+    const z = north ? zPair + ROW / 2 : zPair + ROW + STREET + ROW / 2;
+    const r = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+    homes.push({ i, name, x, z, face: north ? 0 : Math.PI, h: 3.4 + (r * 3 | 0) * 0.9, w: 4.4 + (i % 3) * 0.4, r });
+  });
+  // instanced houses: walls, roofs, doors, windows, little front paths
+  const n = homes.length;
+  const g1 = box(1, 1, 1); g1.translate(0, 0.5, 0);
+  const roofG = new THREE.ConeGeometry(0.75, 1, 4); roofG.rotateY(Math.PI / 4); roofG.translate(0, 0.5, 0);
+  const walls = new THREE.InstancedMesh(g1, new THREE.MeshStandardMaterial({ roughness: 0.65 }), n);
+  const roofs = new THREE.InstancedMesh(roofG, new THREE.MeshStandardMaterial({ roughness: 0.6, flatShading: true }), n);
+  const doors = new THREE.InstancedMesh(g1, M("#7a4a26"), n);
+  const paths = new THREE.InstancedMesh(g1, M("#e8dcc4", { roughness: 0.9 }), n);
+  const wins = new THREE.InstancedMesh(g1, M("#dff4ff", { emissive: "#bfe6ff", emissiveIntensity: 0.25, roughness: 0.2 }), n * 2);
+  const o = new THREE.Object3D(), c = new THREE.Color(), v = new THREE.Vector3();
+  const put = (im, idx, H, lx, ly, lz, sx, sy, sz) => {
+    v.set(lx, ly, lz).applyAxisAngle(THREE.Object3D.DEFAULT_UP, H.face);
+    o.position.set(H.x + v.x, ly, H.z + v.z); o.rotation.set(0, H.face, 0); o.scale.set(sx, sy, sz); o.updateMatrix(); im.setMatrixAt(idx, o.matrix);
+  };
+  homes.forEach((H, i) => {
+    put(walls, i, H, 0, 0, -0.6, H.w, H.h, 4.4);
+    walls.setColorAt(i, c.set(HOUSE_COLS[(i * 5 + (H.r * 8 | 0)) % HOUSE_COLS.length]));
+    put(roofs, i, H, 0, H.h, -0.6, H.w * 1.12, 2.4, 4.4 * 1.12);
+    roofs.setColorAt(i, c.set(ROOF_COLS[(i * 3 + 1) % ROOF_COLS.length]));
+    put(doors, i, H, 0, 0, 1.62, 1, 1.9, 0.16);
+    put(paths, i, H, 0, 0, 2.7, 1.2, 0.06, 2);
+    for (const s of [0, 1]) put(wins, i * 2 + s, H, (s ? 1 : -1) * (H.w / 2 - 0.95), H.h * 0.5, 1.62, 0.9, 0.9, 0.14);
+  });
+  for (const im of [walls, roofs, doors, paths, wins]) { im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; im.castShadow = false; im.receiveShadow = false; scene.add(im); }
+  // trees along the edges of the village and at the street ends
+  for (let p = 0; p < vPairs; p++) { const zs = VZ0 + p * (ROW * 2 + STREET + GAP) + ROW + STREET / 2; for (const s of [-1, 1]) tree(s * (VHX - 4), zs, 1, 0.3); }
+  for (let z = VZ - VHZ + 12; z < VZ + VHZ - 6; z += 14) for (const s of [-1, 1]) tree(s * (VHX + 3), z, 1.1, 0.95);
+}
+
+/* the names over the roofs: one atlas, one instanced billboard mesh */
+const NAME_W = 256, NAME_H = 64, ATLAS_COLS = 8;
+const atlasRows = Math.max(1, Math.ceil(NAMES.length / ATLAS_COLS));
+const atlas = document.createElement("canvas"); atlas.width = NAME_W * ATLAS_COLS; atlas.height = NAME_H * atlasRows;
+const atlasTex = new THREE.CanvasTexture(atlas); atlasTex.colorSpace = THREE.SRGBColorSpace; atlasTex.anisotropy = 8;
+function drawNames() {
+  const x = atlas.getContext("2d");
+  x.clearRect(0, 0, atlas.width, atlas.height);
+  NAMES.forEach((name, i) => {
+    if (!name) return;
+    const cx = (i % ATLAS_COLS) * NAME_W, cy = Math.floor(i / ATLAS_COLS) * NAME_H;
+    x.font = `44px ${'"Secular One","Rubik",system-ui,sans-serif'}`;
+    const tw = Math.min(NAME_W - 16, x.measureText(name).width + 34);
+    const bx = cx + (NAME_W - tw) / 2;
+    x.fillStyle = "#1d2b4f"; x.beginPath(); x.roundRect(bx, cy + 4, tw, NAME_H - 8, 18); x.fill();
+    x.fillStyle = "#ffffff"; x.beginPath(); x.roundRect(bx + 4, cy + 8, tw - 8, NAME_H - 16, 14); x.fill();
+    x.fillStyle = "#1d2b4f"; x.textAlign = "center"; x.textBaseline = "middle"; x.direction = "rtl";
+    x.fillText(name, cx + NAME_W / 2, cy + NAME_H / 2 + 2, NAME_W - 40);
+  });
+  atlasTex.needsUpdate = true;
+}
+drawNames();
+document.fonts?.load('44px "Secular One"', "אבג").then(drawNames).catch(() => {});
+{
+  const n = homes.length;
+  const g = new THREE.InstancedBufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute([-0.5, -0.5, 0, 0.5, -0.5, 0, 0.5, 0.5, 0, -0.5, 0.5, 0], 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+  g.setIndex([0, 1, 2, 0, 2, 3]);
+  const at = new Float32Array(n * 3), cell = new Float32Array(n * 2);
+  homes.forEach((H, i) => { at.set([H.x, H.h + 3.6, H.z - 0.6], i * 3); cell.set([i % ATLAS_COLS, Math.floor(i / ATLAS_COLS)], i * 2); });
+  g.setAttribute("at", new THREE.InstancedBufferAttribute(at, 3));
+  g.setAttribute("cell", new THREE.InstancedBufferAttribute(cell, 2));
+  g.instanceCount = n;
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { map: { value: atlasTex }, grid: { value: new THREE.Vector2(ATLAS_COLS, atlasRows) }, size: { value: new THREE.Vector2(5.6, 1.4) } },
+    vertexShader: `attribute vec3 at; attribute vec2 cell; uniform vec2 grid; uniform vec2 size; varying vec2 vUv; varying float vFade;
+      void main(){ vec4 mv = modelViewMatrix * vec4(at, 1.0); float d = -mv.z; vFade = 1.0 - smoothstep(120.0, 170.0, d);
+        mv.xy += position.xy * size * (1.0 + smoothstep(40.0, 120.0, d) * 0.6);
+        vUv = vec2((cell.x + uv.x) / grid.x, 1.0 - (cell.y + 1.0 - uv.y) / grid.y); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform sampler2D map; varying vec2 vUv; varying float vFade;
+      void main(){ vec4 c = texture2D(map, vUv); if (c.a * vFade < 0.5) discard; gl_FragColor = vec4(c.rgb, 1.0);
+      #include <colorspace_fragment>
+      }`,
+  });
+  const signs = new THREE.Mesh(g, mat); signs.frustumCulled = false; signs.renderOrder = 2; scene.add(signs);
+}
+
+/* the village label, and finding a house */
+const vLabel = label("cl-lp cl-village");
+const vLabelPos = new THREE.Vector3(0, 16, VZ - VHZ + 6);
+function paintVillageLabel() {
+  const count = NAMES.filter(Boolean).length;
+  vLabel.innerHTML = `<b data-l="en">Followers Village</b><b data-l="he">שכונת העוקבים</b><span data-l="en"><span dir="ltr">${count}</span> houses</span><span data-l="he"><span dir="ltr">${count}</span> בתים</span>`;
+}
+paintVillageLabel();
+const homeLabel = label("cl-lp cl-home"); homeLabel.style.display = "none";
+const homePos = new THREE.Vector3();
+const marker = new THREE.Group(); marker.visible = false; scene.add(marker);
+{
+  const pink = M("#ff5fb4", { emissive: "#ff5fb4", emissiveIntensity: 0.35 });
+  const cone = new THREE.ConeGeometry(1.1, 2.2, 16); cone.rotateX(Math.PI);
+  mesh(cone, pink, [0, 0, 0], marker, null, false);
+  const ring = new THREE.TorusGeometry(3.6, 0.22, 8, 40); ring.rotateX(Math.PI / 2);
+  marker.userData.ring = mesh(ring, pink, [0, 0, 0], marker, null, false);
+}
+let picked = null;
+const norm = (s) => String(s || "").trim().toLowerCase().replace(/[֑-ׇ'"׳״\s-]/g, "").replace(/(.)\1+/g, "$1");
+function matchHomes(q) { const k = norm(q); if (!k) return []; const eq = homes.filter((H) => H.name && norm(H.name) === k); return eq.length ? eq : homes.filter((H) => H.name && norm(H.name).startsWith(k)); }
+function showHome(H, now) {
+  picked = H;
+  marker.visible = true; marker.position.set(H.x, H.h + 6.2, H.z - 0.6); marker.userData.ring.position.y = -(H.h + 6);
+  homePos.set(H.x, H.h + 8.4, H.z - 0.6);
+  homeLabel.style.display = "";
+  homeLabel.innerHTML = `<b data-l="en">${esc(H.name)}'s house</b><b data-l="he">הבית של ${esc(H.name)}</b><span data-l="en">House no. <span dir="ltr">${H.i + 1}</span></span><span data-l="he">בית מספר <span dir="ltr">${H.i + 1}</span></span>`;
+  const s = H.face ? -1 : 1;
+  const far = PHONE ? 1.25 : 1;
+  const v = { pos: [H.x + 12 * far, 30 * far, H.z + s * 36 * far], target: [H.x, PHONE ? 12 : 7, H.z] };   // (phones: the search box covers the top)
+  controls.autoRotate = false;
+  if (now) { camera.position.set(...v.pos); controls.target.set(...v.target); flight = null; return; }
+  flight = { t: 0, from: camera.position.clone(), to: new THREE.Vector3(...v.pos), tf: controls.target.clone(), tt: new THREE.Vector3(...v.target) };
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
+function findHome(q, nth = 0) { const list = matchHomes(q); if (!list.length) return { found: 0 }; const H = list[nth % list.length]; showHome(H); return { found: list.length, at: (nth % list.length) + 1, home: H.i + 1 }; }
+function goHome(no, now) { const H = homes[no - 1]; if (H && H.name) { showHome(H, now); return true; } return false; }
+anims.push((t) => { if (marker.visible) { const b = reduce() ? 0 : Math.sin(t * 3); marker.children[0].position.y = b * 0.5; marker.userData.ring.scale.setScalar(1 + (reduce() ? 0 : (t * 0.8) % 1) * 0.4); } });
 
 /* ---------- the state from the server ---------- */
 let DATA = null;
@@ -652,6 +828,7 @@ let flight = null;
 const VIEWS = {
   city: { pos: [88, 78, 112], target: [12, 0, -6] },
   lunapark: { pos: [LP.x - 34, 30, LP.z + 44], target: [LP.x, 6, LP.z] },
+  village: () => ({ pos: [(document.documentElement.lang === "he" ? -1 : 1) * 30, 52, VZ - VHZ - 52], target: [0, 0, VZ - VHZ + 46] }),   // (from the side the card doesn't cover)
   // in front of the plot (its +z side, where the sign is), a little to the side
   build: () => { const o = plotObjs.find((p) => p.state === "site") || plotObjs.find((p) => p.label && p.label.classList.contains("cl-next")) || plotObjs[0]; const P = o.P, c = Math.cos(P.face), s2 = Math.sin(P.face), lx = 18, lz = 54; return { pos: [P.x + lx * c + lz * s2, 32, P.z - lx * s2 + lz * c], target: [P.x, 9, P.z] }; },
 };
@@ -667,6 +844,7 @@ function fly(name, now) {
 new GLTFLoader().load("/blobby.glb", (g) => {
   JUMPI = g.scene;
   startCrowd();
+  villageCrowd();
   for (const o of plotObjs) if (o.state === "site") addWorkers(o);
 });
 // before the server answers: all plots empty, the first is "next"
@@ -707,9 +885,11 @@ renderer.setAnimationLoop(() => {
   for (const o of plotObjs) if (o.state === "empty" && o.parts && o.parts.q) o.parts.q.position.y = 5.2 + Math.sin(t * 1.6 + o.i) * 0.15;
   controls.update();
   placeLabel(lpLabel, lpPos);
+  placeLabel(vLabel, vLabelPos);
+  if (picked) placeLabel(homeLabel, homePos);
   for (const o of plotObjs) if (o.label) placeLabel(o.label, o.labelPos);
   renderer.render(scene, camera);
 });
 
-window.JumpiCity = { update, fly, camera, controls, render: () => renderer.render(scene, camera) };
+window.JumpiCity = { update, fly, findHome, goHome, homes: homes.length, camera, controls, render: () => renderer.render(scene, camera) };
 dispatchEvent(new Event("city:ready"));

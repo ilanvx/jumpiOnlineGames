@@ -52,6 +52,34 @@ document.querySelectorAll(".ct-views button").forEach((b) => b.addEventListener(
   document.querySelectorAll(".ct-views button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   window.JumpiCity?.fly(b.dataset.view);
 }));
+/* find your house (Followers Village): the same name again = the next house with that name; ?home=<number> opens a house */
+const findIn = $("ctFindIn"), findMsg = $("ctFindMsg");
+let lastQ = "", nth = 0;
+const he = () => document.documentElement.lang === "he";
+const say = (en, hb) => { findMsg.innerHTML = `<span data-l="en">${en}</span><span data-l="he">${hb}</span>`; };
+const paintPh = () => { findIn.placeholder = he() ? findIn.dataset.phHe : findIn.dataset.phEn; };
+paintPh();
+addEventListener("gd:lang", paintPh);
+new MutationObserver(paintPh).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+const pressView = (v) => document.querySelectorAll(".ct-views button").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.view === v)));
+$("ctFind").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = findIn.value.trim();
+  if (!q || !window.JumpiCity) return;
+  nth = q === lastQ ? nth + 1 : 0; lastQ = q;
+  const r = window.JumpiCity.findHome(q, nth);
+  pressView("");
+  if (!r.found) { say("We didn't find that name yet.", "עוד לא מצאנו את השם הזה."); return; }
+  history.replaceState(null, "", `?home=${r.home}`);
+  if (r.found > 1) say(`${r.at} of ${r.found} houses with this name. Press again for the next.`, `בית ${r.at} מתוך ${r.found} בתים עם השם הזה. לחצו שוב לבא.`);
+  else findMsg.textContent = "";
+});
+function openFromLink() {
+  const no = Number(new URLSearchParams(location.search).get("home"));
+  if (no > 0 && window.JumpiCity && window.JumpiCity.goHome(no)) pressView("");
+}
+if (window.JumpiCity) openFromLink(); else addEventListener("city:ready", openFromLink, { once: true });
+
 load();
 setInterval(load, 30000);
 roll();

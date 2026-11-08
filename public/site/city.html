@@ -72,7 +72,14 @@
       <button type="button" data-view="city" aria-pressed="true"><span data-l="en">Whole city</span><span data-l="he">כל העיר</span></button>
       <button type="button" data-view="lunapark" aria-pressed="false"><span data-l="en">Luna Park</span><span data-l="he">לונה פארק</span></button>
       <button type="button" data-view="build" aria-pressed="false"><span data-l="en">Next building</span><span data-l="he">הבנייה הבאה</span></button>
+      <button type="button" data-view="village" aria-pressed="false"><span data-l="en">Followers Village</span><span data-l="he">שכונת העוקבים</span></button>
     </div>
+    <form class="ct-find" id="ctFind" role="search" autocomplete="off">
+      <label for="ctFindIn" class="ct-sr"><span data-l="en">Find your house</span><span data-l="he">מצאו את הבית שלכם</span></label>
+      <input id="ctFindIn" type="search" maxlength="24" placeholder="Find your house" data-ph-he="מצאו את הבית שלכם" data-ph-en="Find your house" enterkeyhint="search">
+      <button type="submit" class="ct-find-go"><span data-l="en">Find</span><span data-l="he">חיפוש</span></button>
+      <p class="ct-find-msg" id="ctFindMsg" aria-live="polite"></p>
+    </form>
     <p class="ct-hint"><span data-l="en">Drag to turn · scroll or pinch to zoom</span><span data-l="he">גוררים כדי לסובב · גלגלת או צביטה לזום</span></p>
   </section>
 
@@ -83,6 +90,11 @@
       <li><b data-l="en">The workers arrive</b><b data-l="he">הפועלים מגיעים</b><span data-l="en">When we reach the goal, the Jumpi builders start working, with a 24-hour timer over the site.</span><span data-l="he">כשמגיעים ליעד, הפועלים של ג'אמפי מתחילים לבנות, עם שעון של 24 שעות מעל האתר.</span></li>
       <li><b data-l="en">The big opening</b><b data-l="he">הפתיחה הגדולה</b><span data-l="en">When the timer ends, the building opens and everyone finds out what it is.</span><span data-l="he">כשהשעון נגמר, הבניין נפתח וכולם מגלים מה זה.</span></li>
     </ol>
+    <div class="ct-village">
+      <h2><span data-l="en">A house with your name</span><span data-l="he">בית עם השם שלכם</span></h2>
+      <p><span data-l="en">Everyone who wrote their name in the comments of our "get a house" videos on TikTok has a house in Followers Village, with the name on top. Look for yours with the search box over the city.</span><span data-l="he">כל מי שכתב את השם שלו בתגובות בסרטוני "מקבלים בית" שלנו בטיקטוק מקבל בית בשכונת העוקבים, עם השם מעל הגג. חפשו את הבית שלכם בתיבת החיפוש שמעל העיר.</span></p>
+      <p class="ct-small"><span data-l="en">Only first names go on the houses. Want a name taken off?</span><span data-l="he">על הבתים כותבים רק שם פרטי. רוצים שנוריד שם?</span> <a href="/contact"><span data-l="en">Write to us</span><span data-l="he">כתבו לנו</span></a></p>
+    </div>
   </section>
 </main>
 
