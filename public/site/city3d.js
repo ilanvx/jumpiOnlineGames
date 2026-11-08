@@ -695,7 +695,7 @@ const homes = [];                                                   // { x, z, f
 }
 
 /* the names over the roofs: one atlas, one instanced billboard mesh */
-const NAME_W = 256, NAME_H = 64, ATLAS_COLS = 8;
+const NAME_W = 384, NAME_H = 64, ATLAS_COLS = 10;   // (room for 640 names in a 3840×4096 atlas)
 const atlasRows = Math.max(1, Math.ceil(NAMES.length / ATLAS_COLS));
 const atlas = document.createElement("canvas"); atlas.width = NAME_W * ATLAS_COLS; atlas.height = NAME_H * atlasRows;
 const atlasTex = new THREE.CanvasTexture(atlas); atlasTex.colorSpace = THREE.SRGBColorSpace; atlasTex.anisotropy = 8;
@@ -705,12 +705,12 @@ function drawNames() {
   NAMES.forEach((name, i) => {
     if (!name) return;
     const cx = (i % ATLAS_COLS) * NAME_W, cy = Math.floor(i / ATLAS_COLS) * NAME_H;
-    x.font = `44px ${'"Secular One","Rubik",system-ui,sans-serif'}`;
+    x.font = `40px ${'"Secular One","Rubik",system-ui,sans-serif'}`;
     const tw = Math.min(NAME_W - 16, x.measureText(name).width + 34);
     const bx = cx + (NAME_W - tw) / 2;
     x.fillStyle = "#1d2b4f"; x.beginPath(); x.roundRect(bx, cy + 4, tw, NAME_H - 8, 18); x.fill();
     x.fillStyle = "#ffffff"; x.beginPath(); x.roundRect(bx + 4, cy + 8, tw - 8, NAME_H - 16, 14); x.fill();
-    x.fillStyle = "#1d2b4f"; x.textAlign = "center"; x.textBaseline = "middle"; x.direction = "rtl";
+    x.fillStyle = "#1d2b4f"; x.textAlign = "center"; x.textBaseline = "middle"; x.direction = /[\u0590-\u05ff]/.test(name) ? "rtl" : "ltr";   // (usernames are Latin: dots stay in place)
     x.fillText(name, cx + NAME_W / 2, cy + NAME_H / 2 + 2, NAME_W - 40);
   });
   atlasTex.needsUpdate = true;
@@ -729,7 +729,7 @@ document.fonts?.load('44px "Secular One"', "אבג").then(drawNames).catch(() =>
   g.setAttribute("cell", new THREE.InstancedBufferAttribute(cell, 2));
   g.instanceCount = n;
   const mat = new THREE.ShaderMaterial({
-    uniforms: { map: { value: atlasTex }, grid: { value: new THREE.Vector2(ATLAS_COLS, atlasRows) }, size: { value: new THREE.Vector2(5.6, 1.4) } },
+    uniforms: { map: { value: atlasTex }, grid: { value: new THREE.Vector2(ATLAS_COLS, atlasRows) }, size: { value: new THREE.Vector2(6.6, 1.1) } },
     vertexShader: `attribute vec3 at; attribute vec2 cell; uniform vec2 grid; uniform vec2 size; varying vec2 vUv; varying float vFade;
       void main(){ vec4 mv = modelViewMatrix * vec4(at, 1.0); float d = -mv.z; vFade = 1.0 - smoothstep(120.0, 170.0, d);
         mv.xy += position.xy * size * (1.0 + smoothstep(40.0, 120.0, d) * 0.6);
@@ -761,7 +761,7 @@ const marker = new THREE.Group(); marker.visible = false; scene.add(marker);
   marker.userData.ring = mesh(ring, pink, [0, 0, 0], marker, null, false);
 }
 let picked = null;
-const norm = (s) => String(s || "").trim().toLowerCase().replace(/[֑-ׇ'"׳״\s-]/g, "").replace(/(.)\1+/g, "$1");
+const norm = (s) => String(s || "").trim().toLowerCase().replace(/^@/, "").replace(/[֑-ׇ'"׳״\s-]/g, "").replace(/(.)\1+/g, "$1");
 function matchHomes(q) { const k = norm(q); if (!k) return []; const eq = homes.filter((H) => H.name && norm(H.name) === k); return eq.length ? eq : homes.filter((H) => H.name && norm(H.name).startsWith(k)); }
 function showHome(H, now) {
   picked = H;
