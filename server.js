@@ -44,7 +44,8 @@ import { attachPlaza, onlinePlayers, announceUpdate } from "./realtime/plaza.js"
 import { startDiscordStats } from "./discord/pip.js";
 import { discordInteractions } from "./discord/interactions.js";
 import { loadEvent, eventInfo } from "./realtime/events.js";
-import { tiktokPublic, startTiktok, cityFollowers } from "./routes/tiktok.js";
+import { tiktokPublic, startTiktok } from "./routes/tiktok.js";
+import { cityView, startCity } from "./routes/city.js";
 import { reqIp, isHttps, viaCloudflare } from "./routes/ip.js";
 import crypto from "node:crypto";
 import { loadCustom, customJs, customRev } from "./routes/items.js";
@@ -115,8 +116,8 @@ app.use("/api/parents", parentRoutes);   // parental controls (the /parents page
 // which holiday event is on (public/shared/events.js); the game asks on start, then the socket tells it about changes
 app.get("/api/event", (req, res) => { res.set("Cache-Control", "no-store"); const { event } = eventInfo(); res.json({ event }); });
 app.use("/api", tiktokPublic);   // TikTok sends the owner back here after "Connect TikTok" (routes/tiktok.js)
-// the Jumpi City page: the TikTok follower count (live from TikTok, or the admin's manual number)
-app.get("/api/city", async (req, res, next) => { try { res.set("Cache-Control", "no-store"); res.json(await cityFollowers()); } catch (err) { next(err); } });
+// the Jumpi City page: followers, what is built / being built, the next goal (routes/city.js; what each goal builds stays secret)
+app.get("/api/city", async (req, res, next) => { try { res.set("Cache-Control", "no-store"); res.json(await cityView()); } catch (err) { next(err); } });
 app.use("/api/admin", adminRoutes);
 app.use("/api", (req, res) => res.status(404).json({ error: "Not found." }));
 // pages: the website is the home page, the game lives at /play
@@ -221,6 +222,7 @@ app.get("/contact", page("site/contact.html"));
 app.get(["/parents", "/parent", "/horim"], (req, res, next) => { res.set({ "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" }); page("site/parents.html")(req, res, next); });   // parental controls
 app.get(["/for-parents", "/parents-guide", "/lehorim"], page("site/for-parents.html"));
 app.get(["/safety", "/online-safety", "/betihut"], page("site/safety.html"));   // online safety tips for kids
+app.get(["/city", "/jumpi-city", "/ir"], page("site/city.html"));   // Jumpi City: grows with our TikTok followers (city.html / city3d.js, routes/city.js)
 app.get(["/about", "/about-us", "/odot", "/company", "/who-we-are", "/mi-anachnu"], page("site/about.html"));   // about Jumpi Games: the studio, our games, the numbers, safety, the team (linked from the footer)
 app.get(["/partners", "/partnerships", "/shutafim"], page("site/partners.html"));   // the businesses and projects we work with (footer)   // Jumpi for parents: what kids learn, safety, controls, purchases
 app.get(["/help", "/faq", "/ezra"], page("site/help.html"));   // the help center: guides with pictures (help.js, help-data.js)
@@ -328,6 +330,7 @@ try {
   console.log(`✓ Connected to MongoDB (database "${MONGODB_DB}")`);
   await loadEvent();
   startTiktok();   // reads the TikTok follower count every few minutes (only once it is connected)
+  startCity();   // starts / finishes the Jumpi City buildings when goals are reached (routes/city.js)
   await loadCustom();   // the Item studio's items and fixes (routes/items.js)
 } catch (err) {
   console.error("✗ Could not connect to MongoDB:", err.message);

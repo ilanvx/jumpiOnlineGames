@@ -1,0 +1,85 @@
+/* /city — Jumpi City (city.html, city3d.js, city.js) */
+:root{--ink:#1d2b4f;--display:"Lilita One","Secular One",system-ui,sans-serif;--body:"Fredoka","Rubik",system-ui,sans-serif}
+body.ct{margin:0;background:#bfe6ff;color:var(--ink);font:400 1.05rem/1.55 var(--body)}
+[lang="he"] .ct h1,[lang="he"] .ct h2,[lang="he"] .ct-count b,[lang="he"] .ct-steps b{font-family:"Secular One","Lilita One",system-ui,sans-serif}
+
+/* the 3D stage fills the screen under the top bar */
+.ct-stage{position:relative;height:calc(100vh - 86px);height:calc(100dvh - 86px);min-height:520px;overflow:hidden;background:linear-gradient(#5ab8ff,#bfe6ff)}
+#cityCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#cityCanvas:active{cursor:grabbing}
+.ct-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+
+/* labels over things in the city */
+.cl{position:absolute;left:0;top:0;transition:opacity .25s;text-align:center;white-space:nowrap;will-change:transform}
+.cl b,.cl span{display:block}
+.cl-lp{padding:8px 16px 10px;border-radius:18px;background:#ff5fb4;color:#fff;box-shadow:0 5px 0 #c42a7f,0 10px 22px rgba(0,30,80,.25);border:3px solid #fff}
+.cl-lp b{font:400 1.35rem/1.1 var(--display);letter-spacing:.02em}
+.cl-lp span{font:500 .85rem/1.2 var(--body);opacity:.95}
+.cl-lp::after,.cl-plot::after{content:"";position:absolute;left:50%;bottom:-11px;width:16px;height:16px;transform:translateX(-50%) rotate(45deg);background:inherit;border-right:3px solid #fff;border-bottom:3px solid #fff;border-radius:0 0 4px 0}
+.cl-plot{padding:6px 14px 8px;border-radius:16px;background:#fff;color:var(--ink);border:3px solid #fff;box-shadow:0 5px 0 #b8c4ee,0 10px 20px rgba(0,30,80,.2)}
+.cl-plot b{font:400 1.5rem/1.05 var(--display)}
+.cl-plot span{font:500 .8rem/1.2 var(--body)}
+.cl-next{background:#ffd23a;box-shadow:0 5px 0 #d99a00,0 10px 20px rgba(0,30,80,.25)}
+.cl-later{padding:4px 12px 6px;opacity:.9}
+.cl-later b{font-size:1.2rem}
+.cl-site{background:#ff7a1a;color:#fff;box-shadow:0 5px 0 #c25e00,0 10px 24px rgba(0,30,80,.3)}
+.cl-site b{font:400 2rem/1 var(--display);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.cl-site span{font:600 .85rem/1.3 var(--body)}
+.cl-done{display:none}
+
+/* the card */
+.ct-card{position:absolute;left:24px;bottom:24px;width:min(380px,calc(100% - 48px));padding:20px 22px 18px;border-radius:26px;background:rgba(255,255,255,.94);
+  border:4px solid #fff;box-shadow:0 8px 0 #9fd0f5,0 18px 40px rgba(0,40,100,.25);backdrop-filter:blur(6px)}
+[dir="rtl"] .ct-card,[lang="he"] .ct-card{left:auto;right:24px}
+.ct h1{margin:0;font:400 2.3rem/1 var(--display);color:#1f8fff;letter-spacing:.01em;text-shadow:0 3px 0 #0f5fb8;-webkit-text-stroke:0}
+.ct-sub{margin:4px 0 12px;font-weight:500;color:#4a5878}
+.ct-count{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ct-count b{font:400 3rem/1 var(--display);color:var(--ink);font-variant-numeric:tabular-nums}
+.ct-count span{font-weight:600;color:#4a5878}
+.ct-goal{margin:12px 0 4px}
+.ct-bar{height:18px;border-radius:99px;background:#e3eefc;box-shadow:inset 0 2px 0 rgba(0,40,100,.12);overflow:hidden}
+.ct-bar i{display:block;height:100%;width:4%;border-radius:99px;background:linear-gradient(180deg,#ffd23a,#ff9a1f);box-shadow:inset 0 -3px 0 rgba(160,70,0,.25);transition:width .8s}
+[lang="he"] .ct-bar i{margin-inline-start:auto;margin-left:auto}
+.ct-bar i.go{background:repeating-linear-gradient(-45deg,#ffd23a 0 14px,#1d2b4f 14px 28px);animation:ctStripe 1s linear infinite}
+@keyframes ctStripe{to{background-position:40px 0}}
+.ct-goal p{margin:8px 0 0;font-weight:500}
+.ct-goal b{font-family:var(--display);font-weight:400;font-size:1.2em;color:#ff7a1a}
+.ct-secret{margin:6px 0 14px;padding:8px 12px;border-radius:14px;background:#fff6d6;font-weight:600;color:#7a4a00}
+.ct-acts{display:flex;gap:10px;flex-wrap:wrap}
+.ct-acts .hm-btn{flex:1 1 auto;min-height:48px}
+.ct-play{background:linear-gradient(180deg,#4fd36b,#22b04a 60%);box-shadow:0 5px 0 #15803a;text-shadow:0 2px 0 #15803a;color:#fff}
+.ct-play svg{width:20px;height:20px;fill:#fff}
+.ct-age{margin:10px 0 0;font-size:.82rem;color:#6a7894}
+
+/* view buttons */
+.ct-views{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:18px;background:rgba(255,255,255,.88);box-shadow:0 5px 0 rgba(0,60,140,.18)}
+.ct-views button{border:0;border-radius:13px;padding:9px 14px;background:transparent;color:var(--ink);font:600 .95rem/1 var(--body);cursor:pointer;white-space:nowrap}
+.ct-views button[aria-pressed="true"]{background:#1f8fff;color:#fff;box-shadow:0 3px 0 #0f5fb8}
+.ct-hint{position:absolute;right:96px;bottom:22px;margin:0;font-size:.82rem;color:#fff;text-shadow:0 1px 3px rgba(0,30,80,.6)}
+[lang="he"] .ct-hint{right:auto;left:96px}
+
+/* how it grows */
+.ct-how{max-width:1040px;margin:0 auto;padding:56px 20px 30px}
+.ct-how h2{margin:0 0 22px;text-align:center;font:400 2.1rem/1.1 var(--display);color:var(--ink)}
+.ct-steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.ct-steps li{counter-increment:s;position:relative;padding:54px 20px 20px;border-radius:22px;background:#fff;box-shadow:0 6px 0 #9fd0f5}
+.ct-steps li::before{content:counter(s);position:absolute;top:14px;left:20px;width:34px;height:34px;border-radius:50%;background:#ff7a1a;color:#fff;display:grid;place-items:center;font:400 1.2rem/1 var(--display);box-shadow:0 3px 0 #c25e00}
+[lang="he"] .ct-steps li::before{left:auto;right:20px}
+.ct-steps b{display:block;font:400 1.3rem/1.2 var(--display);margin-bottom:6px}
+
+@media (max-width:760px){
+  .ct-stage{height:calc(100dvh - 70px);min-height:560px}
+  .ct-card{left:12px;right:12px;bottom:12px;width:auto;padding:14px 16px 12px;border-radius:22px}
+  [lang="he"] .ct-card{right:12px;left:12px}
+  .ct h1{font-size:1.8rem}
+  .ct-sub{display:none}
+  .ct-acts .hm-btn{min-height:44px;flex:1 1 0;min-width:0;padding:0 10px;font-size:1rem;gap:6px}
+  .ct-acts{flex-wrap:nowrap}
+  .ct-count b{font-size:2.2rem}
+  .ct-secret{margin-bottom:10px}
+  .ct-age{display:none}
+  .ct-views{top:10px}
+  .ct-views button{padding:8px 10px;font-size:.85rem}
+  .ct-hint{display:none}
+  .ct-steps{grid-template-columns:1fr}
+}
